@@ -4,7 +4,7 @@ const TrendingNFTsOne = () => {
   return (
     <div className='col-12'>
       <div className='mb-16 mt-8 d-flex flex-wrap justify-content-between gap-16'>
-        <h6 className='mb-0'>Trending NFTs</h6>
+        <h6 className='mb-0'>Startup Resources</h6>
         <ul
           className='nav button-tab nav-pills mb-16 gap-12'
           id='pills-tab-three'
