@@ -1,98 +1,98 @@
-import { Icon } from "@iconify/react/dist/iconify.js";
-
+import { useState } from "react";
+import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
+import appData from "../../data/appData.json";
 
 const FeaturedCreatorsOne = () => {
+  const cohorts = appData.cohorts;
+  const [activeTab, setActiveTab] = useState("All");
+
+  const allCourses = cohorts.flatMap((cohort) =>
+    cohort.courses.map((course) => ({
+      ...course,
+      cohortName: cohort.name,
+      cohortId: cohort.id,
+    }))
+  );
+
+  const filteredCourses =
+    activeTab === "All"
+      ? allCourses
+      : allCourses.filter((course) => course.cohortName === activeTab);
+
+  const uniqueCohorts = [...new Set(cohorts.map((c) => c.name))];
+
   return (
-    <div className='col-xxl-12 col-md-6'>
-      <div className='card h-100'>
-        <div className='card-header border-bottom d-flex align-items-center flex-wrap gap-2 justify-content-between'>
-          <h6 className='fw-bold text-lg mb-0'>Featured Creators</h6>
+    <div className="col-xxl-12 col-md-6">
+      <div className="card h-100">
+        <div className="card-header border-bottom d-flex align-items-center flex-wrap gap-2 justify-content-between">
+          <h6 className="fw-bold text-lg mb-0">Learning Modules</h6>
           <Link
-            to='#'
-            className='text-primary-600 hover-text-primary d-flex align-items-center gap-1'
+            to="#"
+            className="text-primary-600 hover-text-primary d-flex align-items-center gap-1"
           >
             View All
-            <Icon icon='solar:alt-arrow-right-linear' className='icon' />
+            <Icon icon="solar:alt-arrow-right-linear" className="icon" />
           </Link>
         </div>
-        <div className='card-body'>
-          <div className='d-flex align-items-center justify-content-between gap-8 flex-wrap'>
-            <div className='d-flex align-items-center'>
-              <img
-                src='assets/images/nft/nft-items-img1.png'
-                alt='WowDash React Vite'
-                className='flex-shrink-0 me-12 w-40-px h-40-px rounded-circle me-12'
-              />
-              <div className='flex-grow-1'>
-                <h6 className='text-md mb-0 fw-semibold'>Theresa Webb</h6>
-                <span className='text-sm text-secondary-light fw-normal'>
-                  Owned by ABC
-                </span>
-              </div>
-            </div>
+
+        <div className="card-body">
+          {/* Tabs */}
+          <div className="mb-4 d-flex flex-wrap gap-2">
             <button
-              type='button'
-              className='btn btn-outline-primary-600 px-24 rounded-pill'
+              className={`btn btn-sm rounded-pill px-16 py-6 border ${
+                activeTab === "All"
+                  ? "btn-primary-600 text-white"
+                  : "btn-outline-primary-600 text-primary-600"
+              }`}
+              onClick={() => setActiveTab("All")}
             >
-              Follow
+              All
             </button>
+            {uniqueCohorts.map((name) => (
+              <button
+                key={name}
+                className={`btn btn-sm rounded-pill px-16 py-6 border ${
+                  activeTab === name
+                    ? "btn-primary-600 text-white"
+                    : "btn-outline-primary-600 text-primary-600"
+                }`}
+                onClick={() => setActiveTab(name)}
+              >
+                {name}
+              </button>
+            ))}
           </div>
-          <div className='mt-24'>
-            <div className='row gy-3'>
-              <div className='col-sm-6 col-xs-6'>
-                <div className='nft-card bg-base radius-16 overflow-hidden shadow-4'>
-                  <div className='radius-16 overflow-hidden'>
-                    <img
-                      src='assets/images/nft/featured-creator1.png'
-                      alt='WowDash React Vite'
-                      className='w-100 h-100 object-fit-cover'
-                    />
-                  </div>
-                  <div className='p-12'>
-                    <h6 className='text-md fw-bold text-primary-light mb-12'>
-                      New Figures
-                    </h6>
-                    <div className='d-flex align-items-center gap-8'>
+
+          {/* Grid */}
+          <div className="row gy-3">
+            {filteredCourses.length === 0 ? (
+              <div className="col-12 text-center text-secondary-light">
+                No courses found for {activeTab}
+              </div>
+            ) : (
+              filteredCourses.map((course) => (
+                <div key={course.id} className="col-sm-6 col-xs-6">
+                  <div className="nft-card bg-base radius-16 overflow-hidden shadow-4">
+                    <div className="radius-16 overflow-hidden">
                       <img
-                        src='assets/images/nft/bitcoin.png'
-                        className='w-28-px h-28-px rounded-circle object-fit-cover'
-                        alt='WowDash React Vite'
+                        src={course.videoThumbnail}
+                        alt={course.title}
+                        className="w-100 h-100 object-fit-cover"
                       />
-                      <span className='text-sm text-secondary-light fw-medium'>
-                        0.10 BTC
-                      </span>
+                    </div>
+                    <div className="p-12">
+                      <h6 className="text-md fw-bold text-primary-light mb-12">
+                        {course.title}
+                      </h6>
+                      <div className="text-sm text-secondary-light fw-medium">
+                        {course.description}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className='col-sm-6 col-xs-6'>
-                <div className='nft-card bg-base radius-16 overflow-hidden shadow-4'>
-                  <div className='radius-16 overflow-hidden'>
-                    <img
-                      src='assets/images/nft/featured-creator2.png'
-                      alt='WowDash React Vite'
-                      className='w-100 h-100 object-fit-cover'
-                    />
-                  </div>
-                  <div className='p-12'>
-                    <h6 className='text-md fw-bold text-primary-light mb-12'>
-                      Abstrac Girl
-                    </h6>
-                    <div className='d-flex align-items-center gap-8'>
-                      <img
-                        src='assets/images/nft/bitcoin.png'
-                        className='w-28-px h-28-px rounded-circle object-fit-cover'
-                        alt='WowDash React Vite'
-                      />
-                      <span className='text-sm text-secondary-light fw-medium'>
-                        0.10 BTC
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              ))
+            )}
           </div>
         </div>
       </div>
