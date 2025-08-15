@@ -29,7 +29,7 @@ const TrendingNFTsOne = () => {
           {categories.map(category => (
             <li className="nav-item" key={category} role="presentation">
               <button
-                className={`nav-link fw-semibold text-secondary-light rounded-pill px-20 py-6 border border-neutral-300 ${
+                className={`nav-link text-neutral-500 hover-text-white bg-neutral-300 bg-hover-primary-800 rounded-pill px-20 py-6 border border-neutral-300 ${
                   activeTab === category ? "active" : ""
                 }`}
                 onClick={() => setActiveTab(category)}
@@ -51,7 +51,7 @@ const TrendingNFTsOne = () => {
               >
                 <div className="nft-card bg-base radius-16 overflow-hidden">
                   <div className="radius-16 overflow-hidden">
-                    <img
+                    <img style={{ width: '100%', maxHeight: '10vh' }}
                       src={service.imageUrl}
                       alt={service.title}
                       className="w-100 h-100 object-fit-cover"
@@ -88,15 +88,15 @@ const TrendingNFTsOne = () => {
                     <div className="d-flex align-items-center flex-wrap mt-12 gap-8">
                       <Link
                         to="#"
-                        className="btn rounded-pill border text-neutral-500 border-neutral-500 radius-8 px-12 py-6 bg-hover-neutral-500 text-hover-white flex-grow-1"
+                        className="btn rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white flex-grow-1"
                       >
                         Reviews
                       </Link>
                       <Link
                         to="#"
-                        className="btn rounded-pill btn-primary-600 radius-8 px-12 py-6 flex-grow-1"
+                        className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6 flex-grow-1"
                       >
-                        Buy Now
+                        Subscribe
                       </Link>
                     </div>
                   </div>

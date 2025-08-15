@@ -29,7 +29,7 @@ const TrendingBidsOne = () => {
 
   return (
     <div className='col-12'>
-      <h6 className='mb-16'>My Services</h6>
+      <h6 className='mb-16'>Quick Links</h6>
       <div className='row gy-4'>
         {/* Most Used Service */}
         <div className='col-lg-4 col-sm-6'>
@@ -55,7 +55,7 @@ const TrendingBidsOne = () => {
                     <div className='d-flex align-items-center flex-wrap mt-12 gap-8'>
                       <Link
                         to='#'
-                        className='btn rounded-pill border text-neutral-500 border-neutral-500 radius-8 px-12 py-6 bg-hover-neutral-500 text-hover-white flex-grow-1'
+                        className='btn rounded-pill border bg-hover-primary-800 text-neutral-500 border-neutral-500 radius-8 px-12 py-6 text-hover-white flex-grow-1'
                       >
                         Open App
                       </Link>
@@ -91,7 +91,7 @@ const TrendingBidsOne = () => {
                     <div className='d-flex align-items-center flex-wrap mt-12 gap-8'>
                       <Link
                         to='#'
-                        className='btn rounded-pill border text-neutral-500 border-neutral-500 radius-8 px-12 py-6 bg-hover-neutral-500 text-hover-white flex-grow-1'
+                        className='btn rounded-pill border text-neutral-500 border-neutral-500 bg-hover-primary-800 radius-8 px-12 py-6 text-hover-white flex-grow-1'
                       >
                         Open App
                       </Link>
@@ -126,7 +126,7 @@ const TrendingBidsOne = () => {
                       </Link>
                       <Link
                         to='#'
-                        className='btn rounded-pill btn-primary-600 radius-8 px-12 py-6 flex-grow-1'
+                        className='btn rounded-pill  text-primary-50 hover-text-white bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6 flex-grow-1'
                       >
                         Subscribe
                       </Link>

@@ -73,15 +73,10 @@ const Workspace1 = () => {
                       </span>
                     </div>
                     <div className="d-flex align-items-center flex-wrap mt-12 gap-8">
+                      
                       <Link
                         to="#"
-                        className="btn rounded-pill border text-neutral-500 border-primary-500 radius-8 px-12 py-6 bg-hover-primary-500 text-hover-white flex-grow-1"
-                      >
-                        Reviews
-                      </Link>
-                      <Link
-                        to="#"
-                        className="btn rounded-pill btn-primary-600 radius-8 px-12 py-6 flex-grow-1"
+                        className="btn rounded-pill  text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6 flex-grow-1"
                       >
                         RSVP
                       </Link>

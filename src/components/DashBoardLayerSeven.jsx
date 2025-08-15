@@ -25,11 +25,13 @@ const DashBoardLayerSeven = () => {
             {/* TrendingNFTsOne */}
             <TrendingNFTsOne />
 
+            {/* Workspace */}
+            <Workspace1 />
+
             {/* RecentBidOne */}
             <RecentBidOne />
 
-            {/* Workspace */}
-            <Workspace1 />
+
           </div>
         </div>
 

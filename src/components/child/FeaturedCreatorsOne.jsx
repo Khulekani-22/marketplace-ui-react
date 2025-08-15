@@ -54,8 +54,8 @@ const FeaturedCreatorsOne = () => {
                 key={name}
                 className={`btn btn-sm rounded-pill px-16 py-6 border ${
                   activeTab === name
-                    ? "btn-primary-600 text-white"
-                    : "btn-outline-primary-600 text-primary-600"
+                    ? "btn-primary-600 bg-primary-200 bg-hover-primary-800 text-primary-600"
+                    : "btn-outline-primary-600 bg-hover-primary-800 text-primary-600"
                 }`}
                 onClick={() => setActiveTab(name)}
               >
