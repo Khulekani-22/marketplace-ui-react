@@ -1,6 +1,7 @@
 import BannerInnerOne from "./child/BannerInnerOne";
 import TrendingBidsOne from "./child/TrendingBidsOne";
 import TrendingNFTsOne from "./child/TrendingNFTsOne";
+import Workspace1 from "./child/Workspace1";
 import RecentBidOne from "./child/RecentBidOne";
 import ETHPriceOne from "./child/ETHPriceOne";
 import StatisticsOne from "./child/StatisticsOne";
@@ -26,6 +27,9 @@ const DashBoardLayerSeven = () => {
 
             {/* RecentBidOne */}
             <RecentBidOne />
+
+            {/* Workspace */}
+            <Workspace1 />
           </div>
         </div>
 
