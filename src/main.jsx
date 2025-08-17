@@ -1,13 +1,13 @@
 import { createRoot } from "react-dom/client";
 import LightGallery from "lightgallery/react";
-import "react-quill/dist/quill.snow.css";
+
+import "quill/dist/quill.snow.css";
 import "jsvectormap/dist/css/jsvectormap.css";
 import "react-toastify/dist/ReactToastify.css";
 import "react-modal-video/css/modal-video.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 
 
 import "lightgallery/css/lightgallery.css";

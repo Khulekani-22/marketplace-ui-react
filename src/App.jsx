@@ -1,241 +1,239 @@
-// import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePageOne from "./pages/HomePageOne";
-import HomePageTwo from "./pages/HomePageTwo";
-import HomePageThree from "./pages/HomePageThree";
-import HomePageFour from "./pages/HomePageFour";
-import HomePageFive from "./pages/HomePageFive";
-import HomePageSix from "./pages/HomePageSix";
-import HomePageSeven from "./pages/HomePageSeven";
-import EmailPage from "./pages/EmailPage";
-import AddUserPage from "./pages/AddUserPage";
-import AlertPage from "./pages/AlertPage";
-import AssignRolePage from "./pages/AssignRolePage";
-import AvatarPage from "./pages/AvatarPage";
-import BadgesPage from "./pages/BadgesPage";
-import ButtonPage from "./pages/ButtonPage";
-import CalendarMainPage from "./pages/CalendarMainPage";
-import CardPage from "./pages/CardPage";
-import CarouselPage from "./pages/CarouselPage";
-import ChatMessagePage from "./pages/ChatMessagePage";
-import ChatProfilePage from "./pages/ChatProfilePage";
-import CodeGeneratorNewPage from "./pages/CodeGeneratorNewPage";
-import CodeGeneratorPage from "./pages/CodeGeneratorPage";
-import ColorsPage from "./pages/ColorsPage";
-import ColumnChartPage from "./pages/ColumnChartPage";
-import CompanyPage from "./pages/CompanyPage";
-import CurrenciesPage from "./pages/CurrenciesPage";
-import DropdownPage from "./pages/DropdownPage";
-import ErrorPage from "./pages/ErrorPage";
-import FaqPage from "./pages/FaqPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import FormLayoutPage from "./pages/FormLayoutPage";
-import FormValidationPage from "./pages/FormValidationPage";
-import FormPage from "./pages/FormPage";
-import GalleryPage from "./pages/GalleryPage";
-import ImageGeneratorPage from "./pages/ImageGeneratorPage";
-import ImageUploadPage from "./pages/ImageUploadPage";
-import InvoiceAddPage from "./pages/InvoiceAddPage";
-import InvoiceEditPage from "./pages/InvoiceEditPage";
-import InvoiceListPage from "./pages/InvoiceListPage";
-import InvoicePreviewPage from "./pages/InvoicePreviewPage";
-import KanbanPage from "./pages/KanbanPage";
-import LanguagePage from "./pages/LanguagePage";
-import LineChartPage from "./pages/LineChartPage";
-import ListPage from "./pages/ListPage";
-import MarketplaceDetailsPage from "./pages/MarketplaceDetailsPage";
-import MarketplacePage from "./pages/MarketplacePage";
-import NotificationAlertPage from "./pages/NotificationAlertPage";
-import NotificationPage from "./pages/NotificationPage";
-import PaginationPage from "./pages/PaginationPage";
-import PaymentGatewayPage from "./pages/PaymentGatewayPage";
-import PieChartPage from "./pages/PieChartPage";
-import PortfolioPage from "./pages/PortfolioPage";
-import PricingPage from "./pages/PricingPage";
-import ProgressPage from "./pages/ProgressPage";
-import RadioPage from "./pages/RadioPage";
-import RoleAccessPage from "./pages/RoleAccessPage";
-import SignInPage from "./pages/SignInPage";
-import SignUpPage from "./pages/SignUpPage";
-import StarRatingPage from "./pages/StarRatingPage";
-import StarredPage from "./pages/StarredPage";
-import SwitchPage from "./pages/SwitchPage";
-import TableBasicPage from "./pages/TableBasicPage";
-import TableDataPage from "./pages/TableDataPage";
-import TabsPage from "./pages/TabsPage";
-import TagsPage from "./pages/TagsPage";
-import TermsConditionPage from "./pages/TermsConditionPage";
-import TextGeneratorPage from "./pages/TextGeneratorPage";
-import ThemePage from "./pages/ThemePage";
-import TooltipPage from "./pages/TooltipPage";
-import TypographyPage from "./pages/TypographyPage";
-import UsersGridPage from "./pages/UsersGridPage";
-import UsersListPage from "./pages/UsersListPage";
-import ViewDetailsPage from "./pages/ViewDetailsPage";
-import VideoGeneratorPage from "./pages/VideoGeneratorPage";
-import VideosPage from "./pages/VideosPage";
-import ViewProfilePage from "./pages/ViewProfilePage";
-import VoiceGeneratorPage from "./pages/VoiceGeneratorPage";
-import WalletPage from "./pages/WalletPage";
-import WidgetsPage from "./pages/WidgetsPage";
-import WizardPage from "./pages/WizardPage";
+// src/App.jsx
+import React, { Suspense } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RouteScrollToTop from "./helper/RouteScrollToTop";
-import TextGeneratorNewPage from "./pages/TextGeneratorNewPage";
-import HomePageEight from "./pages/HomePageEight";
-import HomePageNine from "./pages/HomePageNine";
-import HomePageTen from "./pages/HomePageTen";
-import HomePageEleven from "./pages/HomePageEleven";
-import GalleryGridPage from "./pages/GalleryGridPage";
-import GalleryMasonryPage from "./pages/GalleryMasonryPage";
-import GalleryHoverPage from "./pages/GalleryHoverPage";
-import BlogPage from "./pages/BlogPage";
-import BlogDetailsPage from "./pages/BlogDetailsPage";
-import AddBlogPage from "./pages/AddBlogPage";
-import TestimonialsPage from "./pages/TestimonialsPage";
-import ComingSoonPage from "./pages/ComingSoonPage";
-import AccessDeniedPage from "./pages/AccessDeniedPage";
-import MaintenancePage from "./pages/MaintenancePage";
-import BlankPagePage from "./pages/BlankPagePage";
-import AllDataTable from './pages/AllDataTable';
-import DataOverview from './pages/DataOverview';
-import Dashboard from './pages/Dashboard';
-import Market1 from './pages/Market1';
+
+// session UI / guards
+import Navbar from "./components/Navbar.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import PrivateRoute from "./components/PrivateRoute.jsx";
+import LoginForm from "./components/LoginForm.jsx";
+import { lazyWithRetry } from "./utils/lazyWithRetry";
+
+// lazy pages
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard.jsx"));
+const HomePageOne = React.lazy(() => import("./pages/HomePageOne"));
+const HomePageTwo = React.lazy(() => import("./pages/HomePageTwo"));
+const HomePageThree = React.lazy(() => import("./pages/HomePageThree"));
+const HomePageFour = React.lazy(() => import("./pages/HomePageFour"));
+const HomePageFive = React.lazy(() => import("./pages/HomePageFive"));
+const HomePageSix = React.lazy(() => import("./pages/HomePageSix"));
+const HomePageSeven = React.lazy(() => import("./pages/HomePageSeven"));
+const HomePageEight = React.lazy(() => import("./pages/HomePageEight"));
+const HomePageNine = React.lazy(() => import("./pages/HomePageNine"));
+const HomePageTen = React.lazy(() => import("./pages/HomePageTen"));
+const HomePageEleven = React.lazy(() => import("./pages/HomePageEleven"));
+
+const EmailPage = React.lazy(() => import("./pages/EmailPage"));
+const AddUserPage = React.lazy(() => import("./pages/AddUserPage"));
+const AlertPage = React.lazy(() => import("./pages/AlertPage"));
+const AssignRolePage = React.lazy(() => import("./pages/AssignRolePage"));
+const AvatarPage = React.lazy(() => import("./pages/AvatarPage"));
+const BadgesPage = React.lazy(() => import("./pages/BadgesPage"));
+const ButtonPage = React.lazy(() => import("./pages/ButtonPage"));
+const CalendarMainPage = React.lazy(() => import("./pages/CalendarMainPage"));
+const CardPage = React.lazy(() => import("./pages/CardPage"));
+const CarouselPage = React.lazy(() => import("./pages/CarouselPage"));
+const ChatMessagePage = React.lazy(() => import("./pages/ChatMessagePage"));
+const ChatProfilePage = React.lazy(() => import("./pages/ChatProfilePage"));
+const CodeGeneratorNewPage = React.lazy(() => import("./pages/CodeGeneratorNewPage"));
+const CodeGeneratorPage = React.lazy(() => import("./pages/CodeGeneratorPage"));
+const ColorsPage = React.lazy(() => import("./pages/ColorsPage"));
+const ColumnChartPage = React.lazy(() => import("./pages/ColumnChartPage"));
+const CompanyPage = React.lazy(() => import("./pages/CompanyPage"));
+const CurrenciesPage = React.lazy(() => import("./pages/CurrenciesPage"));
+const DropdownPage = React.lazy(() => import("./pages/DropdownPage"));
+const ErrorPage = React.lazy(() => import("./pages/ErrorPage"));
+const FaqPage = React.lazy(() => import("./pages/FaqPage"));
+const ForgotPasswordPage = React.lazy(() => import("./pages/ForgotPasswordPage"));
+const FormLayoutPage = React.lazy(() => import("./pages/FormLayoutPage"));
+const FormValidationPage = React.lazy(() => import("./pages/FormValidationPage"));
+const FormPage = React.lazy(() => import("./pages/FormPage"));
+const GalleryPage = React.lazy(() => import("./pages/GalleryPage"));
+const ImageGeneratorPage = React.lazy(() => import("./pages/ImageGeneratorPage"));
+const ImageUploadPage = React.lazy(() => import("./pages/ImageUploadPage"));
+const InvoiceAddPage = React.lazy(() => import("./pages/InvoiceAddPage"));
+const InvoiceEditPage = React.lazy(() => import("./pages/InvoiceEditPage"));
+const InvoiceListPage = React.lazy(() => import("./pages/InvoiceListPage"));
+const InvoicePreviewPage = React.lazy(() => import("./pages/InvoicePreviewPage"));
+const KanbanPage = React.lazy(() => import("./pages/KanbanPage"));
+const LanguagePage = React.lazy(() => import("./pages/LanguagePage"));
+const LineChartPage = React.lazy(() => import("./pages/LineChartPage"));
+const ListPage = React.lazy(() => import("./pages/ListPage"));
+const MarketplaceDetailsPage = React.lazy(() => import("./pages/MarketplaceDetailsPage"));
+const MarketplacePage = React.lazy(() => import("./pages/MarketplacePage"));
+const NotificationAlertPage = React.lazy(() => import("./pages/NotificationAlertPage"));
+const NotificationPage = React.lazy(() => import("./pages/NotificationPage"));
+const PaginationPage = React.lazy(() => import("./pages/PaginationPage"));
+const PaymentGatewayPage = React.lazy(() => import("./pages/PaymentGatewayPage"));
+const PieChartPage = React.lazy(() => import("./pages/PieChartPage"));
+const PortfolioPage = React.lazy(() => import("./pages/PortfolioPage"));
+const PricingPage = React.lazy(() => import("./pages/PricingPage"));
+const ProgressPage = React.lazy(() => import("./pages/ProgressPage"));
+const RadioPage = React.lazy(() => import("./pages/RadioPage"));
+const RoleAccessPage = React.lazy(() => import("./pages/RoleAccessPage"));
+const SignInPage = React.lazy(() => import("./pages/SignInPage"));
+const SignUpPage = React.lazy(() => import("./pages/SignUpPage"));
+const StarRatingPage = React.lazy(() => import("./pages/StarRatingPage"));
+const StarredPage = React.lazy(() => import("./pages/StarredPage"));
+const SwitchPage = React.lazy(() => import("./pages/SwitchPage"));
+const TableBasicPage = React.lazy(() => import("./pages/TableBasicPage"));
+const TableDataPage = React.lazy(() => import("./pages/TableDataPage"));
+const TabsPage = React.lazy(() => import("./pages/TabsPage"));
+const TagsPage = React.lazy(() => import("./pages/TagsPage"));
+const TermsConditionPage = React.lazy(() => import("./pages/TermsConditionPage"));
+const TextGeneratorNewPage = React.lazy(() => import("./pages/TextGeneratorNewPage"));
+const TextGeneratorPage = React.lazy(() => import("./pages/TextGeneratorPage"));
+const ThemePage = React.lazy(() => import("./pages/ThemePage"));
+const TooltipPage = React.lazy(() => import("./pages/TooltipPage"));
+const TypographyPage = React.lazy(() => import("./pages/TypographyPage"));
+const UsersGridPage = React.lazy(() => import("./pages/UsersGridPage"));
+const UsersListPage = React.lazy(() => import("./pages/UsersListPage"));
+const ViewDetailsPage = React.lazy(() => import("./pages/ViewDetailsPage"));
+const VideoGeneratorPage = React.lazy(() => import("./pages/VideoGeneratorPage"));
+const VideosPage = React.lazy(() => import("./pages/VideosPage"));
+const ViewProfilePage = React.lazy(() => import("./pages/ViewProfilePage"));
+const VoiceGeneratorPage = React.lazy(() => import("./pages/VoiceGeneratorPage"));
+const WalletPage = React.lazy(() => import("./pages/WalletPage"));
+const WidgetsPage = React.lazy(() => import("./pages/WidgetsPage"));
+const WizardPage = React.lazy(() => import("./pages/WizardPage"));
+
+// new data pages (lazy)
+const AllDataTable = React.lazy(() => import("./pages/AllDataTable"));
+const DataOverview = React.lazy(() => import("./pages/DataOverview"));
+const Market1 = React.lazy(() => import("./pages/Market1"));
 
 
-function App() {
+function Fallback() {
   return (
-    <BrowserRouter>
-      <RouteScrollToTop />
-      <Routes>
-
-      <Route path="/overview" element={<DataOverview />} />
-      <Route path="/data" element={<AllDataTable />} />
-      <Route path="/dashboard" element={<Dashboard  />} />
-      <Route path="/market1" element={<Market1  />} />
-
-        <Route exact path='/' element={<HomePageOne />} />
-        <Route exact path='/index-2' element={<HomePageTwo />} />
-        <Route exact path='/index-3' element={<HomePageThree />} />
-        <Route exact path='/index-4' element={<HomePageFour />} />
-        <Route exact path='/index-5' element={<HomePageFive />} />
-        <Route exact path='/index-6' element={<HomePageSix />} />
-        <Route exact path='/index-7' element={<HomePageSeven />} />
-        <Route exact path='/index-8' element={<HomePageEight />} />
-        <Route exact path='/index-9' element={<HomePageNine />} />
-        <Route exact path='/index-10' element={<HomePageTen />} />
-        <Route exact path='/index-11' element={<HomePageEleven />} />
-
-        {/* SL */}
-        <Route exact path='/add-user' element={<AddUserPage />} />
-        <Route exact path='/alert' element={<AlertPage />} />
-        <Route exact path='/assign-role' element={<AssignRolePage />} />
-        <Route exact path='/avatar' element={<AvatarPage />} />
-        <Route exact path='/badges' element={<BadgesPage />} />
-        <Route exact path='/button' element={<ButtonPage />} />
-        <Route exact path='/calendar-main' element={<CalendarMainPage />} />
-        <Route exact path='/calendar' element={<CalendarMainPage />} />
-        <Route exact path='/card' element={<CardPage />} />
-        <Route exact path='/carousel' element={<CarouselPage />} />
-
-        <Route exact path='/chat-message' element={<ChatMessagePage />} />
-        <Route exact path='/chat-profile' element={<ChatProfilePage />} />
-        <Route exact path='/code-generator' element={<CodeGeneratorPage />} />
-        <Route
-          exact
-          path='/code-generator-new'
-          element={<CodeGeneratorNewPage />}
-        />
-        <Route exact path='/colors' element={<ColorsPage />} />
-        <Route exact path='/column-chart' element={<ColumnChartPage />} />
-        <Route exact path='/company' element={<CompanyPage />} />
-        <Route exact path='/currencies' element={<CurrenciesPage />} />
-        <Route exact path='/dropdown' element={<DropdownPage />} />
-        <Route exact path='/email' element={<EmailPage />} />
-        <Route exact path='/faq' element={<FaqPage />} />
-        <Route exact path='/forgot-password' element={<ForgotPasswordPage />} />
-        <Route exact path='/form-layout' element={<FormLayoutPage />} />
-        <Route exact path='/form-validation' element={<FormValidationPage />} />
-        <Route exact path='/form' element={<FormPage />} />
-
-        <Route exact path='/gallery' element={<GalleryPage />} />
-        <Route exact path='/gallery-grid' element={<GalleryGridPage />} />
-        <Route exact path='/gallery-masonry' element={<GalleryMasonryPage />} />
-        <Route exact path='/gallery-hover' element={<GalleryHoverPage />} />
-
-        <Route exact path='/blog' element={<BlogPage />} />
-        <Route exact path='/blog-details' element={<BlogDetailsPage />} />
-        <Route exact path='/add-blog' element={<AddBlogPage />} />
-
-        <Route exact path='/testimonials' element={<TestimonialsPage />} />
-        <Route exact path='/coming-soon' element={<ComingSoonPage />} />
-        <Route exact path='/access-denied' element={<AccessDeniedPage />} />
-        <Route exact path='/maintenance' element={<MaintenancePage />} />
-        <Route exact path='/blank-page' element={<BlankPagePage />} />
-
-        <Route exact path='/image-generator' element={<ImageGeneratorPage />} />
-        <Route exact path='/image-upload' element={<ImageUploadPage />} />
-        <Route exact path='/invoice-add' element={<InvoiceAddPage />} />
-        <Route exact path='/invoice-edit' element={<InvoiceEditPage />} />
-        <Route exact path='/invoice-list' element={<InvoiceListPage />} />
-        <Route exact path='/invoice-preview' element={<InvoicePreviewPage />} />
-        <Route exact path='/kanban' element={<KanbanPage />} />
-        <Route exact path='/language' element={<LanguagePage />} />
-        <Route exact path='/line-chart' element={<LineChartPage />} />
-        <Route exact path='/list' element={<ListPage />} />
-        <Route
-          exact
-          path='/marketplace-details'
-          element={<MarketplaceDetailsPage />}
-        />
-        <Route exact path='/marketplace' element={<MarketplacePage />} />
-        <Route
-          exact
-          path='/notification-alert'
-          element={<NotificationAlertPage />}
-        />
-        <Route exact path='/notification' element={<NotificationPage />} />
-        <Route exact path='/pagination' element={<PaginationPage />} />
-        <Route exact path='/payment-gateway' element={<PaymentGatewayPage />} />
-        <Route exact path='/pie-chart' element={<PieChartPage />} />
-        <Route exact path='/portfolio' element={<PortfolioPage />} />
-        <Route exact path='/pricing' element={<PricingPage />} />
-        <Route exact path='/progress' element={<ProgressPage />} />
-        <Route exact path='/radio' element={<RadioPage />} />
-        <Route exact path='/role-access' element={<RoleAccessPage />} />
-        <Route exact path='/sign-in' element={<SignInPage />} />
-        <Route exact path='/sign-up' element={<SignUpPage />} />
-        <Route exact path='/star-rating' element={<StarRatingPage />} />
-        <Route exact path='/starred' element={<StarredPage />} />
-        <Route exact path='/switch' element={<SwitchPage />} />
-        <Route exact path='/table-basic' element={<TableBasicPage />} />
-        <Route exact path='/table-data' element={<TableDataPage />} />
-        <Route exact path='/tabs' element={<TabsPage />} />
-        <Route exact path='/tags' element={<TagsPage />} />
-        <Route exact path='/terms-condition' element={<TermsConditionPage />} />
-        <Route
-          exact
-          path='/text-generator-new'
-          element={<TextGeneratorNewPage />}
-        />
-        <Route exact path='/text-generator' element={<TextGeneratorPage />} />
-        <Route exact path='/theme' element={<ThemePage />} />
-        <Route exact path='/tooltip' element={<TooltipPage />} />
-        <Route exact path='/typography' element={<TypographyPage />} />
-        <Route exact path='/users-grid' element={<UsersGridPage />} />
-        <Route exact path='/users-list' element={<UsersListPage />} />
-        <Route exact path='/view-details' element={<ViewDetailsPage />} />
-        <Route exact path='/video-generator' element={<VideoGeneratorPage />} />
-        <Route exact path='/videos' element={<VideosPage />} />
-        <Route exact path='/view-profile' element={<ViewProfilePage />} />
-        <Route exact path='/voice-generator' element={<VoiceGeneratorPage />} />
-        <Route exact path='/wallet' element={<WalletPage />} />
-        <Route exact path='/widgets' element={<WidgetsPage />} />
-        <Route exact path='/wizard' element={<WizardPage />} />
-
-        <Route exact path='*' element={<ErrorPage />} />
-      </Routes>
-    </BrowserRouter>
+    <div className="container py-4">
+      <p>Loading…</p>
+    </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <RouteScrollToTop />
+      <Navbar />
+      <ErrorBoundary>
+        <Suspense fallback={<Fallback />}>
+          <Routes>
+            {/* auth */}
+            <Route path="/login" element={<LoginForm />} />
+
+            {/* protected */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+
+            {/* public */}
+            <Route path="/" element={<HomePageOne />} />
+            <Route path="/index-2" element={<HomePageTwo />} />
+            <Route path="/index-3" element={<HomePageThree />} />
+            <Route path="/index-4" element={<HomePageFour />} />
+            <Route path="/index-5" element={<HomePageFive />} />
+            <Route path="/index-6" element={<HomePageSix />} />
+            <Route path="/index-7" element={<HomePageSeven />} />
+            <Route path="/index-8" element={<HomePageEight />} />
+            <Route path="/index-9" element={<HomePageNine />} />
+            <Route path="/index-10" element={<HomePageTen />} />
+            <Route path="/index-11" element={<HomePageEleven />} />
+
+            {/* SL */}
+            <Route path="/add-user" element={<AddUserPage />} />
+            <Route path="/alert" element={<AlertPage />} />
+            <Route path="/assign-role" element={<AssignRolePage />} />
+            <Route path="/avatar" element={<AvatarPage />} />
+            <Route path="/badges" element={<BadgesPage />} />
+            <Route path="/button" element={<ButtonPage />} />
+            <Route path="/calendar-main" element={<CalendarMainPage />} />
+            <Route path="/calendar" element={<CalendarMainPage />} />
+            <Route path="/card" element={<CardPage />} />
+            <Route path="/carousel" element={<CarouselPage />} />
+            <Route path="/chat-message" element={<ChatMessagePage />} />
+            <Route path="/chat-profile" element={<ChatProfilePage />} />
+            <Route path="/code-generator" element={<CodeGeneratorPage />} />
+            <Route path="/code-generator-new" element={<CodeGeneratorNewPage />} />
+            <Route path="/colors" element={<ColorsPage />} />
+            <Route path="/column-chart" element={<ColumnChartPage />} />
+            <Route path="/company" element={<CompanyPage />} />
+            <Route path="/currencies" element={<CurrenciesPage />} />
+            <Route path="/dropdown" element={<DropdownPage />} />
+            <Route path="/email" element={<EmailPage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/form-layout" element={<FormLayoutPage />} />
+            <Route path="/form-validation" element={<FormValidationPage />} />
+            <Route path="/form" element={<FormPage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/image-generator" element={<ImageGeneratorPage />} />
+            <Route path="/image-upload" element={<ImageUploadPage />} />
+            <Route path="/invoice-add" element={<InvoiceAddPage />} />
+            <Route path="/invoice-edit" element={<InvoiceEditPage />} />
+            <Route path="/invoice-list" element={<InvoiceListPage />} />
+            <Route path="/invoice-preview" element={<InvoicePreviewPage />} />
+            <Route path="/kanban" element={<KanbanPage />} />
+            <Route path="/language" element={<LanguagePage />} />
+            <Route path="/line-chart" element={<LineChartPage />} />
+            <Route path="/list" element={<ListPage />} />
+            <Route path="/marketplace-details" element={<MarketplaceDetailsPage />} />
+            <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route path="/notification-alert" element={<NotificationAlertPage />} />
+            <Route path="/notification" element={<NotificationPage />} />
+            <Route path="/pagination" element={<PaginationPage />} />
+            <Route path="/payment-gateway" element={<PaymentGatewayPage />} />
+            <Route path="/pie-chart" element={<PieChartPage />} />
+            <Route path="/portfolio" element={<PortfolioPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/progress" element={<ProgressPage />} />
+            <Route path="/radio" element={<RadioPage />} />
+            <Route path="/role-access" element={<RoleAccessPage />} />
+            <Route path="/sign-in" element={<SignInPage />} />
+            <Route path="/sign-up" element={<SignUpPage />} />
+            <Route path="/star-rating" element={<StarRatingPage />} />
+            <Route path="/starred" element={<StarredPage />} />
+            <Route path="/switch" element={<SwitchPage />} />
+            <Route path="/table-basic" element={<TableBasicPage />} />
+            <Route path="/table-data" element={<TableDataPage />} />
+            <Route path="/tabs" element={<TabsPage />} />
+            <Route path="/tags" element={<TagsPage />} />
+            <Route path="/terms-condition" element={<TermsConditionPage />} />
+            <Route path="/text-generator-new" element={<TextGeneratorNewPage />} />
+            <Route path="/text-generator" element={<TextGeneratorPage />} />
+            <Route path="/theme" element={<ThemePage />} />
+            <Route path="/tooltip" element={<TooltipPage />} />
+            <Route path="/typography" element={<TypographyPage />} />
+            <Route path="/users-grid" element={<UsersGridPage />} />
+            <Route path="/users-list" element={<UsersListPage />} />
+            <Route path="/view-details" element={<ViewDetailsPage />} />
+            <Route path="/video-generator" element={<VideoGeneratorPage />} />
+            <Route path="/videos" element={<VideosPage />} />
+            <Route path="/view-profile" element={<ViewProfilePage />} />
+            <Route path="/voice-generator" element={<VoiceGeneratorPage />} />
+            <Route path="/wallet" element={<WalletPage />} />
+            <Route path="/widgets" element={<WidgetsPage />} />
+            <Route path="/wizard" element={<WizardPage />} />
+
+            {/* new data views */}
+            <Route path="/overview" element={<DataOverview />} />
+            <Route path="/data" element={<AllDataTable />} />
+            <Route path="/market1" element={<Market1 />} />
+
+            {/* optional: legacy theme path to dashboard */}
+            <Route path="/index-7" element={<Navigate to="/dashboard" replace />} />
+
+            {/* 404 */}
+            <Route path="*" element={<ErrorPage />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
+    </BrowserRouter>
+  );
+}

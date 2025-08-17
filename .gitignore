@@ -1,0 +1,6 @@
+node_modules
+.env
+backend/.env
+*.secret.json
+*serviceAccount*.json
+secrets/sloane-hub-service-account.json
