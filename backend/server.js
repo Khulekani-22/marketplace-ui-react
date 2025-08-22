@@ -1,3 +1,5 @@
+// server.js (ESM)
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -5,7 +7,10 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
+import { promises as fsp } from "fs";
 
+// Your existing routers & middleware
 import healthRouter from "./routes/health.js";
 import servicesRouter from "./routes/services.js";
 import vendorsRouter from "./routes/vendors.js";
@@ -13,10 +18,6 @@ import tenantsRouter from "./routes/tenants.js";
 import { tenantContext } from "./middleware/tenantContext.js";
 import { jwtAuthOptional } from "./middleware/authJWT.js";
 import { firebaseAuthRequired } from "./middleware/authFirebase.js";
-
-
-app.get("/api/me", firebaseAuthRequired, (req, res) => res.json(req.user));
-
 
 dotenv.config();
 
@@ -26,34 +27,269 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+/* ------------------------ Core security & parsing ------------------------ */
 app.use(helmet());
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "20mb" })); // checkpoints can be large
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(",") ?? "*",
+    origin: process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
+      : "*",
     credentials: true,
   })
 );
-app.use(
-  morgan(process.env.NODE_ENV === "production" ? "combined" : "dev")
-);
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-// Attach tenant and (optional) user to each request
+/* -------- Attach tenant and (optional) user to each request globally ----- */
 app.use(tenantContext);
 app.use(jwtAuthOptional);
 
-// Routes
+/* -------------------------- Authenticated identity ---------------------- */
+app.get("/api/me", firebaseAuthRequired, (req, res) => res.json(req.user));
+
+/* ============================ LMS storage =============================== */
+
+const SECRET_DIR = path.resolve(__dirname, "secrets");
+const SNAPSHOT_DIR = path.join(SECRET_DIR, "lms_snapshots");
+const INDEX_FILE = path.join(SECRET_DIR, "lms_checkpoints.json");
+const MAX_KEEP = 50;
+
+function detectAppDataPath() {
+  const a = path.resolve(__dirname, "backend", "appData.json"); // preferred
+  const b = path.resolve(__dirname, "appData.json");            // fallback
+  return fs.existsSync(a) ? a : b;
+}
+const APP_DATA = detectAppDataPath();
+
+async function ensureDir(p) {
+  await fsp.mkdir(p, { recursive: true });
+}
+
+async function ensureFile(p, defaultContent) {
+  try {
+    await fsp.access(p);
+  } catch {
+    await fsp.writeFile(p, defaultContent);
+  }
+}
+
+async function readJson(p) {
+  const txt = await fsp.readFile(p, "utf8");
+  return JSON.parse(txt);
+}
+
+async function writeJson(p, data) {
+  await fsp.writeFile(p, JSON.stringify(data, null, 2));
+}
+
+function uid() {
+  return (
+    Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8)
+  );
+}
+
+function isPlainObject(x) {
+  return x && typeof x === "object" && !Array.isArray(x);
+}
+
+function summarize(appData) {
+  const cohorts = Array.isArray(appData?.cohorts) ? appData.cohorts.length : 0;
+  const courses =
+    appData?.cohorts?.reduce(
+      (n, c) => n + (Array.isArray(c.courses) ? c.courses.length : 0),
+      0
+    ) ?? 0;
+  const lessons =
+    appData?.cohorts?.reduce(
+      (n, c) =>
+        n +
+        (Array.isArray(c.courses)
+          ? c.courses.reduce(
+              (m, crs) => m + (Array.isArray(crs.lessons) ? crs.lessons.length : 0),
+              0
+            )
+          : 0),
+      0
+    ) ?? 0;
+  return { cohorts, courses, lessons };
+}
+
+function withDeltas(items) {
+  return items.map((ck, i) => {
+    const prev = items[i + 1];
+    if (!prev) return { ...ck, delta: { cohorts: 0, courses: 0, lessons: 0 } };
+    return {
+      ...ck,
+      delta: {
+        cohorts: ck.counts.cohorts - prev.counts.cohorts,
+        courses: ck.counts.courses - prev.counts.courses,
+        lessons: ck.counts.lessons - prev.counts.lessons,
+      },
+    };
+  });
+}
+
+async function initLmsStorage() {
+  await ensureDir(SECRET_DIR);
+  await ensureDir(SNAPSHOT_DIR);
+  await ensureFile(INDEX_FILE, "[]");
+
+  // Make sure appData.json exists
+  try {
+    await fsp.access(APP_DATA);
+  } catch {
+    const empty = { cohorts: [], bookings: [], events: [], forumThreads: [], jobs: [], mentorshipSessions: [], messageThreads: [], services: [], leads: [], startups: [] };
+    await writeJson(APP_DATA, empty);
+  }
+}
+
+/* ------------------------------- LMS routes ------------------------------ */
+
+const lmsRouter = express.Router();
+
+// Read live appData.json
+lmsRouter.get("/live", async (_req, res, next) => {
+  try {
+    const json = await readJson(APP_DATA);
+    res.set("Cache-Control", "no-store");
+    res.json(json);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Publish working copy to live (PUT from UI)
+lmsRouter.put("/publish", async (req, res, next) => {
+  try {
+    const { data } = req.body || {};
+    if (!isPlainObject(data))
+      return res.status(400).json({ error: "Body must be { data: <object> }" });
+
+    await writeJson(APP_DATA, data);
+    const counts = summarize(data);
+    console.log(
+      `[LMS] Published live appData.json -> cohorts:${counts.cohorts}, courses:${counts.courses}, lessons:${counts.lessons}`
+    );
+    res.json({ ok: true, counts });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// List checkpoints (latest first, with deltas)
+lmsRouter.get("/checkpoints", async (_req, res, next) => {
+  try {
+    const index = (await readJson(INDEX_FILE)).sort((a, b) => b.ts - a.ts);
+    res.json({ items: withDeltas(index) });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Save checkpoint
+lmsRouter.post("/checkpoints", async (req, res, next) => {
+  try {
+    const { message = "", data } = req.body || {};
+    if (!isPlainObject(data))
+      return res.status(400).json({ error: "Missing or invalid 'data' JSON." });
+
+    const id = uid();
+    const ts = Date.now();
+    const counts = summarize(data);
+
+    const snapPath = path.join(SNAPSHOT_DIR, `${id}.json`);
+    await writeJson(snapPath, data);
+
+    const index = await readJson(INDEX_FILE);
+    index.unshift({ id, ts, message, counts });
+
+    // Trim to MAX_KEEP (delete old snapshot files)
+    const keep = index.slice(0, MAX_KEEP);
+    const drop = index.slice(MAX_KEEP);
+    await Promise.all(
+      drop.map((ck) =>
+        fsp.unlink(path.join(SNAPSHOT_DIR, `${ck.id}.json`)).catch(() => void 0)
+      )
+    );
+    await writeJson(INDEX_FILE, keep);
+
+    console.log(
+      `[LMS] Checkpoint saved id=${id} | ${message || "(no message)"}`
+    );
+    res.json({ ok: true, id, ts, counts });
+  } catch (e) {
+    console.error("[LMS] Failed to save checkpoint:", e);
+    next(e);
+  }
+});
+
+// Download one checkpoint
+lmsRouter.get("/checkpoints/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const snapPath = path.join(SNAPSHOT_DIR, `${id}.json`);
+    if (!fs.existsSync(snapPath))
+      return res.status(404).json({ error: "Snapshot not found" });
+
+    const data = await readJson(snapPath);
+    const meta =
+      (await readJson(INDEX_FILE)).find((c) => c.id === id) ||
+      { id, ts: null, message: "", counts: summarize(data) };
+
+    res.json({ ...meta, data });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Restore a checkpoint to live
+lmsRouter.post("/restore/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const snapPath = path.join(SNAPSHOT_DIR, `${id}.json`);
+    if (!fs.existsSync(snapPath))
+      return res.status(404).json({ error: "Snapshot not found" });
+
+    const data = await readJson(snapPath);
+    await writeJson(APP_DATA, data);
+    console.log(`[LMS] Restored checkpoint id=${id} -> live`);
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Clear history (admin)
+lmsRouter.delete("/checkpoints", async (_req, res, next) => {
+  try {
+    const index = await readJson(INDEX_FILE);
+    await Promise.all(
+      index.map((ck) =>
+        fsp.unlink(path.join(SNAPSHOT_DIR, `${ck.id}.json`)).catch(() => void 0)
+      )
+    );
+    await writeJson(INDEX_FILE, []);
+    console.log("[LMS] Cleared all checkpoints");
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.use("/api/lms", lmsRouter);
+
+/* --------------------------------- Other APIs ----------------------------- */
 app.use("/api/health", healthRouter);
 app.use("/api/data/services", servicesRouter);
 app.use("/api/data/vendors", vendorsRouter);
 app.use("/api/tenants", tenantsRouter);
 
-// 404 fallback
+/* --------------------------------- 404 ----------------------------------- */
 app.use((req, res) => {
   res.status(404).json({ status: "error", message: "Route not found" });
 });
 
-// Error handler
+/* ------------------------------ Error handler ---------------------------- */
 app.use((err, req, res, next) => {
   console.error("API Error:", err);
   res
@@ -61,6 +297,17 @@ app.use((err, req, res, next) => {
     .json({ status: "error", message: err.message || "Server error" });
 });
 
-app.listen(PORT, () => {
-  console.log(`SCDM backend running on http://localhost:${PORT}`);
-});
+/* --------------------------------- Start --------------------------------- */
+(async function start() {
+  try {
+    await initLmsStorage();
+    app.listen(PORT, () => {
+      console.log(`SCDM backend running on http://localhost:${PORT}`);
+      console.log(`Live appData.json: ${APP_DATA}`);
+      console.log(`Snapshots dir:     ${SNAPSHOT_DIR}`);
+    });
+  } catch (e) {
+    console.error("Failed to initialize LMS storage:", e);
+    process.exit(1);
+  }
+})();

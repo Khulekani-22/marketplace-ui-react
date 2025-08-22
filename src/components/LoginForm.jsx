@@ -32,6 +32,7 @@ function mapFirebaseError(code) {
  * - afterLogin: optional callback({ uid, email, tenantId, idToken })
  * - showTenant: boolean to render tenant selector (default true)
  */
+
 export default function LoginForm({ redirectTo = "/index-7", afterLogin, showTenant = true }) {
   const nav = useNavigate();
   const location = useLocation();
@@ -169,7 +170,7 @@ export default function LoginForm({ redirectTo = "/index-7", afterLogin, showTen
                   value={pass}
                   onChange={(e) => setPass(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                   aria-describedby="passwordHelp"
                 />
                 <button
@@ -182,7 +183,7 @@ export default function LoginForm({ redirectTo = "/index-7", afterLogin, showTen
                 </button>
               </div>
               <div id="passwordHelp" className="form-text">
-                Minimum 6 characters.
+                Minimum 8 characters.
               </div>
             </div>
 
@@ -217,8 +218,8 @@ export default function LoginForm({ redirectTo = "/index-7", afterLogin, showTen
         </div>
       </div>
 
-      <p className="text-center text-muted mt-3" style={{ fontSize: 12 }}>
-        JWT is issued by Firebase after sign-in and attached via your Axios interceptor.
+    //  <p className="text-center text-muted mt-3" style={{ fontSize: 12 }}>
+    //    JWT is issued by Firebase after sign-in and attached via your Axios interceptor.
       </p>
     </div>
   );

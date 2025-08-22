@@ -29,7 +29,7 @@ const TrendingNFTsOne = () => {
           {categories.map(category => (
             <li className="nav-item" key={category} role="presentation">
               <button
-                className={`nav-link text-neutral-500 hover-text-white bg-neutral-300 bg-hover-primary-800 rounded-pill px-20 py-6 border border-neutral-300 ${
+                className={`nav-link btn btn-sm rounded-pill text-neutral-500 hover-text-white bg-neutral-300 bg-hover-primary-800 rounded-pill px-20 py-6 border border-neutral-300 ${
                   activeTab === category ? "active" : ""
                 }`}
                 onClick={() => setActiveTab(category)}

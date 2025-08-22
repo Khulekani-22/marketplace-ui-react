@@ -29,7 +29,7 @@ const Workspace1 = () => {
           {types.map(type => (
             <li className="nav-item" key={type} role="presentation">
               <button
-                className={`nav-link fw-semibold border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white rounded-pill px-20 py-6 border border-neutral-300 ${
+                className={`nav-link text-neutral-500 hover-text-white bg-neutral-300 bg-hover-primary-800 rounded-pill px-20 py-6 border border-neutral-300 ${
                   activeTab === type ? "active" : ""
                 }`}
                 onClick={() => setActiveTab(type)}

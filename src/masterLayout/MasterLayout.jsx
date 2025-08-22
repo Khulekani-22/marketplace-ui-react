@@ -1,4 +1,5 @@
-/* eslint-disable react/prop-types */
+// src/MasterLayout/MasterLayout.jsx
+
 import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link, NavLink, useLocation } from "react-router-dom";

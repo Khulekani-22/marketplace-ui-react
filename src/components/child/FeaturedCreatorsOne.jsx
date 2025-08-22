@@ -40,7 +40,7 @@ const FeaturedCreatorsOne = () => {
           {/* Tabs */}
           <div className="mb-4 d-flex flex-wrap gap-2">
             <button
-              className={`btn btn-sm rounded-pill px-16 py-6 border ${
+              className={`btn btn-sm rounded-pill text-neutral-500 hover-text-white bg-neutral-300 bg-hover-primary-800 rounded-pill px-20 py-6 border border-neutral-300 ${
                 activeTab === "All"
                   ? "btn-primary-600 text-white"
                   : "btn-outline-primary-600 text-primary-600"
@@ -52,7 +52,7 @@ const FeaturedCreatorsOne = () => {
             {uniqueCohorts.map((name) => (
               <button
                 key={name}
-                className={`btn btn-sm rounded-pill px-16 py-6 border ${
+                className={`btn btn-sm rounded-pill text-neutral-500 hover-text-white bg-neutral-300 bg-hover-primary-800 rounded-pill px-20 py-6 border border-neutral-300 ${
                   activeTab === name
                     ? "btn-primary-600 bg-primary-200 bg-hover-primary-800 text-primary-600"
                     : "btn-outline-primary-600 bg-hover-primary-800 text-primary-600"

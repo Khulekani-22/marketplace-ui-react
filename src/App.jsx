@@ -103,6 +103,14 @@ const AllDataTable = React.lazy(() => import("./pages/AllDataTable"));
 const DataOverview = React.lazy(() => import("./pages/DataOverview"));
 const Market1 = React.lazy(() => import("./pages/Market1"));
 
+const LmsPage = React.lazy(() => import("./pages/LmsPage.jsx"));
+const LmsAdminPage = React.lazy(() => import("./pages/LmsAdminPage.jsx"));
+// ...
+
+
+
+
+
 
 function Fallback() {
   return (
@@ -129,6 +137,15 @@ export default function App() {
               element={
                 <PrivateRoute>
                   <Dashboard />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/lms-admin"
+              element={
+                <PrivateRoute>
+                  <LmsAdminPage />
                 </PrivateRoute>
               }
             />
@@ -225,6 +242,8 @@ export default function App() {
             <Route path="/overview" element={<DataOverview />} />
             <Route path="/data" element={<AllDataTable />} />
             <Route path="/market1" element={<Market1 />} />
+            <Route path="/lms" element={<LmsPage />} />
+
 
             {/* optional: legacy theme path to dashboard */}
             <Route path="/index-7" element={<Navigate to="/dashboard" replace />} />
