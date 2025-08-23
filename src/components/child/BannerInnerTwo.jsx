@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const BannerInnerOne = () => {
+const BannerInnerTwo = () => {
   return (
     <div className='col-12'>
       <div style={{ width: "100%", maxHeight: "30vh" }} className='nft-promo-card card radius-12 overflow-hidden position-relative z-1'>
@@ -19,24 +19,23 @@ const BannerInnerOne = () => {
           </div>
           <div className='flex-grow-1'>
             <h4 className='mb-16 text-white'>
-              Discover The African SMME Marketplace
+              Admin Portal: Listings Management
             </h4>
             <p className='text-white text-md'>
-            Access the African Free-trade Agreement SMME marketplace facilitated by GEN Africa for your safety and convenience.
-            GEN Africa is the leader of GEC+Africa, a congress that connects 43 African countries to collaborate and discuss how to progress multi-lateral trade through dialogue and policy.
+            Manage marketplace listings. Draft persists in localStorage. Checkpoints live on the server (with a 2-item offline cache).
             </p>
             <div className='d-flex align-items-center flex-wrap mt-24 gap-16'>
               <Link
                 to='#'
                 className='btn rounded-pill border br-white text-white radius-8 px-32 py-11 hover-bg-white text-hover-neutral-900'
               >
-                Explore Listings
+                Manage Vendors
               </Link>
               <Link
                 to='#'
                 className='btn rounded-pill btn-primary-600 radius-8 px-28 py-11'
               >
-                View My Store
+                Back to Dashboard
               </Link>
             </div>
           </div>
@@ -46,4 +45,4 @@ const BannerInnerOne = () => {
   );
 };
 
-export default BannerInnerOne;
+export default BannerInnerTwo;

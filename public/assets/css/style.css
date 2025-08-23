@@ -3244,26 +3244,61 @@ th {
 .bg-pink-light {
   background-color: var(--pink-light) !important;
 }
+/* Softer, modern gradients aligned to Sloane Capital brand */
 
+/* Define the keyframes once */
+@keyframes gradient-pan {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Shared animation behavior */
+.bg-gradient-start-1,
+.bg-gradient-start-2,
+.bg-gradient-start-3,
+.bg-gradient-start-4,
+.bg-gradient-start-5 {
+  background-size: 200% 200%;
+  animation: gradient-pan 5s ease-in-out infinite;
+  transition: background 0.3s ease;
+  will-change: background-position;
+}
+
+/* Variants with your colors */
 .bg-gradient-start-1 {
-  background: linear-gradient(to right, #E6F9FF, #FEFFFF);
+  background: linear-gradient(135deg, #D6F0FF, #FFFFFF);
 }
 
 .bg-gradient-start-2 {
-  background: linear-gradient(to right, #F7E9FF, #FFFEFD);
+  background: linear-gradient(135deg, #F3E6FF, #FFFFFF);
 }
 
 .bg-gradient-start-3 {
-  background: linear-gradient(to right, #E6EBFF, #FFFFFF);
+  background: linear-gradient(135deg, #E6ECFF, #FDFDFE);
 }
 
 .bg-gradient-start-4 {
-  background: linear-gradient(to right, #E8FFF5, #FFFFFF);
+  background: linear-gradient(135deg, #E6FFF3, #FFFFFF);
 }
 
 .bg-gradient-start-5 {
-  background: linear-gradient(to right, #FFEEEE, #FFFCFC);
+  background: linear-gradient(135deg, #FFEAEA, #FFFDFD);
 }
+
+/* Accessibility: turn off if user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .bg-gradient-start-1,
+  .bg-gradient-start-2,
+  .bg-gradient-start-3,
+  .bg-gradient-start-4,
+  .bg-gradient-start-5 {
+    animation: none;
+  }
+}
+
+
+
 
 .bg-gradient-dark-start-1 {
   background: linear-gradient(261deg, rgba(255, 234, 244, 0.5) 2.07%, #FFE2F0 97.73%);
@@ -14792,7 +14827,7 @@ td.fc-header-center {
 }
 
 .nft-promo-card {
-  padding: 28px clamp(1.5rem, -7.5935rem + 10.4vw, 4.75rem);
+  padding: 18px clamp(1.5rem, -7.5935rem + 10.4vw, 4.75rem);
   border-radius: 12px !important;
 }
 

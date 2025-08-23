@@ -105,6 +105,7 @@ const Market1 = React.lazy(() => import("./pages/Market1"));
 
 const LmsPage = React.lazy(() => import("./pages/LmsPage.jsx"));
 const LmsAdminPage = React.lazy(() => import("./pages/LmsAdminPage.jsx"));
+const ListingsAdminPage = React.lazy(() => import("./pages/ListingsAdminPage.jsx"));
 // ...
 
 
@@ -243,6 +244,7 @@ export default function App() {
             <Route path="/data" element={<AllDataTable />} />
             <Route path="/market1" element={<Market1 />} />
             <Route path="/lms" element={<LmsPage />} />
+            <Route path="/listings-admin" element={<ListingsAdminPage />} />
 
 
             {/* optional: legacy theme path to dashboard */}

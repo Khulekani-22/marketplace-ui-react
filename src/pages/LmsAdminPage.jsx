@@ -423,6 +423,8 @@ export default function LmsAdminPage() {
         Manage cohorts, courses and lessons. Draft persists in <code>localStorage</code>. Checkpoints live on the server (with a 2-item offline cache).
       </p>
 
+      
+
       {/* top actions */}
       <div className="d-flex gap-2 mb-3">
         <label className="btn btn-light mb-0">
