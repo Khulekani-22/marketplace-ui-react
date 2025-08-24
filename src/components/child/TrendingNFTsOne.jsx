@@ -109,7 +109,7 @@ const TrendingNFTsOne = () => {
             {!loading &&
               filteredServices.map((service) => (
                 <div className="col-xxl-3 col-sm-6 col-xs-6" key={service.id}>
-                  <div className="nft-card bg-base radius-16 overflow-hidden">
+                  <div className="card text-light nft-card bg-base radius-16 overflow-hidden">
                     <div className="radius-16 overflow-hidden">
                       <img
                         style={{ width: "100%", maxHeight: "15vh" }}

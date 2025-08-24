@@ -1,0 +1,65 @@
+/* src/styles/dark-patch.css */
+
+/* Light defaults (mostly no-ops but keeps the variables explicit) */
+:root,
+[data-bs-theme="light"] {
+  --surface-1: var(--bs-body-bg);           /* cards */
+  --surface-2: var(--bs-tertiary-bg);       /* headers, subtle blocks */
+  --border-weak: var(--bs-border-color);
+}
+
+/* Dark palette for custom surfaces */
+[data-bs-theme="dark"] {
+  --surface-1: #1e2127;     /* card body */
+  --surface-2: #15171c;     /* card header / subtle panels */
+  --border-weak: #2b2f36;   /* neutral borders */
+}
+
+/* Cards & headers */
+[data-bs-theme="dark"] .card {
+  background-color: var(--surface-1) !important;
+  border-color: var(--border-weak) !important;
+}
+[data-bs-theme="dark"] .card-header,
+[data-bs-theme="dark"] .list-group-item.active {
+  background-color: var(--surface-2) !important;
+  border-color: var(--border-weak) !important;
+}
+
+/* Lists */
+[data-bs-theme="dark"] .list-group-item {
+  background-color: var(--surface-1) !important;
+  color: var(--bs-body-color) !important;
+  border-color: var(--border-weak) !important;
+}
+
+/* Inputs, selects, input-group text */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .input-group-text,
+[data-bs-theme="dark"] textarea.form-control {
+  background-color: var(--surface-2) !important;
+  color: var(--bs-body-color) !important;
+  border-color: var(--border-weak) !important;
+}
+
+/* Placeholders */
+[data-bs-theme="dark"] .form-control::placeholder,
+[data-bs-theme="dark"] textarea::placeholder {
+  color: #8b8f98 !important;
+}
+
+/* Neutral borders in previews and custom boxes */
+[data-bs-theme="dark"] .border,
+[data-bs-theme="dark"] .preview,
+[data-bs-theme="dark"] .border-top,
+[data-bs-theme="dark"] .border-bottom {
+  border-color: var(--border-weak) !important;
+}
+
+/* Outline buttons should contrast in dark */
+[data-bs-theme="dark"] .btn-outline-secondary,
+[data-bs-theme="dark"] .btn-outline-dark {
+  color: var(--bs-body-color) !important;
+  border-color: var(--border-weak) !important;
+}

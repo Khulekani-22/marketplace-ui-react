@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Theme polish & Bootstrap 5.3 dark-mode overrides
+   Paste into assets/css/extra.css
+   ========================================================================== */
+
+/* Smoothen theme switch */
+html.theme-smooth, html.theme-smooth body, html.theme-smooth * {
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+/* -----------------------------------------------------------------------------
+   THEME-AWARE PRIMARY TINTS FOR TEXT
+   - Keeps .text-primary-50 readable on dark UI and on primary backgrounds
+   - Gives a slightly stronger tint on hover via .hover-text-primary-200
+   ----------------------------------------------------------------------------- */
+
+/* 1) Tokenize the tints (light defaults) */
+:root{
+  /* Base primary (Bootstrap) already exists; just in case: */
+  --bs-primary: #e65c1a;
+
+  /* Text tints (good on primary-500/600 buttons & dark surfaces) */
+  --primary-text-50:  color-mix(in oklab, #f1e8e1 92%, var(--bs-primary)); /* very light */
+  --primary-text-200: color-mix(in oklab, #f1e8e1 78%, var(--bs-primary)); /* a touch stronger */
+}
+
+/* 2) Dark theme: slightly brighten the tints so they pop on deep surfaces */
+:root[data-bs-theme="dark"]{
+  --primary-text-50:  color-mix(in oklab, #f1e8e1 94%, var(--bs-primary));
+  --primary-text-200: color-mix(in oklab, #f1e8e1 82%, var(--bs-primary));
+}
+
+/* 3) Utilities (drop-in replacements) */
+.text-primary-50{
+  color: var(--primary-text-50) !important;
+}
+
+.hover-text-primary-200:hover,
+.hover-text-primary-200:focus,
+.hover-text-primary-200:focus-visible{
+  color: var(--primary-text-200) !important;
+}
+
+/* Optional polish: smoothen color change on hover */
+.text-primary-50,
+.hover-text-primary-200{
+  transition: color .18s ease;
+}
+
+/* Optional: if used on .btn with disabled state, keep contrast decent */
+.btn:disabled .text-primary-50,
+.btn.disabled .text-primary-50{
+  color: var(--primary-text-200) !important;
+  opacity: .85;
+}

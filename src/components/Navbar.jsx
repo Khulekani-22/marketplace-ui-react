@@ -3,6 +3,19 @@ import { Link, useLocation } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import { onIdTokenChanged, signOut } from "firebase/auth";
 
+// inside Navbar / MasterLayout toggle handler
+import { toggleTheme } from "../utils/theme";
+
+function ThemeToggleButton() {
+  const [theme, setTheme] = useState(localStorage.getItem("ui_theme") || "light");
+  return (
+    <button onClick={() => setTheme(toggleTheme())} aria-label="Toggle theme">
+      {theme === "dark" ? "🌙" : "☀️"}
+    </button>
+  );
+}
+
+
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const loc = useLocation();
@@ -17,8 +30,7 @@ export default function Navbar() {
   const tenantId = sessionStorage.getItem("tenantId") || "public";
 
   return (
-    <nav className="navbar navbar-expand-lg bg-light px-3 shadow-sm">
-      <Link className="navbar-brand" to="/">Sloane Hub</Link>
+    <nav className="navbar navbar-expand-lg px-3 shadow-sm">
       <div className="ms-auto d-flex gap-2 align-items-center">
         <span className="badge text-bg-secondary">Tenant: {tenantId}</span>
         {user ? (

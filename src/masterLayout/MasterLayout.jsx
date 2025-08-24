@@ -1,899 +1,409 @@
 // src/MasterLayout/MasterLayout.jsx
-
-import { useEffect, useState } from "react";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { useEffect, useMemo, useState } from "react";
+import { Icon } from "@iconify/react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
 
-const MasterLayout = ({ children }) => {
-  let [sidebarActive, seSidebarActive] = useState(false);
-  let [mobileMenu, setMobileMenu] = useState(false);
-  const location = useLocation(); // Hook to get the current route
+const DROPDOWNS = [
+  {
+    key: "maturity",
+    icon: "mdi:chart-timeline-variant",
+    label: "Startup Maturity",
+    items: [
+      { to: "/maturity/brl", label: "BRL", dotClass: "text-primary-600" },
+      { to: "/maturity/trl", label: "TRL", dotClass: "text-warning-main" },
+      { to: "/maturity/credit", label: "Credit Scoring", dotClass: "text-success-main" },
+    ],
+  },
+  {
+    key: "bplan",
+    icon: "mdi:file-document-edit-outline",
+    label: "Business Plan",
+    items: [
+      { to: "/business-plan/generate", label: "Generate", dotClass: "text-primary-600" },
+      { to: "/business-plan/history", label: "History", dotClass: "text-warning-main" },
+    ],
+  },
+];
 
+export default function MasterLayout({ children }) {
+  const location = useLocation();
+  const [sidebarActive, setSidebarActive] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
+
+  // Which dropdowns are open
+  const [openKeys, setOpenKeys] = useState({});
+
+  // Auto-open the dropdown that contains the current route
   useEffect(() => {
-    const handleDropdownClick = (event) => {
-      event.preventDefault();
-      const clickedLink = event.currentTarget;
-      const clickedDropdown = clickedLink.closest(".dropdown");
-
-      if (!clickedDropdown) return;
-
-      const isActive = clickedDropdown.classList.contains("open");
-
-      // Close all dropdowns
-      const allDropdowns = document.querySelectorAll(".sidebar-menu .dropdown");
-      allDropdowns.forEach((dropdown) => {
-        dropdown.classList.remove("open");
-        const submenu = dropdown.querySelector(".sidebar-submenu");
-        if (submenu) {
-          submenu.style.maxHeight = "0px"; // Collapse submenu
-        }
-      });
-
-      // Toggle the clicked dropdown
-      if (!isActive) {
-        clickedDropdown.classList.add("open");
-        const submenu = clickedDropdown.querySelector(".sidebar-submenu");
-        if (submenu) {
-          submenu.style.maxHeight = `${submenu.scrollHeight}px`; // Expand submenu
-        }
-      }
-    };
-
-    // Attach click event listeners to all dropdown triggers
-    const dropdownTriggers = document.querySelectorAll(
-      ".sidebar-menu .dropdown > a, .sidebar-menu .dropdown > Link"
-    );
-
-    dropdownTriggers.forEach((trigger) => {
-      trigger.addEventListener("click", handleDropdownClick);
+    const next = {};
+    DROPDOWNS.forEach((dd) => {
+      next[dd.key] = dd.items.some((i) => location.pathname.startsWith(i.to));
     });
-
-    const openActiveDropdown = () => {
-      const allDropdowns = document.querySelectorAll(".sidebar-menu .dropdown");
-      allDropdowns.forEach((dropdown) => {
-        const submenuLinks = dropdown.querySelectorAll(".sidebar-submenu li a");
-        submenuLinks.forEach((link) => {
-          if (
-            link.getAttribute("href") === location.pathname ||
-            link.getAttribute("to") === location.pathname
-          ) {
-            dropdown.classList.add("open");
-            const submenu = dropdown.querySelector(".sidebar-submenu");
-            if (submenu) {
-              submenu.style.maxHeight = `${submenu.scrollHeight}px`; // Expand submenu
-            }
-          }
-        });
-      });
-    };
-
-    // Open the submenu that contains the active route
-    openActiveDropdown();
-
-    // Cleanup event listeners on unmount
-    return () => {
-      dropdownTriggers.forEach((trigger) => {
-        trigger.removeEventListener("click", handleDropdownClick);
-      });
-    };
+    setOpenKeys((prev) => ({ ...prev, ...next }));
+    // Close mobile menu after navigation
+    setMobileMenu(false);
   }, [location.pathname]);
 
-  let sidebarControl = () => {
-    seSidebarActive(!sidebarActive);
+  const toggleDropdown = (key) => {
+    setOpenKeys((prev) => {
+      // Collapse others so only one is open, UX like your original
+      const collapsed = Object.fromEntries(Object.keys(prev).map((k) => [k, false]));
+      return { ...collapsed, [key]: !prev[key] };
+    });
   };
 
-  let mobileMenuControl = () => {
-    setMobileMenu(!mobileMenu);
-  };
+  const navClass = ({ isActive }) => (isActive ? "active-page" : "");
+
+  const submenuMaxHeight = (isOpen, count) =>
+    isOpen ? { maxHeight: `${Math.max(48, count * 44)}px` } : { maxHeight: "0px" };
+
+  const overlayClass = useMemo(() => (mobileMenu ? "overlay active" : "overlay"), [mobileMenu]);
+  const sidebarClass = useMemo(() => {
+    if (sidebarActive) return "sidebar active";
+    if (mobileMenu) return "sidebar sidebar-open";
+    return "sidebar";
+  }, [sidebarActive, mobileMenu]);
 
   return (
-    <section className={mobileMenu ? "overlay active" : "overlay "}>
-      {/* sidebar */}
-      <aside
-        className={
-          sidebarActive
-            ? "sidebar active "
-            : mobileMenu
-            ? "sidebar sidebar-open"
-            : "sidebar"
-        }
-      >
+    <section className={overlayClass}>
+      {/* Sidebar */}
+      <aside className={sidebarClass} aria-label="Main sidebar">
         <button
-          onClick={mobileMenuControl}
-          type='button'
-          className='sidebar-close-btn'
+          onClick={() => setMobileMenu(false)}
+          type="button"
+          className="sidebar-close-btn"
+          aria-label="Close sidebar"
         >
-          <Icon icon='radix-icons:cross-2' />
+          <Icon icon="radix-icons:cross-2" />
         </button>
+
         <div>
-          <Link to='/' className='sidebar-logo'>
-            <img
-              src='assets/images/logo-22.png'
-              alt='site logo'
-              className='light-logo'
-            />
-            <img
-              src='assets/images/logo-22-light.png'
-              alt='site logo'
-              className='dark-logo'
-            />
-            <img
-              src='assets/images/logo-mark.png'
-              alt='site logo'
-              className='logo-icon'
-            />
+          <Link to="/" className="sidebar-logo" aria-label="Go to home">
+            <img src="assets/images/logo-22.png" alt="logo" className="light-logo" />
+            <img src="assets/images/logo-22-light.png" alt="logo" className="dark-logo" />
+            <img src="assets/images/logo-mark.png" alt="logo mark" className="logo-icon" />
           </Link>
         </div>
-        <div className='sidebar-menu-area'>
-          <ul className='sidebar-menu' id='sidebar-menu'>
 
-  <li>
-    <NavLink to='/dashboard' className={(navData) => (navData.isActive ? "active-page" : "")}>
-      <Icon icon='solar:home-smile-angle-outline' className='menu-icon' />
-      <span>Dashboard</span>
-    </NavLink>
-  </li>
+        <div className="sidebar-menu-area">
+          <ul className="sidebar-menu" id="sidebar-menu">
+            <li>
+              <NavLink to="/dashboard" className={navClass}>
+                <Icon icon="solar:home-smile-angle-outline" className="menu-icon" />
+                <span>Dashboard</span>
+              </NavLink>
+            </li>
 
-  <li>
-    <NavLink to='/listings' className={(navData) => (navData.isActive ? "active-page" : "")}>
-      <Icon icon='mdi:view-list-outline' className='menu-icon' />
-      <span>Listings</span>
-    </NavLink>
-  </li>
+            <li>
+              <NavLink to="/listings-vendors" className={navClass}>
+                <Icon icon="mdi:view-list-outline" className="menu-icon" />
+                <span>Listings</span>
+              </NavLink>
+            </li>
 
-  <li>
-    <NavLink to='/sloane-academy' className={(navData) => (navData.isActive ? "active-page" : "")}>
-      <Icon icon='mdi:school-outline' className='menu-icon' />
-      <span>Sloane Academy</span>
-    </NavLink>
-  </li>
+            <li>
+              <NavLink to="/sloane-academy" className={navClass}>
+                <Icon icon="mdi:school-outline" className="menu-icon" />
+                <span>Sloane Academy</span>
+              </NavLink>
+            </li>
 
-  {/* Business Maturity Dropdown */}
-  <li className='dropdown'>
-    <Link to='#'>
-      <Icon icon='mdi:chart-timeline-variant' className='menu-icon' />
-      <span>Startup Maturity</span>
-    </Link>
-    <ul className='sidebar-submenu'>
-      <li>
-        <NavLink to='/maturity/brl' className={(navData) => (navData.isActive ? "active-page" : "")}>
-          <i className='ri-circle-fill circle-icon text-primary-600 w-auto' /> BRL
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to='/maturity/trl' className={(navData) => (navData.isActive ? "active-page" : "")}>
-          <i className='ri-circle-fill circle-icon text-warning-main w-auto' /> TRL
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to='/maturity/credit' className={(navData) => (navData.isActive ? "active-page" : "")}>
-          <i className='ri-circle-fill circle-icon text-success-main w-auto' /> Credit Scoring
-        </NavLink>
-      </li>
-    </ul>
-  </li>
+            {/* Dropdowns */}
+            {DROPDOWNS.map((dd) => {
+              const isOpen = !!openKeys[dd.key];
+              return (
+                <li key={dd.key} className={`dropdown ${isOpen ? "open" : ""}`}>
+                  {/* Use button to avoid routing to "#" which can cause SPA quirks */}
+                  <button
+                    type="button"
+                    className="w-100 text-start d-flex align-items-center gap-2 px-0 border-0 bg-transparent"
+                    onClick={() => toggleDropdown(dd.key)}
+                    aria-expanded={isOpen}
+                    aria-controls={`submenu-${dd.key}`}
+                  >
+                    <Icon icon={dd.icon} className="menu-icon" />
+                    <span className="flex-grow-1">{dd.label}</span>
+                    <Icon
+                      icon={isOpen ? "mdi:chevron-up" : "mdi:chevron-down"}
+                      className="ms-auto"
+                    />
+                  </button>
 
-  {/* Business Plan Dropdown */}
-  <li className='dropdown'>
-    <Link to='#'>
-      <Icon icon='mdi:file-document-edit-outline' className='menu-icon' />
-      <span>Business Plan</span>
-    </Link>
-    <ul className='sidebar-submenu'>
-      <li>
-        <NavLink to='/business-plan/generate' className={(navData) => (navData.isActive ? "active-page" : "")}>
-          <i className='ri-circle-fill circle-icon text-primary-600 w-auto' /> Generate
-        </NavLink>
-      </li>
-      <li>
-        <NavLink to='/business-plan/history' className={(navData) => (navData.isActive ? "active-page" : "")}>
-          <i className='ri-circle-fill circle-icon text-warning-main w-auto' /> History
-        </NavLink>
-      </li>
-    </ul>
-  </li>
+                  <ul
+                    id={`submenu-${dd.key}`}
+                    className="sidebar-submenu"
+                    style={submenuMaxHeight(isOpen, dd.items.length)}
+                  >
+                    {dd.items.map((it) => (
+                      <li key={it.to}>
+                        <NavLink to={it.to} className={navClass}>
+                          <i className={`ri-circle-fill circle-icon ${it.dotClass} w-auto`} />
+                          {it.label}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              );
+            })}
 
-  <li>
-    <NavLink to='/profile' className={(navData) => (navData.isActive ? "active-page" : "")}>
-      <Icon icon='solar:user-linear' className='menu-icon' />
-      <span>My Profile</span>
-    </NavLink>
-  </li>
+            <li>
+              <NavLink to="/profile" className={navClass}>
+                <Icon icon="solar:user-linear" className="menu-icon" />
+                <span>My Profile</span>
+              </NavLink>
+            </li>
 
-  <li>
-    <NavLink to='/support' className={(navData) => (navData.isActive ? "active-page" : "")}>
-      <Icon icon='mdi:headset' className='menu-icon' />
-      <span>Support</span>
-    </NavLink>
-  </li>
-
-</ul>
-
+            <li>
+              <NavLink to="/support" className={navClass}>
+                <Icon icon="mdi:headset" className="menu-icon" />
+                <span>Support</span>
+              </NavLink>
+            </li>
+          </ul>
         </div>
       </aside>
 
-      <main
-        className={sidebarActive ? "dashboard-main active" : "dashboard-main"}
-      >
-        <div className='navbar-header'>
-          <div className='row align-items-center justify-content-between'>
-            <div className='col-auto'>
-              <div className='d-flex flex-wrap align-items-center gap-4'>
+      {/* Main */}
+      <main className={sidebarActive ? "dashboard-main active" : "dashboard-main"}>
+        {/* Top bar */}
+        <div className="navbar-header">
+          <div className="row align-items-center justify-content-between">
+            <div className="col-auto">
+              <div className="d-flex flex-wrap align-items-center gap-4">
                 <button
-                  type='button'
-                  className='sidebar-toggle'
-                  onClick={sidebarControl}
+                  type="button"
+                  className="sidebar-toggle"
+                  onClick={() => setSidebarActive((v) => !v)}
+                  aria-label="Toggle sidebar"
                 >
                   {sidebarActive ? (
-                    <Icon
-                      icon='iconoir:arrow-right'
-                      className='icon text-2xl non-active'
-                    />
+                    <Icon icon="iconoir:arrow-right" className="icon text-2xl non-active" />
                   ) : (
-                    <Icon
-                      icon='heroicons:bars-3-solid'
-                      className='icon text-2xl non-active '
-                    />
+                    <Icon icon="heroicons:bars-3-solid" className="icon text-2xl non-active" />
                   )}
                 </button>
+
                 <button
-                  onClick={mobileMenuControl}
-                  type='button'
-                  className='sidebar-mobile-toggle'
+                  onClick={() => setMobileMenu(true)}
+                  type="button"
+                  className="sidebar-mobile-toggle"
+                  aria-label="Open mobile menu"
                 >
-                  <Icon icon='heroicons:bars-3-solid' className='icon' />
+                  <Icon icon="heroicons:bars-3-solid" className="icon" />
                 </button>
-                <form className='navbar-search'>
-                  <input type='text' name='search' placeholder='Search' />
-                  <Icon icon='ion:search-outline' className='icon' />
+
+                <form className="navbar-search" role="search" onSubmit={(e) => e.preventDefault()}>
+                  <input type="text" name="search" placeholder="Search" aria-label="Search" />
+                  <Icon icon="ion:search-outline" className="icon" />
                 </form>
               </div>
             </div>
-            <div className='col-auto'>
-              <div className='d-flex flex-wrap align-items-center gap-3'>
-                {/* ThemeToggleButton */}
+
+            <div className="col-auto">
+              <div className="d-flex flex-wrap align-items-center gap-3">
+                {/* Theme toggle */}
                 <ThemeToggleButton />
-                <div className='dropdown d-none d-sm-inline-block'>
+
+                {/* Language */}
+                <div className="dropdown d-none d-sm-inline-block">
                   <button
-                    className='has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center'
-                    type='button'
-                    data-bs-toggle='dropdown'
+                    className="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    aria-label="Change language"
                   >
                     <img
-                      src='assets/images/lang-flag.png'
-                      alt='Wowdash'
-                      className='w-24 h-24 object-fit-cover rounded-circle'
+                      src="assets/images/lang-flag.png"
+                      alt="language"
+                      className="w-24 h-24 object-fit-cover rounded-circle"
                     />
                   </button>
-                  <div className='dropdown-menu to-top dropdown-menu-sm'>
-                    <div className='py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2'>
+                  <div className="dropdown-menu to-top dropdown-menu-sm">
+                    <div className="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
                       <div>
-                        <h6 className='text-lg text-primary-light fw-semibold mb-0'>
+                        <h6 className="text-lg text-primary-light fw-semibold mb-0">
                           Choose Your Language
                         </h6>
                       </div>
                     </div>
-                    <div className='max-h-400-px overflow-y-auto scroll-sm pe-8'>
-                      <div className='form-check style-check d-flex align-items-center justify-content-between mb-16'>
-                        <label
-                          className='form-check-label line-height-1 fw-medium text-secondary-light'
-                          htmlFor='english'
+                    <div className="max-h-400-px overflow-y-auto scroll-sm pe-8">
+                      {[
+                        { id: "english", img: "flag1.png", label: "English" },
+                        { id: "japan", img: "flag2.png", label: "Japan" },
+                        { id: "france", img: "flag3.png", label: "France" },
+                        { id: "germany", img: "flag4.png", label: "Germany" },
+                        { id: "korea", img: "flag5.png", label: "South Korea" },
+                        { id: "bangladesh", img: "flag6.png", label: "Bangladesh" },
+                        { id: "india", img: "flag7.png", label: "India" },
+                        { id: "canada", img: "flag8.png", label: "Canada" },
+                      ].map((opt) => (
+                        <div
+                          key={opt.id}
+                          className="form-check style-check d-flex align-items-center justify-content-between mb-16"
                         >
-                          <span className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                            <img
-                              src='assets/images/flags/flag1.png'
-                              alt='WowDash React Vite'
-                              className='w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0'
-                            />
-                            <span className='text-md fw-semibold mb-0'>
-                              English
+                          <label
+                            className="form-check-label line-height-1 fw-medium text-secondary-light"
+                            htmlFor={opt.id}
+                          >
+                            <span className="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+                              <img
+                                src={`assets/images/flags/${opt.img}`}
+                                alt={opt.label}
+                                className="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0"
+                              />
+                              <span className="text-md fw-semibold mb-0">{opt.label}</span>
                             </span>
-                          </span>
-                        </label>
-                        <input
-                          className='form-check-input'
-                          type='radio'
-                          name='crypto'
-                          id='english'
-                        />
-                      </div>
-                      <div className='form-check style-check d-flex align-items-center justify-content-between mb-16'>
-                        <label
-                          className='form-check-label line-height-1 fw-medium text-secondary-light'
-                          htmlFor='japan'
-                        >
-                          <span className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                            <img
-                              src='assets/images/flags/flag2.png'
-                              alt='WowDash React Vite'
-                              className='w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0'
-                            />
-                            <span className='text-md fw-semibold mb-0'>
-                              Japan
-                            </span>
-                          </span>
-                        </label>
-                        <input
-                          className='form-check-input'
-                          type='radio'
-                          name='crypto'
-                          id='japan'
-                        />
-                      </div>
-                      <div className='form-check style-check d-flex align-items-center justify-content-between mb-16'>
-                        <label
-                          className='form-check-label line-height-1 fw-medium text-secondary-light'
-                          htmlFor='france'
-                        >
-                          <span className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                            <img
-                              src='assets/images/flags/flag3.png'
-                              alt='WowDash React Vite'
-                              className='w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0'
-                            />
-                            <span className='text-md fw-semibold mb-0'>
-                              France
-                            </span>
-                          </span>
-                        </label>
-                        <input
-                          className='form-check-input'
-                          type='radio'
-                          name='crypto'
-                          id='france'
-                        />
-                      </div>
-                      <div className='form-check style-check d-flex align-items-center justify-content-between mb-16'>
-                        <label
-                          className='form-check-label line-height-1 fw-medium text-secondary-light'
-                          htmlFor='germany'
-                        >
-                          <span className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                            <img
-                              src='assets/images/flags/flag4.png'
-                              alt='WowDash React Vite'
-                              className='w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0'
-                            />
-                            <span className='text-md fw-semibold mb-0'>
-                              Germany
-                            </span>
-                          </span>
-                        </label>
-                        <input
-                          className='form-check-input'
-                          type='radio'
-                          name='crypto'
-                          id='germany'
-                        />
-                      </div>
-                      <div className='form-check style-check d-flex align-items-center justify-content-between mb-16'>
-                        <label
-                          className='form-check-label line-height-1 fw-medium text-secondary-light'
-                          htmlFor='korea'
-                        >
-                          <span className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                            <img
-                              src='assets/images/flags/flag5.png'
-                              alt='WowDash React Vite'
-                              className='w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0'
-                            />
-                            <span className='text-md fw-semibold mb-0'>
-                              South Korea
-                            </span>
-                          </span>
-                        </label>
-                        <input
-                          className='form-check-input'
-                          type='radio'
-                          name='crypto'
-                          id='korea'
-                        />
-                      </div>
-                      <div className='form-check style-check d-flex align-items-center justify-content-between mb-16'>
-                        <label
-                          className='form-check-label line-height-1 fw-medium text-secondary-light'
-                          htmlFor='bangladesh'
-                        >
-                          <span className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                            <img
-                              src='assets/images/flags/flag6.png'
-                              alt='WowDash React Vite'
-                              className='w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0'
-                            />
-                            <span className='text-md fw-semibold mb-0'>
-                              Bangladesh
-                            </span>
-                          </span>
-                        </label>
-                        <input
-                          className='form-check-input'
-                          type='radio'
-                          name='crypto'
-                          id='bangladesh'
-                        />
-                      </div>
-                      <div className='form-check style-check d-flex align-items-center justify-content-between mb-16'>
-                        <label
-                          className='form-check-label line-height-1 fw-medium text-secondary-light'
-                          htmlFor='india'
-                        >
-                          <span className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                            <img
-                              src='assets/images/flags/flag7.png'
-                              alt='WowDash React Vite'
-                              className='w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0'
-                            />
-                            <span className='text-md fw-semibold mb-0'>
-                              India
-                            </span>
-                          </span>
-                        </label>
-                        <input
-                          className='form-check-input'
-                          type='radio'
-                          name='crypto'
-                          id='india'
-                        />
-                      </div>
-                      <div className='form-check style-check d-flex align-items-center justify-content-between'>
-                        <label
-                          className='form-check-label line-height-1 fw-medium text-secondary-light'
-                          htmlFor='canada'
-                        >
-                          <span className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                            <img
-                              src='assets/images/flags/flag8.png'
-                              alt='WowDash React Vite'
-                              className='w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0'
-                            />
-                            <span className='text-md fw-semibold mb-0'>
-                              Canada
-                            </span>
-                          </span>
-                        </label>
-                        <input
-                          className='form-check-input'
-                          type='radio'
-                          name='crypto'
-                          id='canada'
-                        />
-                      </div>
+                          </label>
+                          <input className="form-check-input" type="radio" name="lang" id={opt.id} />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-                {/* Language dropdown end */}
-                <div className='dropdown'>
+
+                {/* Messages */}
+                <div className="dropdown">
                   <button
-                    className='has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center'
-                    type='button'
-                    data-bs-toggle='dropdown'
+                    className="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    aria-label="Open messages"
                   >
-                    <Icon
-                      icon='mage:email'
-                      className='text-primary-light text-xl'
-                    />
+                    <Icon icon="mage:email" className="text-primary-light text-xl" />
                   </button>
-                  <div className='dropdown-menu to-top dropdown-menu-lg p-0'>
-                    <div className='m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2'>
+                  <div className="dropdown-menu to-top dropdown-menu-lg p-0">
+                    <div className="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
                       <div>
-                        <h6 className='text-lg text-primary-light fw-semibold mb-0'>
-                          Message
-                        </h6>
+                        <h6 className="text-lg text-primary-light fw-semibold mb-0">Message</h6>
                       </div>
-                      <span className='text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center'>
+                      <span className="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
                         05
                       </span>
                     </div>
-                    <div className='max-h-400-px overflow-y-auto scroll-sm pe-4'>
-                      <Link
-                        to='#'
-                        className='px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between'
-                      >
-                        <div className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                          <span className='w-40-px h-40-px rounded-circle flex-shrink-0 position-relative'>
-                            <img
-                              src='assets/images/notification/profile-3.png'
-                              alt='WowDash React Vite'
-                            />
-                            <span className='w-8-px h-8-px bg-success-main rounded-circle position-absolute end-0 bottom-0' />
-                          </span>
-                          <div>
-                            <h6 className='text-md fw-semibold mb-4'>
-                              Kathryn Murphy
-                            </h6>
-                            <p className='mb-0 text-sm text-secondary-light text-w-100-px'>
-                              hey! there i’m...
-                            </p>
-                          </div>
-                        </div>
-                        <div className='d-flex flex-column align-items-end'>
-                          <span className='text-sm text-secondary-light flex-shrink-0'>
-                            12:30 PM
-                          </span>
-                          <span className='mt-4 text-xs text-base w-16-px h-16-px d-flex justify-content-center align-items-center bg-warning-main rounded-circle'>
-                            8
-                          </span>
-                        </div>
-                      </Link>
-                      <Link
-                        to='#'
-                        className='px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between'
-                      >
-                        <div className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                          <span className='w-40-px h-40-px rounded-circle flex-shrink-0 position-relative'>
-                            <img
-                              src='assets/images/notification/profile-4.png'
-                              alt='WowDash React Vite'
-                            />
-                            <span className='w-8-px h-8-px  bg-neutral-300 rounded-circle position-absolute end-0 bottom-0' />
-                          </span>
-                          <div>
-                            <h6 className='text-md fw-semibold mb-4'>
-                              Kathryn Murphy
-                            </h6>
-                            <p className='mb-0 text-sm text-secondary-light text-w-100-px'>
-                              hey! there i’m...
-                            </p>
-                          </div>
-                        </div>
-                        <div className='d-flex flex-column align-items-end'>
-                          <span className='text-sm text-secondary-light flex-shrink-0'>
-                            12:30 PM
-                          </span>
-                          <span className='mt-4 text-xs text-base w-16-px h-16-px d-flex justify-content-center align-items-center bg-warning-main rounded-circle'>
-                            2
-                          </span>
-                        </div>
-                      </Link>
-                      <Link
-                        to='#'
-                        className='px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between bg-neutral-50'
-                      >
-                        <div className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                          <span className='w-40-px h-40-px rounded-circle flex-shrink-0 position-relative'>
-                            <img
-                              src='assets/images/notification/profile-5.png'
-                              alt='WowDash React Vite'
-                            />
-                            <span className='w-8-px h-8-px bg-success-main rounded-circle position-absolute end-0 bottom-0' />
-                          </span>
-                          <div>
-                            <h6 className='text-md fw-semibold mb-4'>
-                              Kathryn Murphy
-                            </h6>
-                            <p className='mb-0 text-sm text-secondary-light text-w-100-px'>
-                              hey! there i’m...
-                            </p>
-                          </div>
-                        </div>
-                        <div className='d-flex flex-column align-items-end'>
-                          <span className='text-sm text-secondary-light flex-shrink-0'>
-                            12:30 PM
-                          </span>
-                          <span className='mt-4 text-xs text-base w-16-px h-16-px d-flex justify-content-center align-items-center bg-neutral-400 rounded-circle'>
-                            0
-                          </span>
-                        </div>
-                      </Link>
-                      <Link
-                        to='#'
-                        className='px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between bg-neutral-50'
-                      >
-                        <div className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                          <span className='w-40-px h-40-px rounded-circle flex-shrink-0 position-relative'>
-                            <img
-                              src='assets/images/notification/profile-6.png'
-                              alt='WowDash React Vite'
-                            />
-                            <span className='w-8-px h-8-px bg-neutral-300 rounded-circle position-absolute end-0 bottom-0' />
-                          </span>
-                          <div>
-                            <h6 className='text-md fw-semibold mb-4'>
-                              Kathryn Murphy
-                            </h6>
-                            <p className='mb-0 text-sm text-secondary-light text-w-100-px'>
-                              hey! there i’m...
-                            </p>
-                          </div>
-                        </div>
-                        <div className='d-flex flex-column align-items-end'>
-                          <span className='text-sm text-secondary-light flex-shrink-0'>
-                            12:30 PM
-                          </span>
-                          <span className='mt-4 text-xs text-base w-16-px h-16-px d-flex justify-content-center align-items-center bg-neutral-400 rounded-circle'>
-                            0
-                          </span>
-                        </div>
-                      </Link>
-                      <Link
-                        to='#'
-                        className='px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between'
-                      >
-                        <div className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                          <span className='w-40-px h-40-px rounded-circle flex-shrink-0 position-relative'>
-                            <img
-                              src='assets/images/notification/profile-7.png'
-                              alt='WowDash React Vite'
-                            />
-                            <span className='w-8-px h-8-px bg-success-main rounded-circle position-absolute end-0 bottom-0' />
-                          </span>
-                          <div>
-                            <h6 className='text-md fw-semibold mb-4'>
-                              Kathryn Murphy
-                            </h6>
-                            <p className='mb-0 text-sm text-secondary-light text-w-100-px'>
-                              hey! there i’m...
-                            </p>
-                          </div>
-                        </div>
-                        <div className='d-flex flex-column align-items-end'>
-                          <span className='text-sm text-secondary-light flex-shrink-0'>
-                            12:30 PM
-                          </span>
-                          <span className='mt-4 text-xs text-base w-16-px h-16-px d-flex justify-content-center align-items-center bg-warning-main rounded-circle'>
-                            8
-                          </span>
-                        </div>
-                      </Link>
-                    </div>
-                    <div className='text-center py-12 px-16'>
-                      <Link
-                        to='#'
-                        className='text-primary-600 fw-semibold text-md'
-                      >
+                    {/* … keep your message items here … */}
+                    <div className="text-center py-12 px-16">
+                      <Link to="#" className="text-primary-600 fw-semibold text-md">
                         See All Message
                       </Link>
                     </div>
                   </div>
                 </div>
-                {/* Message dropdown end */}
-                <div className='dropdown'>
+
+                {/* Notifications */}
+                <div className="dropdown">
                   <button
-                    className='has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center'
-                    type='button'
-                    data-bs-toggle='dropdown'
+                    className="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    aria-label="Open notifications"
                   >
-                    <Icon
-                      icon='iconoir:bell'
-                      className='text-primary-light text-xl'
-                    />
+                    <Icon icon="iconoir:bell" className="text-primary-light text-xl" />
                   </button>
-                  <div className='dropdown-menu to-top dropdown-menu-lg p-0'>
-                    <div className='m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2'>
+                  <div className="dropdown-menu to-top dropdown-menu-lg p-0">
+                    <div className="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
                       <div>
-                        <h6 className='text-lg text-primary-light fw-semibold mb-0'>
+                        <h6 className="text-lg text-primary-light fw-semibold mb-0">
                           Notifications
                         </h6>
                       </div>
-                      <span className='text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center'>
+                      <span className="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
                         05
                       </span>
                     </div>
-                    <div className='max-h-400-px overflow-y-auto scroll-sm pe-4'>
-                      <Link
-                        to='#'
-                        className='px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between'
-                      >
-                        <div className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                          <span className='w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0'>
-                            <Icon
-                              icon='bitcoin-icons:verify-outline'
-                              className='icon text-xxl'
-                            />
-                          </span>
-                          <div>
-                            <h6 className='text-md fw-semibold mb-4'>
-                              Congratulations
-                            </h6>
-                            <p className='mb-0 text-sm text-secondary-light text-w-200-px'>
-                              Your profile has been Verified. Your profile has
-                              been Verified
-                            </p>
-                          </div>
-                        </div>
-                        <span className='text-sm text-secondary-light flex-shrink-0'>
-                          23 Mins ago
-                        </span>
-                      </Link>
-                      <Link
-                        to='#'
-                        className='px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between bg-neutral-50'
-                      >
-                        <div className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                          <span className='w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0'>
-                            <img
-                              src='assets/images/notification/profile-1.png'
-                              alt='WowDash React Vite'
-                            />
-                          </span>
-                          <div>
-                            <h6 className='text-md fw-semibold mb-4'>
-                              Ronald Richards
-                            </h6>
-                            <p className='mb-0 text-sm text-secondary-light text-w-200-px'>
-                              You can stitch between artboards
-                            </p>
-                          </div>
-                        </div>
-                        <span className='text-sm text-secondary-light flex-shrink-0'>
-                          23 Mins ago
-                        </span>
-                      </Link>
-                      <Link
-                        to='#'
-                        className='px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between'
-                      >
-                        <div className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                          <span className='w-44-px h-44-px bg-info-subtle text-info-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0'>
-                            AM
-                          </span>
-                          <div>
-                            <h6 className='text-md fw-semibold mb-4'>
-                              Arlene McCoy
-                            </h6>
-                            <p className='mb-0 text-sm text-secondary-light text-w-200-px'>
-                              Invite you to prototyping
-                            </p>
-                          </div>
-                        </div>
-                        <span className='text-sm text-secondary-light flex-shrink-0'>
-                          23 Mins ago
-                        </span>
-                      </Link>
-                      <Link
-                        to='#'
-                        className='px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between bg-neutral-50'
-                      >
-                        <div className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                          <span className='w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0'>
-                            <img
-                              src='assets/images/notification/profile-2.png'
-                              alt='WowDash React Vite'
-                            />
-                          </span>
-                          <div>
-                            <h6 className='text-md fw-semibold mb-4'>
-                              Annette Black
-                            </h6>
-                            <p className='mb-0 text-sm text-secondary-light text-w-200-px'>
-                              Invite you to prototyping
-                            </p>
-                          </div>
-                        </div>
-                        <span className='text-sm text-secondary-light flex-shrink-0'>
-                          23 Mins ago
-                        </span>
-                      </Link>
-                      <Link
-                        to='#'
-                        className='px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between'
-                      >
-                        <div className='text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'>
-                          <span className='w-44-px h-44-px bg-info-subtle text-info-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0'>
-                            DR
-                          </span>
-                          <div>
-                            <h6 className='text-md fw-semibold mb-4'>
-                              Darlene Robertson
-                            </h6>
-                            <p className='mb-0 text-sm text-secondary-light text-w-200-px'>
-                              Invite you to prototyping
-                            </p>
-                          </div>
-                        </div>
-                        <span className='text-sm text-secondary-light flex-shrink-0'>
-                          23 Mins ago
-                        </span>
-                      </Link>
-                    </div>
-                    <div className='text-center py-12 px-16'>
-                      <Link
-                        to='#'
-                        className='text-primary-600 fw-semibold text-md'
-                      >
+                    {/* … keep your notification items here … */}
+                    <div className="text-center py-12 px-16">
+                      <Link to="#" className="text-primary-600 fw-semibold text-md">
                         See All Notification
                       </Link>
                     </div>
                   </div>
                 </div>
-                {/* Notification dropdown end */}
-                <div className='dropdown'>
+
+                {/* Profile */}
+                <div className="dropdown">
                   <button
-                    className='d-flex justify-content-center align-items-center rounded-circle'
-                    type='button'
-                    data-bs-toggle='dropdown'
+                    className="d-flex justify-content-center align-items-center rounded-circle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    aria-label="Open profile menu"
                   >
                     <img
-                      src='assets/images/user.png'
-                      alt='image_user'
-                      className='w-40-px h-40-px object-fit-cover rounded-circle'
+                      src="assets/images/user.png"
+                      alt="user"
+                      className="w-40-px h-40-px object-fit-cover rounded-circle"
                     />
                   </button>
-                  <div className='dropdown-menu to-top dropdown-menu-sm'>
-                    <div className='py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2'>
+                  <div className="dropdown-menu to-top dropdown-menu-sm">
+                    <div className="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
                       <div>
-                        <h6 className='text-lg text-primary-light fw-semibold mb-2'>
-                          Shaidul Islam
-                        </h6>
-                        <span className='text-secondary-light fw-medium text-sm'>
-                          Admin
-                        </span>
+                        <h6 className="text-lg text-primary-light fw-semibold mb-2">Shaidul Islam</h6>
+                        <span className="text-secondary-light fw-medium text-sm">Admin</span>
                       </div>
-                      <button type='button' className='hover-text-danger'>
-                        <Icon
-                          icon='radix-icons:cross-1'
-                          className='icon text-xl'
-                        />
+                      <button type="button" className="hover-text-danger" aria-label="Close">
+                        <Icon icon="radix-icons:cross-1" className="icon text-xl" />
                       </button>
                     </div>
-                    <ul className='to-top-list'>
+                    <ul className="to-top-list">
                       <li>
                         <Link
-                          className='dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'
-                          to='/view-profile'
+                          className="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"
+                          to="/view-profile"
                         >
-                          <Icon
-                            icon='solar:user-linear'
-                            className='icon text-xl'
-                          />{" "}
-                          My Profile
+                          <Icon icon="solar:user-linear" className="icon text-xl" /> My Profile
                         </Link>
                       </li>
                       <li>
                         <Link
-                          className='dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'
-                          to='/email'
+                          className="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"
+                          to="/email"
                         >
-                          <Icon
-                            icon='tabler:message-check'
-                            className='icon text-xl'
-                          />{" "}
-                          Inbox
+                          <Icon icon="tabler:message-check" className="icon text-xl" /> Inbox
                         </Link>
                       </li>
                       <li>
                         <Link
-                          className='dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3'
-                          to='/company'
+                          className="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"
+                          to="/company"
                         >
-                          <Icon
-                            icon='icon-park-outline:setting-two'
-                            className='icon text-xl'
-                          />
+                          <Icon icon="icon-park-outline:setting-two" className="icon text-xl" />
                           Setting
                         </Link>
                       </li>
                       <li>
                         <Link
-                          className='dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3'
-                          to='#'
+                          className="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3"
+                          to="#"
                         >
-                          <Icon icon='lucide:power' className='icon text-xl' />{" "}
-                          Log Out
+                          <Icon icon="lucide:power" className="icon text-xl" /> Log Out
                         </Link>
                       </li>
                     </ul>
                   </div>
                 </div>
-                {/* Profile dropdown end */}
+                {/* /Profile */}
               </div>
             </div>
           </div>
         </div>
 
-        {/* dashboard-main-body */}
-        <div className='dashboard-main-body'>{children}</div>
+        {/* Page body */}
+        <div className="dashboard-main-body">{children}</div>
 
-        {/* Footer section */}
-        <footer className='d-footer'>
-          <div className='row align-items-center justify-content-between'>
-            <div className='col-auto'>
-              <p className='mb-0'>© 2025 WowDash. All Rights Reserved.</p>
+        {/* Footer */}
+        <footer className="d-footer">
+          <div className="row align-items-center justify-content-between">
+            <div className="col-auto">
+              <p className="mb-0">© 2025 WowDash. All Rights Reserved.</p>
             </div>
-            <div className='col-auto'>
-              <p className='mb-0'>
-                Made by <span className='text-primary-600'>wowtheme7</span>
+            <div className="col-auto">
+              <p className="mb-0">
+                Made by <span className="text-primary-600">wowtheme7</span>
               </p>
             </div>
           </div>
@@ -901,6 +411,4 @@ const MasterLayout = ({ children }) => {
       </main>
     </section>
   );
-};
-
-export default MasterLayout;
+}

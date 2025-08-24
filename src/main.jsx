@@ -1,22 +1,46 @@
+// src/main.jsx
+import React from "react";
 import { createRoot } from "react-dom/client";
-import LightGallery from "lightgallery/react";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App.jsx";
+import { VendorProvider } from "./context/VendorContext";
 
+// --- Styles (order matters: base CSS before component CSS) ---
+import "bootstrap/dist/css/bootstrap.min.css";
 import "quill/dist/quill.snow.css";
 import "jsvectormap/dist/css/jsvectormap.css";
 import "react-toastify/dist/ReactToastify.css";
 import "react-modal-video/css/modal-video.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
-
-import 'bootstrap/dist/css/bootstrap.min.css';
-
-
 import "lightgallery/css/lightgallery.css";
 import "lightgallery/css/lg-zoom.css";
 import "lightgallery/css/lg-thumbnail.css";
-import App from "./App.jsx";
+import "./styles/dark-patch.css";
+import "./styles/theme-patch.css";
+import "./styles/theme-fixes.css";
+import "./styles/extra.css";  
 
-createRoot(document.getElementById("root")).render(
-  <>
-    <App />
-  </>
+
+// Optional JS bundles that enhance UI components
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+
+// Initialize theme (safe if utils/theme is present)
+import { applyTheme, getInitialTheme } from "./utils/theme";
+try {
+  applyTheme(getInitialTheme());
+} catch {
+  // silently ignore if theme utils are unavailable
+}
+
+const rootEl = document.getElementById("root");
+if (!rootEl) {
+  throw new Error("Missing #root element in index.html");
+}
+
+createRoot(rootEl).render(
+  // <React.StrictMode> can be re-enabled if desired
+  <BrowserRouter>
+    <VendorProvider>
+      <App />
+    </VendorProvider>
+  </BrowserRouter>
 );

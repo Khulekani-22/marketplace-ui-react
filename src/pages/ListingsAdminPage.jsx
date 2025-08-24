@@ -854,18 +854,16 @@ function ServicesEditor(props) {
 
                 <div className="row g-3 mt-1">
                   <div className="col-md-4">
-                    <label className="form-label">Vendor</label>
-                    <input
-                      className="form-control"
-                      list="vendorList"
-                      value={selected.vendor || ""}
-                      onChange={(e) => updateService({ vendor: e.target.value })}
-                    />
-                    <datalist id="vendorList">
-                      {vendorOptions.map((v) => (
-                        <option key={v.id} value={v.name} />
-                      ))}
-                    </datalist>
+                    <select
+                    className="form-select"
+                    value={selected.vendor || ""}
+                    onChange={(e) => updateService({ vendor: e.target.value })}
+                    >
+                    <option value="">—</option>
+                    {vendorOptions.map((v) => (
+                        <option key={v.id} value={v.name}>{v.name}</option>
+                    ))}
+                    </select>
                   </div>
                   <div className="col-md-4">
                     <label className="form-label">Vendor ID</label>

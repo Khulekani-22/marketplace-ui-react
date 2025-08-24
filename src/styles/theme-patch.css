@@ -1,0 +1,101 @@
+/* Map common UI pieces to theme tokens set by data-theme and utils/theme.js */
+:root {
+  color-scheme: light;
+}
+
+/* Page + text */
+html, body {
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+/* Generic helpers used around the app */
+.text-muted,
+.text-secondary-light { color: var(--muted) !important; }
+
+.bg-base { background-color: var(--surface-1) !important; }
+.bg-body,
+.card.bg-body { background-color: var(--surface-1) !important; }
+.bg-body-tertiary,
+.card-header.bg-body-tertiary { background-color: var(--surface-2) !important; }
+
+/* Cards */
+.card {
+  background-color: var(--surface-1) !important;
+  border-color: var(--border) !important;
+  color: var(--fg);
+}
+.card-header {
+  background-color: var(--surface-2) !important;
+  border-bottom-color: var(--border) !important;
+}
+
+/* Tables (if any) */
+.table,
+.table > :not(caption) > * > * {
+  color: var(--fg);
+  border-color: var(--border) !important;
+  background-color: var(--surface-1);
+}
+
+/* Form controls */
+.form-control,
+.form-select,
+.form-check-input,
+.input-group-text {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-bd) !important;
+  color: var(--fg) !important;
+}
+.form-control::placeholder { color: var(--muted) !important; }
+.form-control:disabled,
+.form-select:disabled {
+  background-color: color-mix(in oklab, var(--input-bg) 80%, var(--surface-2)) !important;
+}
+
+/* Focus ring */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 .25rem color-mix(in oklab, var(--primary) 25%, transparent);
+}
+
+/* Buttons – keep your palette but adapt text-contrast */
+.btn-primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary-600) !important;
+  color: var(--on-primary) !important;
+}
+.btn-outline-secondary {
+  color: var(--fg) !important;
+  border-color: var(--border) !important;
+}
+
+/* Top search bar */
+.navbar-search input {
+  background: var(--input-bg) !important;
+  border-color: var(--input-bd) !important;
+  color: var(--fg) !important;
+}
+.navbar-search .icon { color: var(--muted); }
+
+/* Sidebar */
+.sidebar {
+  background-color: var(--sidebar-bg) !important;
+  color: var(--sidebar-fg) !important;
+  border-right: 1px solid var(--border);
+}
+.sidebar .menu-icon,
+.sidebar a { color: var(--sidebar-fg) !important; }
+.sidebar .active-page {
+  background: color-mix(in oklab, var(--primary) 20%, transparent);
+  color: var(--on-primary) !important;
+  border-radius: 8px;
+}
+
+/* Footer strip */
+.d-footer {
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+}
