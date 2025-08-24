@@ -44,6 +44,35 @@ function summarizeServices(services = []) {
   return { total, featured, categories, byStatus };
 }
 
+// ---------- Vendor directory helpers ----------
+function normalizeVendor(v) {
+  const id =
+    v.vendorId ||
+    v.id ||
+    v.uid ||
+    (v.email ? v.email.toLowerCase() : uid());
+  return {
+    id,
+    vendorId: v.vendorId || id,
+    companyName: v.companyName || v.name || v.displayName || "",
+    name: v.name || v.companyName || "",
+    email: (v.email || v.contactEmail || "").toLowerCase(),
+    website: v.website || "",
+    phone: v.phone || v.phoneNumber || "",
+    avatar: v.avatar || v.logoUrl || "",
+    raw: v,
+  };
+}
+function makeVendorMaps(list = []) {
+  const byId = {};
+  const byEmail = {};
+  list.forEach((v) => {
+    byId[v.vendorId] = v;
+    if (v.email) byEmail[v.email] = v;
+  });
+  return { byId, byEmail };
+}
+
 // normalize a service object so the UI can rely on fields
 function normalizeService(s) {
   return {
@@ -52,6 +81,7 @@ function normalizeService(s) {
     category: s.category ?? "",
     vendor: s.vendor ?? s.vendorName ?? "",
     vendorId: s.vendorId ?? "",
+    contactEmail: (s.contactEmail || s.email || "").toLowerCase(),
     price: typeof s.price === "number" ? s.price : Number(s.price || 0),
     rating: typeof s.rating === "number" ? s.rating : Number(s.rating || 0),
     reviewCount:
@@ -83,6 +113,46 @@ export default function ListingsAdminPage() {
     () => (data?.services || []).map(normalizeService),
     [data]
   );
+
+  // -------- Vendor directory (API -> fallback to appData.startups) --------
+  const [vendors, setVendors] = useState(() =>
+    (data?.startups || []).map(normalizeVendor)
+  );
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const idToken = await auth.currentUser?.getIdToken?.();
+        const res = await fetch(`${API_BASE}/vendors`, {
+          headers: {
+            "x-tenant-id": tenantId,
+            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+          },
+        });
+        if (res.ok) {
+          const payload = await res.json();
+          // Accept {vendors: [...]}, {items: [...]}, or just [...]
+          const arr = payload?.vendors || payload?.items || payload || [];
+          const norm = Array.isArray(arr) ? arr.map(normalizeVendor) : [];
+          if (alive && norm.length) setVendors(norm);
+        } else {
+          // keep fallback
+        }
+      } catch {
+        // keep fallback
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [tenantId]);
+
+  const { byId: vendorsById, byEmail: vendorsByEmail } = useMemo(
+    () => makeVendorMaps(vendors),
+    [vendors]
+  );
+
   const startups = data?.startups || [];
 
   // JSON editor (full appData)
@@ -127,7 +197,7 @@ export default function ListingsAdminPage() {
       }
       if (
         search &&
-        !`${s.title} ${s.vendor} ${s.category}`
+        !`${s.title} ${s.vendor} ${s.vendorId} ${s.contactEmail} ${s.category}`
           .toLowerCase()
           .includes(search.toLowerCase())
       ) {
@@ -189,6 +259,7 @@ export default function ListingsAdminPage() {
         title,
         vendor: "",
         vendorId: "",
+        contactEmail: "",
         category: "",
         price: 0,
         rating: 0,
@@ -369,34 +440,82 @@ export default function ListingsAdminPage() {
     }
   }
 
-  // Import / Export of full working appData
-  async function handleImport(ev) {
-    const file = ev.target.files?.[0];
-    if (!file) return;
-    try {
-      const txt = await file.text();
-      const json = JSON.parse(txt);
-      doSetData(json);
-      toastOK("Imported JSON into working copy");
-    } catch {
-      setErr("Invalid JSON file");
-    } finally {
-      ev.target.value = "";
-    }
-  }
-  function handleExport() {
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.download = `appData-working-${Date.now()}.json`;
-    a.href = url;
-    a.click();
-    URL.revokeObjectURL(url);
+  const stats = summarizeServices(services);
+
+  // Resolve a friendly vendor display + profile link for a given service
+  function resolveVendor(service) {
+    const byId = service.vendorId && vendorsById[service.vendorId];
+    const byEmail =
+      service.contactEmail && vendorsByEmail[service.contactEmail];
+    const v = byId || byEmail || null;
+    const name =
+      v?.companyName ||
+      v?.name ||
+      service.vendor ||
+      (service.contactEmail || "—");
+    const email = v?.email || service.contactEmail || "";
+    const vendorId = v?.vendorId || service.vendorId || "";
+    const profileHref = vendorId
+      ? `/profile-vendor?vendorId=${encodeURIComponent(vendorId)}`
+      : null;
+    return { v, name, email, vendorId, profileHref };
   }
 
-  const stats = summarizeServices(services);
+
+// Basic structure check (optional but helpful)
+function validateAppData(j) {
+  if (!j || typeof j !== "object") return "File is not valid JSON.";
+  if (!Array.isArray(j.services)) return "JSON must include an array: services[].";
+  return null; // ok
+}
+
+async function handleImport(e) {
+  setErr(null);
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const j = safeParse(text);
+    const problem = validateAppData(j);
+    if (problem) {
+      setErr(problem);
+      return;
+    }
+
+    // Save as working copy and select first service
+    doSetData(j);
+    setSelectedId(j?.services?.[0]?.id || "");
+    toastOK(`Imported ${file.name}`);
+  } catch (err) {
+    setErr("Import failed: " + (err?.message || "unknown error"));
+  } finally {
+    // allow importing the same file again
+    e.target.value = "";
+  }
+}
+
+function handleExport() {
+  try {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json;charset=utf-8",
+    });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    const ts = new Date().toISOString().replace(/[:.]/g, "-");
+    a.download = `appData-${tenantId}-${ts}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(href);
+    toastOK("Exported current working copy");
+  } catch (err) {
+    setErr("Export failed: " + (err?.message || "unknown error"));
+  }
+}
+
+
 
   return (
     <div className="container py-4">
@@ -407,120 +526,140 @@ export default function ListingsAdminPage() {
         </div>
       </React.Suspense>
 
-<div className="row g-3 mb-3">
-  <div className="col-md-3 col-sm-6">
-    <div className="card px-24 py-16 shadow-none radius-12 border h-100 bg-gradient-start-5 bg-animated-gradient text-center p-3">
-      <i className="bi bi-bag-check text-primary fs-3 mb-2"></i>
-      <h6 className="fw-bold mb-0">{stats.total}</h6>
-      <small className="text-muted">Services</small>
-    </div>
-  </div>
-
-  <div className="col-md-3 col-sm-6">
-    <div className="card px-24 py-16 shadow-none radius-12 border h-100 bg-gradient-start-5 text-center p-3">
-      <i className="bi bi-grid text-success fs-3 mb-2"></i>
-      <h6 className="fw-bold mb-0">{stats.categories}</h6>
-      <small className="text-muted">Categories</small>
-    </div>
-  </div>
-
-  <div className="col-md-3 col-sm-6">
-    <div className="card px-24 py-16 shadow-none radius-12 border h-100 bg-gradient-start-5 text-center p-3">
-      <i className="bi bi-star-fill text-warning fs-3 mb-2"></i>
-      <h6 className="fw-bold mb-0">{stats.featured}</h6>
-      <small className="text-muted">Featured</small>
-    </div>
-  </div>
-
-{/* Status Breakdown (improved) */}
-<div className="col-md-3 col-sm-6">
-  <div className="card px-24 py-16 shadow-none radius-12 border h-100 bg-gradient-start-5 p-3">
-    <div className="d-flex align-items-center justify-content-between mb-2">
-      <div className="d-flex align-items-center gap-2">
-        <i className="bi bi-flag text-danger fs-4" aria-hidden="true"></i>
-        <div className="fw-semibold">Status</div>
-      </div>
-      {/* total count across all statuses */}
-      <span className="badge text-bg-light">
-        {Object.values(stats.byStatus || {}).reduce((a, v) => a + v, 0)} total
-      </span>
-    </div>
-
-    {/* stacked progress showing proportions */}
-    {(() => {
-      const mapColor = (k) =>
-        k === "approved" ? "success" :
-        k === "pending"  ? "warning" :
-        k === "rejected" ? "danger"  : "secondary";
-
-      const entries = Object.entries(stats.byStatus || {});
-      const total = entries.reduce((a, [, v]) => a + v, 0);
-      return (
-        <>
-          <div className="progress" style={{ height: 10 }} aria-label="Status proportions">
-            {entries.map(([k, v]) => {
-              const pct = total ? Math.round((v / total) * 100) : 0;
-              return (
-                <div
-                  key={k}
-                  className={`progress-bar bg-${mapColor(k)}`}
-                  role="progressbar"
-                  style={{ width: `${pct}%` }}
-                  aria-label={`${k} ${pct}%`}
-                  aria-valuenow={pct}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  title={`${k}: ${v} (${pct}%)`}
-                />
-              );
-            })}
+      <div className="row g-3 mb-3">
+        <div className="col-md-3 col-sm-6">
+          <div className="card px-24 py-16 shadow-none radius-12 border h-100 bg-gradient-start-5 bg-animated-gradient text-center p-3">
+            <i className="bi bi-bag-check text-primary fs-3 mb-2"></i>
+            <h6 className="fw-bold mb-0">{stats.total}</h6>
+            <small className="text-muted">Services</small>
           </div>
+        </div>
 
-          {/* chips/legend */}
-          <div className="d-flex flex-wrap gap-2 mt-3">
-            {entries.length ? entries.map(([k, v]) => (
-              <span
-                key={k}
-                className={`d-inline-flex align-items-center gap-2 px-2 py-1 rounded-pill border border-${mapColor(k)} text-${mapColor(k)} bg-${mapColor(k)}-subtle small`}
-                title={`${k}: ${v}`}
-                aria-label={`${k}: ${v}`}
-              >
-                <i
-                  className={`bi ${k === "approved" ? "bi-check-circle" :
-                               k === "pending"  ? "bi-hourglass-split" :
-                               k === "rejected" ? "bi-x-octagon" : "bi-dot"} `}
-                  aria-hidden="true"
-                />
-                <span className="text-capitalize">{k}</span>
-                <span className="badge text-bg-light">{v}</span>
+        <div className="col-md-3 col-sm-6">
+          <div className="card px-24 py-16 shadow-none radius-12 border h-100 bg-gradient-start-5 text-center p-3">
+            <i className="bi bi-grid text-success fs-3 mb-2"></i>
+            <h6 className="fw-bold mb-0">{stats.categories}</h6>
+            <small className="text-muted">Categories</small>
+          </div>
+        </div>
+
+        <div className="col-md-3 col-sm-6">
+          <div className="card px-24 py-16 shadow-none radius-12 border h-100 bg-gradient-start-5 text-center p-3">
+            <i className="bi bi-star-fill text-warning fs-3 mb-2"></i>
+            <h6 className="fw-bold mb-0">{stats.featured}</h6>
+            <small className="text-muted">Featured</small>
+          </div>
+        </div>
+
+        {/* Status Breakdown (improved) */}
+        <div className="col-md-3 col-sm-6">
+          <div className="card px-24 py-16 shadow-none radius-12 border h-100 bg-gradient-start-5 p-3">
+            <div className="d-flex align-items-center justify-content-between mb-2">
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-flag text-danger fs-4" aria-hidden="true"></i>
+                <div className="fw-semibold">Status</div>
+              </div>
+              <span className="badge text-bg-light">
+                {Object.values(stats.byStatus || {}).reduce((a, v) => a + v, 0)} total
               </span>
-            )) : (
-              <span className="text-muted small">No status data</span>
-            )}
+            </div>
+
+            {(() => {
+              const mapColor = (k) =>
+                k === "approved"
+                  ? "success"
+                  : k === "pending"
+                  ? "warning"
+                  : k === "rejected"
+                  ? "danger"
+                  : "secondary";
+
+              const entries = Object.entries(stats.byStatus || {});
+              const total = entries.reduce((a, [, v]) => a + v, 0);
+              return (
+                <>
+                  <div
+                    className="progress"
+                    style={{ height: 10 }}
+                    aria-label="Status proportions"
+                  >
+                    {entries.map(([k, v]) => {
+                      const pct = total ? Math.round((v / total) * 100) : 0;
+                      return (
+                        <div
+                          key={k}
+                          className={`progress-bar bg-${mapColor(k)}`}
+                          role="progressbar"
+                          style={{ width: `${pct}%` }}
+                          aria-label={`${k} ${pct}%`}
+                          aria-valuenow={pct}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          title={`${k}: ${v} (${pct}%)`}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  <div className="d-flex flex-wrap gap-2 mt-3">
+                    {entries.length ? (
+                      entries.map(([k, v]) => (
+                        <span
+                          key={k}
+                          className={`d-inline-flex align-items-center gap-2 px-2 py-1 rounded-pill border border-${mapColor(
+                            k
+                          )} text-${mapColor(k)} bg-${mapColor(k)}-subtle small`}
+                          title={`${k}: ${v}`}
+                          aria-label={`${k}: ${v}`}
+                        >
+                          <i
+                            className={`bi ${
+                              k === "approved"
+                                ? "bi-check-circle"
+                                : k === "pending"
+                                ? "bi-hourglass-split"
+                                : k === "rejected"
+                                ? "bi-x-octagon"
+                                : "bi-dot"
+                            } `}
+                            aria-hidden="true"
+                          />
+                          <span className="text-capitalize">{k}</span>
+                          <span className="badge text-bg-light">{v}</span>
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-muted small">No status data</span>
+                    )}
+                  </div>
+
+                  <div className="d-flex justify-content-between align-items-center mt-3">
+                    <small className="text-muted">Total Approved: </small>
+                    <span className="fw-semibold">
+                      {total
+                        ? Math.round(
+                            ((stats.byStatus?.approved ?? 0) / total) * 100
+                          )
+                        : 0}
+                      %
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
-
-          {/* headline figure: approved % */}
-          <div className="d-flex justify-content-between align-items-center mt-3">
-            <small className="text-muted">Total Approved: </small>
-            <span className="fw-semibold">
-              {total ? Math.round(((stats.byStatus?.approved ?? 0) / total) * 100) : 0}%
-            </span>
-          </div>
-        </>
-      );
-    })()}
-  </div>
-</div>
-
-</div>
-
-
-     
+        </div>
+      </div>
 
       <div className="pt-4 d-flex gap-2 mb-3">
         <label className="btn btn-light mb-0 d-none">
           Import JSON
-          <input type="file" accept="application/json" hidden onChange={handleImport} />
+          <input
+            type="file"
+            accept="application/json"
+            hidden
+            onChange={handleImport}
+          />
         </label>
         <button
           className="btn rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white"
@@ -589,7 +728,10 @@ export default function ListingsAdminPage() {
           ) : (
             <ServicesEditor
               services={services}
-              startups={startups}
+              vendors={vendors}
+              vendorsById={vendorsById}
+              vendorsByEmail={vendorsByEmail}
+              resolveVendor={resolveVendor}
               category={category}
               setCategory={setCategory}
               status={status}
@@ -678,7 +820,10 @@ function JsonEditor({ text, setText, onApply }) {
 function ServicesEditor(props) {
   const {
     services,
-    startups,
+    vendors,
+    vendorsById,
+    vendorsByEmail,
+    resolveVendor,
     category,
     setCategory,
     status,
@@ -698,16 +843,30 @@ function ServicesEditor(props) {
 
   const vendorOptions = useMemo(
     () =>
-      startups.map((s) => ({
-        id: s.id,
-        name: s.name,
+      vendors.map((v) => ({
+        id: v.vendorId,
+        label:
+          `${v.companyName || v.name || "(unnamed)"}${v.email ? " — " + v.email : ""}`,
       })),
-    [startups]
+    [vendors]
   );
+
+  // When admin chooses a vendor, bind BOTH vendorId and vendor name
+  function handleBindVendorById(vendorId) {
+    const v = vendorsById[vendorId];
+    updateService({
+      vendorId: vendorId || "",
+      vendor: v ? (v.companyName || v.name || "") : "",
+      // optional: backfill contactEmail from directory
+      contactEmail: v?.email || (selected?.contactEmail || ""),
+    });
+  }
+
+  const selectedResolved = selected ? resolveVendor(selected) : null;
 
   return (
     <div className="card">
-      <div className="card-header d-flex justify-content-between">
+      <div className="card-header d-flex justify-content-between align-items-center">
         <span className="fw-semibold">Visual editor</span>
         <span className="text-muted small">CRUD for services (listings)</span>
       </div>
@@ -746,7 +905,7 @@ function ServicesEditor(props) {
             <label className="form-label">Search</label>
             <input
               className="form-control"
-              placeholder="Title, vendor, category…"
+              placeholder="Title, vendor, email, vendorId, category…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -782,22 +941,50 @@ function ServicesEditor(props) {
         <div className="row">
           {/* List */}
           <div className="col-4">
-            <div className="list-group mb-2" style={{ maxHeight: 420, overflow: "auto" }}>
-              {filtered.map((s) => (
-                <button
-                  key={s.id}
-                  className={
-                    "list-group-item list-group-item-action d-flex justify-content-between align-items-center " +
-                    (selectedId === s.id ? "active" : "")
-                  }
-                  onClick={() => setSelectedId(s.id)}
-                >
-                  <span className="text-truncate">{s.title}</span>
-                  <span className="badge bg-light text-dark">{s.category || "—"}</span>
-                </button>
-              ))}
+            <div
+              className="list-group mb-2"
+              style={{ maxHeight: 420, overflow: "auto" }}
+            >
+              {filtered.map((s) => {
+                const r = resolveVendor(s);
+                return (
+                  <button
+                    key={s.id}
+                    className={
+                      "list-group-item list-group-item-action d-flex justify-content-between align-items-center " +
+                      (selectedId === s.id ? "active" : "")
+                    }
+                    onClick={() => setSelectedId(s.id)}
+                    title={r.email || ""}
+                  >
+                    <span className="text-truncate">
+                      {s.title}
+                      <span className="text-muted"> · </span>
+                      <span className="text-truncate">{r.name}</span>
+                    </span>
+                    {r.profileHref ? (
+                      <a
+                        className="badge bg-light text-dark text-decoration-none"
+                        href={r.profileHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Open vendor profile"
+                      >
+                        {r.vendorId}
+                      </a>
+                    ) : (
+                      <span className="badge bg-light text-dark">
+                        {s.category || "—"}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
               {!filtered.length && (
-                <div className="text-muted small p-2">No services match your filters.</div>
+                <div className="text-muted small p-2">
+                  No services match your filters.
+                </div>
               )}
             </div>
             <div className="small text-muted">
@@ -805,7 +992,7 @@ function ServicesEditor(props) {
             </div>
           </div>
 
-        {/* Editor */}
+          {/* Editor */}
           <div className="col">
             {selected ? (
               <>
@@ -824,7 +1011,9 @@ function ServicesEditor(props) {
                     <input
                       className="form-control"
                       value={selected.category || ""}
-                      onChange={(e) => updateService({ category: e.target.value })}
+                      onChange={(e) =>
+                        updateService({ category: e.target.value })
+                      }
                     />
                   </div>
                   <div className="col-md-4">
@@ -832,7 +1021,9 @@ function ServicesEditor(props) {
                     <select
                       className="form-select"
                       value={selected.listingType || "service"}
-                      onChange={(e) => updateService({ listingType: e.target.value })}
+                      onChange={(e) =>
+                        updateService({ listingType: e.target.value })
+                      }
                     >
                       <option value="service">Service</option>
                       <option value="saas">SaaS</option>
@@ -843,7 +1034,9 @@ function ServicesEditor(props) {
                     <select
                       className="form-select"
                       value={selected.status || "approved"}
-                      onChange={(e) => updateService({ status: e.target.value })}
+                      onChange={(e) =>
+                        updateService({ status: e.target.value })
+                      }
                     >
                       <option value="approved">approved</option>
                       <option value="pending">pending</option>
@@ -853,33 +1046,55 @@ function ServicesEditor(props) {
                 </div>
 
                 <div className="row g-3 mt-1">
-                  <div className="col-md-4">
+                  <div className="col-md-6">
+                    <label className="form-label">
+                      Bind to vendor (by company or email)
+                    </label>
                     <select
-                    className="form-select"
-                    value={selected.vendor || ""}
-                    onChange={(e) => updateService({ vendor: e.target.value })}
-                    >
-                    <option value="">—</option>
-                    {vendorOptions.map((v) => (
-                        <option key={v.id} value={v.name}>{v.name}</option>
-                    ))}
-                    </select>
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label">Vendor ID</label>
-                    <input
-                      className="form-control"
+                      className="form-select"
                       value={selected.vendorId || ""}
-                      onChange={(e) => updateService({ vendorId: e.target.value })}
-                    />
+                      onChange={(e) => handleBindVendorById(e.target.value)}
+                    >
+                      <option value="">—</option>
+                      {vendorOptions.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {v.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="form-text">
+                      Saves both <code>vendorId</code> and display{" "}
+                      <code>vendor</code> name on the listing.
+                    </div>
                   </div>
-                  <div className="col-md-4">
-                    <label className="form-label">AI hint (optional)</label>
+                  <div className="col-md-3">
+                    <label className="form-label">Contact email</label>
                     <input
                       className="form-control"
-                      value={selected.aiHint || ""}
-                      onChange={(e) => updateService({ aiHint: e.target.value })}
+                      value={selected.contactEmail || ""}
+                      onChange={(e) =>
+                        updateService({
+                          contactEmail: e.target.value.toLowerCase(),
+                        })
+                      }
                     />
+                  </div>
+                  <div className="col-md-3 d-flex align-items-end">
+                    {selectedResolved?.profileHref ? (
+                      <a
+                        className="btn btn-outline-primary w-100"
+                        href={selectedResolved.profileHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        title="Open vendor profile"
+                      >
+                        View profile
+                      </a>
+                    ) : (
+                      <button className="btn btn-outline-secondary w-100" disabled>
+                        No profile linked
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -891,7 +1106,9 @@ function ServicesEditor(props) {
                       min="0"
                       className="form-control"
                       value={Number(selected.price || 0)}
-                      onChange={(e) => updateService({ price: Number(e.target.value || 0) })}
+                      onChange={(e) =>
+                        updateService({ price: Number(e.target.value || 0) })
+                      }
                     />
                   </div>
                   <div className="col-md-4">
@@ -903,7 +1120,9 @@ function ServicesEditor(props) {
                       step="0.1"
                       className="form-control"
                       value={Number(selected.rating || 0)}
-                      onChange={(e) => updateService({ rating: Number(e.target.value || 0) })}
+                      onChange={(e) =>
+                        updateService({ rating: Number(e.target.value || 0) })
+                      }
                     />
                   </div>
                   <div className="col-md-4">
@@ -914,7 +1133,9 @@ function ServicesEditor(props) {
                       className="form-control"
                       value={Number(selected.reviewCount || 0)}
                       onChange={(e) =>
-                        updateService({ reviewCount: Number(e.target.value || 0) })
+                        updateService({
+                          reviewCount: Number(e.target.value || 0),
+                        })
                       }
                     />
                   </div>
@@ -926,7 +1147,9 @@ function ServicesEditor(props) {
                     <input
                       className="form-control"
                       value={selected.imageUrl || ""}
-                      onChange={(e) => updateService({ imageUrl: e.target.value })}
+                      onChange={(e) =>
+                        updateService({ imageUrl: e.target.value })
+                      }
                     />
                   </div>
                   <div className="col-md-4 d-flex align-items-end gap-3">
@@ -936,7 +1159,9 @@ function ServicesEditor(props) {
                         type="checkbox"
                         className="form-check-input"
                         checked={!!selected.isFeatured}
-                        onChange={(e) => updateService({ isFeatured: !!e.target.checked })}
+                        onChange={(e) =>
+                          updateService({ isFeatured: !!e.target.checked })
+                        }
                       />
                       <label htmlFor="isFeatured" className="form-check-label">
                         Featured
@@ -951,7 +1176,9 @@ function ServicesEditor(props) {
                     className="form-control"
                     rows={4}
                     value={selected.description || ""}
-                    onChange={(e) => updateService({ description: e.target.value })}
+                    onChange={(e) =>
+                      updateService({ description: e.target.value })
+                    }
                   />
                 </div>
 
@@ -960,13 +1187,27 @@ function ServicesEditor(props) {
                   <div className="text-muted small mb-1">Card preview</div>
                   <div className="d-flex align-items-center gap-2">
                     <img
-                      src={selected.imageUrl || "/assets/images/placeholder-4x3.png"}
+                      src={
+                        selected.imageUrl || "/assets/images/placeholder-4x3.png"
+                      }
                       alt=""
-                      style={{ width: 120, height: 72, objectFit: "cover", borderRadius: 6 }}
+                      style={{
+                        width: 120,
+                        height: 72,
+                        objectFit: "cover",
+                        borderRadius: 6,
+                      }}
                     />
                     <div>
-                      <div className="fw-semibold">{selected.title || "Untitled service"}</div>
-                      <div className="text-muted small">{selected.vendor || "Vendor"}</div>
+                      <div className="fw-semibold">
+                        {selected.title || "Untitled service"}
+                      </div>
+                      <div className="text-muted small">
+                        {selectedResolved?.name || "Vendor"}
+                        {selectedResolved?.email
+                          ? ` · ${selectedResolved.email}`
+                          : ""}
+                      </div>
                       <div className="small">
                         R{Number(selected.price || 0).toLocaleString()} · ★{" "}
                         {Number(selected.rating || 0).toFixed(1)}
@@ -976,7 +1217,9 @@ function ServicesEditor(props) {
                 </div>
               </>
             ) : (
-              <div className="text-muted mt-2">Select a service to edit details.</div>
+              <div className="text-muted mt-2">
+                Select a service to edit details.
+              </div>
             )}
           </div>
         </div>
@@ -996,7 +1239,9 @@ function VersionHistory({ items, onRestore }) {
         {!items?.length && (
           <div className="list-group-item text-muted small">
             No checkpoints yet.
-            <div className="mt-1">Offline cache keeps the two most recent checkpoints.</div>
+            <div className="mt-1">
+              Offline cache keeps the two most recent checkpoints.
+            </div>
           </div>
         )}
         {items?.map((ck) => (
@@ -1007,8 +1252,10 @@ function VersionHistory({ items, onRestore }) {
                 <div className="text-muted small">{human(ck.ts)}</div>
                 <div className="text-muted small">
                   Δ Cohorts: {ck.delta?.cohorts >= 0 ? "+" : ""}
-                  {ck.delta?.cohorts ?? 0} · Δ Courses: {ck.delta?.courses >= 0 ? "+" : ""}
-                  {ck.delta?.courses ?? 0} · Δ Lessons: {ck.delta?.lessons >= 0 ? "+" : ""}
+                  {ck.delta?.cohorts ?? 0} · Δ Courses:{" "}
+                  {ck.delta?.courses >= 0 ? "+" : ""}
+                  {ck.delta?.courses ?? 0} · Δ Lessons:{" "}
+                  {ck.delta?.lessons >= 0 ? "+" : ""}
                   {ck.delta?.lessons ?? 0}
                 </div>
               </div>
@@ -1037,4 +1284,3 @@ function VersionHistory({ items, onRestore }) {
     </div>
   );
 }
-

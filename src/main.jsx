@@ -3,7 +3,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
-import { VendorProvider } from "./context/VendorContext";
+import { VendorProvider, useVendor } from "./context/VendorContext";
 
 // --- Styles (order matters: base CSS before component CSS) ---
 import "bootstrap/dist/css/bootstrap.min.css";

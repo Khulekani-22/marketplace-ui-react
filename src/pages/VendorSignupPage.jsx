@@ -1,5 +1,5 @@
 // src/pages/VendorSignupPage.jsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import {
@@ -10,16 +10,16 @@ import {
 } from "firebase/auth";
 import { useVendor } from "../context/VendorContext";
 
-const API_BASE = "/api/data/vendors"; // optional backend profile record
+const API_BASE = "/api/data/vendors"; // optional: backend upsert; non-blocking
 
 export default function VendorSignupPage() {
   const navigate = useNavigate();
   const { search } = useLocation();
-  const { vendor, setVendorProfile, ensureVendorId } = useVendor();
+  const { vendor, ensureVendorId, refresh } = useVendor();
 
   const nextPath = useMemo(() => {
     const p = new URLSearchParams(search).get("next");
-    return p || "/listings-vendors"; // default redirect
+    return p || "/profile-vendor";
   }, [search]);
 
   const [form, setForm] = useState({
@@ -28,9 +28,17 @@ export default function VendorSignupPage() {
     phone: "",
     email: "",
     password: "",
+    agree: false,
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+
+  useEffect(() => {
+    // Pre-fill email if already signed in
+    if (auth.currentUser?.email) {
+      setForm((f) => ({ ...f, email: auth.currentUser.email }));
+    }
+  }, []);
 
   function setField(k, v) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -44,15 +52,18 @@ export default function VendorSignupPage() {
         body: JSON.stringify(profile),
       });
     } catch {
-      // Non-blocking: ignore if the profile endpoint isn't ready yet
+      // Non-blocking: ignore if endpoint isn't ready yet
     }
   }
 
-  async function finish(profile) {
-    // Save to context + localStorage and go
-    setVendorProfile(profile);
-    ensureVendorId();
-    navigate(nextPath, { replace: true });
+  async function finalizeAndGo() {
+    try {
+      // Force a fresh hydrate just in case
+      await refresh?.();
+      await ensureVendorId?.();
+    } finally {
+      navigate(nextPath, { replace: true });
+    }
   }
 
   async function handleGoogle() {
@@ -61,19 +72,30 @@ export default function VendorSignupPage() {
     try {
       const provider = new GoogleAuthProvider();
       const { user } = await signInWithPopup(auth, provider);
+
       const profile = {
         vendorId: user.uid,
         id: user.uid,
         name: form.company || user.displayName || "Vendor",
-        email: user.email || "",
+        email: (user.email || "").toLowerCase(),
+        ownerUid: user.uid,
         website: form.website || "",
         phone: form.phone || "",
         source: "google",
       };
-      await persistVendorToBackend(profile);
-      await finish(profile);
+
+      // Optional best-effort upsert
+      persistVendorToBackend(profile);
+
+      await finalizeAndGo();
     } catch (e) {
-      setErr(e?.message || "Google sign-in failed");
+      // Friendly error messages
+      const code = e?.code || "";
+      if (code === "auth/popup-closed-by-user") {
+        setErr("Google sign-in was closed before completing.");
+      } else {
+        setErr(e?.message || "Google sign-in failed");
+      }
     } finally {
       setBusy(false);
     }
@@ -82,6 +104,10 @@ export default function VendorSignupPage() {
   async function handleEmailSignUp(e) {
     e.preventDefault();
     setErr("");
+    if (!form.agree) {
+      setErr("Please agree to the Terms and Privacy Policy.");
+      return;
+    }
     setBusy(true);
     try {
       const { user } = await createUserWithEmailAndPassword(
@@ -89,23 +115,37 @@ export default function VendorSignupPage() {
         form.email,
         form.password
       );
-      // set display name to company for convenience
+
       if (form.company) {
         await updateProfile(user, { displayName: form.company });
       }
+
       const profile = {
         vendorId: user.uid,
         id: user.uid,
-        name: form.company || user.email?.split("@")[0] || "Vendor",
-        email: user.email || form.email,
+        name: form.company || (user.email ? user.email.split("@")[0] : "Vendor"),
+        email: (user.email || form.email).toLowerCase(),
+        ownerUid: user.uid,
         website: form.website || "",
         phone: form.phone || "",
         source: "email",
       };
-      await persistVendorToBackend(profile);
-      await finish(profile);
+
+      // Optional best-effort upsert
+      persistVendorToBackend(profile);
+
+      await finalizeAndGo();
     } catch (e) {
-      setErr(e?.message || "Sign up failed");
+      const code = e?.code || "";
+      if (code === "auth/email-already-in-use") {
+        setErr(
+          "This email is already registered. Please sign in instead, or use 'Continue with Google' if you created the account that way."
+        );
+      } else if (code === "auth/weak-password") {
+        setErr("Password is too weak. Please use at least 8 characters.");
+      } else {
+        setErr(e?.message || "Sign up failed");
+      }
     } finally {
       setBusy(false);
     }
@@ -116,7 +156,7 @@ export default function VendorSignupPage() {
       <h1 className="h3 mb-2">Become a Vendor</h1>
       <p className="text-secondary">
         Create your vendor profile to list services on the marketplace. After
-        signing up you’ll be redirected to submit your first listing.
+        signing up you’ll be redirected to your vendor workspace.
       </p>
 
       {err && <div className="alert alert-danger">{err}</div>}
@@ -132,7 +172,7 @@ export default function VendorSignupPage() {
                   className="form-control"
                   value={form.company}
                   onChange={(e) => setField("company", e.target.value)}
-                  placeholder="e.g., 22 on Sloane"
+                  placeholder="e.g., 22 On Sloane"
                   required
                 />
               </div>
@@ -177,6 +217,20 @@ export default function VendorSignupPage() {
                   placeholder="Minimum 8 characters"
                   required
                 />
+              </div>
+
+              <div className="col-12 d-flex align-items-center gap-2 mt-2">
+                <input
+                  id="agree"
+                  type="checkbox"
+                  className="form-check-input"
+                  checked={form.agree}
+                  onChange={(e) => setField("agree", !!e.target.checked)}
+                />
+                <label htmlFor="agree" className="form-check-label">
+                  I agree to the <a href="/terms" target="_blank" rel="noreferrer">Terms</a> and{" "}
+                  <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.
+                </label>
               </div>
             </div>
 

@@ -110,6 +110,10 @@ const LmsPage = React.lazy(() => import("./pages/LmsPage.jsx"));
 const LmsAdminPage = React.lazy(() => import("./pages/LmsAdminPage.jsx"));
 const ListingsAdminPage = React.lazy(() => import("./pages/ListingsAdminPage.jsx"));
 const VendorAddListingPage = React.lazy(() => import("./pages/VendorAddListingPage.jsx"));
+const VendorMyListings = React.lazy(() => import("./pages/VendorMyListings.jsx"));
+const VendorProfilePage = React.lazy(() => import("./pages/VendorProfilePage.jsx"));
+
+
 
 function Fallback() {
   return (
@@ -244,9 +248,14 @@ export default function App() {
             <Route path="/listings-admin" element={<ListingsAdminPage />} />
             <Route path="/listings-vendors" element={<VendorAddListingPage />} />
             <Route path="/signup/vendor" element={<VendorSignupPage />} />
+            <Route path="/listings-vendors-mine" element={<VendorMyListings />} />
+            <Route path="/profile-vendor" element={<VendorProfilePage />} />
+
 
             {/* legacy -> dashboard */}
             <Route path="/index-7" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/profile" element={<Navigate to="/profile-vendor" replace />} />
 
             {/* 404 */}
             <Route path="*" element={<ErrorPage />} />
