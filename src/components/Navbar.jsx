@@ -36,7 +36,8 @@ export default function Navbar() {
         {user ? (
           <>
             <span className="text-muted small d-none d-md-inline">{user.email}</span>
-            <Link className={`btn btn-sm ${loc.pathname==="/dashboard"?"btn-secondary":"btn-outline-secondary"}`} to="/dashboard">Dashboard</Link>
+            <Link className={`btn btn-sm ${loc.pathname==="/listings-admin"?"btn-secondary":"btn-outline-secondary"}`} to="/listings-admin">Admin</Link>
+            <Link className={`btn btn-sm ${loc.pathname==="/dashboard"?"btn-secondary":"btn-outline-secondary"}`} to="/dashboard">Vendor</Link>
             <button className="btn btn-sm btn-outline-danger" onClick={logout}>Logout</button>
           </>
         ) : (
