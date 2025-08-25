@@ -229,12 +229,12 @@ export default function LoginForm({
             </div>
 
             <div className="d-grid gap-2 mt-3">
-              <button className="btn btn-primary" type="submit" disabled={busy}>
+              <button className="btn rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white" type="submit" disabled={busy}>
                 {busy ? "Signing in..." : "Sign in"}
               </button>
               <button
                 type="button"
-                className="btn btn-outline-secondary"
+                className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"
                 onClick={doGoogleLogin}
                 disabled={busy}
               >

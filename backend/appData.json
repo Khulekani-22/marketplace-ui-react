@@ -1717,6 +1717,7 @@
       "category": "SaaS",
       "vendor": "Sage",
       "vendorId": "Vendor11",
+      "contactEmail": "",
       "price": 400,
       "rating": 3.5,
       "reviewCount": 2,
@@ -1788,6 +1789,24 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Testing feature - vendor submit a new listing for approval",
+      "reviews": []
+    },
+    {
+      "id": "meqwiou0-3q8ofl",
+      "title": "Testing",
+      "category": "SaaS",
+      "vendor": "22 On Sloane",
+      "vendorId": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+      "contactEmail": "khulekani@22onsloane.co",
+      "price": 8000,
+      "rating": 0,
+      "reviewCount": 0,
+      "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/05/gecafrica-hero.jpg",
+      "aiHint": "",
+      "listingType": "service",
+      "status": "pending",
+      "isFeatured": false,
+      "description": "Testing",
       "reviews": []
     }
   ],
