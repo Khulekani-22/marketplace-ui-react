@@ -1,3 +1,5 @@
+
+// src/pages/VendorAddListingPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import MasterLayout from "../MasterLayout/MasterLayout.jsx";
@@ -50,6 +52,7 @@ function normalizeVendor(v, fb = {}) {
     name: v?.name ?? v?.companyName ?? v?.vendor ?? fb.name ?? "",
     contactEmail: email,
     ownerUid: v?.ownerUid ?? v?.uid ?? fb.uid ?? "",
+    status: (v?.status || "active").toLowerCase(), // <<— include status
   };
 }
 function findVendorInLive(live, fb) {
@@ -176,6 +179,8 @@ export default function VendorAddListingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detectedVendor?.vendorId]);
 
+  const isSuspended = (detectedVendor?.status || "").toLowerCase() === "suspended";
+
   // Form state (seeded by duplicate or prefill)
   const seed = useMemo(() => {
     if (dupSource) return normalizeService(dupSource);
@@ -219,7 +224,9 @@ export default function VendorAddListingPage() {
     (detectedVendor?.contactEmail || "").toLowerCase() ||
     (auth.currentUser?.email || "").toLowerCase();
 
+  // Guards
   const showGuard = !detectedVendor?.vendorId;
+  const blocked = showGuard || isSuspended;
 
   /* ------------------------------- submit -------------------------------- */
   async function handleSubmit(e) {
@@ -231,8 +238,34 @@ export default function VendorAddListingPage() {
       setErr("Please create your vendor profile before submitting a listing.");
       return;
     }
+    if (isSuspended) {
+      setErr("Your vendor account is suspended. You cannot submit listings. Please contact support.");
+      return;
+    }
     if (!form.title.trim() || !effectiveCategory) {
       setErr("Title and category are required.");
+      return;
+    }
+
+    // Double-check latest vendor status on server just before submit
+    const idTokenChk = await auth.currentUser?.getIdToken?.();
+    const liveForCheck = await fetch(`${API_BASE}/live`, {
+      headers: {
+        "x-tenant-id": tenantId,
+        "cache-control": "no-cache",
+        ...(idTokenChk ? { Authorization: `Bearer ${idTokenChk}` } : {}),
+      },
+    }).then((r) => (r.ok ? r.json() : data));
+
+    const fb = {
+      uid: auth.currentUser?.uid,
+      email: auth.currentUser?.email || ctxVendor?.email || "",
+      name: auth.currentUser?.displayName || ctxVendor?.name || "",
+      vendorId: detectedVendor?.vendorId || ctxVendor?.vendorId || "",
+    };
+    const latestVendor = findVendorInLive(liveForCheck, fb) || detectedVendor;
+    if ((latestVendor?.status || "").toLowerCase() === "suspended") {
+      setErr("Your vendor account is suspended. You cannot submit listings. Please contact support.");
       return;
     }
 
@@ -240,8 +273,8 @@ export default function VendorAddListingPage() {
       id: uid(),
       title: form.title.trim(),
       category: effectiveCategory,
-      vendor: detectedVendor.name || detectedVendor.contactEmail || "Vendor",
-      vendorId: detectedVendor.vendorId,
+      vendor: latestVendor.name || latestVendor.contactEmail || "Vendor",
+      vendorId: latestVendor.vendorId,
       contactEmail,
       price: Number(form.price || 0),
       rating: 0,
@@ -333,6 +366,9 @@ export default function VendorAddListingPage() {
                 <span>
                   ({detectedVendor.name || detectedVendor.contactEmail})
                 </span>
+                {isSuspended && (
+                  <span className="badge text-bg-danger ms-2">suspended</span>
+                )}
               </>
             ) : (
               "not set"
@@ -348,6 +384,13 @@ export default function VendorAddListingPage() {
             <Link to="/signup/vendor?next=/listings-vendors" className="btn btn-sm btn-primary">
               Create vendor profile
             </Link>
+          </div>
+        )}
+
+        {!showGuard && isSuspended && (
+          <div className="alert alert-danger">
+            Your vendor account is <strong>suspended</strong>. You cannot submit
+            listings. Please contact support if you think this is an error.
           </div>
         )}
 
@@ -408,7 +451,7 @@ export default function VendorAddListingPage() {
                     onChange={(e) => setField("title", e.target.value)}
                     placeholder="e.g., Modern Logo & Brand Identity Pack"
                     required
-                    disabled={showGuard}
+                    disabled={blocked}
                   />
                 </div>
                 <div className="col-md-4">
@@ -417,7 +460,7 @@ export default function VendorAddListingPage() {
                     className="form-select"
                     value={form.listingType}
                     onChange={(e) => setField("listingType", e.target.value)}
-                    disabled={showGuard}
+                    disabled={blocked}
                   >
                     <option value="service">Service</option>
                     <option value="saas">SaaS</option>
@@ -432,7 +475,7 @@ export default function VendorAddListingPage() {
                     className="form-select"
                     value={form.categoryChoice}
                     onChange={(e) => setField("categoryChoice", e.target.value)}
-                    disabled={showGuard}
+                    disabled={blocked}
                     required
                   >
                     <option value="" disabled>
@@ -457,7 +500,7 @@ export default function VendorAddListingPage() {
                         setField("categoryCustom", e.target.value)
                       }
                       placeholder="Type a new category"
-                      disabled={showGuard}
+                      disabled={blocked}
                       required
                     />
                   </div>
@@ -472,7 +515,7 @@ export default function VendorAddListingPage() {
                     value={form.price}
                     onChange={(e) => setField("price", e.target.value)}
                     placeholder="e.g., 8500"
-                    disabled={showGuard}
+                    disabled={blocked}
                   />
                 </div>
 
@@ -483,7 +526,7 @@ export default function VendorAddListingPage() {
                     value={form.imageUrl}
                     onChange={(e) => setField("imageUrl", e.target.value)}
                     placeholder="https://…"
-                    disabled={showGuard}
+                    disabled={blocked}
                   />
                 </div>
               </div>
@@ -496,7 +539,7 @@ export default function VendorAddListingPage() {
                   value={form.description}
                   onChange={(e) => setField("description", e.target.value)}
                   placeholder="Describe what buyers get, deliverables, timelines, etc."
-                  disabled={showGuard}
+                  disabled={blocked}
                 />
               </div>
 
@@ -534,7 +577,7 @@ export default function VendorAddListingPage() {
                 <button
                   className="btn btn-primary"
                   type="submit"
-                  disabled={busy || showGuard}
+                  disabled={busy || blocked}
                 >
                   {busy ? "Submitting…" : "Submit for review"}
                 </button>

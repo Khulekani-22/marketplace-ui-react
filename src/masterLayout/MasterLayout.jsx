@@ -4,27 +4,6 @@ import { Icon } from "@iconify/react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
 
-const DROPDOWNS = [
-  {
-    key: "maturity",
-    icon: "mdi:chart-timeline-variant",
-    label: "Startup Maturity",
-    items: [
-      { to: "/maturity/brl", label: "BRL", dotClass: "text-primary-600" },
-      { to: "/maturity/trl", label: "TRL", dotClass: "text-warning-main" },
-      { to: "/maturity/credit", label: "Credit Scoring", dotClass: "text-success-main" },
-    ],
-  },
-  {
-    key: "bplan",
-    icon: "mdi:file-document-edit-outline",
-    label: "Business Plan",
-    items: [
-      { to: "/business-plan/generate", label: "Generate", dotClass: "text-primary-600" },
-      { to: "/business-plan/history", label: "History", dotClass: "text-warning-main" },
-    ],
-  },
-];
 
 export default function MasterLayout({ children }) {
   const location = useLocation();
@@ -33,14 +12,7 @@ export default function MasterLayout({ children }) {
   const [openKeys, setOpenKeys] = useState({});
 
   // Auto-open dropdown containing current route + close mobile on route change
-  useEffect(() => {
-    const next = {};
-    DROPDOWNS.forEach((dd) => {
-      next[dd.key] = dd.items.some((i) => location.pathname.startsWith(i.to));
-    });
-    setOpenKeys((prev) => ({ ...prev, ...next }));
-    setMobileMenu(false);
-  }, [location.pathname]);
+
 
   const toggleDropdown = (key) => {
     setOpenKeys((prev) => {
@@ -85,17 +57,55 @@ export default function MasterLayout({ children }) {
           <ul className="sidebar-menu" id="sidebar-menu">
             <li>
               <NavLink to="/dashboard" className={navClass}>
-                <Icon icon="solar:home-smile-angle-outline" className="menu-icon" />
-                <span>Dashboard</span>
+                <Icon icon="material-symbols:map-outline" className="menu-icon" />
+                <span>All Listings</span>
               </NavLink>
             </li>
 
             <li>
               <NavLink to="/listings-vendors" className={navClass}>
-                <Icon icon="mdi:view-list-outline" className="menu-icon" />
-                <span>Listings</span>
+                <Icon icon="solar:document-text-outline" className="menu-icon" />
+                <span>Add Listings</span>
               </NavLink>
             </li>
+
+             <li>
+              <NavLink to="/listings-vendors-mine" className={navClass}>
+                <Icon icon="mdi:view-list-outline" className="menu-icon" />
+                <span>My Listings</span>
+              </NavLink>
+            </li>
+
+
+            <li>
+              <NavLink to="/profile-vendor" className={navClass}>
+                <Icon icon="solar:user-linear" className="menu-icon" />
+                <span>My Profile</span>
+              </NavLink>
+            </li>
+
+         
+
+            
+
+            <hr></hr>
+
+            {/* My Profile -> vendor profile route */}
+            <li>
+              <NavLink to="/profile-vendor-admin" className={navClass}>
+                <Icon icon="ri-user-settings-line" className="menu-icon" />
+                <span>Vendor Approval</span>
+              </NavLink>
+            </li>
+
+             <li>
+              <NavLink to="/listings-admin" className={navClass}>
+                <Icon icon="mdi:view-list-outline" className="menu-icon" />
+                <span>Listings Approval</span>
+              </NavLink>
+            </li>
+
+            <hr></hr>
 
             <li>
               <NavLink to="/sloane-academy" className={navClass}>
@@ -104,48 +114,7 @@ export default function MasterLayout({ children }) {
               </NavLink>
             </li>
 
-            {/* Dropdowns */}
-            {DROPDOWNS.map((dd) => {
-              const isOpen = !!openKeys[dd.key];
-              return (
-                <li key={dd.key} className={`dropdown ${isOpen ? "open" : ""}`}>
-                  <button
-                    type="button"
-                    className="w-100 text-start d-flex align-items-center gap-2 px-0 border-0 bg-transparent"
-                    onClick={() => toggleDropdown(dd.key)}
-                    aria-expanded={isOpen}
-                    aria-controls={`submenu-${dd.key}`}
-                  >
-                    <Icon icon={dd.icon} className="menu-icon" />
-                    <span className="flex-grow-1">{dd.label}</span>
-                    <Icon icon={isOpen ? "mdi:chevron-up" : "mdi:chevron-down"} className="ms-auto" />
-                  </button>
-
-                  <ul
-                    id={`submenu-${dd.key}`}
-                    className="sidebar-submenu"
-                    style={submenuMaxHeight(isOpen, dd.items.length)}
-                  >
-                    {dd.items.map((it) => (
-                      <li key={it.to}>
-                        <NavLink to={it.to} className={navClass}>
-                          <i className={`ri-circle-fill circle-icon ${it.dotClass} w-auto`} />
-                          {it.label}
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              );
-            })}
-
-            {/* My Profile -> vendor profile route */}
-            <li>
-              <NavLink to="/profile-vendor" className={navClass}>
-                <Icon icon="solar:user-linear" className="menu-icon" />
-                <span>My Profile</span>
-              </NavLink>
-            </li>
+            
 
             <li>
               <NavLink to="/support" className={navClass}>
@@ -190,6 +159,7 @@ export default function MasterLayout({ children }) {
                   <input type="text" name="search" placeholder="Search" aria-label="Search" />
                   <Icon icon="ion:search-outline" className="icon" />
                 </form>
+
               </div>
             </div>
 

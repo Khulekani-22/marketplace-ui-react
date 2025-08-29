@@ -14154,6 +14154,32 @@ td.fc-header-center {
   -o-border-radius: 50%;
 }
 
+
+.search-input {
+  padding-right: 2.5rem;
+  border: 2px solid #fe5c01;
+  border-radius: 1.375rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-input:hover {
+  border-color: #fe5c01;
+  box-shadow: 0 0 0 0.2rem rgba(254, 92, 1, 0.75);
+}
+
+.search-input:focus {
+  border-color: #fe5c01;
+  box-shadow: 0 0 0 0.2rem rgba(254, 92, 1, 0.25);
+}
+
+.search-icon {
+  position: absolute;
+  right: 0.75rem;
+  color: #fe5c01;
+  pointer-events: none;
+}
+
+
 .chat-search {
   padding: 0 1.5rem;
   border-top: 1px solid var(--neutral-200);
