@@ -45,14 +45,31 @@ export default function VendorSignupPage() {
   }
 
   async function persistVendorToBackend(profile) {
+    const tenantId = sessionStorage.getItem("tenantId") || "public";
     try {
-      await fetch(API_BASE, {
+      const idToken = await auth.currentUser?.getIdToken?.();
+      const allowed = {
+        id: profile.id,
+        name: profile.name,
+        contactEmail: profile.contactEmail,
+        ...(profile.categories ? { categories: profile.categories } : {}),
+        ...(profile.kycStatus ? { kycStatus: profile.kycStatus } : {}),
+      };
+      const res = await fetch(API_BASE, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profile),
+        headers: {
+          "Content-Type": "application/json",
+          "x-tenant-id": tenantId,
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+        },
+        body: JSON.stringify(allowed),
       });
-    } catch {
-      // Non-blocking: ignore if endpoint isn't ready yet
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || `Request failed with status ${res.status}`);
+      }
+    } catch (e) {
+      throw new Error(e?.message || "Failed to save vendor profile");
     }
   }
 
@@ -78,18 +95,12 @@ export default function VendorSignupPage() {
       const { user } = await signInWithPopup(auth, provider);
 
       const profile = {
-        vendorId: user.uid,
         id: user.uid,
         name: form.company || user.displayName || "Vendor",
-        email: (user.email || "").toLowerCase(),
-        ownerUid: user.uid,
-        website: form.website || "",
-        phone: form.phone || "",
-        source: "google",
+        contactEmail: (user.email || "").toLowerCase(),
       };
 
-      // Optional best-effort upsert
-      persistVendorToBackend(profile);
+      await persistVendorToBackend(profile);
 
       await finalizeAndGo();
     } catch (e) {
@@ -125,18 +136,12 @@ export default function VendorSignupPage() {
       }
 
       const profile = {
-        vendorId: user.uid,
         id: user.uid,
         name: form.company || (user.email ? user.email.split("@")[0] : "Vendor"),
-        email: (user.email || form.email).toLowerCase(),
-        ownerUid: user.uid,
-        website: form.website || "",
-        phone: form.phone || "",
-        source: "email",
+        contactEmail: (user.email || form.email).toLowerCase(),
       };
 
-      // Optional best-effort upsert
-      persistVendorToBackend(profile);
+      await persistVendorToBackend(profile);
 
       await finalizeAndGo();
     } catch (e) {
