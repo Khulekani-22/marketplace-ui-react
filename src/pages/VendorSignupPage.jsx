@@ -68,6 +68,10 @@ export default function VendorSignupPage() {
 
   async function handleGoogle() {
     setErr("");
+    if (!form.agree) {
+      setErr("Please agree to the Terms and Privacy Policy.");
+      return;
+    }
     setBusy(true);
     try {
       const provider = new GoogleAuthProvider();
@@ -254,7 +258,7 @@ export default function VendorSignupPage() {
             <button
               className="btn btn-outline-dark"
               onClick={handleGoogle}
-              disabled={busy}
+              disabled={busy || !form.company || !form.agree}
               title="Continue with Google"
             >
               {busy ? "Please wait…" : "Continue with Google"}
