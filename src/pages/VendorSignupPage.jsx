@@ -182,7 +182,7 @@ export default function VendorSignupPage() {
                   className="form-control"
                   value={form.website}
                   onChange={(e) => setField("website", e.target.value)}
-                  placeholder="https://your-site.com"
+                  placeholder="https://your-site.co.za"
                 />
               </div>
 
@@ -235,7 +235,7 @@ export default function VendorSignupPage() {
             </div>
 
             <div className="d-flex gap-2 mt-3">
-              <button className="btn btn-primary" type="submit" disabled={busy}>
+              <button className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6" type="submit" disabled={busy}>
                 {busy ? "Creating…" : "Create account"}
               </button>
               <button
@@ -252,7 +252,7 @@ export default function VendorSignupPage() {
 
           <div className="d-grid">
             <button
-              className="btn btn-outline-dark"
+              className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"
               onClick={handleGoogle}
               disabled={busy}
               title="Continue with Google"

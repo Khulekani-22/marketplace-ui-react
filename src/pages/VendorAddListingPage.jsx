@@ -575,7 +575,7 @@ export default function VendorAddListingPage() {
 
               <div className="d-flex gap-2 mt-3">
                 <button
-                  className="btn btn-primary"
+                  className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"
                   type="submit"
                   disabled={busy || blocked}
                 >

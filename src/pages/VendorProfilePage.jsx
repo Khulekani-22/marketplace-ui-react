@@ -496,7 +496,7 @@ export default function VendorProfilePage() {
                       disabled={showGuard}
                     />
                   </div>
-                  <div className="col-md-6">
+                  <div className="col-md-6 d-none">
                     <label className="form-label">Status</label>
                     <select
                       className="form-select"
