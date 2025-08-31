@@ -127,18 +127,40 @@ export default function VendorAddListingPage() {
             ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
           },
         });
-        if (alive && res.ok) {
+        let base = appDataLocal;
+        if (res.ok) {
           const live = await res.json();
-          setData(live);
+          base = live;
 
           const fromId = searchParams.get("from");
           if (fromId) {
-            const found = live?.services?.find(
+            const found = base?.services?.find(
               (s) => String(s.id) === String(fromId)
             );
             if (found) setDupSource(found);
           }
         }
+        // Merge vendors from API for detection/status
+        try {
+          const arr = await (await import("../lib/api")).api.get(`/api/data/vendors`).then((r) => r.data || []);
+          const draft = JSON.parse(JSON.stringify(base));
+          draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
+          arr.forEach((v) => {
+            const email = (v.email || v.contactEmail || "").toLowerCase();
+            const id = String(v.vendorId || v.id || email || "");
+            const idx = draft.startups.findIndex((x) => String(x.vendorId || x.id) === id);
+            const merged = {
+              ...draft.startups[idx] || {},
+              ...v,
+              vendorId: id,
+              id,
+            };
+            if (idx >= 0) draft.startups[idx] = merged; else draft.startups.push(merged);
+          });
+          base = draft;
+        } catch {}
+
+        if (alive) setData(base);
         // recent checkpoints (for reassurance on submission)
         const hx = await fetch(`${API_BASE}/checkpoints`, {
           headers: {
@@ -179,7 +201,9 @@ export default function VendorAddListingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detectedVendor?.vendorId]);
 
-  const isSuspended = (detectedVendor?.status || "").toLowerCase() === "suspended";
+  const vStatus = (detectedVendor?.status || "").toLowerCase();
+  const isApproved = vStatus === "active"; // Admin approval sets status=active
+  const isSuspended = vStatus === "suspended";
 
   // Form state (seeded by duplicate or prefill)
   const seed = useMemo(() => {
@@ -226,7 +250,17 @@ export default function VendorAddListingPage() {
 
   // Guards
   const showGuard = !detectedVendor?.vendorId;
-  const blocked = showGuard || isSuspended;
+  const blocked = showGuard || isSuspended || !isApproved;
+
+  // Redirect non-approved vendors to complete their profile/await approval
+  useEffect(() => {
+    if (!auth.currentUser) return;
+    if (showGuard || !isApproved) {
+      const next = encodeURIComponent(window.location.pathname + window.location.search);
+      navigate(`/profile-vendor?next=${next}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showGuard, isApproved]);
 
   /* ------------------------------- submit -------------------------------- */
   async function handleSubmit(e) {
@@ -236,6 +270,10 @@ export default function VendorAddListingPage() {
 
     if (showGuard) {
       setErr("Please create your vendor profile before submitting a listing.");
+      return;
+    }
+    if (!isApproved) {
+      setErr("Your vendor account is not yet approved. Please complete your profile and wait for admin approval.");
       return;
     }
     if (isSuspended) {

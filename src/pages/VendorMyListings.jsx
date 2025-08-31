@@ -31,6 +31,15 @@ export default function VendorMyListings() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Redirect vendors who are not yet approved to their profile page
+  useEffect(() => {
+    if (!vendor) return;
+    if (!vendor.isApproved) {
+      const next = encodeURIComponent("/listings-vendors-mine");
+      navigate(`/profile-vendor?next=${next}`, { replace: true });
+    }
+  }, [vendor, navigate]);
+
   // load live listings and filter to this vendor
   useEffect(() => {
     ensureVendorId();

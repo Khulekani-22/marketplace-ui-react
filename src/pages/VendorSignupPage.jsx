@@ -2,15 +2,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { auth } from "../lib/firebase";
+import { api } from "../lib/api";
 import {
   GoogleAuthProvider,
   signInWithPopup,
   createUserWithEmailAndPassword,
   updateProfile,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useVendor } from "../context/VendorContext";
 
-const API_BASE = "/api/data/vendors"; // optional: backend upsert; non-blocking
+const API_BASE = "/api/data/vendors"; // backend upsert endpoint
 
 export default function VendorSignupPage() {
   const navigate = useNavigate();
@@ -45,31 +47,23 @@ export default function VendorSignupPage() {
   }
 
   async function persistVendorToBackend(profile) {
-    const tenantId = sessionStorage.getItem("tenantId") || "public";
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const allowed = {
+      const payload = {
         id: profile.id,
         name: profile.name,
         contactEmail: profile.contactEmail,
-        ...(profile.categories ? { categories: profile.categories } : {}),
-        ...(profile.kycStatus ? { kycStatus: profile.kycStatus } : {}),
+        // include fields the backend can keep
+        email: profile.contactEmail,
+        ownerUid: profile.id,
+        phone: profile.phone || "",
+        website: profile.website || "",
+        kycStatus: profile.kycStatus || "pending",
+        categories: profile.categories || [],
       };
-      const res = await fetch(API_BASE, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        body: JSON.stringify(allowed),
-      });
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || `Request failed with status ${res.status}`);
-      }
+      await api.post(API_BASE, payload);
     } catch (e) {
-      throw new Error(e?.message || "Failed to save vendor profile");
+      const msg = e?.response?.data?.message || e?.message || "Failed to save vendor profile";
+      throw new Error(msg);
     }
   }
 
@@ -98,7 +92,14 @@ export default function VendorSignupPage() {
         id: user.uid,
         name: form.company || user.displayName || "Vendor",
         contactEmail: (user.email || "").toLowerCase(),
+        phone: form.phone,
+        website: form.website,
       };
+
+      // Keep Firebase displayName in sync with entered company
+      if (form.company) {
+        try { await updateProfile(user, { displayName: form.company }); } catch (_) {}
+      }
 
       await persistVendorToBackend(profile);
 
@@ -139,6 +140,8 @@ export default function VendorSignupPage() {
         id: user.uid,
         name: form.company || (user.email ? user.email.split("@")[0] : "Vendor"),
         contactEmail: (user.email || form.email).toLowerCase(),
+        phone: form.phone,
+        website: form.website,
       };
 
       await persistVendorToBackend(profile);
@@ -147,9 +150,40 @@ export default function VendorSignupPage() {
     } catch (e) {
       const code = e?.code || "";
       if (code === "auth/email-already-in-use") {
-        setErr(
-          "This email is already registered. Please sign in instead, or use 'Continue with Google' if you created the account that way."
-        );
+        // If the email already exists, try signing in with the provided password
+        try {
+          const { user } = await signInWithEmailAndPassword(auth, form.email, form.password);
+
+          // Keep displayName in sync if a company name was provided
+          if (form.company) {
+            try { await updateProfile(user, { displayName: form.company }); } catch (_) {}
+          }
+
+          const profile = {
+            id: user.uid,
+            name: form.company || (user.email ? user.email.split("@")[0] : "Vendor"),
+            contactEmail: (user.email || form.email).toLowerCase(),
+            phone: form.phone,
+            website: form.website,
+          };
+
+          // Upsert vendor profile so existing users can become vendors and retain the same vendor number (uid)
+          await persistVendorToBackend(profile);
+
+          await finalizeAndGo();
+        } catch (signinErr) {
+          const sc = signinErr?.code || "";
+          if (sc === "auth/wrong-password") {
+            setErr("Email already registered. The password is incorrect. Please sign in or reset your password.");
+          } else if (sc === "auth/user-disabled") {
+            setErr("This account is disabled. Please contact support.");
+          } else if (sc === "auth/user-not-found") {
+            // Very unlikely if we got email-already-in-use, but handle just in case
+            setErr("This email is registered with a different sign-in method. Try 'Continue with Google'.");
+          } else {
+            setErr(signinErr?.message || "Unable to sign in to existing account.");
+          }
+        }
       } else if (code === "auth/weak-password") {
         setErr("Password is too weak. Please use at least 8 characters.");
       } else {
@@ -223,6 +257,7 @@ export default function VendorSignupPage() {
                   className="form-control"
                   value={form.password}
                   onChange={(e) => setField("password", e.target.value)}
+                  minLength={8}
                   placeholder="Minimum 8 characters"
                   required
                 />
@@ -237,20 +272,24 @@ export default function VendorSignupPage() {
                   onChange={(e) => setField("agree", !!e.target.checked)}
                 />
                 <label htmlFor="agree" className="form-check-label">
-                  I agree to the <a href="/terms" target="_blank" rel="noreferrer">Terms</a> and{" "}
+                  I agree to the <a href="/terms-condition" target="_blank" rel="noreferrer">Terms</a> and{" "}
                   <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.
                 </label>
               </div>
             </div>
 
             <div className="d-flex gap-2 mt-3">
-              <button className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6" type="submit" disabled={busy}>
+              <button
+                className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"
+                type="submit"
+                disabled={busy || !form.agree || !form.company || !form.email || !form.password || form.password.length < 8}
+              >
                 {busy ? "Creating…" : "Create account"}
               </button>
               <button
                 type="button"
                 className="btn btn-outline-secondary"
-                onClick={() => window.history.back()}
+                onClick={() => navigate(-1)}
               >
                 Cancel
               </button>

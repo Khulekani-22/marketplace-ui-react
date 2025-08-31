@@ -25,7 +25,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const DEFAULT_PORT = 5000;
+const PORT = Number(process.env.PORT || DEFAULT_PORT);
 
 /* ------------------------ Core security & parsing ------------------------ */
 app.use(helmet());
@@ -298,16 +299,46 @@ app.use((err, req, res, next) => {
 });
 
 /* --------------------------------- Start --------------------------------- */
+async function listenWithPort(port) {
+  return new Promise((resolve, reject) => {
+    const server = app
+      .listen(port, () => {
+        console.log(`SCDM backend running on http://localhost:${port}`);
+        console.log(`Live appData.json: ${APP_DATA}`);
+        console.log(`Snapshots dir:     ${SNAPSHOT_DIR}`);
+        resolve(server);
+      })
+      .on("error", (err) => {
+        reject(err);
+      });
+  });
+}
+
 (async function start() {
   try {
     await initLmsStorage();
-    app.listen(PORT, () => {
-      console.log(`SCDM backend running on http://localhost:${PORT}`);
-      console.log(`Live appData.json: ${APP_DATA}`);
-      console.log(`Snapshots dir:     ${SNAPSHOT_DIR}`);
-    });
+    // Try ports in order: requested/5000, then 5001, then 5500
+    const tried = new Set();
+    const ports = [PORT, 5001, 5500].filter((p, i, arr) => arr.indexOf(p) === i);
+    let started = false;
+    for (const p of ports) {
+      try {
+        if (tried.has(p)) continue;
+        await listenWithPort(p);
+        started = true;
+        break;
+      } catch (err) {
+        tried.add(p);
+        if (err?.code === "EADDRINUSE") {
+          console.warn(`Port ${p} in use. Trying next...`);
+          continue;
+        }
+        throw err;
+      }
+    }
+    if (!started) throw new Error("No available port among [5000, 5001, 5500]");
   } catch (e) {
-    console.error("Failed to initialize LMS storage:", e);
+    console.error("Failed to start backend:", e);
     process.exit(1);
   }
 })();

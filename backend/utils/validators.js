@@ -18,6 +18,31 @@ export const VendorSchema = z.object({
   name: z.string().min(2),
   kycStatus: z.enum(["pending", "approved", "rejected"]).default("pending"),
   contactEmail: z.string().email(),
+  ownerUid: z.string().optional(),
+  phone: z.string().optional().default(""),
+  website: z.string().optional().default(""),
+  description: z.string().optional().default(""),
+  logoUrl: z.string().optional().default(""),
+  bannerUrl: z.string().optional().default(""),
+  country: z.string().optional().default(""),
+  city: z.string().optional().default(""),
+  addressLine: z.string().optional().default(""),
+  socials: z
+    .object({
+      twitter: z.string().optional().default(""),
+      linkedin: z.string().optional().default(""),
+      facebook: z.string().optional().default(""),
+      instagram: z.string().optional().default(""),
+      youtube: z.string().optional().default(""),
+      github: z.string().optional().default(""),
+    })
+    .optional()
+    .default({}),
   categories: z.array(z.string()).optional().default([]),
+  tags: z.array(z.string()).optional().default([]),
+  foundedYear: z.string().optional().default(""),
+  teamSize: z.string().optional().default(""),
+  registrationNo: z.string().optional().default(""),
+  status: z.enum(["active", "pending", "suspended"]).optional().default("pending"),
   tenantId: z.string().optional(),
 });

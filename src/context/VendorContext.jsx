@@ -1,6 +1,7 @@
 // src/context/VendorContext.jsx
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { onIdTokenChanged, signOut } from "firebase/auth";
+import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
 
 const API_BASE = "/api/lms";
@@ -14,6 +15,9 @@ function safeParse(s) {
 }
 
 function normalizeVendor(v, fb = {}) {
+  const status = (v?.status || v?.approvalStatus || "").toLowerCase();
+  const kyc = (v?.kycStatus || "").toLowerCase();
+  const isApproved = status === "active" || kyc === "approved";
   return {
     vendorId: v?.vendorId ?? v?.id ?? "",
     id: v?.id ?? v?.vendorId ?? "",
@@ -25,6 +29,9 @@ function normalizeVendor(v, fb = {}) {
     logo: v?.logo ?? v?.imageUrl ?? "",
     address: v?.address ?? "",
     createdAt: v?.createdAt ?? null,
+    status,
+    kycStatus: kyc,
+    isApproved,
   };
 }
 
@@ -74,6 +81,14 @@ export function VendorProvider({ children }) {
     });
     return res.ok ? res.json() : {};
   }
+  async function fetchVendorsApi() {
+    try {
+      const arr = await api.get(`/api/data/vendors`).then((r) => r.data || []);
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  }
 
   async function hydrateForUser(user) {
     setError(null);
@@ -97,8 +112,19 @@ export function VendorProvider({ children }) {
     const seq = ++loadSeq.current;
 
     try {
-      // 2) pull fresh profile from live
+      // 2) pull fresh profile from live and augment with API vendors
       const live = await fetchLive();
+      const apiVendors = await fetchVendorsApi();
+      if (Array.isArray(apiVendors) && apiVendors.length) {
+        live.startups = Array.isArray(live.startups) ? live.startups : [];
+        apiVendors.forEach((v) => {
+          const email = (v.email || v.contactEmail || "").toLowerCase();
+          const id = String(v.vendorId || v.id || email || "");
+          const idx = live.startups.findIndex((x) => String(x.vendorId || x.id) === id);
+          const merged = { ...(live.startups[idx] || {}), ...v, vendorId: id, id };
+          if (idx >= 0) live.startups[idx] = merged; else live.startups.push(merged);
+        });
+      }
       if (seq !== loadSeq.current) return; // abandoned
       const found = findVendorInLive(live, user);
 
@@ -138,11 +164,30 @@ export function VendorProvider({ children }) {
       },
       ensureVendorId: async () => {
         if (!authUser) return null;
-        // if we already have a vendorId, return
         if (vendor?.vendorId) return vendor;
 
-        // re-fetch; if still missing, the UI can gate actions until profile is created
+        // Re-hydrate once
         await hydrateForUser(authUser);
+        if (vendor?.vendorId) return vendor;
+
+        // Attempt to create a minimal vendor profile for this user, then hydrate again
+        try {
+          const email = (authUser.email || "").toLowerCase();
+          const name = authUser.displayName || (email ? email.split("@")[0] : "Vendor");
+          if (!email) return null; // cannot create without email
+          await api.post(`/api/data/vendors`, {
+            id: authUser.uid,
+            name,
+            contactEmail: email,
+            ownerUid: authUser.uid,
+            status: "pending",
+            kycStatus: "pending",
+            categories: [],
+          });
+          await hydrateForUser(authUser);
+        } catch (e) {
+          // swallow; caller may show UI to complete profile
+        }
         return vendor?.vendorId ? vendor : null;
       },
       signOutAndClear: async () => {

@@ -1,6 +1,7 @@
 // src/pages/VendorsAdminPage.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
+import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
 
 const API_BASE = "/api/lms";
@@ -94,6 +95,39 @@ function summarizeVendors(vendors = []) {
   return { total, categories, byStatus };
 }
 
+function pickVendorPayload(v) {
+  const email = (v?.contactEmail || v?.email || "").toLowerCase();
+  return {
+    id: String(v?.vendorId || v?.id || ""),
+    name: v?.name || v?.companyName || "",
+    contactEmail: email,
+    ownerUid: v?.ownerUid || "",
+    phone: v?.phone || "",
+    website: v?.website || "",
+    description: v?.description || "",
+    logoUrl: v?.logoUrl || v?.logo || "",
+    bannerUrl: v?.bannerUrl || "",
+    country: v?.country || "",
+    city: v?.city || "",
+    addressLine: v?.addressLine || "",
+    socials: {
+      twitter: v?.socials?.twitter || "",
+      linkedin: v?.socials?.linkedin || "",
+      facebook: v?.socials?.facebook || "",
+      instagram: v?.socials?.instagram || "",
+      youtube: v?.socials?.youtube || "",
+      github: v?.socials?.github || "",
+    },
+    categories: Array.isArray(v?.categories) ? v.categories : [],
+    tags: Array.isArray(v?.tags) ? v.tags : [],
+    foundedYear: v?.foundedYear || "",
+    teamSize: v?.teamSize || "",
+    registrationNo: v?.registrationNo || "",
+    status: (v?.status || "pending").toLowerCase(),
+    kycStatus: (v?.status || "pending") === "active" ? "approved" : (v?.kycStatus || "pending"),
+  };
+}
+
 /* --------------------------------- page --------------------------------- */
 export default function VendorsAdminPage() {
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "public", []);
@@ -146,6 +180,46 @@ export default function VendorsAdminPage() {
     const cache = safeParse(localStorage.getItem(LS_HISTORY_CACHE));
     return cache ?? [];
   });
+
+  async function migrateStartups() {
+    setErr(null);
+    setBusy(true);
+    try {
+      const res = await api.post(`/api/data/vendors/migrate-startups`).then((r) => r.data || {});
+      toastOK(
+        `Migrated startups → vendors (scanned: ${res.scanned ?? 0}, created: ${res.created ?? 0}, updated: ${res.updated ?? 0})`
+      );
+      // Reload base from LMS, then merge API vendors
+      let base = appDataLocal;
+      try {
+        const idToken = await auth.currentUser?.getIdToken?.();
+        const liveRes = await fetch(`${API_BASE}/live`, {
+          headers: { "x-tenant-id": tenantId, ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}) },
+        });
+        if (liveRes.ok) base = await liveRes.json();
+      } catch {}
+      try {
+        const list = await api.get(`/api/data/vendors`).then((r) => r.data || []);
+        const draft = deepClone(base);
+        draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
+        list.forEach((v) => {
+          const n = normalizeVendor(v);
+          const idx = draft.startups.findIndex((x) => String(x.vendorId || x.id) === n.vendorId);
+          if (idx >= 0) draft.startups[idx] = { ...draft.startups[idx], ...n };
+          else draft.startups.push(n);
+        });
+        base = draft;
+      } catch {}
+      setData(base);
+      setText(JSON.stringify(base, null, 2));
+      localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(base));
+      await refreshHistory();
+    } catch (e) {
+      setErr(e?.response?.data?.message || e?.message || "Migration failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   // Filters / selection
   const [status, setStatus] = useState("All"); // All | active | pending | suspended
@@ -213,6 +287,36 @@ export default function VendorsAdminPage() {
       next.startups.push({ ...selected.raw, ...patch, vendorId: selected.vendorId, id: selected.vendorId });
     }
     doSetData(next);
+
+    // Persist core vendor fields via API (axios client includes auth)
+    const payload = pickVendorPayload({ ...selected, ...patch });
+    if (payload.name && payload.contactEmail && payload.id) {
+      // Guard: require sign-in for writes
+      if (!auth.currentUser) {
+        setErr("Please sign in to save vendor changes.");
+        return;
+      }
+      api
+        .put(`/api/data/vendors/${encodeURIComponent(payload.id)}`, payload)
+        .then(() => toastOK("Saved to API"))
+        .catch(async (e) => {
+          const status = e?.response?.status;
+          const message = e?.response?.data?.message || e?.message || "Failed to save vendor to API";
+          if (status === 404) {
+            // If the vendor does not exist in the API store yet, try to create it
+            try {
+              await api.post(`/api/data/vendors`, payload);
+              toastOK("Created vendor in API");
+              return;
+            } catch (e2) {
+              const m2 = e2?.response?.data?.message || e2?.message || message;
+              setErr(m2);
+              return;
+            }
+          }
+          setErr(message);
+        });
+    }
   }
 
   function addVendor() {
@@ -284,21 +388,38 @@ export default function VendorsAdminPage() {
     (async () => {
       setBusy(true);
       try {
-        const idToken = await auth.currentUser?.getIdToken?.();
-        const res = await fetch(`${API_BASE}/live`, {
-          headers: {
-            "x-tenant-id": tenantId,
-            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-          },
-        });
-        if (res.ok) {
-          const live = await res.json();
-          setData(live);
-          setText(JSON.stringify(live, null, 2));
-          localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(live));
-          const first = live?.startups?.[0] || live?.vendors?.[0] || live?.companies?.[0];
-          setSelectedId(String(first?.vendorId ?? first?.id ?? "") || "");
-        }
+        // Start with LMS live (if available), else local
+        let base = appDataLocal;
+        try {
+          const idToken = await auth.currentUser?.getIdToken?.();
+          const res = await fetch(`${API_BASE}/live`, {
+            headers: {
+              "x-tenant-id": tenantId,
+              ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+            },
+          });
+          if (res.ok) base = await res.json();
+        } catch {}
+
+        // Merge vendors from API into working copy
+        try {
+          const list = await api.get(`/api/data/vendors`).then((r) => r.data || []);
+          const draft = deepClone(base);
+          draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
+          list.forEach((v) => {
+            const n = normalizeVendor(v);
+            const idx = draft.startups.findIndex((x) => String(x.vendorId || x.id) === n.vendorId);
+            if (idx >= 0) draft.startups[idx] = { ...draft.startups[idx], ...n };
+            else draft.startups.push(n);
+          });
+          base = draft;
+        } catch {}
+
+        setData(base);
+        setText(JSON.stringify(base, null, 2));
+        localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(base));
+        const first = base?.startups?.[0] || base?.vendors?.[0] || base?.companies?.[0];
+        setSelectedId(String(first?.vendorId ?? first?.id ?? "") || "");
         await refreshHistory();
       } catch {
         // stay with local fallback
@@ -553,6 +674,20 @@ export default function VendorsAdminPage() {
           onClick={handleExport}
         >
           Export Current
+        </button>
+        <button
+          className="btn btn-outline-warning"
+          onClick={() => {
+            if (busy) return;
+            const ok = window.confirm(
+              "This will convert all items under 'startups' into 'vendors' (idempotent) and clear startups. Proceed?"
+            );
+            if (ok) migrateStartups();
+          }}
+          disabled={busy}
+          title="Convert all startups to vendors and upsert into vendor directory"
+        >
+          Migrate startups → vendors
         </button>
         <button
           className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"

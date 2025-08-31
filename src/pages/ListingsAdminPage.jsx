@@ -1,6 +1,7 @@
 // src/pages/ListingsAdminPage.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
+import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
 
 const API_BASE = "/api/lms";
@@ -123,22 +124,10 @@ export default function ListingsAdminPage() {
     let alive = true;
     (async () => {
       try {
-        const idToken = await auth.currentUser?.getIdToken?.();
-        const res = await fetch(`${API_BASE}/vendors`, {
-          headers: {
-            "x-tenant-id": tenantId,
-            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-          },
-        });
-        if (res.ok) {
-          const payload = await res.json();
-          // Accept {vendors: [...]}, {items: [...]}, or just [...]
-          const arr = payload?.vendors || payload?.items || payload || [];
-          const norm = Array.isArray(arr) ? arr.map(normalizeVendor) : [];
-          if (alive && norm.length) setVendors(norm);
-        } else {
-          // keep fallback
-        }
+        // API-first: pull vendors via axios
+        const arr = await api.get(`/api/data/vendors`).then((r) => r.data || []);
+        const norm = Array.isArray(arr) ? arr.map(normalizeVendor) : [];
+        if (alive && norm.length) setVendors(norm);
       } catch {
         // keep fallback
       }

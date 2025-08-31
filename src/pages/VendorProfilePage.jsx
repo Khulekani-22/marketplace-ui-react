@@ -3,6 +3,7 @@ import MasterLayout from "../MasterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/VendorContext";
 import { auth } from "../lib/firebase";
 import appDataLocal from "../data/appData.json";
+import { api } from "../lib/api";
 
 const API_BASE = "/api/lms";
 
@@ -30,6 +31,40 @@ function human(ts) {
   return isNaN(d) ? "—" : d.toLocaleString();
 }
 
+function pickVendorPayload(v) {
+  // Sync with backend VendorSchema
+  const email = (v?.contactEmail || v?.email || "").toLowerCase();
+  return {
+    id: String(v?.vendorId || v?.id || ""),
+    name: v?.name || "",
+    contactEmail: email,
+    ownerUid: v?.ownerUid || "",
+    phone: v?.phone || "",
+    website: v?.website || "",
+    description: v?.description || "",
+    logoUrl: v?.logoUrl || v?.logo || "",
+    bannerUrl: v?.bannerUrl || "",
+    country: v?.country || "",
+    city: v?.city || "",
+    addressLine: v?.addressLine || "",
+    socials: {
+      twitter: v?.socials?.twitter || "",
+      linkedin: v?.socials?.linkedin || "",
+      facebook: v?.socials?.facebook || "",
+      instagram: v?.socials?.instagram || "",
+      youtube: v?.socials?.youtube || "",
+      github: v?.socials?.github || "",
+    },
+    categories: Array.isArray(v?.categories) ? v.categories : [],
+    tags: Array.isArray(v?.tags) ? v.tags : [],
+    foundedYear: v?.foundedYear || "",
+    teamSize: v?.teamSize || "",
+    registrationNo: v?.registrationNo || "",
+    status: (v?.status || "pending").toLowerCase(),
+    kycStatus: v?.kycStatus || "pending",
+  };
+}
+
 function normalizeVendor(v, fb = {}) {
   const email = (v?.email || v?.contactEmail || fb.email || "").toLowerCase();
   const socials = v?.socials ?? {};
@@ -52,7 +87,7 @@ function normalizeVendor(v, fb = {}) {
     foundedYear: v?.foundedYear ?? "",
     teamSize: v?.teamSize ?? "",
     registrationNo: v?.registrationNo ?? "",
-    status: v?.status ?? "active",
+    status: (v?.status || "pending").toLowerCase(),
     socials: {
       twitter: socials.twitter ?? "",
       linkedin: socials.linkedin ?? "",
@@ -149,18 +184,35 @@ export default function VendorProfilePage() {
       setBusy(true);
       try {
         await ensureVendorId();
-        const idToken = await auth.currentUser?.getIdToken?.();
-        const liveRes = await fetch(`${API_BASE}/live`, {
-          headers: {
-            "x-tenant-id": tenantId,
-            "cache-control": "no-cache",
-            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-          },
-        });
-        if (alive && liveRes.ok) {
-          const live = await liveRes.json();
-          doSetData(live);
-        }
+        // Start with LMS live if available
+        let base = appDataLocal;
+        try {
+          const idToken = await auth.currentUser?.getIdToken?.();
+          const liveRes = await fetch(`${API_BASE}/live`, {
+            headers: {
+              "x-tenant-id": tenantId,
+              "cache-control": "no-cache",
+              ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+            },
+          });
+          if (alive && liveRes.ok) base = await liveRes.json();
+        } catch {}
+
+        // Merge API vendors
+        try {
+          const list = await api.get(`/api/data/vendors`).then((r) => r.data || []);
+          const draft = deepClone(base);
+          draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
+          list.forEach((v) => {
+            const n = normalizeVendor(v);
+            const idx = draft.startups.findIndex((x) => String(x.vendorId || x.id) === n.vendorId);
+            if (idx >= 0) draft.startups[idx] = { ...draft.startups[idx], ...n };
+            else draft.startups.push(n);
+          });
+          base = draft;
+        } catch {}
+
+        doSetData(base);
         await refreshHistory();
       } catch (e) {
         // keep local fallback
@@ -210,6 +262,13 @@ export default function VendorProfilePage() {
   }, [detectedVendor?.vendorId]);
 
   const showGuard = !auth.currentUser;
+
+  // Approval state derived from detected vendor
+  const vStatus = (detectedVendor?.status || "").toLowerCase();
+  const kyc = (detectedVendor?.kycStatus || "").toLowerCase();
+  const isApproved = vStatus === "active" || kyc === "approved";
+  const isPending = vStatus === "pending" || kyc === "pending";
+  const isSuspended = vStatus === "suspended" || kyc === "rejected";
 
   function setField(k, v) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -299,35 +358,15 @@ export default function VendorProfilePage() {
       );
     }
 
-    // Publish to LIVE (identical header flow to ListingsAdminPage)
+    // 1) API-first: upsert to vendors API (axios adds token + tenant header)
     try {
       setBusy(true);
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/publish`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        body: JSON.stringify({ data: next }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      const payload = pickVendorPayload(merged);
+      if (payload.id) await api.put(`/api/data/vendors/${encodeURIComponent(payload.id)}`, payload);
+      else await api.post(`/api/data/vendors`, payload);
 
-      // Confirm by pulling fresh LIVE (prevents “revert to old checkpoint” effect)
-      const liveRes = await fetch(`${API_BASE}/live`, {
-        headers: {
-          "x-tenant-id": tenantId,
-          "cache-control": "no-cache",
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-      });
-      if (liveRes.ok) {
-        const live = await liveRes.json();
-        doSetData(live);
-      } else {
-        doSetData(next);
-      }
+      // 2) Update local working copy immediately
+      doSetData(next);
 
       setOk("Profile saved to live.");
       await refresh?.();
@@ -347,7 +386,10 @@ export default function VendorProfilePage() {
       <div className="container py-4" style={{ maxWidth: 980 }}>
         <div className="d-flex align-items-center justify-content-between mb-3">
           <div>
-            <h1 className="h4 mb-0">My Vendor Profile</h1>
+            <h1 className="h4 mb-0">
+              My Vendor Profile
+              
+            </h1>
             <div className="text-muted small">
               Signed in as{" "}
               <strong>
@@ -356,6 +398,13 @@ export default function VendorProfilePage() {
                   "Vendor"}
               </strong>{" "}
               · {detectedVendor.contactEmail || auth.currentUser?.email || "email not set"}
+              <span
+                className={`badge ms-2 text-bg-${
+                  isApproved ? "success" : isSuspended ? "danger" : "warning"
+                }`}
+              >
+                {isApproved ? "Approved" : isSuspended ? "Suspended" : "Pending"}
+              </span>
             </div>
             <div className="text-muted small">
               Vendor ID:{" "}
@@ -365,6 +414,25 @@ export default function VendorProfilePage() {
                 "pending"
               )}
             </div>
+            {isApproved && (
+              <div className="alert alert-success mt-3 mb-0">
+                Your vendor account is approved. You can now submit listings to the marketplace.
+                <div className="mt-2 d-flex gap-2">
+                  <a className="btn btn-primary btn-sm" href="/listings-vendors">+ Submit new listing</a>
+                  <a className="btn btn-outline-secondary btn-sm" href="/listings-vendors-mine">View my listings</a>
+                </div>
+              </div>
+            )}
+            {isPending && (
+              <div className="alert alert-warning mt-3 mb-0">
+                Your vendor account is pending approval. Please complete your profile details and wait for an admin to approve your account. You’ll be able to submit listings once approved.
+              </div>
+            )}
+            {isSuspended && (
+              <div className="alert alert-danger mt-3 mb-0">
+                Your vendor account is suspended. You cannot submit listings. Please contact support if you believe this is an error.
+              </div>
+            )}
           </div>
           <div className="d-flex flex-wrap gap-2">
             <button
