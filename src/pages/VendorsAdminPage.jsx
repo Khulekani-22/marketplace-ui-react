@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
+import SideNavAdmin from "../masterLayout/SideNavAdmin.jsx";
 
 const API_BASE = "/api/lms";
 
@@ -580,7 +581,8 @@ export default function VendorsAdminPage() {
 
   /* ------------------------------ UI components ----------------------------- */
   return (
-    <div className="container py-4">
+    <SideNavAdmin>
+      <div className="container py-4">
       <React.Suspense fallback={null}>
         <div className="row mb-3">
           <BannerInnerTwo />
@@ -765,7 +767,8 @@ export default function VendorsAdminPage() {
           <VersionHistory items={history} onRestore={restoreCheckpoint} />
         </div>
       </div>
-    </div>
+      </div>
+    </SideNavAdmin>
   );
 }
 

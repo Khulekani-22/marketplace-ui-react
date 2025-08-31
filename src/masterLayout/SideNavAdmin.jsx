@@ -128,6 +128,24 @@ const SideNavAdmin = ({ children }) => {
         <div className='sidebar-menu-area'>
           <ul className='sidebar-menu' id='sidebar-menu'>
 
+                       <hr></hr>
+
+            {/* My Profile -> vendor profile route */}
+            <li>
+              <NavLink to="/profile-vendor-admin" className={navClass}>
+                <Icon icon="ri-user-settings-line" className="menu-icon" />
+                <span>Vendor Approval</span>
+              </NavLink>
+            </li>
+
+             <li>
+              <NavLink to="/listings-admin" className={navClass}>
+                <Icon icon="mdi:view-list-outline" className="menu-icon" />
+                <span>Listings Approval</span>
+              </NavLink>
+            </li>
+
+
   <li>
     <NavLink to='/dashboard' className={(navData) => (navData.isActive ? "active-page" : "")}>
       <Icon icon='solar:home-smile-angle-outline' className='menu-icon' />

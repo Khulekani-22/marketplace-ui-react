@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
+import SideNavAdmin from "../masterLayout/SideNavAdmin.jsx";
 
 const API_BASE = "/api/lms";
 
@@ -507,7 +508,8 @@ function handleExport() {
 
 
   return (
-    <div className="container py-4">
+    <SideNavAdmin>
+      <div className="container py-4">
       {/* Lazy banner (keeps admin bundle lean) */}
       <React.Suspense fallback={null}>
         <div className="row mb-3">
@@ -745,7 +747,8 @@ function handleExport() {
           <VersionHistory items={history} onRestore={restoreCheckpoint} />
         </div>
       </div>
-    </div>
+      </div>
+    </SideNavAdmin>
   );
 }
 
