@@ -177,7 +177,7 @@ export default function LoginForm({
                 {/* Add more tenants here if needed */}
               </select>
               <div id="tenantHelp" className="form-text">
-                Requests include <code>x-tenant-id</code> for multi-tenant scoping.
+                Kindly select tenancy type or programme / cohort name.
               </div>
             </div>
           )}

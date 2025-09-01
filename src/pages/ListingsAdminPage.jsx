@@ -4,7 +4,7 @@ import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
 import { writeAuditLog } from "../lib/audit";
-import SideNavAdmin from "../masterLayout/SideNavAdmin.jsx";
+import MasterLayout from "../masterLayout/MasterLayout";
 
 const API_BASE = "/api/lms";
 
@@ -582,7 +582,7 @@ function handleExport() {
 
 
   return (
-    <SideNavAdmin>
+    <MasterLayout>
       <div className="container py-4">
       {/* Lazy banner (keeps admin bundle lean) */}
       <React.Suspense fallback={null}>
@@ -822,7 +822,7 @@ function handleExport() {
         </div>
       </div>
       </div>
-    </SideNavAdmin>
+    </MasterLayout>
   );
 }
 

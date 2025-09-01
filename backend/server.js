@@ -168,8 +168,25 @@ lmsRouter.put("/publish", async (req, res, next) => {
     if (!isPlainObject(data))
       return res.status(400).json({ error: "Body must be { data: <object> }" });
 
-    await writeJson(APP_DATA, data);
-    const counts = summarize(data);
+    // Preserve security-critical tables (users) and merge tenants instead of overwriting
+    let existing = {};
+    try { existing = await readJson(APP_DATA); } catch {}
+
+    const merged = { ...existing, ...data };
+    // Always keep existing users (role assignments) from the server
+    merged.users = Array.isArray(existing?.users) ? existing.users : [];
+    // Tenants: merge by id
+    const exTen = Array.isArray(existing?.tenants) ? existing.tenants : [];
+    const newTen = Array.isArray(data?.tenants) ? data.tenants : [];
+    const tenMap = new Map();
+    [...exTen, ...newTen].forEach((t) => {
+      if (!t) return; const id = t.id || t; const name = t.name || t;
+      if (id) tenMap.set(id, { id, name });
+    });
+    merged.tenants = Array.from(tenMap.values());
+
+    await writeJson(APP_DATA, merged);
+    const counts = summarize(merged);
     console.log(
       `[LMS] Published live appData.json -> cohorts:${counts.cohorts}, courses:${counts.courses}, lessons:${counts.lessons}`
     );
@@ -253,9 +270,24 @@ lmsRouter.post("/restore/:id", async (req, res, next) => {
     if (!fs.existsSync(snapPath))
       return res.status(404).json({ error: "Snapshot not found" });
 
-    const data = await readJson(snapPath);
-    await writeJson(APP_DATA, data);
-    console.log(`[LMS] Restored checkpoint id=${id} -> live`);
+    const snapData = await readJson(snapPath);
+    let existing = {};
+    try { existing = await readJson(APP_DATA); } catch {}
+
+    const merged = { ...existing, ...snapData };
+    // Preserve server users; merge tenants
+    merged.users = Array.isArray(existing?.users) ? existing.users : [];
+    const exTen = Array.isArray(existing?.tenants) ? existing.tenants : [];
+    const newTen = Array.isArray(snapData?.tenants) ? snapData.tenants : [];
+    const tenMap = new Map();
+    [...exTen, ...newTen].forEach((t) => {
+      if (!t) return; const id2 = t.id || t; const name = t.name || t;
+      if (id2) tenMap.set(id2, { id: id2, name });
+    });
+    merged.tenants = Array.from(tenMap.values());
+
+    await writeJson(APP_DATA, merged);
+    console.log(`[LMS] Restored checkpoint id=${id} -> live (preserved users + tenants)`);
     res.json({ ok: true });
   } catch (e) {
     next(e);

@@ -2174,6 +2174,72 @@
       "registrationNo": "",
       "status": "active",
       "tenantId": "public"
+    },
+    {
+      "id": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+      "name": "Khulekani Mncube",
+      "kycStatus": "pending",
+      "contactEmail": "mncubekhulekani@gmail.com",
+      "ownerUid": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+      "phone": "+27763732884",
+      "website": "https://koulz.co.za",
+      "description": "Testing",
+      "logoUrl": "",
+      "bannerUrl": "",
+      "country": "South Africa",
+      "city": "Sandton",
+      "addressLine": "",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "categories": [
+        "Design",
+        "Development",
+        "Analysis"
+      ],
+      "tags": [
+        "saas"
+      ],
+      "foundedYear": "1990",
+      "teamSize": "1",
+      "registrationNo": "",
+      "status": "pending",
+      "tenantId": "22onsloane"
+    },
+    {
+      "id": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+      "name": "22 On Sloane Programmes",
+      "kycStatus": "approved",
+      "contactEmail": "ruthmaphosa2024@gmail.com",
+      "ownerUid": "MFIzWLlhKjSDkV8FPlwXixdUCFX2",
+      "phone": "+27763732884",
+      "website": "",
+      "description": "",
+      "logoUrl": "",
+      "bannerUrl": "",
+      "country": "South Africa",
+      "city": "Sandton",
+      "addressLine": "",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
+      "tenantId": "22onsloane"
     }
   ],
   "users": [
@@ -2181,9 +2247,21 @@
       "email": "khulekani@22onsloane.co",
       "tenantId": "22onsloane",
       "role": "admin"
+    },
+    {
+      "email": "22onsloanedigitalteam@gmail.com",
+      "tenantId": "Digital Team",
+      "role": "admin"
     }
   ],
   "tenants": [
-    { "id": "22onsloane", "name": "22 On Sloane" }
+    {
+      "id": "22onsloane",
+      "name": "22 On Sloane"
+    },
+    {
+      "id": "Digital Team",
+      "name": "Digital Team"
+    }
   ]
 }

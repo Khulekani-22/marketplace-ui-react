@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
-import SideNavAdmin from "../masterLayout/SideNavAdmin.jsx";
+import MasterLayout from "../masterLayout/MasterLayout";
 import { writeAuditLog } from "../lib/audit";
 
 const API_BASE = "/api/lms";
@@ -328,14 +328,15 @@ export default function VendorsAdminPage() {
         setErr("Please sign in to save vendor changes.");
         return;
       }
-      api
-        .put(`/api/data/vendors/${encodeURIComponent(payload.id)}`, payload)
-        .then(() => toastOK("Saved to API"))
-        .catch(async (e) => {
+      (async () => {
+        try {
+          await api.put(`/api/data/vendors/${encodeURIComponent(payload.id)}`, payload);
+          toastOK("Saved to API");
+        } catch (e) {
           const status = e?.response?.status;
           const message = e?.response?.data?.message || e?.message || "Failed to save vendor to API";
-          if (status === 404) {
-            // If the vendor does not exist in the API store yet, try to create it
+          if (status === 404 || status === 400) {
+            // Create if not found (or invalid state) in current tenant
             try {
               await api.post(`/api/data/vendors`, payload);
               toastOK("Created vendor in API");
@@ -347,7 +348,8 @@ export default function VendorsAdminPage() {
             }
           }
           setErr(message);
-        });
+        }
+      })();
     }
   }
 
@@ -656,7 +658,7 @@ export default function VendorsAdminPage() {
 
   /* ------------------------------ UI components ----------------------------- */
   return (
-    <SideNavAdmin>
+    <MasterLayout>
       <div className="container py-4">
       <React.Suspense fallback={null}>
         <div className="row mb-3">
@@ -843,7 +845,7 @@ export default function VendorsAdminPage() {
         </div>
       </div>
       </div>
-    </SideNavAdmin>
+    </MasterLayout>
   );
 }
 

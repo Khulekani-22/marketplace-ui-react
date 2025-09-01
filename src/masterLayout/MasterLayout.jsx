@@ -1,14 +1,16 @@
 // src/MasterLayout/MasterLayout.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
 import { auth } from "../lib/firebase";
 import { api } from "../lib/api";
+import { writeAuditLog } from "../lib/audit";
 
 
 export default function MasterLayout({ children }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarActive, setSidebarActive] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [openKeys, setOpenKeys] = useState({});
@@ -75,6 +77,21 @@ export default function MasterLayout({ children }) {
     setTenantId(next);
     sessionStorage.setItem("tenantId", next);
   };
+
+  async function handleLogout(e) {
+    e?.preventDefault?.();
+    const userEmail = auth.currentUser?.email || null;
+    try {
+      await writeAuditLog({ action: "LOGOUT", userEmail });
+    } catch {}
+    try {
+      await auth.signOut?.();
+    } catch {}
+    sessionStorage.removeItem("tenantId");
+    sessionStorage.removeItem("role");
+    sessionStorage.removeItem("userEmail");
+    navigate("/login", { replace: true });
+  }
 
   return (
     <section className={overlayClass} onClick={(e) => e.target.classList?.contains("overlay") && setMobileMenu(false)}>
@@ -416,9 +433,10 @@ export default function MasterLayout({ children }) {
                         </Link>
                       </li>
                       <li>
-                        <Link
+                      <Link
                           className="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3"
                           to="#"
+                          onClick={handleLogout}
                         >
                           <Icon icon="lucide:power" className="icon text-xl" /> Log Out
                         </Link>

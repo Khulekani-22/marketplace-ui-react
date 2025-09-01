@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import { onIdTokenChanged, signOut } from "firebase/auth";
 import { writeAuditLog } from "../lib/audit";
@@ -20,6 +20,7 @@ function ThemeToggleButton() {
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const loc = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => onIdTokenChanged(auth, setUser), []);
 
@@ -28,6 +29,9 @@ export default function Navbar() {
     try { await writeAuditLog({ action: "LOGOUT", userEmail }); } catch {}
     await signOut(auth);
     sessionStorage.removeItem("tenantId");
+    sessionStorage.removeItem("role");
+    sessionStorage.removeItem("userEmail");
+    navigate("/login", { replace: true });
   }
 
   const tenantId = sessionStorage.getItem("tenantId") || "public";

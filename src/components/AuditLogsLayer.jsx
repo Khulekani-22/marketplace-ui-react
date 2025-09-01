@@ -237,12 +237,6 @@ export default function AuditLogsLayer() {
           </table>
         </div>
 
-        <div className="mt-3">
-          <small className="text-secondary">
-            Notes: This page prefers the backend endpoint at <code>/api/audit-logs</code> and falls back to
-            Firestore collection <code>audit_logs</code> if the API is unavailable.
-          </small>
-        </div>
       </div>
     </div>
   );
