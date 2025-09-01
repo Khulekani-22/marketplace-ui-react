@@ -7,6 +7,7 @@ import RouteScrollToTop from "./helper/RouteScrollToTop";
 import Navbar from "./components/Navbar.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
+import AdminRoute from "./components/AdminRoute.jsx";
 import LoginForm from "./components/LoginForm.jsx";
 import VendorSignupPage from "./pages/VendorSignupPage.jsx";
 
@@ -100,6 +101,7 @@ const WalletPage = React.lazy(() => import("./pages/WalletPage.jsx"));
 const WidgetsPage = React.lazy(() => import("./pages/WidgetsPage.jsx"));
 const WizardPage = React.lazy(() => import("./pages/WizardPage.jsx"));
 const AuditLogsPage = React.lazy(() => import("./pages/AuditLogsPage.jsx"));
+const UserRoleManagementPage = React.lazy(() => import("./pages/UserRoleManagementPage.jsx"));
 
 // data views (these were missing before)
 const AllDataTable = React.lazy(() => import("./pages/AllDataTable.jsx"));
@@ -241,19 +243,48 @@ export default function App() {
             <Route path="/wallet" element={<WalletPage />} />
             <Route path="/widgets" element={<WidgetsPage />} />
             <Route path="/wizard" element={<WizardPage />} />
-            <Route path="/audit-logs" element={<AuditLogsPage />} />
+            <Route
+              path="/audit-logs"
+              element={
+                <AdminRoute>
+                  <AuditLogsPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <UserRoleManagementPage />
+                </AdminRoute>
+              }
+            />
 
             {/* data + features */}
             <Route path="/overview" element={<DataOverview />} />
             <Route path="/data" element={<AllDataTable />} />
             <Route path="/market1" element={<Market1 />} />
             <Route path="/lms" element={<LmsPage />} />
-            <Route path="/listings-admin" element={<ListingsAdminPage />} />
+            <Route
+              path="/listings-admin"
+              element={
+                <AdminRoute>
+                  <ListingsAdminPage />
+                </AdminRoute>
+              }
+            />
             <Route path="/listings-vendors" element={<VendorAddListingPage />} />
             <Route path="/signup/vendor" element={<VendorSignupPage />} />
             <Route path="/listings-vendors-mine" element={<VendorMyListings />} />
             <Route path="/profile-vendor" element={<VendorProfilePage />} />
-            <Route path="/profile-vendor-admin" element={<VendorsAdminPage />} />
+            <Route
+              path="/profile-vendor-admin"
+              element={
+                <AdminRoute>
+                  <VendorsAdminPage />
+                </AdminRoute>
+              }
+            />
 
 
 

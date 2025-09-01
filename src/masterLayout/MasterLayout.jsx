@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
+import { auth } from "../lib/firebase";
+import { api } from "../lib/api";
 
 
 export default function MasterLayout({ children }) {
@@ -10,6 +12,9 @@ export default function MasterLayout({ children }) {
   const [sidebarActive, setSidebarActive] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [openKeys, setOpenKeys] = useState({});
+  const [isAdmin, setIsAdmin] = useState(() => (sessionStorage.getItem("role") === "admin"));
+  const [tenantId, setTenantId] = useState(() => sessionStorage.getItem("tenantId") || "public");
+  const [tenants, setTenants] = useState([]);
 
   // Auto-open dropdown containing current route + close mobile on route change
 
@@ -31,6 +36,45 @@ export default function MasterLayout({ children }) {
     if (mobileMenu) return "sidebar sidebar-open";
     return "sidebar";
   }, [sidebarActive, mobileMenu]);
+
+  // Resolve role/tenant for current user (best-effort)
+  useEffect(() => {
+    const u = auth.currentUser;
+    const email = u?.email || sessionStorage.getItem("userEmail");
+    if (!email) return;
+    (async () => {
+      try {
+        const { data } = await api.get("/api/users/me", { params: { email } });
+        const role = data?.role || "member";
+        const tenantId = data?.tenantId || "public";
+        sessionStorage.setItem("userEmail", email);
+        sessionStorage.setItem("role", role);
+        sessionStorage.setItem("tenantId", tenantId);
+        setIsAdmin(role === "admin");
+        setTenantId(tenantId);
+      } catch {}
+    })();
+  }, []);
+
+  // Load tenants list for switcher (best-effort)
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get("/api/tenants");
+        const arr = Array.isArray(data) ? data : [];
+        const withPublic = [{ id: "public", name: "Public" }, ...arr.filter((t) => t?.id !== "public")];
+        setTenants(withPublic);
+      } catch {
+        setTenants([{ id: "public", name: "Public" }]);
+      }
+    })();
+  }, []);
+
+  const handleTenantChange = (e) => {
+    const next = e.target.value;
+    setTenantId(next);
+    sessionStorage.setItem("tenantId", next);
+  };
 
   return (
     <section className={overlayClass} onClick={(e) => e.target.classList?.contains("overlay") && setMobileMenu(false)}>
@@ -88,29 +132,39 @@ export default function MasterLayout({ children }) {
 
             
 
-            <hr></hr>
+            {isAdmin && (
+              <>
+                <hr></hr>
+                {/* Admin */}
+                <li>
+                  <NavLink to="/profile-vendor-admin" className={navClass}>
+                    <Icon icon="ri-user-settings-line" className="menu-icon" />
+                    <span>Vendor Approval</span>
+                  </NavLink>
+                </li>
 
-            {/* My Profile -> vendor profile route */}
-            <li>
-              <NavLink to="/profile-vendor-admin" className={navClass}>
-                <Icon icon="ri-user-settings-line" className="menu-icon" />
-                <span>Vendor Approval</span>
-              </NavLink>
-            </li>
+                <li>
+                  <NavLink to="/audit-logs" className={navClass}>
+                    <Icon icon="mdi:clipboard-text-clock-outline" className="menu-icon" />
+                    <span>Audit Logs</span>
+                  </NavLink>
+                </li>
 
-            <li>
-              <NavLink to="/audit-logs" className={navClass}>
-                <Icon icon="mdi:clipboard-text-clock-outline" className="menu-icon" />
-                <span>Audit Logs</span>
-              </NavLink>
-            </li>
+                <li>
+                  <NavLink to="/listings-admin" className={navClass}>
+                    <Icon icon="mdi:view-list-outline" className="menu-icon" />
+                    <span>Listings Approval</span>
+                  </NavLink>
+                </li>
 
-            <li>
-              <NavLink to="/listings-admin" className={navClass}>
-                <Icon icon="mdi:view-list-outline" className="menu-icon" />
-                <span>Listings Approval</span>
-              </NavLink>
-            </li>
+                <li>
+                  <NavLink to="/admin/users" className={navClass}>
+                    <Icon icon="mdi:account-cog-outline" className="menu-icon" />
+                    <span>User Roles</span>
+                  </NavLink>
+                </li>
+              </>
+            )}
 
 
             <hr></hr>
@@ -291,6 +345,23 @@ export default function MasterLayout({ children }) {
                     </div>
                   </div>
                 </div>
+
+                {/* Admin indicator + tenant switcher */}
+                {isAdmin && (
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="badge bg-success-focus text-success-700">Admin</span>
+                    <label className="text-sm text-secondary-light">Tenant</label>
+                    <select
+                      className="form-select form-select-sm w-auto bg-base border text-secondary-light rounded-pill"
+                      value={tenantId}
+                      onChange={handleTenantChange}
+                    >
+                      {tenants.map((t) => (
+                        <option key={t.id} value={t.id}>{t.name || t.id}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {/* Profile */}
                 <div className="dropdown">

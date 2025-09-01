@@ -13,17 +13,22 @@ export default function AuditLogsLayer() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [tenantId, setTenantId] = useState(() => sessionStorage.getItem("tenantId") || "public");
-  const [tenants, setTenants] = useState(["public"]);
+  const [tenants, setTenants] = useState([{ id: "public", name: "Public" }]);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         const { data } = await api.get("/api/tenants");
-        const list = Array.isArray(data) && data.length ? data : ["public"];
-        if (mounted) setTenants(Array.from(new Set(["public", ...list])));
+        const items = Array.isArray(data) ? data : [];
+        const normalized = [
+          { id: "public", name: "Public" },
+          ...items.map((t) => (typeof t === "string" ? { id: t, name: t } : { id: t?.id, name: t?.name || t?.id }))
+        ].filter((t) => t && t.id);
+        const unique = Object.values(normalized.reduce((acc, t) => { acc[t.id] = t; return acc; }, {}));
+        if (mounted) setTenants(unique);
       } catch {
-        if (mounted) setTenants(["public"]);
+        if (mounted) setTenants([{ id: "public", name: "Public" }]);
       }
     })();
     return () => { mounted = false; };
@@ -117,7 +122,7 @@ export default function AuditLogsLayer() {
               title="Tenant scope"
             >
               {tenants.map((t) => (
-                <option key={t} value={t}>{t}</option>
+                <option key={t.id} value={t.id}>{t.name || t.id}</option>
               ))}
             </select>
             <input

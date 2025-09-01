@@ -4,3 +4,34 @@
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
 4:54:58 AM [vite] (client) hmr update /src/masterLayout/SideNavAdmin.jsx
+5:01:36 AM [vite] (client) hmr update /src/App.jsx
+5:01:36 AM [vite] Internal server error: Failed to resolve import "./pages/UserRoleManagementPage.jsx" from "src/App.jsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/App.jsx:103:55
+  194|  const AuditLogsPage = React.lazy(_c167 = () => import("./pages/AuditLogsPage.jsx"));
+  195|  _c168 = AuditLogsPage;
+  196|  const UserRoleManagementPage = React.lazy(_c169 = () => import("./pages/UserRoleManagementPage.jsx"));
+     |                                                                 ^
+  197|  _c170 = UserRoleManagementPage;
+  198|  const AllDataTable = React.lazy(_c171 = () => import("./pages/AllDataTable.jsx"));
+      at TransformPluginContext._formatLog (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42499:41)
+      at TransformPluginContext.error (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42496:16)
+      at normalizeUrl (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:40475:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:40594:37
+      at async Promise.all (index 97)
+      at async TransformPluginContext.transform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:40521:7)
+      at async EnvironmentPluginContainer.transform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42294:18)
+      at async loadAndTransform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:35735:27)
+      at async viteTransformMiddleware (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:37250:24)
+5:01:40 AM [vite] (client) page reload src/pages/UserRoleManagementPage.jsx
+5:02:41 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+5:02:58 AM [vite] (client) hmr update /src/App.jsx
+5:05:56 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx
+5:11:12 AM [vite] (client) hmr update /src/components/AdminRoute.jsx
+5:14:20 AM [vite] (client) hmr update /src/context/VendorContext.jsx, /src/components/Navbar.jsx, /src/pages/VendorSignupPage.jsx, /src/components/LoginForm.jsx, /src/components/AuditLogsLayer.jsx, /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorProfilePage.jsx, /src/masterLayout/MasterLayout.jsx, /src/components/AdminRoute.jsx, /src/pages/VendorAddListingPage.jsx
+5:14:20 AM [vite] (client) hmr invalidate /src/context/VendorContext.jsx Could not Fast Refresh ("useVendor" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+5:14:20 AM [vite] (client) page reload src/context/VendorContext.jsx
+5:16:23 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+5:16:29 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+5:42:56 AM [vite] (client) hmr update /src/components/AuditLogsLayer.jsx

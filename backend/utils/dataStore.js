@@ -3,7 +3,29 @@ import path from "path";
 import dotenv from "dotenv";
 dotenv.config();
 
-const appDataPath = path.resolve(process.cwd(), "backend", process.env.APP_DATA_PATH || "../src/data/appData.json");
+function resolveAppDataPath() {
+  const envPath = process.env.APP_DATA_PATH;
+  if (envPath) return path.resolve(envPath);
+
+  const cwd = process.cwd();
+  const candidates = [
+    // Prefer backend/appData.json next to server.js
+    path.resolve(cwd, "backend", "appData.json"),
+    // If started from project root and storing in src/data
+    path.resolve(cwd, "src", "data", "appData.json"),
+    // If started from backend/ working dir, hop up one and into src/data
+    path.resolve(cwd, "../src/data/appData.json"),
+  ];
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch {}
+  }
+  // Default to backend/appData.json (will throw if missing; caller can create)
+  return path.resolve(cwd, "backend", "appData.json");
+}
+
+const appDataPath = resolveAppDataPath();
 
 // Basic file-based datastore with in-memory caching + atomic writes
 let cache = null;

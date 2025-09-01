@@ -169,8 +169,18 @@
               "duration": "20 min",
               "completed": false
             }
-          ]
-        }
+  ],
+  "users": [
+    {
+      "email": "khulekani@22onsloane.co",
+      "tenantId": "22onsloane",
+      "role": "admin"
+    }
+  ],
+  "tenants": [
+    { "id": "22onsloane", "name": "22 On Sloane" }
+  ]
+}
       ]
     },
     {

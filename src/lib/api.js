@@ -9,8 +9,8 @@ function computeApiBases() {
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
   const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
   const make = (port) => `${protocol}//${host}:${port}`;
-  // Prefer 5000, then 5001, then stable 5500 as third fallback
-  return [make(5000), make(5001), make(5500)];
+  // Prefer 5055 from backend/.env, then 5000, 5001, and 5500 as fallbacks
+  return [make(5055), make(5000), make(5001), make(5500)];
 }
 
 const CANDIDATES = computeApiBases();
