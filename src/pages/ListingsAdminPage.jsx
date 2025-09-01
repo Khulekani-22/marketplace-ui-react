@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
+import { writeAuditLog } from "../lib/audit";
 import SideNavAdmin from "../masterLayout/SideNavAdmin.jsx";
 
 const API_BASE = "/api/lms";
@@ -229,6 +230,26 @@ export default function ListingsAdminPage() {
     if (idx >= 0) {
       next.services[idx] = { ...normalizeService(next.services[idx]), ...patch };
       doSetData(next);
+      try {
+        const prevStatus = selected.status;
+        if (typeof patch.status !== "undefined" && patch.status !== prevStatus) {
+          writeAuditLog({
+            action: "LISTING_STATUS_CHANGE",
+            userEmail: auth.currentUser?.email,
+            targetType: "listing",
+            targetId: selected.id,
+            metadata: { from: prevStatus, to: patch.status, title: selected.title },
+          });
+        } else {
+          writeAuditLog({
+            action: "LISTING_UPDATE",
+            userEmail: auth.currentUser?.email,
+            targetType: "listing",
+            targetId: selected.id,
+            metadata: { patch },
+          });
+        }
+      } catch {}
     }
   }
 
@@ -265,6 +286,15 @@ export default function ListingsAdminPage() {
     );
     doSetData(next);
     setSelectedId(String(newId));
+    try {
+      writeAuditLog({
+        action: "LISTING_CREATE",
+        userEmail: auth.currentUser?.email,
+        targetType: "listing",
+        targetId: String(newId),
+        metadata: { title },
+      });
+    } catch {}
   }
 
   function duplicateService() {
@@ -276,6 +306,15 @@ export default function ListingsAdminPage() {
     next.services.push(copy);
     doSetData(next);
     setSelectedId(copy.id);
+    try {
+      writeAuditLog({
+        action: "LISTING_DUPLICATE",
+        userEmail: auth.currentUser?.email,
+        targetType: "listing",
+        targetId: copy.id,
+        metadata: { sourceId: selected.id, title: copy.title },
+      });
+    } catch {}
   }
 
   function deleteService() {
@@ -285,6 +324,15 @@ export default function ListingsAdminPage() {
     next.services = next.services.filter((s) => s.id !== selected.id);
     doSetData(next);
     setSelectedId(next.services[0]?.id || "");
+    try {
+      writeAuditLog({
+        action: "LISTING_DELETE",
+        userEmail: auth.currentUser?.email,
+        targetType: "listing",
+        targetId: selected.id,
+        metadata: { title: selected.title },
+      });
+    } catch {}
   }
 
   function undo() {
@@ -362,6 +410,15 @@ export default function ListingsAdminPage() {
       });
       if (!res.ok) throw new Error(await res.text());
       toastOK("Published listings to live");
+      try {
+        await writeAuditLog({
+          action: "LISTINGS_PUBLISH",
+          userEmail: auth.currentUser?.email,
+          targetType: "appData",
+          targetId: "services",
+          metadata: { count: services.length },
+        });
+      } catch {}
       await refreshHistory();
     } catch (e) {
       setErr(e.message || "Publish failed");
@@ -384,6 +441,15 @@ export default function ListingsAdminPage() {
       });
       if (!res.ok) throw new Error(await res.text());
       toastOK("Checkpoint saved");
+      try {
+        await writeAuditLog({
+          action: "LISTINGS_CHECKPOINT",
+          userEmail: auth.currentUser?.email,
+          targetType: "services",
+          targetId: "checkpoint",
+          metadata: { message: message || "" },
+        });
+      } catch {}
       await refreshHistory();
     } catch (e) {
       setErr(e.message || "Failed to save checkpoint");
@@ -424,6 +490,14 @@ export default function ListingsAdminPage() {
       });
       if (!res.ok) throw new Error(await res.text());
       toastOK("Cleared history");
+      try {
+        await writeAuditLog({
+          action: "LISTINGS_HISTORY_CLEAR",
+          userEmail: auth.currentUser?.email,
+          targetType: "services",
+          targetId: "history",
+        });
+      } catch {}
       await refreshHistory();
     } catch (e) {
       setErr(e.message || "Failed to clear");

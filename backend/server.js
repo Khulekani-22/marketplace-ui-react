@@ -15,6 +15,7 @@ import healthRouter from "./routes/health.js";
 import servicesRouter from "./routes/services.js";
 import vendorsRouter from "./routes/vendors.js";
 import tenantsRouter from "./routes/tenants.js";
+import auditLogsRouter from "./routes/auditLogs.js";
 import { tenantContext } from "./middleware/tenantContext.js";
 import { jwtAuthOptional } from "./middleware/authJWT.js";
 import { firebaseAuthRequired } from "./middleware/authFirebase.js";
@@ -284,6 +285,7 @@ app.use("/api/health", healthRouter);
 app.use("/api/data/services", servicesRouter);
 app.use("/api/data/vendors", vendorsRouter);
 app.use("/api/tenants", tenantsRouter);
+app.use("/api/audit-logs", auditLogsRouter);
 
 /* --------------------------------- 404 ----------------------------------- */
 app.use((req, res) => {

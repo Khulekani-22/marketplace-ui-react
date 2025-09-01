@@ -99,6 +99,7 @@ const VoiceGeneratorPage = React.lazy(() => import("./pages/VoiceGeneratorPage.j
 const WalletPage = React.lazy(() => import("./pages/WalletPage.jsx"));
 const WidgetsPage = React.lazy(() => import("./pages/WidgetsPage.jsx"));
 const WizardPage = React.lazy(() => import("./pages/WizardPage.jsx"));
+const AuditLogsPage = React.lazy(() => import("./pages/AuditLogsPage.jsx"));
 
 // data views (these were missing before)
 const AllDataTable = React.lazy(() => import("./pages/AllDataTable.jsx"));
@@ -240,6 +241,7 @@ export default function App() {
             <Route path="/wallet" element={<WalletPage />} />
             <Route path="/widgets" element={<WidgetsPage />} />
             <Route path="/wizard" element={<WizardPage />} />
+            <Route path="/audit-logs" element={<AuditLogsPage />} />
 
             {/* data + features */}
             <Route path="/overview" element={<DataOverview />} />

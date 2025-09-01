@@ -4,6 +4,7 @@ import { useVendor } from "../context/VendorContext";
 import { auth } from "../lib/firebase";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
+import { writeAuditLog } from "../lib/audit";
 
 const API_BASE = "/api/lms";
 
@@ -364,6 +365,16 @@ export default function VendorProfilePage() {
       const payload = pickVendorPayload(merged);
       if (payload.id) await api.put(`/api/data/vendors/${encodeURIComponent(payload.id)}`, payload);
       else await api.post(`/api/data/vendors`, payload);
+
+      try {
+        await writeAuditLog({
+          action: "VENDOR_UPSERT",
+          userEmail: auth.currentUser?.email,
+          targetType: "vendor",
+          targetId: vid,
+          metadata: { name: merged.name },
+        });
+      } catch {}
 
       // 2) Update local working copy immediately
       doSetData(next);

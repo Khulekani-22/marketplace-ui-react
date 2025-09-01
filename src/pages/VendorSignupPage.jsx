@@ -11,6 +11,7 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useVendor } from "../context/VendorContext";
+import { writeAuditLog } from "../lib/audit";
 
 const API_BASE = "/api/data/vendors"; // backend upsert endpoint
 
@@ -61,6 +62,15 @@ export default function VendorSignupPage() {
         categories: profile.categories || [],
       };
       await api.post(API_BASE, payload);
+      try {
+        await writeAuditLog({
+          action: "VENDOR_CREATE",
+          userEmail: profile.contactEmail,
+          targetType: "vendor",
+          targetId: profile.id,
+          metadata: { name: profile.name },
+        });
+      } catch {}
     } catch (e) {
       const msg = e?.response?.data?.message || e?.message || "Failed to save vendor profile";
       throw new Error(msg);

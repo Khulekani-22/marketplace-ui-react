@@ -27,7 +27,10 @@ api.interceptors.request.use(async (config) => {
     config.headers.Authorization = `Bearer ${tok}`;
   }
   const tenantId = sessionStorage.getItem("tenantId") || "public";
-  config.headers["x-tenant-id"] = tenantId;
+  // Respect an explicit header if the caller set one on this request
+  if (!config.headers["x-tenant-id"]) {
+    config.headers["x-tenant-id"] = tenantId;
+  }
   return config;
 });
 

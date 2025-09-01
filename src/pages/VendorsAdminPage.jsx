@@ -4,6 +4,7 @@ import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
 import SideNavAdmin from "../masterLayout/SideNavAdmin.jsx";
+import { writeAuditLog } from "../lib/audit";
 
 const API_BASE = "/api/lms";
 
@@ -190,6 +191,15 @@ export default function VendorsAdminPage() {
       toastOK(
         `Migrated startups → vendors (scanned: ${res.scanned ?? 0}, created: ${res.created ?? 0}, updated: ${res.updated ?? 0})`
       );
+      try {
+        await writeAuditLog({
+          action: "VENDORS_MIGRATE",
+          userEmail: auth.currentUser?.email,
+          targetType: "vendors",
+          targetId: "migration",
+          metadata: res,
+        });
+      } catch {}
       // Reload base from LMS, then merge API vendors
       let base = appDataLocal;
       try {
@@ -289,6 +299,27 @@ export default function VendorsAdminPage() {
     }
     doSetData(next);
 
+    try {
+      const prevStatus = selected.status;
+      if (typeof patch.status !== "undefined" && patch.status !== prevStatus) {
+        writeAuditLog({
+          action: "VENDOR_STATUS_CHANGE",
+          userEmail: auth.currentUser?.email,
+          targetType: "vendor",
+          targetId: selected.vendorId,
+          metadata: { from: prevStatus, to: patch.status, email: selected.email },
+        });
+      } else {
+        writeAuditLog({
+          action: "VENDOR_UPDATE",
+          userEmail: auth.currentUser?.email,
+          targetType: "vendor",
+          targetId: selected.vendorId,
+          metadata: { patch, email: selected.email },
+        });
+      }
+    } catch {}
+
     // Persist core vendor fields via API (axios client includes auth)
     const payload = pickVendorPayload({ ...selected, ...patch });
     if (payload.name && payload.contactEmail && payload.id) {
@@ -338,6 +369,15 @@ export default function VendorsAdminPage() {
     );
     doSetData(next);
     setSelectedId(vid);
+    try {
+      writeAuditLog({
+        action: "VENDOR_CREATE",
+        userEmail: auth.currentUser?.email,
+        targetType: "vendor",
+        targetId: vid,
+        metadata: { name },
+      });
+    } catch {}
   }
 
   function duplicateVendor() {
@@ -352,6 +392,15 @@ export default function VendorsAdminPage() {
     next.startups.push(copy);
     doSetData(next);
     setSelectedId(vid);
+    try {
+      writeAuditLog({
+        action: "VENDOR_DUPLICATE",
+        userEmail: auth.currentUser?.email,
+        targetType: "vendor",
+        targetId: vid,
+        metadata: { sourceId: selected.vendorId },
+      });
+    } catch {}
   }
 
   function deleteVendor() {
@@ -464,6 +513,15 @@ export default function VendorsAdminPage() {
       });
       if (!res.ok) throw new Error(await res.text());
       toastOK("Published vendor directory to live");
+      try {
+        await writeAuditLog({
+          action: "VENDORS_PUBLISH",
+          userEmail: auth.currentUser?.email,
+          targetType: "appData",
+          targetId: "vendors",
+          metadata: { count: vendors.length },
+        });
+      } catch {}
       await refreshHistory();
     } catch (e) {
       setErr(e.message || "Publish failed");
@@ -486,6 +544,15 @@ export default function VendorsAdminPage() {
       });
       if (!res.ok) throw new Error(await res.text());
       toastOK("Checkpoint saved");
+      try {
+        await writeAuditLog({
+          action: "VENDORS_CHECKPOINT",
+          userEmail: auth.currentUser?.email,
+          targetType: "vendors",
+          targetId: "checkpoint",
+          metadata: { message: message || "" },
+        });
+      } catch {}
       await refreshHistory();
     } catch (e) {
       setErr(e.message || "Failed to save checkpoint");
@@ -520,6 +587,14 @@ export default function VendorsAdminPage() {
       });
       if (!res.ok) throw new Error(await res.text());
       toastOK("Cleared history");
+      try {
+        await writeAuditLog({
+          action: "VENDORS_HISTORY_CLEAR",
+          userEmail: auth.currentUser?.email,
+          targetType: "vendors",
+          targetId: "history",
+        });
+      } catch {}
       await refreshHistory();
     } catch (e) {
       setErr(e.message || "Failed to clear");

@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { useVendor } from "../context/VendorContext";
+import { writeAuditLog } from "../lib/audit";
 
 const google = new GoogleAuthProvider();
 
@@ -112,6 +113,7 @@ export default function LoginForm({
     setBusy(true);
     try {
       await signInWithEmailAndPassword(auth, email.trim(), pass);
+      try { await writeAuditLog({ action: "LOGIN", userEmail: email.trim() }); } catch {}
       // onIdTokenChanged will handle refresh + redirect
     } catch (ex) {
       setErr(mapFirebaseError(ex?.code));
@@ -124,8 +126,9 @@ export default function LoginForm({
     setErr(null);
     setMsg(null);
     setBusy(true);
-    try {
+  try {
       await signInWithPopup(auth, google);
+      try { await writeAuditLog({ action: "LOGIN_GOOGLE", userEmail: auth.currentUser?.email }); } catch {}
       // onIdTokenChanged will handle refresh + redirect
     } catch (ex) {
       setErr(mapFirebaseError(ex?.code));

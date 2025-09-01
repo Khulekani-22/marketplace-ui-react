@@ -98,12 +98,20 @@ export default function MasterLayout({ children }) {
               </NavLink>
             </li>
 
-             <li>
+            <li>
+              <NavLink to="/audit-logs" className={navClass}>
+                <Icon icon="mdi:clipboard-text-clock-outline" className="menu-icon" />
+                <span>Audit Logs</span>
+              </NavLink>
+            </li>
+
+            <li>
               <NavLink to="/listings-admin" className={navClass}>
                 <Icon icon="mdi:view-list-outline" className="menu-icon" />
                 <span>Listings Approval</span>
               </NavLink>
             </li>
+
 
             <hr></hr>
 
@@ -122,6 +130,8 @@ export default function MasterLayout({ children }) {
                 <span>Support</span>
               </NavLink>
             </li>
+
+            
           </ul>
         </div>
       </aside>

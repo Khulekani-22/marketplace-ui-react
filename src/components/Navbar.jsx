@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import { onIdTokenChanged, signOut } from "firebase/auth";
+import { writeAuditLog } from "../lib/audit";
 
 // inside Navbar / MasterLayout toggle handler
 import { toggleTheme } from "../utils/theme";
@@ -23,6 +24,8 @@ export default function Navbar() {
   useEffect(() => onIdTokenChanged(auth, setUser), []);
 
   async function logout() {
+    const userEmail = auth.currentUser?.email || null;
+    try { await writeAuditLog({ action: "LOGOUT", userEmail }); } catch {}
     await signOut(auth);
     sessionStorage.removeItem("tenantId");
   }

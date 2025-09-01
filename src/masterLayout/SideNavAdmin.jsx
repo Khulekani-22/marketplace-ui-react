@@ -6,6 +6,9 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
 
 const SideNavAdmin = ({ children }) => {
+  // Consistent active class helper (matches MasterLayout)
+  const navClass = ({ isActive }) => (isActive ? "active-page" : "");
+
   let [sidebarActive, seSidebarActive] = useState(false);
   let [mobileMenu, setMobileMenu] = useState(false);
   const location = useLocation(); // Hook to get the current route
