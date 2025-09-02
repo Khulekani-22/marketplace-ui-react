@@ -1018,5 +1018,33 @@
       "count": 13
     },
     "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf2a1w7g-wgvbwc",
+    "timestamp": "2025-09-02T08:19:22.057Z",
+    "action": "VENDOR_UPSERT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "vendor",
+    "targetId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+    "ip": "::1",
+    "metadata": {
+      "name": "22 On Sloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf2a2iov-m3wn5d",
+    "timestamp": "2025-09-02T08:19:51.194Z",
+    "action": "VENDOR_UPSERT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "vendor",
+    "targetId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+    "ip": "::1",
+    "metadata": {
+      "name": "22 On Sloane"
+    },
+    "tenantId": "22onsloane"
   }
 ]

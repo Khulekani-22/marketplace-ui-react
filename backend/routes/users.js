@@ -102,3 +102,41 @@ router.get("/lookup", firebaseAuthRequired, async (req, res) => {
     return res.status(404).json({ status: "error", message: e?.message || "User not found" });
   }
 });
+
+// Admin-only: list platform users (email, uid, displayName) with optional substring search
+router.get("/all", firebaseAuthRequired, async (req, res) => {
+  try {
+    if (!isAdminRequest(req)) return res.status(403).json({ status: "error", message: "Forbidden" });
+    const search = String(req.query.search || "").toLowerCase();
+    const pageSize = Math.min(Math.max(parseInt(req.query.pageSize || "100", 10) || 100, 1), 1000);
+    let pageToken = req.query.pageToken ? String(req.query.pageToken) : undefined;
+
+    const out = [];
+    let nextPageToken = undefined;
+    // Keep scanning Firebase pages until we collect pageSize matches or run out
+    do {
+      const resp = await admin.auth().listUsers(1000, pageToken);
+      for (const u of resp.users || []) {
+        const email = (u.email || "").toLowerCase();
+        const dn = u.displayName || "";
+        if (!search || email.includes(search) || dn.toLowerCase().includes(search)) {
+          out.push({ uid: u.uid, email: u.email || "", displayName: dn, disabled: !!u.disabled });
+          if (out.length >= pageSize) break;
+        }
+      }
+      if (out.length >= pageSize) {
+        nextPageToken = resp.pageToken; // token for the next Firebase page
+        break;
+      }
+      if (!resp.pageToken) {
+        nextPageToken = undefined;
+        break;
+      }
+      pageToken = resp.pageToken;
+    } while (true);
+
+    res.json({ items: out, count: out.length, nextPageToken });
+  } catch (e) {
+    res.status(500).json({ status: "error", message: e?.message || "Failed to list users" });
+  }
+});

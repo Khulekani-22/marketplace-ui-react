@@ -16,6 +16,14 @@ export default function UserRoleManagement() {
   const [vendorById, setVendorById] = useState({});
   const [trace, setTrace] = useState({}); // email -> { uid, viaEmail, viaUid, viaId }
   const [traceBusy, setTraceBusy] = useState({}); // email -> boolean
+  // Platform users search
+  const [allQuery, setAllQuery] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
+  const [allBusy, setAllBusy] = useState(false);
+  const [allErr, setAllErr] = useState("");
+  const [allNext, setAllNext] = useState("");
+  const [allPageSize, setAllPageSize] = useState(100);
+  const [tenantPick, setTenantPick] = useState({}); // email -> tenantId
 
   const sorted = useMemo(() => {
     return [...users].sort((a, b) => (a.email || "").localeCompare(b.email || ""));
@@ -198,6 +206,45 @@ export default function UserRoleManagement() {
     }
   }
 
+  async function searchAllUsers(reset = true) {
+    setAllErr("");
+    setAllBusy(true);
+    try {
+      const params = { search: allQuery, pageSize: allPageSize };
+      if (!reset && allNext) params.pageToken = allNext;
+      const { data } = await api.get("/api/users/all", { params });
+      const items = Array.isArray(data?.items) ? data.items : [];
+      setAllUsers((prev) => (reset ? items : [...prev, ...items]));
+      setAllNext(data?.nextPageToken || "");
+    } catch (e) {
+      setAllErr(e?.response?.data?.message || e?.message || "Failed to search platform users");
+    } finally {
+      setAllBusy(false);
+    }
+  }
+
+  // Auto-load all users on mount
+  useEffect(() => {
+    searchAllUsers(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function grantAdmin(email) {
+    const t = tenantPick[email] || "public";
+    try {
+      await saveUser({ email, tenantId: t, role: "admin" });
+      // reflect in main users table
+      setUsers((prev) => {
+        const hit = prev.find((x) => x.email === email);
+        if (hit) return prev.map((x) => (x.email === email ? { ...x, role: "admin", tenantId: t } : x));
+        return [...prev, { email, role: "admin", tenantId: t }];
+      });
+      setOk(`${email} granted admin (${t})`);
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message || "Failed to grant admin");
+    }
+  }
+
   return (
     <div className="card h-100 p-0 radius-12 overflow-hidden">
       <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center justify-content-between gap-3 flex-wrap">
@@ -362,6 +409,74 @@ export default function UserRoleManagement() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Admin onboarding: search platform users */}
+        <div className="mt-24">
+          <h6 className="mb-2">Onboard Admins</h6>
+          <div className="d-flex flex-wrap align-items-end gap-2 mb-2">
+            <div>
+              <label className="form-label text-sm">Search users</label>
+              <input className="form-control" placeholder="Search by email or name" value={allQuery} onChange={(e)=>setAllQuery(e.target.value)} />
+            </div>
+            <button className="btn btn-outline-secondary" onClick={searchAllUsers} disabled={allBusy}>{allBusy ? 'Searching…' : 'Search'}</button>
+            {allErr && <div className="text-danger small">{allErr}</div>}
+          </div>
+          <div className="table-responsive scroll-sm">
+            <table className="table bordered-table sm-table mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Name</th>
+                  <th>UID</th>
+                  <th>Tenant</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allBusy && (
+                  <tr><td colSpan={5}>Loading…</td></tr>
+                )}
+                {!allBusy && allUsers.length === 0 && (
+                  <tr><td colSpan={5}>No results</td></tr>
+                )}
+                {!allBusy && allUsers.map((r) => (
+                  <tr key={r.uid}>
+                    <td>{r.email}</td>
+                    <td>{r.displayName || '—'}</td>
+                    <td><code>{r.uid}</code></td>
+                    <td>
+                      <select
+                        className="form-select form-select-sm w-auto bg-base border text-secondary-light rounded-pill"
+                        value={tenantPick[r.email] || 'public'}
+                        onChange={(e)=>setTenantPick((prev)=>({ ...prev, [r.email]: e.target.value }))}
+                      >
+                        {tenants.map((t)=> (
+                          <option key={t.id} value={t.id}>{t.name || t.id}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <button className="btn btn-sm btn-outline-success" onClick={()=>grantAdmin((r.email || '').toLowerCase())}>
+                        Grant Admin
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="d-flex align-items-center justify-content-between mt-2">
+              <div className="text-secondary small">Showing {allUsers.length} user(s)</div>
+              <div className="d-flex align-items-center gap-2">
+                <label className="text-sm">Page size</label>
+                <select className="form-select form-select-sm w-auto" value={allPageSize} onChange={(e)=>setAllPageSize(Number(e.target.value)||100)}>
+                  {[50,100,200,500,1000].map(n=> <option key={n} value={n}>{n}</option>)}
+                </select>
+                <button className="btn btn-sm btn-outline-secondary" onClick={()=>searchAllUsers(true)} disabled={allBusy}>Refresh</button>
+                <button className="btn btn-sm btn-outline-primary" onClick={()=>searchAllUsers(false)} disabled={allBusy || !allNext}>{allBusy ? 'Loading…' : (allNext ? 'Load more' : 'End')}</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
