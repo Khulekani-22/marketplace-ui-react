@@ -145,6 +145,13 @@ export default function MasterLayout({ children }) {
               </NavLink>
             </li>
 
+            <li>
+              <NavLink to="/profile-startup" className={navClass}>
+                <Icon icon="mdi:account-box-outline" className="menu-icon" />
+                <span>Startup Profile</span>
+              </NavLink>
+            </li>
+
          
 
             

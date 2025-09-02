@@ -1,5 +1,7 @@
 import { Router } from "express";
+import admin from "firebase-admin";
 import { getData, saveData } from "../utils/dataStore.js";
+import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 
 const router = Router();
 
@@ -76,3 +78,27 @@ router.post("/upgrade", (req, res) => {
 
 export default router;
 
+// Admin-only: lookup Firebase UID by email
+function isAdminRequest(req) {
+  try {
+    const email = (req.user?.email || "").toLowerCase();
+    if (!email) return false;
+    const { users = [] } = getData();
+    const found = users.find((u) => (u.email || "").toLowerCase() === email);
+    return (found?.role || "") === "admin";
+  } catch {
+    return false;
+  }
+}
+
+router.get("/lookup", firebaseAuthRequired, async (req, res) => {
+  try {
+    if (!isAdminRequest(req)) return res.status(403).json({ status: "error", message: "Forbidden" });
+    const email = String(req.query.email || "").toLowerCase();
+    if (!email) return res.status(400).json({ status: "error", message: "Missing email" });
+    const user = await admin.auth().getUserByEmail(email);
+    return res.json({ uid: user.uid, email: user.email, displayName: user.displayName || "" });
+  } catch (e) {
+    return res.status(404).json({ status: "error", message: e?.message || "User not found" });
+  }
+});

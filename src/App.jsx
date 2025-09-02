@@ -77,6 +77,7 @@ const RadioPage = React.lazy(() => import("./pages/RadioPage.jsx"));
 const RoleAccessPage = React.lazy(() => import("./pages/RoleAccessPage.jsx"));
 const SignInPage = React.lazy(() => import("./pages/SignInPage.jsx"));
 const SignUpPage = React.lazy(() => import("./pages/SignUpPage.jsx"));
+const StartupSignupPage = React.lazy(() => import("./pages/StartupSignupPage.jsx"));
 const StarRatingPage = React.lazy(() => import("./pages/StarRatingPage.jsx"));
 const StarredPage = React.lazy(() => import("./pages/StarredPage.jsx"));
 const SwitchPage = React.lazy(() => import("./pages/SwitchPage.jsx"));
@@ -116,6 +117,7 @@ const VendorAddListingPage = React.lazy(() => import("./pages/VendorAddListingPa
 const VendorMyListings = React.lazy(() => import("./pages/VendorMyListings.jsx"));
 const VendorProfilePage = React.lazy(() => import("./pages/VendorProfilePage.jsx"));
 const VendorsAdminPage = React.lazy(() => import("./pages/VendorsAdminPage.jsx"));
+const StartupProfilePage = React.lazy(() => import("./pages/StartupProfilePage.jsx"));
 
 
 
@@ -220,6 +222,7 @@ export default function App() {
             <Route path="/role-access" element={<RoleAccessPage />} />
             <Route path="/sign-in" element={<SignInPage />} />
             <Route path="/sign-up" element={<SignUpPage />} />
+            <Route path="/signup/startup" element={<StartupSignupPage />} />
             <Route path="/star-rating" element={<StarRatingPage />} />
             <Route path="/starred" element={<StarredPage />} />
             <Route path="/switch" element={<SwitchPage />} />
@@ -275,6 +278,7 @@ export default function App() {
             />
             <Route path="/listings-vendors" element={<VendorAddListingPage />} />
             <Route path="/signup/vendor" element={<VendorSignupPage />} />
+            <Route path="/profile-startup" element={<StartupProfilePage />} />
             <Route path="/listings-vendors-mine" element={<VendorMyListings />} />
             <Route path="/profile-vendor" element={<VendorProfilePage />} />
             <Route

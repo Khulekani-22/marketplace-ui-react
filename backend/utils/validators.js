@@ -46,3 +46,21 @@ export const VendorSchema = z.object({
   status: z.enum(["active", "pending", "suspended"]).optional().default("pending"),
   tenantId: z.string().optional(),
 });
+
+export const StartupSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(2),
+  elevatorPitch: z.string().optional().default(""),
+  productsServices: z.string().optional().default(""),
+  employeeCount: z.number().int().nonnegative().optional().default(0),
+  contactEmail: z.string().email(),
+  ownerUid: z.string().optional(),
+  phone: z.string().optional().default(""),
+  website: z.string().optional().default(""),
+  country: z.string().optional().default(""),
+  city: z.string().optional().default(""),
+  addressLine: z.string().optional().default(""),
+  categories: z.array(z.string()).optional().default([]),
+  tags: z.array(z.string()).optional().default([]),
+  tenantId: z.string().optional(),
+});

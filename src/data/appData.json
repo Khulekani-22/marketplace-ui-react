@@ -2240,6 +2240,66 @@
       "registrationNo": "",
       "status": "active",
       "tenantId": "22onsloane"
+    },
+    {
+      "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "name": "22onsloanedigitalteam",
+      "kycStatus": "approved",
+      "contactEmail": "22onsloanedigitalteam@gmail.com",
+      "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "phone": "",
+      "website": "",
+      "description": "",
+      "logoUrl": "",
+      "bannerUrl": "",
+      "country": "",
+      "city": "",
+      "addressLine": "",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
+      "tenantId": "22onsloane"
+    },
+    {
+      "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "name": "khulekani",
+      "kycStatus": "approved",
+      "contactEmail": "khulekani@22onsloane.co",
+      "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "phone": "",
+      "website": "",
+      "description": "",
+      "logoUrl": "",
+      "bannerUrl": "",
+      "country": "",
+      "city": "",
+      "addressLine": "",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
+      "tenantId": "22onsloane"
     }
   ],
   "users": [
@@ -2251,7 +2311,7 @@
     {
       "email": "22onsloanedigitalteam@gmail.com",
       "tenantId": "Digital Team",
-      "role": "admin"
+      "role": "member"
     }
   ],
   "tenants": [

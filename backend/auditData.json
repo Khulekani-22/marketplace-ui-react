@@ -884,5 +884,139 @@
     "ip": "::1",
     "metadata": {},
     "tenantId": "Digital Team"
+  },
+  {
+    "id": "mf25v1ds-u9sk65",
+    "timestamp": "2025-09-02T06:22:03.672Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf25xypn-hz9aty",
+    "timestamp": "2025-09-02T06:24:20.205Z",
+    "action": "LISTING_UPDATE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "listing",
+    "targetId": "mewl77g2-tidsnp",
+    "ip": "::1",
+    "metadata": {
+      "patch": {
+        "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+        "vendor": "22 On Sloane Programmes",
+        "contactEmail": "ruthmaphosa2024@gmail.com"
+      }
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf25y0q7-advyhx",
+    "timestamp": "2025-09-02T06:24:22.828Z",
+    "action": "LISTINGS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "services",
+    "ip": "::1",
+    "metadata": {
+      "count": 17
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf25yca6-0j6q35",
+    "timestamp": "2025-09-02T06:24:37.796Z",
+    "action": "LISTING_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "listing",
+    "targetId": "meqwiou0-3q8ofl",
+    "ip": "::1",
+    "metadata": {
+      "from": "pending",
+      "to": "approved",
+      "title": "Testing"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf25ydq1-jwgn11",
+    "timestamp": "2025-09-02T06:24:39.671Z",
+    "action": "LISTINGS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "services",
+    "ip": "::1",
+    "metadata": {
+      "count": 17
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf29s51m-1aymlt",
+    "timestamp": "2025-09-02T08:11:46.945Z",
+    "action": "VENDOR_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "vendor",
+    "targetId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+    "ip": "::1",
+    "metadata": {
+      "from": "pending",
+      "to": "active",
+      "email": "khulekani@22onsloane.co"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf29s6yz-riqqjd",
+    "timestamp": "2025-09-02T08:11:49.443Z",
+    "action": "VENDORS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "vendors",
+    "ip": "::1",
+    "metadata": {
+      "count": 13
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf29sgmu-i85p5f",
+    "timestamp": "2025-09-02T08:12:01.961Z",
+    "action": "VENDOR_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "vendor",
+    "targetId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+    "ip": "::1",
+    "metadata": {
+      "from": "pending",
+      "to": "active",
+      "email": "22onsloanedigitalteam@gmail.com"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf29sii8-rmn2ed",
+    "timestamp": "2025-09-02T08:12:04.398Z",
+    "action": "VENDORS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "vendors",
+    "ip": "::1",
+    "metadata": {
+      "count": 13
+    },
+    "tenantId": "22onsloane"
   }
 ]

@@ -391,6 +391,43 @@ export default function VendorProfilePage() {
     }
   }
 
+  // Quick import from Startup profile (if the user previously created one)
+  async function importFromStartup() {
+    setErr("");
+    setOk("");
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Please sign in");
+      const email = (user.email || "").toLowerCase();
+      const startups = await api.get(`/api/data/startups`).then((r) => r.data || []);
+      const mine = startups.find((s) => (s.ownerUid && s.ownerUid === user.uid) || ((s.contactEmail || s.email || "").toLowerCase() === email));
+      if (!mine) {
+        setErr("No startup profile found to import.");
+        return;
+      }
+      const desc = [mine.elevatorPitch || "", mine.productsServices || ""].filter(Boolean).join("\n\n");
+      const next = {
+        ...form,
+        name: form.name || mine.name || "",
+        description: form.description || desc,
+        contactEmail: (form.contactEmail || mine.contactEmail || email).toLowerCase(),
+        phone: form.phone || mine.phone || "",
+        website: form.website || mine.website || "",
+        country: form.country || mine.country || "",
+        city: form.city || mine.city || "",
+        addressLine: form.addressLine || mine.addressLine || "",
+        categories: form.categories?.length ? form.categories : Array.isArray(mine.categories) ? mine.categories : [],
+        tags: form.tags?.length ? form.tags : Array.isArray(mine.tags) ? mine.tags : [],
+        teamSize: form.teamSize || String(mine.employeeCount || ""),
+      };
+      setForm(next);
+      setOk("Imported details from your Startup profile. Review and Save changes.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (e) {
+      setErr(e?.response?.data?.message || e?.message || "Import failed");
+    }
+  }
+
   /* ----------------------------------- UI ---------------------------------- */
   return (
     <MasterLayout>
@@ -475,6 +512,11 @@ export default function VendorProfilePage() {
         <div className="row g-3">
           {/* Left: form */}
           <div className="col-lg-8">
+            <div className="d-flex justify-content-end mb-2">
+              <button className="btn btn-sm btn-outline-secondary" onClick={importFromStartup} disabled={busy || showGuard} title="Import company details from your Startup profile">
+                Import from Startup Profile
+              </button>
+            </div>
             <div className="card">
               <div className="card-header fw-semibold">Company details</div>
               <div className="card-body">

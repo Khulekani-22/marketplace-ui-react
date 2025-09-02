@@ -49,7 +49,10 @@ export default function Navbar() {
             <button className="btn btn-sm rounded-pill btn-outline-danger" onClick={logout}>Logout</button>
           </>
         ) : (
-          <Link className="btn btn-sm btn-primary" to="/login">Login</Link>
+          <>
+            <Link className="btn btn-sm btn-outline-primary" to="/signup/startup">Startup Sign Up</Link>
+            <Link className="btn btn-sm btn-primary" to="/login">Login</Link>
+          </>
         )}
       </div>
     </nav>
