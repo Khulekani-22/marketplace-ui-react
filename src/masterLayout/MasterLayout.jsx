@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
 import { auth } from "../lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
 
@@ -39,23 +40,46 @@ export default function MasterLayout({ children }) {
     return "sidebar";
   }, [sidebarActive, mobileMenu]);
 
-  // Resolve role/tenant for current user (best-effort)
+  // Keep role/tenant in sync when navigating (sessionStorage as simple source of truth)
   useEffect(() => {
-    const u = auth.currentUser;
-    const email = u?.email || sessionStorage.getItem("userEmail");
-    if (!email) return;
-    (async () => {
+    const role = sessionStorage.getItem("role") || "";
+    const tenant = sessionStorage.getItem("tenantId") || "public";
+    setIsAdmin(role === "admin");
+    setTenantId(tenant);
+  }, [location.pathname]);
+
+  // Resolve role/tenant for current user (on mount and on auth changes)
+  useEffect(() => {
+    async function refreshRole(byEmail) {
+      if (!byEmail) return;
       try {
-        const { data } = await api.get("/api/users/me", { params: { email } });
+        const { data } = await api.get("/api/users/me", { params: { email: byEmail } });
         const role = data?.role || "member";
-        const tenantId = data?.tenantId || "public";
-        sessionStorage.setItem("userEmail", email);
+        const tenant = data?.tenantId || "public";
+        sessionStorage.setItem("userEmail", byEmail);
         sessionStorage.setItem("role", role);
-        sessionStorage.setItem("tenantId", tenantId);
+        sessionStorage.setItem("tenantId", tenant);
         setIsAdmin(role === "admin");
-        setTenantId(tenantId);
-      } catch {}
-    })();
+        setTenantId(tenant);
+      } catch {
+        // keep prior
+      }
+    }
+
+    // initial
+    const initialEmail = auth.currentUser?.email || sessionStorage.getItem("userEmail");
+    if (initialEmail) refreshRole(initialEmail);
+
+    // subscribe to auth state changes
+    const unsub = onAuthStateChanged(auth, (user) => {
+      const email = user?.email || sessionStorage.getItem("userEmail");
+      if (email) refreshRole(email);
+      else {
+        setIsAdmin(false);
+        setTenantId("public");
+      }
+    });
+    return () => unsub?.();
   }, []);
 
   // Load tenants list for switcher (best-effort)
@@ -141,7 +165,14 @@ export default function MasterLayout({ children }) {
             <li>
               <NavLink to="/profile-vendor" className={navClass}>
                 <Icon icon="solar:user-linear" className="menu-icon" />
-                <span>My Profile</span>
+                <span>Vendor Profile</span>
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/vendor-home" className={navClass}>
+                <Icon icon="mdi:view-dashboard-outline" className="menu-icon" />
+                <span>Vendor Home</span>
               </NavLink>
             </li>
 

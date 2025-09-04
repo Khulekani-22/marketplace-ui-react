@@ -9,36 +9,59 @@ function normalizeEmail(email) {
   return (email || "").trim().toLowerCase();
 }
 
+function collectUsers(data) {
+  const seen = new Map();
+  function add(list) {
+    if (!Array.isArray(list)) return;
+    for (const u of list) {
+      if (!u || typeof u !== "object") continue;
+      const email = (u.email || "").toLowerCase();
+      if (!email) continue;
+      if (!seen.has(email)) seen.set(email, { email, tenantId: u.tenantId || "public", role: u.role || "member" });
+    }
+  }
+  // root users first
+  add(data?.users);
+  if (seen.size) return Array.from(seen.values());
+  // deep scan for arrays of objects with email
+  (function walk(node) {
+    if (!node || typeof node !== "object") return;
+    if (Array.isArray(node)) {
+      // if the array looks like users, add them
+      if (node.length && typeof node[0] === "object" && node[0] && ("email" in node[0])) add(node);
+      for (const v of node) walk(v);
+      return;
+    }
+    for (const k of Object.keys(node)) walk(node[k]);
+  })(data);
+  return Array.from(seen.values());
+}
+
 // List all user role mappings
 router.get("/", (_req, res) => {
-  const { users = [] } = getData();
-  res.json(users);
+  const data = getData();
+  res.json(collectUsers(data));
 });
 
 // Get current user's role/tenant (by Firebase token if present, else by query ?email=)
 router.get("/me", (req, res) => {
-  const { users = [] } = getData();
+  const data = getData();
+  const users = collectUsers(data);
   const email = normalizeEmail(req.user?.email || req.query.email);
   if (!email) return res.status(400).json({ error: "Missing email" });
   const found = users.find((u) => normalizeEmail(u.email) === email);
-  res.json(
-    found || {
-      email,
-      tenantId: "public",
-      role: "member",
-    }
-  );
+  res.json(found || { email, tenantId: "public", role: "member" });
 });
 
 // Upsert a user's role/tenant
 router.post("/", (req, res) => {
-  const { email, tenantId = "public", role = "member" } = req.body || {};
+  const { email, tenantId = "public", role = "member", uid = "" } = req.body || {};
   const norm = normalizeEmail(email);
   if (!norm) return res.status(400).json({ error: "Missing email" });
   const updated = saveData((data) => {
     const list = Array.isArray(data.users) ? data.users : [];
     const idx = list.findIndex((u) => normalizeEmail(u.email) === norm);
-    const next = { email: norm, tenantId, role };
+    const next = { email: norm, tenantId, role, ...(uid ? { uid } : {}) };
     if (idx >= 0) list[idx] = { ...list[idx], ...next };
     else list.push(next);
     data.users = list;
@@ -83,7 +106,8 @@ function isAdminRequest(req) {
   try {
     const email = (req.user?.email || "").toLowerCase();
     if (!email) return false;
-    const { users = [] } = getData();
+    const data = getData();
+    const users = collectUsers(data);
     const found = users.find((u) => (u.email || "").toLowerCase() === email);
     return (found?.role || "") === "admin";
   } catch {

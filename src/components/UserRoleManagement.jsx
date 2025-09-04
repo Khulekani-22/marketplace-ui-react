@@ -16,6 +16,7 @@ export default function UserRoleManagement() {
   const [vendorById, setVendorById] = useState({});
   const [trace, setTrace] = useState({}); // email -> { uid, viaEmail, viaUid, viaId }
   const [traceBusy, setTraceBusy] = useState({}); // email -> boolean
+  const [syncBusy, setSyncBusy] = useState({}); // email -> boolean
   // Platform users search
   const [allQuery, setAllQuery] = useState("");
   const [allUsers, setAllUsers] = useState([]);
@@ -57,10 +58,12 @@ export default function UserRoleManagement() {
         vendors.forEach((v) => {
           const e = (v.contactEmail || v.email || "").toLowerCase();
           const ouid = v.ownerUid || "";
-          const id = String(v.id || v.vendorId || "");
+          const id1 = String(v.id || "");
+          const id2 = String(v.vendorId || "");
           if (e) mEmail[e] = v;
           if (ouid) mOwner[ouid] = v;
-          if (id) mId[id] = v;
+          if (id1) mId[id1] = v;
+          if (id2) mId[id2] = v;
         });
         setVendorByEmail(mEmail);
         setVendorByOwner(mOwner);
@@ -184,22 +187,135 @@ export default function UserRoleManagement() {
     }
   }
 
+  async function syncFirebaseUid(u) {
+    const key = (u.email || "").toLowerCase();
+    setSyncBusy((prev) => ({ ...prev, [key]: true }));
+    setError(""); setOk("");
+    try {
+      // 1) Lookup Firebase UID
+      let uid = "";
+      try {
+        const { data } = await api.get("/api/users/lookup", { params: { email: key } });
+        uid = data?.uid || "";
+      } catch (e) {
+        setError("Could not find Firebase UID for this email");
+        return;
+      }
+
+      // 2) Persist UID on users mapping so future reads know it
+      await api.post("/api/users", { email: key, tenantId: u.tenantId || "public", role: u.role || "member", uid });
+
+      // 3) Upsert ownerUid on vendor: try current tenant, else search all tenants and update where found,
+      // else create minimal vendor in current tenant
+      let updatedSomewhere = false;
+      const v = vendorByEmail[key];
+      if (v) {
+        const vid = String(v.id || v.vendorId || "");
+        if (vid) {
+          try { await api.put(`/api/data/vendors/${encodeURIComponent(vid)}`, { ownerUid: uid }); updatedSomewhere = true; } catch {}
+        }
+      } else {
+        // Search across tenants to update existing vendor there
+        try {
+          const tenantsResp = await api.get('/api/tenants');
+          const tenantList = Array.isArray(tenantsResp.data) ? tenantsResp.data : [];
+          const ids = tenantList.map((t) => (typeof t === 'string' ? t : t?.id)).filter(Boolean);
+          const allTenantIds = Array.from(new Set(['public', ...ids]));
+          for (const tId of allTenantIds) {
+            try {
+              const { data: vRows } = await api.get('/api/data/vendors', { headers: { 'x-tenant-id': tId } });
+              const match = Array.isArray(vRows) ? vRows.find((x)=> (x.contactEmail || x.email || '').toLowerCase() === key) : null;
+              if (match) {
+                const vid2 = String(match.id || match.vendorId || '');
+                if (vid2) {
+                  await api.put(`/api/data/vendors/${encodeURIComponent(vid2)}`, { ownerUid: uid }, { headers: { 'x-tenant-id': tId } });
+                  updatedSomewhere = true;
+                  break;
+                }
+              }
+            } catch {}
+          }
+        } catch {}
+      }
+      if (!updatedSomewhere) {
+        // Create minimal vendor in current tenant with this UID
+        const name = key.split("@")[0] || "Vendor";
+        try {
+          await api.post(`/api/data/vendors`, { name, contactEmail: key, ownerUid: uid, status: "pending", kycStatus: "pending", categories: [] });
+        } catch {}
+      }
+
+      // 4) Refresh vendor maps
+      await refresh();
+      setOk(`Synced Firebase UID for ${key}`);
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message || "Failed to sync UID");
+    } finally {
+      setSyncBusy((prev) => ({ ...prev, [key]: false }));
+    }
+  }
+
+  function buildVendorMaps(list) {
+    const byEmail = {}, byOwner = {}, byId = {};
+    (list || []).forEach((v) => {
+      const e = (v.contactEmail || v.email || "").toLowerCase();
+      const ouid = v.ownerUid || "";
+      const id1 = String(v.id || "");
+      const id2 = String(v.vendorId || "");
+      if (e) byEmail[e] = v;
+      if (ouid) byOwner[ouid] = v;
+      if (id1) byId[id1] = v;
+      if (id2) byId[id2] = v;
+    });
+    return { byEmail, byOwner, byId };
+  }
+
   async function traceVendor(u) {
     const key = (u.email || "").toLowerCase();
     setTraceBusy((prev) => ({ ...prev, [key]: true }));
     try {
-      const viaEmail = vendorByEmail[key] || null;
+      // Start with current-tenant vendor maps
+      let viaEmail = vendorByEmail[key] || null;
       let uid = "";
       let viaUid = null;
       let viaId = null;
+
+      // Attempt Firebase UID lookup (admin-only route); ignore errors
       try {
         const { data } = await api.get("/api/users/lookup", { params: { email: key } });
         uid = data?.uid || "";
       } catch {}
+
       if (uid) {
         viaUid = vendorByOwner[uid] || null;
         viaId = vendorById[uid] || null;
       }
+
+      // If nothing found in current tenant, sweep across all tenants
+      if (!viaEmail && !viaUid && !viaId) {
+        try {
+          // Fetch tenants list and query vendors for each tenant id
+          const tenantsResp = await api.get('/api/tenants');
+          const tenantList = Array.isArray(tenantsResp.data) ? tenantsResp.data : [];
+          const ids = tenantList.map((t) => (typeof t === 'string' ? t : t?.id)).filter(Boolean);
+          const all = [];
+          // Always include public as well
+          const allTenantIds = Array.from(new Set(['public', ...ids]));
+          for (const tId of allTenantIds) {
+            try {
+              const { data: vRows } = await api.get('/api/data/vendors', { headers: { 'x-tenant-id': tId } });
+              if (Array.isArray(vRows)) all.push(...vRows.map((v)=> ({ ...v, _tenantId: v.tenantId || tId })));
+            } catch {}
+          }
+          const maps = buildVendorMaps(all);
+          viaEmail = maps.byEmail[key] || null;
+          if (uid) {
+            viaUid = maps.byOwner[uid] || viaUid;
+            viaId = maps.byId[uid] || viaId;
+          }
+        } catch {}
+      }
+
       setTrace((prev) => ({ ...prev, [key]: { uid, viaEmail, viaUid, viaId } }));
     } finally {
       setTraceBusy((prev) => ({ ...prev, [key]: false }));
@@ -242,6 +358,23 @@ export default function UserRoleManagement() {
       setOk(`${email} granted admin (${t})`);
     } catch (e) {
       setError(e?.response?.data?.message || e?.message || "Failed to grant admin");
+    }
+  }
+
+  function isAdminEmail(email) {
+    const e = (email || '').toLowerCase();
+    return users.some((u) => u.email === e && (u.role || 'member') === 'admin');
+  }
+
+  async function revokeAdmin(email) {
+    const existing = users.find((u) => u.email === (email || '').toLowerCase());
+    const t = existing?.tenantId || tenantPick[email] || 'public';
+    try {
+      await saveUser({ email, tenantId: t, role: 'member' });
+      setUsers((prev) => prev.map((x) => (x.email === email ? { ...x, role: 'member' } : x)));
+      setOk(`${email} admin revoked`);
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message || 'Failed to revoke admin');
     }
   }
 
@@ -301,7 +434,7 @@ export default function UserRoleManagement() {
                 <th style={{minWidth:160}}>Tenant</th>
                 <th>Role</th>
                 <th>Vendor</th>
-                <th style={{minWidth:260}}>Actions / Trace</th>
+                <th style={{minWidth:320}}>Actions / Trace</th>
               </tr>
             </thead>
             <tbody>
@@ -337,38 +470,41 @@ export default function UserRoleManagement() {
                     )}
                     {trace[u.email] && (
                       <div className="small text-secondary mt-1">
-                        {trace[u.email].uid ? (
-                          <>
-                            <div>uid: <code>{trace[u.email].uid}</code></div>
-                            <div>
-                              by email: {trace[u.email].viaEmail ? (
-                                <>
-                                  <code>{String(trace[u.email].viaEmail.contactEmail || trace[u.email].viaEmail.email || "")}</code>
-                                  {" "}(vendorId: <code>{String(trace[u.email].viaEmail.id || trace[u.email].viaEmail.vendorId)}</code>)
-                                </>
-                              ) : (
-                                "—"
-                              )}
-                            </div>
-                            <div>
-                              by ownerUid: {trace[u.email].viaUid ? (
-                                <>
-                                  <code>{String(trace[u.email].viaUid.ownerUid || "")}</code>{" "}
-                                  (vendorId: <code>{String(trace[u.email].viaUid.id || trace[u.email].viaUid.vendorId)}</code>)
-                                </>
-                              ) : (
-                                "—"
-                              )}
-                            </div>
-                            <div>
-                              by id==uid: {trace[u.email].viaId ? (
-                                <code>{String(trace[u.email].viaId.id || trace[u.email].viaId.vendorId)}</code>
-                              ) : (
-                                "—"
-                              )}
-                            </div>
-                          </>
-                        ) : (
+                {trace[u.email].uid ? (
+                  <>
+                    <div>uid: <code>{trace[u.email].uid}</code></div>
+                    <div>
+                      by email: {trace[u.email].viaEmail ? (
+                        <>
+                          <code>{String(trace[u.email].viaEmail.contactEmail || trace[u.email].viaEmail.email || "")}</code>
+                          {" "}(vendorId: <code>{String(trace[u.email].viaEmail.id || trace[u.email].viaEmail.vendorId)}</code>, tenant: <code>{String(trace[u.email].viaEmail.tenantId || trace[u.email].viaEmail._tenantId || 'public')}</code>)
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </div>
+                    <div>
+                      by ownerUid: {trace[u.email].viaUid ? (
+                        <>
+                          <code>{String(trace[u.email].viaUid.ownerUid || "")}</code>{" "}
+                          (vendorId: <code>{String(trace[u.email].viaUid.id || trace[u.email].viaUid.vendorId)}</code>, tenant: <code>{String(trace[u.email].viaUid.tenantId || trace[u.email].viaUid._tenantId || 'public')}</code>)
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </div>
+                    <div>
+                      by id==uid: {trace[u.email].viaId ? (
+                        <>
+                          <code>{String(trace[u.email].viaId.id || trace[u.email].viaId.vendorId)}</code>{" "}
+                          (tenant: <code>{String(trace[u.email].viaId.tenantId || trace[u.email].viaId._tenantId || 'public')}</code>)
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </div>
+                  </>
+                ) : (
                           <div>uid: — (lookup requires admin + Firebase link)</div>
                         )}
                       </div>
@@ -402,6 +538,15 @@ export default function UserRoleManagement() {
                         title="Trace vendor status via email, UID, or vendor id"
                       >
                         {traceBusy[u.email] ? 'Tracing…' : 'Trace'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={()=>syncFirebaseUid(u)}
+                        disabled={!!syncBusy[u.email]}
+                        title="Lookup Firebase UID and link it to this user's vendor"
+                      >
+                        {syncBusy[u.email] ? 'Syncing…' : 'Sync UID'}
                       </button>
                     </div>
                   </td>
@@ -457,9 +602,15 @@ export default function UserRoleManagement() {
                       </select>
                     </td>
                     <td>
-                      <button className="btn btn-sm btn-outline-success" onClick={()=>grantAdmin((r.email || '').toLowerCase())}>
-                        Grant Admin
-                      </button>
+                      {isAdminEmail(r.email) ? (
+                        <button className="btn btn-sm btn-outline-danger" onClick={()=>revokeAdmin((r.email || '').toLowerCase())}>
+                          Revoke Admin
+                        </button>
+                      ) : (
+                        <button className="btn btn-sm btn-outline-success" onClick={()=>grantAdmin((r.email || '').toLowerCase())}>
+                          Grant Admin
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

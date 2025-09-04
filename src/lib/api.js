@@ -9,8 +9,8 @@ function computeApiBases() {
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
   const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
   const make = (port) => `${protocol}//${host}:${port}`;
-  // Prefer 5055 from backend/.env, then 5000, 5001, and 5500 as fallbacks
-  return [make(5055), make(5000), make(5001), make(5500)];
+  // Prefer typical backend ports first: 5000, then 5001, 5500; include 5055 as a legacy fallback
+  return [make(5000), make(5001), make(5500), make(5055)];
 }
 
 const CANDIDATES = computeApiBases();
@@ -44,10 +44,11 @@ api.interceptors.response.use(null, async (error) => {
     return api(original);
   }
 
-  // Fallback policy: on network errors OR 4xx/5xx (except 401 already handled), try next base
+  // Fallback policy: only on network errors or 5xx (not on 4xx other than 401 handled above)
   const status = error.response?.status;
   const isNetworkError = !error.response || error.code === "ERR_NETWORK";
-  const shouldFallback = isNetworkError || (status && status !== 401);
+  const isServerError = typeof status === 'number' && status >= 500;
+  const shouldFallback = isNetworkError || isServerError;
   if (shouldFallback && CANDIDATES.length > 1) {
     const attempts = Number(original._switchAttempts || 0);
     if (attempts < CANDIDATES.length - 1) {
@@ -58,6 +59,16 @@ api.interceptors.response.use(null, async (error) => {
       currentBase = nextBase;
       api.defaults.baseURL = nextBase;
       original.baseURL = nextBase;
+      return api(original);
+    }
+    // Exhausted fallbacks: reset to first candidate and try once
+    if (!original._resetOnce) {
+      original._resetOnce = true;
+      candidateIndex = 0;
+      currentBase = CANDIDATES[0];
+      api.defaults.baseURL = currentBase;
+      original.baseURL = currentBase;
+      original._switchAttempts = 0;
       return api(original);
     }
   }

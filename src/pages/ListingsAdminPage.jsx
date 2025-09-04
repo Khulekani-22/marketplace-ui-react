@@ -353,20 +353,11 @@ export default function ListingsAdminPage() {
     (async () => {
       setBusy(true);
       try {
-        const idToken = await auth.currentUser?.getIdToken?.();
-        const res = await fetch(`${API_BASE}/live`, {
-          headers: {
-            "x-tenant-id": tenantId,
-            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-          },
-        });
-        if (res.ok) {
-          const live = await res.json();
-          setData(live);
-          setText(JSON.stringify(live, null, 2));
-          localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(live));
-          setSelectedId(live?.services?.[0]?.id || "");
-        }
+        const { data: live } = await api.get(`/api/lms/live`);
+        setData(live);
+        setText(JSON.stringify(live, null, 2));
+        localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(live));
+        setSelectedId(live?.services?.[0]?.id || "");
         await refreshHistory();
       } catch {
         // stay with local fallback
@@ -379,13 +370,7 @@ export default function ListingsAdminPage() {
 
   async function refreshHistory() {
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const hx = await fetch(`${API_BASE}/checkpoints`, {
-        headers: {
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-      }).then((r) => (r.ok ? r.json() : { items: [] }));
+      const hx = await api.get(`/api/lms/checkpoints`).then((r) => r.data);
       const items = hx.items ?? [];
       setHistory(items);
       localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
@@ -398,17 +383,41 @@ export default function ListingsAdminPage() {
     setErr(null);
     setBusy(true);
     try {
+      // Before publishing, pull latest live to merge in user-submitted reviews
       const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/publish`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        body: JSON.stringify({ data }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      let dataToPublish = data;
+      try {
+        const live = await api.get(`/api/lms/live`).then((r) => r.data);
+          // Merge only review-related fields from live into our working copy
+          const next = deepClone(data);
+          const liveMap = Object.fromEntries(
+            (live?.services || []).map((s) => [String(s.id), s])
+          );
+          next.services = (next.services || []).map((s) => {
+            const liveS = liveMap[String(s.id)];
+            if (!liveS) return s;
+            return {
+              ...s,
+              reviews: Array.isArray(liveS.reviews) ? liveS.reviews : s.reviews,
+              reviewCount:
+                typeof liveS.reviewCount === "number"
+                  ? liveS.reviewCount
+                  : Number(liveS.reviewCount || (Array.isArray(liveS.reviews) ? liveS.reviews.length : 0) || s.reviewCount || 0),
+              rating:
+                typeof liveS.rating === "number"
+                  ? liveS.rating
+                  : Number(liveS.rating || s.rating || 0),
+              lastReviewedAt: liveS.lastReviewedAt || s.lastReviewedAt,
+            };
+          });
+          dataToPublish = next;
+          // Also update working copy so the UI reflects merged reviews
+          doSetData(next);
+      } catch {
+        // If merge fails, continue publishing current working copy
+      }
+
+      await api.put(`/api/lms/publish`, { data: dataToPublish });
       toastOK("Published listings to live");
       try {
         await writeAuditLog({
@@ -429,17 +438,7 @@ export default function ListingsAdminPage() {
 
   async function saveCheckpoint(message) {
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/checkpoints`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        body: JSON.stringify({ message: message || "", data }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await api.post(`/api/lms/checkpoints`, { message: message || "", data });
       toastOK("Checkpoint saved");
       try {
         await writeAuditLog({
@@ -459,18 +458,10 @@ export default function ListingsAdminPage() {
   async function restoreCheckpoint(id) {
     if (!window.confirm("Restore this snapshot to LIVE appData.json?")) return;
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/restore/${id}`, {
-        method: "POST",
-        headers: {
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await api.post(`/api/lms/restore/${id}`);
       toastOK("Restored snapshot");
       await refreshHistory();
-      const live = await fetch(`${API_BASE}/live`).then((r) => r.json());
+      const live = await api.get(`/api/lms/live`).then((r) => r.data);
       doSetData(live);
     } catch (e) {
       setErr(e.message || "Restore failed");
@@ -480,15 +471,7 @@ export default function ListingsAdminPage() {
   async function clearHistory() {
     if (!window.confirm("Delete ALL checkpoints on the server?")) return;
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/checkpoints`, {
-        method: "DELETE",
-        headers: {
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await api.delete(`/api/lms/checkpoints`);
       toastOK("Cleared history");
       try {
         await writeAuditLog({
@@ -731,6 +714,47 @@ function handleExport() {
           onClick={handleExport}
         >
           Export Current
+        </button>
+        <button
+          className="btn rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white"
+          disabled={busy}
+          onClick={async () => {
+            setErr(null);
+            setBusy(true);
+            try {
+              const live = await api.get(`/api/lms/live`).then((r) => r.data);
+              const next = deepClone(data);
+              const liveMap = Object.fromEntries(
+                (live?.services || []).map((s) => [String(s.id), s])
+              );
+              next.services = (next.services || []).map((s) => {
+                const liveS = liveMap[String(s.id)];
+                if (!liveS) return s;
+                return {
+                  ...s,
+                  reviews: Array.isArray(liveS.reviews) ? liveS.reviews : s.reviews,
+                  reviewCount:
+                    typeof liveS.reviewCount === "number"
+                      ? liveS.reviewCount
+                      : Number(liveS.reviewCount || (Array.isArray(liveS.reviews) ? liveS.reviews.length : 0) || s.reviewCount || 0),
+                  rating:
+                    typeof liveS.rating === "number"
+                      ? liveS.rating
+                      : Number(liveS.rating || s.rating || 0),
+                  lastReviewedAt: liveS.lastReviewedAt || s.lastReviewedAt,
+                };
+              });
+              doSetData(next);
+              toastOK("Synced reviews from live");
+            } catch (e) {
+              setErr(e.message || "Failed to sync reviews");
+            } finally {
+              setBusy(false);
+            }
+          }}
+          title="Fetch live data and merge review counts and lists"
+        >
+          Sync reviews from live
         </button>
         <button
           className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"

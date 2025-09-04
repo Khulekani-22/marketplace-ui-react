@@ -54,13 +54,19 @@
               "title": "1.3 - Regulatory Landscape",
               "duration": "18 min",
               "completed": false
+            },
+            {
+              "id": "1-d",
+              "title": "Testing",
+              "duration": "15 min",
+              "completed": false
             }
           ]
         },
         {
           "id": "2",
           "title": "Module 2: Digital Identity and KYC",
-          "description": "Solving identity verification challenges in emerging markets.",
+          "description": "Solving identity verification challenges in the republic of south africa and emerging markets.",
           "videoThumbnail": "https://images.unsplash.com/photo-1639762681057-408e52192e50?q=80&w=1280&h=720&fit=crop",
           "aiHint": "digital identity KYC",
           "lessons": [
@@ -163,6 +169,19 @@
               "duration": "20 min",
               "completed": false
             }
+          ],
+          "users": [
+            {
+              "email": "khulekani@22onsloane.co",
+              "tenantId": "22onsloane",
+              "role": "admin"
+            }
+          ],
+          "tenants": [
+            {
+              "id": "22onsloane",
+              "name": "22 On Sloane"
+            }
           ]
         }
       ]
@@ -173,7 +192,7 @@
       "courses": [
         {
           "id": "1",
-          "title": "Module 1: InsurTech for the Modern Age",
+          "title": "Module 1: InsurTech for the Modern African Market",
           "description": "Disrupting the insurance industry with technology.",
           "videoThumbnail": "https://images.unsplash.com/photo-1611095965942-8fc09a7a6941?q=80&w=1280&h=720&fit=crop",
           "aiHint": "insurtech innovation",
@@ -194,6 +213,12 @@
               "id": "1c",
               "title": "1.3 - Customer Experience in Insurance",
               "duration": "20 min",
+              "completed": false
+            },
+            {
+              "id": "1-d",
+              "title": "Testing",
+              "duration": "15 min",
               "completed": false
             }
           ],
@@ -1462,17 +1487,18 @@
   "services": [
     {
       "id": "1",
-      "title": "Modern Logo & Brand Identity Pack",
+      "title": "Logo & Brand Identity Pack",
       "category": "Design & Graphics",
-      "vendor": "CreativeCo",
-      "vendorId": "vendor1",
-      "price": 8500,
+      "vendor": "22 On Sloane",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "contactEmail": "khulekani@22onsloane.co",
+      "price": 7000,
       "rating": 4.9,
       "reviewCount": 120,
       "imageUrl": "https://images.unsplash.com/photo-1526656001224-5a2432a551cf?q=80&w=600&h=400&fit=crop",
       "aiHint": "logo design",
       "listingType": "service",
-      "status": "approved",
+      "status": "pending",
       "isFeatured": true,
       "description": "Get a complete brand identity package, including a custom logo, color palette, typography, and brand guidelines to ensure consistency across all your marketing materials.",
       "reviews": [
@@ -1500,8 +1526,9 @@
       "id": "2",
       "title": "Scalable Web App Development",
       "category": "Tech & Programming",
-      "vendor": "DevHouse",
-      "vendorId": "vendor2",
+      "vendor": "22 On Sloane",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "contactEmail": "khulekani@22onsloane.co",
       "price": 42000,
       "rating": 4.8,
       "reviewCount": 85,
@@ -1527,11 +1554,12 @@
       "id": "3",
       "title": "AI-Powered CRM Platform",
       "category": "SaaS",
-      "vendor": "SalesStream",
-      "vendorId": "vendor3",
+      "vendor": "22 On Sloane",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "contactEmail": "khulekani@22onsloane.co",
       "price": 1500,
-      "rating": 4.9,
-      "reviewCount": 213,
+      "rating": 4.900467289719626,
+      "reviewCount": 214,
       "imageUrl": "https://images.unsplash.com/photo-1556155092-490a1ba16284?q=80&w=600&h=400&fit=crop",
       "aiHint": "CRM software",
       "listingType": "saas",
@@ -1556,15 +1584,25 @@
           "rating": 4,
           "date": "2024-07-18T00:00:00Z",
           "content": "A very powerful CRM. There is a bit of a learning curve, but their customer support is fantastic and helped us get up to speed."
+        },
+        {
+          "id": "b1e23cd9-8d6c-46eb-a61d-bbe4101d994a",
+          "rating": 5,
+          "comment": "Testing",
+          "author": "22 On Sloane",
+          "authorEmail": "khulekani@22onsloane.co",
+          "createdAt": "2025-09-04T03:38:14.074Z"
         }
-      ]
+      ],
+      "lastReviewedAt": "2025-09-04T03:38:14.074Z"
     },
     {
       "id": "4",
       "title": "Financial Modeling & Pitch Deck",
       "category": "Business",
-      "vendor": "Capital Advisors",
-      "vendorId": "vendor4",
+      "vendor": "22 On Sloane Programmes",
+      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+      "contactEmail": "ruthmaphosa2024@gmail.com",
       "price": 20000,
       "rating": 5,
       "reviewCount": 78,
@@ -1580,25 +1618,37 @@
       "id": "5",
       "title": "Professional Legal Consultation",
       "category": "Legal",
-      "vendor": "LegalEase",
-      "vendorId": "vendor5",
+      "vendor": "22 On Sloane",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "contactEmail": "khulekani@22onsloane.co",
       "price": 5000,
-      "rating": 4.7,
-      "reviewCount": 150,
-      "imageUrl": "https://images.unsplash.com/photo-1505664194779-8beace7a2044?q=80&w=600&h=400&fit=crop",
+      "rating": 4.701986754966887,
+      "reviewCount": 151,
+      "imageUrl": "https://www.w3.org/cms-uploads/scales.svg",
       "aiHint": "legal advice",
       "listingType": "service",
-      "status": "rejected",
-      "isFeatured": false,
+      "status": "approved",
+      "isFeatured": true,
       "description": "Navigate the complex legal landscape with confidence. Our experienced corporate lawyers provide expert advice on company registration, contracts, compliance, and more.",
-      "reviews": []
+      "reviews": [
+        {
+          "id": "c236d5a2-fcca-49aa-926d-5278df618182",
+          "rating": 5,
+          "comment": "Testing",
+          "author": "22 On Sloane",
+          "authorEmail": "khulekani@22onsloane.co",
+          "createdAt": "2025-09-04T03:38:42.488Z"
+        }
+      ],
+      "lastReviewedAt": "2025-09-04T03:38:42.488Z"
     },
     {
       "id": "6",
       "title": "Project Management Suite",
       "category": "SaaS",
-      "vendor": "TaskMaster",
-      "vendorId": "vendor6",
+      "vendor": "22 On Sloane",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "contactEmail": "khulekani@22onsloane.co",
       "price": 850,
       "rating": 4.8,
       "reviewCount": 190,
@@ -1614,8 +1664,9 @@
       "id": "7",
       "title": "Social Media Marketing Campaign",
       "category": "Marketing",
-      "vendor": "Buzz Factory",
-      "vendorId": "vendor7",
+      "vendor": "22 On Sloane Programmes",
+      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+      "contactEmail": "ruthmaphosa2024@gmail.com",
       "price": 12000,
       "rating": 4.9,
       "reviewCount": 95,
@@ -1631,8 +1682,9 @@
       "id": "8",
       "title": "Animated Explainer Video",
       "category": "Video & Animation",
-      "vendor": "Motion Magic",
-      "vendorId": "vendor8",
+      "vendor": "22 On Sloane Programmes",
+      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+      "contactEmail": "ruthmaphosa2024@gmail.com",
       "price": 18000,
       "rating": 4.8,
       "reviewCount": 70,
@@ -1648,8 +1700,9 @@
       "id": "9",
       "title": "SEO Content Writing Package",
       "category": "Writing & Translation",
-      "vendor": "WordSmiths",
-      "vendorId": "vendor9",
+      "vendor": "22 On Sloane Programmes",
+      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+      "contactEmail": "ruthmaphosa2024@gmail.com",
       "price": 7500,
       "rating": 4.9,
       "reviewCount": 110,
@@ -1662,14 +1715,21 @@
       "reviews": []
     },
     {
-      "listingType": "saas",
+      "id": "X6rF03vck1HIXfg4hbjy",
       "title": "Business plan generator",
       "category": "Business",
-      "price": 200,
       "vendor": "22 On Sloane",
-      "description": "Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing",
+      "vendorId": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+      "contactEmail": "",
+      "price": 200,
+      "rating": 4.5,
+      "reviewCount": 2,
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2024/08/website-img-landing-1-jhb.png",
       "aiHint": "business plan",
+      "listingType": "saas",
+      "status": "approved",
+      "isFeatured": false,
+      "description": "Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing",
       "reviews": [
         {
           "id": "r1753438960084",
@@ -1689,20 +1749,24 @@
           "date": "2025-07-25T10:41:58.399Z",
           "content": "Great app! Thanks "
         }
-      ],
-      "reviewCount": 2,
-      "rating": 4.5,
-      "id": "X6rF03vck1HIXfg4hbjy"
+      ]
     },
     {
-      "listingType": "saas",
+      "id": "uTgKXEWI2SYqoK1DeEYU",
       "title": "Sage Business Cloud Accounting",
       "category": "SaaS",
+      "vendor": "22 On Sloane",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "contactEmail": "khulekani@22onsloane.co",
       "price": 400,
-      "vendor": "Sage",
-      "description": "Ideal for sole traders, freelancers, and growing businesses.",
+      "rating": 3.5,
+      "reviewCount": 2,
       "imageUrl": "https://chro.co.za/wp-content/uploads/2019/03/Sage-Logo_NEW_RGB-scaled-e1669635543552-1024x571.jpg",
       "aiHint": "sage business",
+      "listingType": "saas",
+      "status": "approved",
+      "isFeatured": false,
+      "description": "Ideal for sole traders, freelancers, and growing businesses.",
       "reviews": [
         {
           "id": "r1753195122986",
@@ -1720,10 +1784,165 @@
           "date": "2025-07-22T14:40:02.103Z",
           "content": "Testing connection to db again"
         }
-      ],
+      ]
+    },
+    {
+      "id": "memubqft-fcmcw1",
+      "title": "Scalable Web App Development",
+      "category": "Tech & Programming",
+      "vendor": "22 On Sloane",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "contactEmail": "khulekani@22onsloane.co",
+      "price": 42000,
+      "rating": 4.8,
+      "reviewCount": 85,
+      "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2024/08/website-img-landing-1-jhb.png",
+      "aiHint": "web development",
+      "listingType": "service",
+      "status": "approved",
+      "isFeatured": true,
+      "description": "We build high-performance, scalable web applications using modern technologies like React, Node.js, and serverless architectures. Perfect for startups looking to build an MVP or scale their existing product.",
+      "reviews": [
+        {
+          "id": "r3",
+          "author": "Fintech Solutions",
+          "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&fit=crop",
+          "aiHint": "man portrait",
+          "rating": 5,
+          "date": "2024-07-15T00:00:00Z",
+          "content": "The team at DevHouse is top-notch. They built a robust and scalable web app for us on time and on budget. Excellent communication throughout."
+        }
+      ]
+    },
+    {
+      "id": "mepapax8-ibz1dv",
+      "title": "Testing Accounting SaaS",
+      "category": "SaaS",
+      "vendor": "22OnSloane Digital Team",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "contactEmail": "22onsloanedigitalteam@gmail.com",
+      "price": 250,
+      "rating": 0,
+      "reviewCount": 0,
+      "imageUrl": "https://sm.pcmag.com/pcmag_au/review/i/intuit-qui/intuit-quickbooks-online_gjan.jpg",
+      "aiHint": "",
+      "listingType": "saas",
+      "status": "approved",
+      "isFeatured": false,
+      "description": "Testing feature - vendor submit a new listing for approval",
+      "reviews": []
+    },
+    {
+      "id": "meqwiou0-3q8ofl",
+      "title": "Testing",
+      "category": "SaaS",
+      "vendor": "22 On Sloane",
+      "vendorId": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+      "contactEmail": "khulekani@22onsloane.co",
+      "price": 8000,
+      "rating": 2.5,
       "reviewCount": 2,
-      "rating": 3.5,
-      "id": "uTgKXEWI2SYqoK1DeEYU"
+      "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/05/gecafrica-hero.jpg",
+      "aiHint": "",
+      "listingType": "service",
+      "status": "approved",
+      "isFeatured": false,
+      "description": "Testing",
+      "reviews": [
+        {
+          "id": "20b69da4-4d6e-435a-9dc9-cda9a098ad0d",
+          "rating": 5,
+          "comment": "Testing review",
+          "author": "22 On Sloane",
+          "authorEmail": "khulekani@22onsloane.co",
+          "createdAt": "2025-09-04T03:32:59.894Z"
+        }
+      ],
+      "lastReviewedAt": "2025-09-04T03:32:59.894Z"
+    },
+    {
+      "id": "mewcr2ki-ocdatn",
+      "title": "Testing New Saas Listing",
+      "category": "Business",
+      "vendor": "22OnSloane Digital Team",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "contactEmail": "22onsloanedigitalteam@gmail.com",
+      "price": 250,
+      "rating": 5,
+      "reviewCount": 2,
+      "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/07/envato-labs-ai-5ee6d584-420f-4614-9307-fdb693d538b9.jpg",
+      "aiHint": "",
+      "listingType": "saas",
+      "status": "approved",
+      "isFeatured": false,
+      "description": "Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing",
+      "reviews": [
+        {
+          "id": "d506c427-81e6-40f4-ad49-4a470c7314ac",
+          "rating": 5,
+          "comment": "Testing Reviews",
+          "author": "22 On Sloane",
+          "authorEmail": "khulekani@22onsloane.co",
+          "createdAt": "2025-09-04T03:39:30.741Z"
+        }
+      ],
+      "lastReviewedAt": "2025-09-04T03:39:30.741Z"
+    },
+    {
+      "id": "mewl4bna-xil1yi",
+      "title": "Pitch deck revision service",
+      "category": "Business",
+      "vendor": "22 On Sloane",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "contactEmail": "khulekani@22onsloane.co",
+      "price": 1000,
+      "rating": 5,
+      "reviewCount": 2,
+      "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/Web_banners_SERIES_27_Aug_2025_web_banner001_1681x965-copy-2.png",
+      "aiHint": "",
+      "listingType": "service",
+      "status": "approved",
+      "isFeatured": false,
+      "description": "Share your pitch deck and our expert team will give you pointers on how to improve it",
+      "reviews": [
+        {
+          "id": "12475614-5490-43fd-9de9-b6fbc35f8a55",
+          "rating": 5,
+          "comment": "Testing",
+          "author": "22 On Sloane",
+          "authorEmail": "khulekani@22onsloane.co",
+          "createdAt": "2025-09-03T06:44:20.655Z"
+        }
+      ],
+      "lastReviewedAt": "2025-09-03T06:44:20.655Z"
+    },
+    {
+      "id": "mewl77g2-tidsnp",
+      "title": "Pitch deck revision",
+      "category": "Business",
+      "vendor": "22 On Sloane Programmes",
+      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+      "contactEmail": "ruthmaphosa2024@gmail.com",
+      "price": 1500,
+      "rating": 5,
+      "reviewCount": 2,
+      "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/Web_banners_SERIES_27_Aug_2025_web_banner001_1681x965-copy-2.png",
+      "aiHint": "",
+      "listingType": "service",
+      "status": "approved",
+      "isFeatured": false,
+      "description": "Our team of experts will anlayze and review your pitch deck",
+      "reviews": [
+        {
+          "id": "e8c54ec9-a52d-4e3d-b6dc-5b52ee1af90a",
+          "rating": 5,
+          "comment": "Testing",
+          "author": "22 On Sloane",
+          "authorEmail": "khulekani@22onsloane.co",
+          "createdAt": "2025-09-03T07:18:59.885Z"
+        }
+      ],
+      "lastReviewedAt": "2025-09-03T07:18:59.885Z"
     }
   ],
   "leads": [
@@ -1873,7 +2092,10 @@
       "aiHint": "fintech logo",
       "team": [],
       "followers": 0,
-      "id": "aiKIomLPB81DDGKIPmqG"
+      "id": "aiKIomLPB81DDGKIPmqG",
+      "status": "suspended",
+      "lastUpdated": "2025-09-01T10:08:08.079Z",
+      "vendorId": "aiKIomLPB81DDGKIPmqG"
     },
     {
       "id": "s1",
@@ -2112,91 +2334,20 @@
         }
       ],
       "followers": 1600
-    }
-  ],
-  "vendors": [
-    {
-      "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "name": "22 On Sloane",
-      "kycStatus": "approved",
-      "contactEmail": "khulekani@22onsloane.co",
-      "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "phone": "0763732884",
-      "website": "",
-      "description": "",
-      "logoUrl": "",
-      "bannerUrl": "",
-      "country": "South Africa",
-      "city": "Sandton",
-      "addressLine": "",
-      "socials": {
-        "twitter": "",
-        "linkedin": "",
-        "facebook": "",
-        "instagram": "",
-        "youtube": "",
-        "github": ""
-      },
-      "categories": [],
-      "tags": [],
-      "foundedYear": "",
-      "teamSize": "",
-      "registrationNo": "",
-      "status": "active",
-      "tenantId": "public"
-    },
-    {
-      "id": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
-      "name": "22 On Sloane Programmes",
-      "kycStatus": "approved",
-      "contactEmail": "ruthmaphosa2024@gmail.com",
-      "ownerUid": "MFIzWLlhKjSDkV8FPlwXixdUCFX2",
-      "phone": "+27763732884",
-      "website": "",
-      "description": "",
-      "logoUrl": "",
-      "bannerUrl": "",
-      "country": "South Africa",
-      "city": "Sandton",
-      "addressLine": "",
-      "socials": {
-        "twitter": "",
-        "linkedin": "",
-        "facebook": "",
-        "instagram": "",
-        "youtube": "",
-        "github": ""
-      },
-      "categories": [],
-      "tags": [],
-      "foundedYear": "",
-      "teamSize": "",
-      "registrationNo": "",
-      "status": "active",
-      "tenantId": "public"
     },
     {
       "id": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
       "name": "Khulekani Mncube",
-      "kycStatus": "pending",
+      "vendorId": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
       "contactEmail": "mncubekhulekani@gmail.com",
-      "ownerUid": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
-      "phone": "+27763732884",
       "website": "https://koulz.co.za",
-      "description": "Testing",
-      "logoUrl": "",
-      "bannerUrl": "",
+      "phone": "+27763732884",
       "country": "South Africa",
       "city": "Sandton",
       "addressLine": "",
-      "socials": {
-        "twitter": "",
-        "linkedin": "",
-        "facebook": "",
-        "instagram": "",
-        "youtube": "",
-        "github": ""
-      },
+      "logoUrl": "",
+      "bannerUrl": "",
+      "description": "Testing",
       "categories": [
         "Design",
         "Development",
@@ -2209,21 +2360,288 @@
       "teamSize": "1",
       "registrationNo": "",
       "status": "pending",
-      "tenantId": "22onsloane"
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "lastUpdated": "",
+      "ownerUid": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+      "email": "mncubekhulekani@gmail.com",
+      "companyName": "Khulekani Mncube",
+      "raw": {
+        "id": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+        "name": "Khulekani Mncube",
+        "kycStatus": "pending",
+        "contactEmail": "mncubekhulekani@gmail.com",
+        "ownerUid": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+        "phone": "+27763732884",
+        "website": "https://koulz.co.za",
+        "description": "Testing",
+        "logoUrl": "",
+        "bannerUrl": "",
+        "country": "South Africa",
+        "city": "Sandton",
+        "addressLine": "",
+        "socials": {
+          "twitter": "",
+          "linkedin": "",
+          "facebook": "",
+          "instagram": "",
+          "youtube": "",
+          "github": ""
+        },
+        "categories": [
+          "Design",
+          "Development",
+          "Analysis"
+        ],
+        "tags": [
+          "saas"
+        ],
+        "foundedYear": "1990",
+        "teamSize": "1",
+        "registrationNo": "",
+        "status": "pending",
+        "tenantId": "22onsloane"
+      }
+    },
+    {
+      "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "name": "22onsloanedigitalteam",
+      "contactEmail": "khulekani@22onsloane.co",
+      "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "website": "",
+      "phone": "0114637602",
+      "country": "South Africa",
+      "city": "Johannesburg",
+      "addressLine": "",
+      "logoUrl": "",
+      "bannerUrl": "",
+      "description": "",
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "lastUpdated": "",
+      "email": "khulekani@22onsloane.co",
+      "companyName": "22onsloanedigitalteam",
+      "raw": {
+        "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "name": "22onsloanedigitalteam",
+        "kycStatus": "approved",
+        "contactEmail": "khulekani@22onsloane.co",
+        "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "phone": "0114637602",
+        "website": "",
+        "description": "",
+        "logoUrl": "",
+        "bannerUrl": "",
+        "country": "South Africa",
+        "city": "Johannesburg",
+        "addressLine": "",
+        "socials": {
+          "twitter": "",
+          "linkedin": "",
+          "facebook": "",
+          "instagram": "",
+          "youtube": "",
+          "github": ""
+        },
+        "categories": [],
+        "tags": [],
+        "foundedYear": "",
+        "teamSize": "",
+        "registrationNo": "",
+        "status": "active",
+        "tenantId": "22onsloane"
+      }
+    },
+    {
+      "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "name": "22 On Sloane",
+      "companyName": "22 On Sloane",
+      "contactEmail": "khulekani@22onsloane.co",
+      "email": "khulekani@22onsloane.co",
+      "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "website": "",
+      "phone": "+27763732884",
+      "country": "South Africa",
+      "city": "Sandton",
+      "addressLine": "",
+      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
+      "bannerUrl": "",
+      "description": "",
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "lastUpdated": "",
+      "raw": {
+        "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "name": "22 On Sloane",
+        "kycStatus": "approved",
+        "contactEmail": "khulekani@22onsloane.co",
+        "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "phone": "+27763732884",
+        "website": "",
+        "description": "",
+        "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
+        "bannerUrl": "",
+        "country": "South Africa",
+        "city": "Sandton",
+        "addressLine": "",
+        "socials": {
+          "twitter": "",
+          "linkedin": "",
+          "facebook": "",
+          "instagram": "",
+          "youtube": "",
+          "github": ""
+        },
+        "categories": [],
+        "tags": [],
+        "foundedYear": "",
+        "teamSize": "",
+        "registrationNo": "",
+        "status": "active",
+        "tenantId": "22onsloane"
+      }
     },
     {
       "id": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
       "name": "22 On Sloane Programmes",
-      "kycStatus": "approved",
+      "companyName": "22 On Sloane Programmes",
       "contactEmail": "ruthmaphosa2024@gmail.com",
+      "email": "ruthmaphosa2024@gmail.com",
       "ownerUid": "MFIzWLlhKjSDkV8FPlwXixdUCFX2",
+      "website": "",
       "phone": "+27763732884",
+      "country": "South Africa",
+      "city": "Sandton",
+      "addressLine": "",
+      "logoUrl": "",
+      "bannerUrl": "",
+      "description": "",
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "lastUpdated": "",
+      "raw": {
+        "id": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+        "name": "22 On Sloane Programmes",
+        "kycStatus": "approved",
+        "contactEmail": "ruthmaphosa2024@gmail.com",
+        "ownerUid": "MFIzWLlhKjSDkV8FPlwXixdUCFX2",
+        "phone": "+27763732884",
+        "website": "",
+        "description": "",
+        "logoUrl": "",
+        "bannerUrl": "",
+        "country": "South Africa",
+        "city": "Sandton",
+        "addressLine": "",
+        "socials": {
+          "twitter": "",
+          "linkedin": "",
+          "facebook": "",
+          "instagram": "",
+          "youtube": "",
+          "github": ""
+        },
+        "categories": [],
+        "tags": [],
+        "foundedYear": "",
+        "teamSize": "",
+        "registrationNo": "",
+        "status": "active",
+        "tenantId": "22onsloane"
+      }
+    }
+  ],
+  "vendors": [
+    {
+      "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "name": "22OnSloane Digital Team",
+      "companyName": "22OnSloane Digital Team",
+      "email": "22onsloanedigitalteam@gmail.com",
+      "contactEmail": "22onsloanedigitalteam@gmail.com",
+      "website": "",
+      "phone": "",
+      "country": "",
+      "city": "",
+      "addressLine": "",
+      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2024/06/logo-mark.jpg",
+      "bannerUrl": "",
+      "description": "",
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "lastUpdated": "2025-08-28T11:17:06.926Z"
+    },
+    {
+      "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "name": "22onsloanedigitalteam",
+      "kycStatus": "approved",
+      "contactEmail": "22onsloanedigitalteam@gmail.com",
+      "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "phone": "0114637602",
       "website": "",
       "description": "",
       "logoUrl": "",
       "bannerUrl": "",
       "country": "South Africa",
-      "city": "Sandton",
+      "city": "Johannesburg",
       "addressLine": "",
       "socials": {
         "twitter": "",
@@ -2242,11 +2660,10 @@
       "tenantId": "22onsloane"
     },
     {
-      "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "name": "22onsloanedigitalteam",
-      "kycStatus": "approved",
-      "contactEmail": "22onsloanedigitalteam@gmail.com",
-      "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "name": "khulekani",
+      "kycStatus": "pending",
+      "contactEmail": "khulekani@22onsloane.co",
+      "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "phone": "",
       "website": "",
       "description": "",
@@ -2268,23 +2685,33 @@
       "foundedYear": "",
       "teamSize": "",
       "registrationNo": "",
-      "status": "active",
+      "status": "pending",
+      "id": "9b103fe7-213d-4155-8e37-191f78babc57",
       "tenantId": "22onsloane"
-    },
+    }
+  ],
+  "companies": [
     {
-      "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "name": "22 On Sloane",
-      "kycStatus": "pending",
-      "contactEmail": "khulekani@22onsloane.co",
-      "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "phone": "+27763732884",
+      "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "name": "22OnSloane Digital Team",
+      "companyName": "22OnSloane Digital Team",
+      "email": "22onsloanedigitalteam@gmail.com",
+      "contactEmail": "22onsloanedigitalteam@gmail.com",
       "website": "",
-      "description": "",
-      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
-      "bannerUrl": "",
-      "country": "South Africa",
-      "city": "Sandton",
+      "phone": "",
+      "country": "",
+      "city": "",
       "addressLine": "",
+      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2024/06/logo-mark.jpg",
+      "bannerUrl": "",
+      "description": "",
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
       "socials": {
         "twitter": "",
         "linkedin": "",
@@ -2293,35 +2720,68 @@
         "youtube": "",
         "github": ""
       },
+      "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "lastUpdated": "2025-08-28T11:17:06.926Z"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "name": "22OnSloane Digital Team",
+      "companyName": "22OnSloane Digital Team",
+      "email": "22onsloanedigitalteam@gmail.com",
+      "contactEmail": "22onsloanedigitalteam@gmail.com",
+      "website": "",
+      "phone": "",
+      "country": "",
+      "city": "",
+      "addressLine": "",
+      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2024/06/logo-mark.jpg",
+      "bannerUrl": "",
+      "description": "",
       "categories": [],
       "tags": [],
       "foundedYear": "",
       "teamSize": "",
       "registrationNo": "",
       "status": "active",
-      "tenantId": "22onsloane"
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "lastUpdated": "2025-08-24T12:53:36.536Z"
     }
   ],
+  "_meta": {
+    "lastClientWriteStamp": {
+      "at": "2025-08-24T13:24:44.717Z",
+      "nonce": "yab9eqzsv7"
+    }
+  },
   "users": [
     {
       "email": "khulekani@22onsloane.co",
       "tenantId": "22onsloane",
-      "role": "admin"
+      "role": "admin",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3"
     },
     {
       "email": "22onsloanedigitalteam@gmail.com",
-      "tenantId": "Digital Team",
-      "role": "member"
+      "tenantId": "public",
+      "role": "member",
+      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22"
     }
   ],
   "tenants": [
     {
       "id": "22onsloane",
-      "name": "22 On Sloane"
-    },
-    {
-      "id": "Digital Team",
-      "name": "Digital Team"
+      "name": "22onsloane"
     }
   ]
 }

@@ -15,9 +15,6 @@ const router = Router();
  * Query: q (search), category, vendor, featured (true), minPrice, maxPrice, page, pageSize
  * Respects tenant scoping via req.tenant.id
  */
-router.post("/", firebaseAuthRequired, (req, res, next) => { /* ... */ });
-router.put("/:id", firebaseAuthRequired, (req, res, next) => { /* ... */ });
-router.delete("/:id", firebaseAuthRequired, (req, res) => { /* ... */ });
 
 router.get("/", (req, res) => {
   const {
@@ -140,6 +137,103 @@ router.delete("/:id", jwtAuthRequired, (req, res) => {
     return res.status(404).json({ status: "error", message: "Not found" });
   }
   res.status(204).send();
+});
+
+// export placed at end of file
+
+// Add or update a review for a service (public access; tenant-scoped)
+router.post("/:id/reviews", async (req, res, next) => {
+  try {
+    const id = String(req.params.id || "");
+    const tenantId = req.tenant.id;
+    const { rating, comment = "", author = "", authorEmail = "" } = req.body || {};
+    const r = Number(rating);
+    if (!id || Number.isNaN(r) || r < 1 || r > 5) {
+      return res.status(400).json({ status: "error", message: "Invalid id or rating (1..5)" });
+    }
+
+    let updated = null;
+    saveData((data) => {
+      data.services = data.services || [];
+      let idx = data.services.findIndex(
+        (s) => String(s.id) === id && (s.tenantId ?? "public") === tenantId
+      );
+      // Fallback: any tenant by id
+      if (idx === -1 && id && id !== 'undefined') {
+        idx = data.services.findIndex((s) => String(s.id) === id);
+      }
+      // Fallback: try soft match by title/vendor/contactEmail if provided
+      if (idx === -1) {
+        const t = (req.body?.title || "").trim().toLowerCase();
+        const vname = (req.body?.vendor || "").trim().toLowerCase();
+        const cemail = (req.body?.contactEmail || "").trim().toLowerCase();
+        if (t || vname || cemail) {
+          idx = data.services.findIndex((s) => {
+            const st = (s.title || "").trim().toLowerCase();
+            const sv = (s.vendor || "").trim().toLowerCase();
+            const se = (s.contactEmail || s.email || "").trim().toLowerCase();
+            const tenantOk = (s.tenantId ?? "public") === tenantId || tenantId === 'public';
+            const byTitleVendor = t && vname && st === t && sv === vname;
+            const byEmail = cemail && se === cemail;
+            return tenantOk && (byTitleVendor || byEmail);
+          });
+          // Last resort: ignore tenant on soft match
+          if (idx === -1) {
+            idx = data.services.findIndex((s) => {
+              const st = (s.title || "").trim().toLowerCase();
+              const sv = (s.vendor || "").trim().toLowerCase();
+              const se = (s.contactEmail || s.email || "").trim().toLowerCase();
+              const byTitleVendor = t && vname && st === t && sv === vname;
+              const byEmail = cemail && se === cemail;
+              return byTitleVendor || byEmail;
+            });
+          }
+        }
+      }
+      if (idx === -1) return data;
+      const s = data.services[idx];
+      const now = new Date().toISOString();
+      const reviews = Array.isArray(s.reviews) ? s.reviews : [];
+      // Upsert: if same authorEmail exists, replace the previous rating/comment
+      const prevIdx = reviews.findIndex((rv) => (rv.authorEmail || "").toLowerCase() === (authorEmail || "").toLowerCase() && authorEmail);
+      const reviewObj = { id: uuid(), rating: r, comment, author, authorEmail, createdAt: now };
+      if (prevIdx >= 0) reviews[prevIdx] = { ...reviews[prevIdx], ...reviewObj };
+      else reviews.push(reviewObj);
+
+      // Recompute aggregates using weighted avg if prior counts exist
+      const priorCount = Number(s.reviewCount || (Array.isArray(s.reviews) ? s.reviews.length : 0) || 0);
+      const priorAvg = Number(s.rating || 0);
+      let newCount = priorCount;
+      let newAvg = priorAvg;
+      if (prevIdx >= 0) {
+        // Replace contribution: approximate by recomputing from reviews array if it holds history
+        if (reviews.length > 0) {
+          const sum = reviews.reduce((a, rv) => a + Number(rv.rating || 0), 0);
+          newCount = Math.max(priorCount, reviews.length);
+          newAvg = sum / reviews.length;
+        }
+      } else {
+        newCount = priorCount + 1;
+        if (priorCount > 0) newAvg = (priorAvg * priorCount + r) / newCount;
+        else newAvg = r;
+      }
+
+      data.services[idx] = {
+        ...s,
+        reviews,
+        reviewCount: newCount,
+        rating: newAvg,
+        lastReviewedAt: now,
+      };
+      updated = data.services[idx];
+      return data;
+    });
+
+    if (!updated) return res.status(404).json({ status: "error", message: "Service not found" });
+    res.status(201).json(updated);
+  } catch (e) {
+    next(e);
+  }
 });
 
 export default router;

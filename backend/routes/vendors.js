@@ -205,3 +205,81 @@ router.post("/migrate-startups", firebaseAuthRequired, (req, res, next) => {
     next(e);
   }
 });
+
+// Vendor stats: listings, reviews, bookings/revenue, subscription (scaffold)
+router.get("/:id/stats", (req, res) => {
+  const id = String(req.params.id || "");
+  if (!id) return res.status(400).json({ status: "error", message: "Missing vendor id" });
+  const tenantId = req.tenant.id;
+  try {
+    const data = getData();
+    const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+    const services = Array.isArray(data.services) ? data.services : [];
+    const bookings = Array.isArray(data.bookings) ? data.bookings : [];
+
+    const qEmail = String(req.query.email || "").trim().toLowerCase();
+    const qUid = String(req.query.uid || "").trim();
+    const qName = String(req.query.name || "").trim().toLowerCase();
+
+    // Find vendor record (within tenant if present) by id, then by email, then by ownerUid
+    let vendor = vendors.find((v) => (String(v.id) === id || String(v.vendorId) === id) && (v.tenantId ?? "public") === tenantId);
+    if (!vendor && qEmail) {
+      vendor = vendors.find((v) => (v.tenantId ?? "public") === tenantId && (String(v.contactEmail || v.email || "").toLowerCase() === qEmail));
+    }
+    if (!vendor && qUid) {
+      vendor = vendors.find((v) => (v.tenantId ?? "public") === tenantId && String(v.ownerUid || "") === qUid);
+    }
+    const vEmail = (qEmail || (vendor?.contactEmail || vendor?.email || "")).toLowerCase();
+    const vName = (qName || vendor?.name || vendor?.companyName || "").toLowerCase();
+    const vId = vendor?.vendorId || vendor?.id || id;
+
+    // Listings for this vendor (by vendorId or contactEmail)
+    const myServices = services.filter((s) => {
+      const sid = String(s.vendorId || s.id || "");
+      const se = (s.contactEmail || s.email || "").toLowerCase();
+      const sv = String(s.vendor || "").toLowerCase();
+      return (
+        sid === vId ||
+        sid === id ||
+        (!!vEmail && se === vEmail) ||
+        (!!vName && !sid && sv === vName)
+      );
+    });
+    const totalListings = myServices.length;
+    const byStatus = myServices.reduce((acc, s) => {
+      const k = (s.status || "approved").toLowerCase();
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {});
+    const totalReviews = myServices.reduce((n, s) => n + (Number(s.reviewCount || (Array.isArray(s.reviews) ? s.reviews.length : 0)) || 0), 0);
+    const avgRating = (() => {
+      const ratings = myServices.map((s) => Number(s.rating || 0)).filter((x) => !Number.isNaN(x));
+      if (!ratings.length) return 0;
+      const sum = ratings.reduce((a, b) => a + b, 0);
+      return sum / ratings.length;
+    })();
+
+    // Bookings & revenue for this vendor
+    const myBookings = bookings.filter((b) => String(b.vendorId || "") === id || (!!vEmail && (b.vendorEmail || "").toLowerCase() === vEmail));
+    const totalBookings = myBookings.length;
+    const completed = myBookings.filter((b) => (b.status || "").toLowerCase() === "completed");
+    const revenue = completed.reduce((sum, b) => sum + (Number(b.price || 0) || 0), 0);
+
+    // Subscription scaffold (based on vendor status/kyc)
+    const subscription = {
+      plan: vendor ? (vendor.subscriptionPlan || "Free") : "Free",
+      status: vendor ? ((vendor.status || vendor.kycStatus || "pending").toLowerCase()) : "pending",
+    };
+
+    res.json({
+      vendorId: id,
+      listingStats: { total: totalListings, byStatus },
+      reviewStats: { totalReviews, avgRating },
+      bookingStats: { totalBookings, revenue },
+      subscription,
+      listings: myServices.map((s) => ({ id: String(s.id || s.vendorId || ""), title: s.title || "", status: (s.status || "approved").toLowerCase(), rating: Number(s.rating || 0), reviewCount: Number(s.reviewCount || (Array.isArray(s.reviews) ? s.reviews.length : 0) || 0), category: s.category || "" })),
+    });
+  } catch (e) {
+    res.status(500).json({ status: "error", message: e?.message || "Failed to compute stats" });
+  }
+});

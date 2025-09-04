@@ -27,6 +27,19 @@ function resolveAppDataPath() {
 
 const appDataPath = resolveAppDataPath();
 
+function resolveSrcFallbackPath() {
+  const cwd = process.cwd();
+  const candidates = [
+    path.resolve(cwd, "src", "data", "appData.json"),
+    path.resolve(cwd, "../src/data/appData.json"),
+  ];
+  for (const p of candidates) {
+    try { if (fs.existsSync(path.dirname(p))) return p; } catch {}
+  }
+  return null;
+}
+const srcFallbackPath = resolveSrcFallbackPath();
+
 // Basic file-based datastore with in-memory caching + atomic writes
 let cache = null;
 let lastLoaded = 0;
@@ -43,8 +56,19 @@ function load() {
 
 function persist(data) {
   const text = JSON.stringify(data, null, 2);
+  // Write canonical (backend) atomically
   fs.writeFileSync(appDataPath + ".tmp", text);
   fs.renameSync(appDataPath + ".tmp", appDataPath);
+  // Replicate to src fallback if configured and not same file
+  try {
+    if (srcFallbackPath && path.resolve(srcFallbackPath) !== path.resolve(appDataPath)) {
+      fs.writeFileSync(srcFallbackPath + ".tmp", text);
+      fs.renameSync(srcFallbackPath + ".tmp", srcFallbackPath);
+    }
+  } catch (e) {
+    // non-fatal replication failure
+    console.warn("[dataStore] replicate to src failed:", e?.message || e);
+  }
   cache = data;
   lastLoaded = Date.now();
 }

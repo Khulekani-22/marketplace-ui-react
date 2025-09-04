@@ -58,12 +58,10 @@ const SNAPSHOT_DIR = path.join(SECRET_DIR, "lms_snapshots");
 const INDEX_FILE = path.join(SECRET_DIR, "lms_checkpoints.json");
 const MAX_KEEP = 50;
 
-function detectAppDataPath() {
-  const a = path.resolve(__dirname, "backend", "appData.json"); // preferred
-  const b = path.resolve(__dirname, "appData.json");            // fallback
-  return fs.existsSync(a) ? a : b;
-}
-const APP_DATA = detectAppDataPath();
+// Canonical store prefers backend/appData.json; replicate to src/data/appData.json as fallback
+const APP_DATA_BACKEND = path.resolve(__dirname, "appData.json");
+const APP_DATA_SRC = path.resolve(__dirname, "../src/data/appData.json");
+const APP_DATA = APP_DATA_BACKEND;
 
 async function ensureDir(p) {
   await fsp.mkdir(p, { recursive: true });
@@ -84,6 +82,16 @@ async function readJson(p) {
 
 async function writeJson(p, data) {
   await fsp.writeFile(p, JSON.stringify(data, null, 2));
+}
+
+async function replicateToSrc(data) {
+  try {
+    // Ensure directory exists
+    await fsp.mkdir(path.dirname(APP_DATA_SRC), { recursive: true });
+    await writeJson(APP_DATA_SRC, data);
+  } catch (e) {
+    console.warn("[LMS] Failed to replicate appData to src/data:", e?.message || e);
+  }
 }
 
 function uid() {
@@ -145,6 +153,43 @@ async function initLmsStorage() {
     const empty = { cohorts: [], bookings: [], events: [], forumThreads: [], jobs: [], mentorshipSessions: [], messageThreads: [], services: [], leads: [], startups: [] };
     await writeJson(APP_DATA, empty);
   }
+
+  // Normalize critical fields so reads/writes agree across the app
+  try {
+    const data = await readJson(APP_DATA);
+    let changed = false;
+    const asArray = (x) => (Array.isArray(x) ? x : []);
+    data.services = asArray(data.services).map((s) => {
+      const orig = s;
+      const id = String(s.id ?? s.vendorId ?? "");
+      const reviews = Array.isArray(s.reviews) ? s.reviews : [];
+      const rc = typeof s.reviewCount === "number" ? s.reviewCount : reviews.length;
+      const rating = typeof s.rating === "number" ? s.rating : 0;
+      const tenantId = s.tenantId ?? "public";
+      const norm = { ...s, id, reviews, reviewCount: rc, rating, tenantId };
+      if (JSON.stringify(orig) !== JSON.stringify(norm)) changed = true;
+      return norm;
+    });
+    data.vendors = asArray(data.vendors).map((v) => {
+      const orig = v;
+      const id = String(v.id ?? v.vendorId ?? "");
+      const tenantId = v.tenantId ?? "public";
+      const contactEmail = (v.contactEmail || v.email || "").toLowerCase();
+      const norm = { ...v, id, tenantId, contactEmail };
+      if (JSON.stringify(orig) !== JSON.stringify(norm)) changed = true;
+      return norm;
+    });
+    data.startups = asArray(data.startups).map((v) => {
+      const orig = v;
+      const id = String(v.id ?? v.vendorId ?? "");
+      const tenantId = v.tenantId ?? "public";
+      const contactEmail = (v.contactEmail || v.email || "").toLowerCase();
+      const norm = { ...v, id, tenantId, contactEmail };
+      if (JSON.stringify(orig) !== JSON.stringify(norm)) changed = true;
+      return norm;
+    });
+    if (changed) await writeJson(APP_DATA, data);
+  } catch {}
 }
 
 /* ------------------------------- LMS routes ------------------------------ */
@@ -187,6 +232,8 @@ lmsRouter.put("/publish", async (req, res, next) => {
     merged.tenants = Array.from(tenMap.values());
 
     await writeJson(APP_DATA, merged);
+    // also replicate to src/data for front-end fallback
+    await replicateToSrc(merged);
     const counts = summarize(merged);
     console.log(
       `[LMS] Published live appData.json -> cohorts:${counts.cohorts}, courses:${counts.courses}, lessons:${counts.lessons}`
@@ -288,6 +335,7 @@ lmsRouter.post("/restore/:id", async (req, res, next) => {
     merged.tenants = Array.from(tenMap.values());
 
     await writeJson(APP_DATA, merged);
+    await replicateToSrc(merged);
     console.log(`[LMS] Restored checkpoint id=${id} -> live (preserved users + tenants)`);
     res.json({ ok: true });
   } catch (e) {

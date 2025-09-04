@@ -118,6 +118,7 @@ const VendorMyListings = React.lazy(() => import("./pages/VendorMyListings.jsx")
 const VendorProfilePage = React.lazy(() => import("./pages/VendorProfilePage.jsx"));
 const VendorsAdminPage = React.lazy(() => import("./pages/VendorsAdminPage.jsx"));
 const StartupProfilePage = React.lazy(() => import("./pages/StartupProfilePage.jsx"));
+const VendorDashboardPage = React.lazy(() => import("./pages/VendorDashboardPage.jsx"));
 
 
 
@@ -279,6 +280,7 @@ export default function App() {
             <Route path="/listings-vendors" element={<VendorAddListingPage />} />
             <Route path="/signup/vendor" element={<VendorSignupPage />} />
             <Route path="/profile-startup" element={<StartupProfilePage />} />
+            <Route path="/vendor-home" element={<VendorDashboardPage />} />
             <Route path="/listings-vendors-mine" element={<VendorMyListings />} />
             <Route path="/profile-vendor" element={<VendorProfilePage />} />
             <Route

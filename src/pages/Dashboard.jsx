@@ -1,8 +1,10 @@
 import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
 import DashBoardLayerSeven from "../components/DashBoardLayerSeven";
+import ReviewsWidget from "../components/ReviewsWidget";
 import { useVendor } from "../context/VendorContext";
 import { Link } from "react-router-dom";
+ 
 
 
 const Dashboard = () => {
@@ -46,6 +48,7 @@ const Dashboard = () => {
 
         {/* DashBoardLayerSeven */}
         <DashBoardLayerSeven />
+        <ReviewsWidget />
       </MasterLayout>
     </>
   );

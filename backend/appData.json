@@ -1520,7 +1520,8 @@
           "date": "2024-06-25T00:00:00Z",
           "content": "Highly recommend! The logo they designed for us is modern, memorable, and has received great feedback from our users."
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "2",
@@ -1548,7 +1549,8 @@
           "date": "2024-07-15T00:00:00Z",
           "content": "The team at DevHouse is top-notch. They built a robust and scalable web app for us on time and on budget. Excellent communication throughout."
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "3",
@@ -1585,7 +1587,8 @@
           "date": "2024-07-18T00:00:00Z",
           "content": "A very powerful CRM. There is a bit of a learning curve, but their customer support is fantastic and helped us get up to speed."
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "4",
@@ -1603,7 +1606,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Get investor-ready with a professional financial model and a compelling pitch deck. We help you tell your story with data, making it easier to secure funding.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "5",
@@ -1621,7 +1625,8 @@
       "status": "approved",
       "isFeatured": true,
       "description": "Navigate the complex legal landscape with confidence. Our experienced corporate lawyers provide expert advice on company registration, contracts, compliance, and more.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "6",
@@ -1639,7 +1644,8 @@
       "status": "pending",
       "isFeatured": false,
       "description": "Organize your projects, track progress, and collaborate with your team seamlessly. TaskMaster is the all-in-one solution for keeping your projects on time and on budget.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "7",
@@ -1657,7 +1663,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Let us create and manage a high-impact social media campaign for your brand. We handle everything from content creation and scheduling to community management and performance analytics.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "8",
@@ -1675,7 +1682,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Simplify your complex ideas with a beautiful and engaging animated explainer video. Perfect for your homepage, social media, or investor presentations.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "9",
@@ -1693,7 +1701,8 @@
       "status": "approved",
       "isFeatured": true,
       "description": "Improve your search engine rankings and attract more organic traffic with our expert SEO content writing package. Includes keyword research, blog posts, and on-page optimization.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "X6rF03vck1HIXfg4hbjy",
@@ -1730,7 +1739,8 @@
           "date": "2025-07-25T10:41:58.399Z",
           "content": "Great app! Thanks "
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "uTgKXEWI2SYqoK1DeEYU",
@@ -1765,7 +1775,8 @@
           "date": "2025-07-22T14:40:02.103Z",
           "content": "Testing connection to db again"
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "memubqft-fcmcw1",
@@ -1793,7 +1804,8 @@
           "date": "2024-07-15T00:00:00Z",
           "content": "The team at DevHouse is top-notch. They built a robust and scalable web app for us on time and on budget. Excellent communication throughout."
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "mepapax8-ibz1dv",
@@ -1811,7 +1823,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Testing feature - vendor submit a new listing for approval",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "meqwiou0-3q8ofl",
@@ -1829,7 +1842,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Testing",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "mewcr2ki-ocdatn",
@@ -1844,10 +1858,11 @@
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/07/envato-labs-ai-5ee6d584-420f-4614-9307-fdb693d538b9.jpg",
       "aiHint": "",
       "listingType": "saas",
-      "status": "pending",
+      "status": "approved",
       "isFeatured": false,
       "description": "Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "mewl4bna-xil1yi",
@@ -1865,7 +1880,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Share your pitch deck and our expert team will give you pointers on how to improve it",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "mewl77g2-tidsnp",
@@ -1883,7 +1899,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Our team of experts will anlayze and review your pitch deck",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     }
   ],
   "leads": [
@@ -2036,7 +2053,9 @@
       "id": "aiKIomLPB81DDGKIPmqG",
       "status": "suspended",
       "lastUpdated": "2025-09-01T10:08:08.079Z",
-      "vendorId": "aiKIomLPB81DDGKIPmqG"
+      "vendorId": "aiKIomLPB81DDGKIPmqG",
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s1",
@@ -2071,7 +2090,9 @@
           "aiHint": "woman portrait"
         }
       ],
-      "followers": 1250
+      "followers": 1250,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s2",
@@ -2100,7 +2121,9 @@
           "aiHint": "woman portrait"
         }
       ],
-      "followers": 850
+      "followers": 850,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s3",
@@ -2129,7 +2152,9 @@
           "aiHint": "woman portrait"
         }
       ],
-      "followers": 480
+      "followers": 480,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s4",
@@ -2158,7 +2183,9 @@
           "aiHint": "man portrait"
         }
       ],
-      "followers": 920
+      "followers": 920,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s5",
@@ -2187,7 +2214,9 @@
           "aiHint": "man portrait"
         }
       ],
-      "followers": 2100
+      "followers": 2100,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s6",
@@ -2216,7 +2245,9 @@
           "aiHint": "woman portrait"
         }
       ],
-      "followers": 1800
+      "followers": 1800,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s7",
@@ -2245,7 +2276,9 @@
           "aiHint": "woman portrait"
         }
       ],
-      "followers": 1450
+      "followers": 1450,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s8",
@@ -2274,7 +2307,9 @@
           "aiHint": "man portrait"
         }
       ],
-      "followers": 1600
+      "followers": 1600,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
@@ -2348,7 +2383,8 @@
         "registrationNo": "",
         "status": "pending",
         "tenantId": "22onsloane"
-      }
+      },
+      "tenantId": "public"
     },
     {
       "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
@@ -2357,9 +2393,9 @@
       "contactEmail": "22onsloanedigitalteam@gmail.com",
       "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "website": "",
-      "phone": "",
-      "country": "",
-      "city": "",
+      "phone": "0114637602",
+      "country": "South Africa",
+      "city": "Johannesburg",
       "addressLine": "",
       "logoUrl": "",
       "bannerUrl": "",
@@ -2387,13 +2423,13 @@
         "kycStatus": "approved",
         "contactEmail": "22onsloanedigitalteam@gmail.com",
         "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-        "phone": "",
+        "phone": "0114637602",
         "website": "",
         "description": "",
         "logoUrl": "",
         "bannerUrl": "",
-        "country": "",
-        "city": "",
+        "country": "South Africa",
+        "city": "Johannesburg",
         "addressLine": "",
         "socials": {
           "twitter": "",
@@ -2410,22 +2446,23 @@
         "registrationNo": "",
         "status": "active",
         "tenantId": "22onsloane"
-      }
+      },
+      "tenantId": "public"
     },
     {
       "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "name": "khulekani",
-      "companyName": "khulekani",
+      "name": "22 On Sloane",
+      "companyName": "22 On Sloane",
       "contactEmail": "khulekani@22onsloane.co",
       "email": "khulekani@22onsloane.co",
       "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "website": "",
-      "phone": "",
-      "country": "",
-      "city": "",
+      "phone": "+27763732884",
+      "country": "South Africa",
+      "city": "Sandton",
       "addressLine": "",
-      "logoUrl": "",
+      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
       "bannerUrl": "",
       "description": "",
       "categories": [],
@@ -2445,17 +2482,17 @@
       "lastUpdated": "",
       "raw": {
         "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-        "name": "khulekani",
+        "name": "22 On Sloane",
         "kycStatus": "approved",
         "contactEmail": "khulekani@22onsloane.co",
         "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-        "phone": "",
+        "phone": "+27763732884",
         "website": "",
         "description": "",
-        "logoUrl": "",
+        "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
         "bannerUrl": "",
-        "country": "",
-        "city": "",
+        "country": "South Africa",
+        "city": "Sandton",
         "addressLine": "",
         "socials": {
           "twitter": "",
@@ -2472,7 +2509,8 @@
         "registrationNo": "",
         "status": "active",
         "tenantId": "22onsloane"
-      }
+      },
+      "tenantId": "public"
     },
     {
       "id": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
@@ -2534,7 +2572,8 @@
         "registrationNo": "",
         "status": "active",
         "tenantId": "22onsloane"
-      }
+      },
+      "tenantId": "public"
     }
   ],
   "vendors": [
@@ -2568,7 +2607,8 @@
         "github": ""
       },
       "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "lastUpdated": "2025-08-28T11:17:06.926Z"
+      "lastUpdated": "2025-08-28T11:17:06.926Z",
+      "tenantId": "public"
     }
   ],
   "companies": [
