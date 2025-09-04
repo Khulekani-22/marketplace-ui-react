@@ -48,7 +48,7 @@ export default function Dashboard() {
   );
 
   const tenantId = useMemo(
-    () => sessionStorage.getItem("tenantId") || "public",
+    () => sessionStorage.getItem("tenantId") || "vendor",
     []
   );
 

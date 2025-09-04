@@ -216,6 +216,7 @@ router.get("/:id/stats", (req, res) => {
     const vendors = Array.isArray(data.vendors) ? data.vendors : [];
     const services = Array.isArray(data.services) ? data.services : [];
     const bookings = Array.isArray(data.bookings) ? data.bookings : [];
+    const subscriptions = Array.isArray(data.subscriptions) ? data.subscriptions : [];
 
     const qEmail = String(req.query.email || "").trim().toLowerCase();
     const qUid = String(req.query.uid || "").trim();
@@ -265,6 +266,71 @@ router.get("/:id/stats", (req, res) => {
     const completed = myBookings.filter((b) => (b.status || "").toLowerCase() === "completed");
     const revenue = completed.reduce((sum, b) => sum + (Number(b.price || 0) || 0), 0);
 
+    // Subscriptions: totals and per-listing within current tenant
+    const myServiceIds = new Set(myServices.map((s) => String(s.id || s.vendorId || "")));
+    const subByService = {};
+    let totalSubscriptions = 0;
+    subscriptions.forEach((x) => {
+      const tOk = (x.tenantId ?? "public") === tenantId;
+      const sid = String(x.serviceId || "");
+      if (tOk && myServiceIds.has(sid)) {
+        totalSubscriptions += 1;
+        subByService[sid] = (subByService[sid] || 0) + 1;
+      }
+    });
+
+    // Time-bucketed sales based on subscription pricing
+    function ym(d) {
+      const dt = new Date(d);
+      return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+    }
+    function yq(d) {
+      const dt = new Date(d);
+      const q = Math.floor(dt.getMonth() / 3) + 1;
+      return `${dt.getFullYear()}-Q${q}`;
+    }
+    function yy(d) {
+      const dt = new Date(d);
+      return String(dt.getFullYear());
+    }
+    const monthly = {}; // key -> { revenue, count }
+    const quarterly = {};
+    const annual = {};
+
+    // Build price map per service (fallback to 0 if missing)
+    const priceByService = myServices.reduce((m, s) => {
+      m[String(s.id || s.vendorId || "")] = Number(s.price || 0) || 0;
+      return m;
+    }, {});
+
+    // For each subscription, add recurring revenue for each month it is active
+    const now = new Date();
+    const endThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    subscriptions.forEach((x) => {
+      const tOk = (x.tenantId ?? "public") === tenantId;
+      const sid = String(x.serviceId || "");
+      if (!tOk || !myServiceIds.has(sid)) return;
+      const price = priceByService[sid] || 0;
+      const start = new Date(x.createdAt || now);
+      const end = x.canceledAt ? new Date(x.canceledAt) : endThisMonth;
+      // Normalize to first day of month
+      let cur = new Date(start.getFullYear(), start.getMonth(), 1);
+      const stop = new Date(end.getFullYear(), end.getMonth(), 1);
+      while (cur <= stop) {
+        const keyM = ym(cur);
+        const keyQ = yq(cur);
+        const keyY = yy(cur);
+        if (!monthly[keyM]) monthly[keyM] = { revenue: 0, count: 0 };
+        if (!quarterly[keyQ]) quarterly[keyQ] = { revenue: 0, count: 0 };
+        if (!annual[keyY]) annual[keyY] = { revenue: 0, count: 0 };
+        monthly[keyM].revenue += price; monthly[keyM].count += 1;
+        quarterly[keyQ].revenue += price; quarterly[keyQ].count += 1;
+        annual[keyY].revenue += price; annual[keyY].count += 1;
+        // next month
+        cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+      }
+    });
+
     // Subscription scaffold (based on vendor status/kyc)
     const subscription = {
       plan: vendor ? (vendor.subscriptionPlan || "Free") : "Free",
@@ -276,6 +342,8 @@ router.get("/:id/stats", (req, res) => {
       listingStats: { total: totalListings, byStatus },
       reviewStats: { totalReviews, avgRating },
       bookingStats: { totalBookings, revenue },
+      subscriptionStats: { total: totalSubscriptions, byService: subByService },
+      salesTime: { monthly, quarterly, annual },
       subscription,
       listings: myServices.map((s) => ({ id: String(s.id || s.vendorId || ""), title: s.title || "", status: (s.status || "approved").toLowerCase(), rating: Number(s.rating || 0), reviewCount: Number(s.reviewCount || (Array.isArray(s.reviews) ? s.reviews.length : 0) || 0), category: s.category || "" })),
     });

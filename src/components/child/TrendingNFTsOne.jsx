@@ -1,9 +1,10 @@
 // src/components/TrendingNFTsOne.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../../lib/firebase";
 import { api } from "../../lib/api";
 import appData from "../../data/appData.json";
+import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../../lib/subscriptions";
 
 const API_BASE = "/api/lms";
 
@@ -24,7 +25,7 @@ const isApproved = (s) => s.status === "approved";
 
 const TrendingNFTsOne = () => {
   const tenantId = useMemo(
-    () => sessionStorage.getItem("tenantId") || "public",
+    () => sessionStorage.getItem("tenantId") || "vendor",
     []
   );
 
@@ -43,6 +44,8 @@ const TrendingNFTsOne = () => {
   const [toast, setToast] = useState("");
   const [toastType, setToastType] = useState("success"); // success | danger
   const [busy, setBusy] = useState(false);
+  const [subs, setSubs] = useState(() => new Set()); // serviceId set
+  const navigate = useNavigate();
 
   function pickFresher(a = {}, b = {}) {
     const ca = Number(a.reviewCount || (Array.isArray(a.reviews) ? a.reviews.length : 0) || 0);
@@ -104,6 +107,46 @@ const TrendingNFTsOne = () => {
       cancelled = true;
     };
   }, [tenantId]);
+
+  // Load my subscriptions (if authed)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!auth.currentUser) return;
+        const items = await fetchMySubscriptions();
+        if (cancelled) return;
+        const set = new Set(items.filter((x)=> (x.type||'service')==='service').map((x)=> String(x.serviceId)));
+        setSubs(set);
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  async function toggleSubscribe(serviceId) {
+    try {
+      if (!auth.currentUser) {
+        navigate('/login', { replace: true, state: { from: window.location?.pathname || '/' } });
+        return;
+      }
+      const id = String(serviceId);
+      const isSub = subs.has(id);
+      if (isSub) {
+        await unsubscribeFromService(id);
+        setSubs((prev) => {
+          const n = new Set(Array.from(prev)); n.delete(id); return n;
+        });
+        setToastType('success'); setToast('Unsubscribed'); setTimeout(()=>setToast(''), 2000);
+      } else {
+        await subscribeToService(id);
+        setSubs((prev) => new Set([...Array.from(prev), id]));
+        setToastType('success'); setToast('Subscribed'); setTimeout(()=>setToast(''), 2000);
+      }
+    } catch (e) {
+      const msg = e?.response?.data?.message || e?.message || 'Failed to update subscription';
+      setToastType('danger'); setToast(msg); setTimeout(()=>setToast(''), 2500);
+    }
+  }
 
   // Categories reflect whatever data we ended up with (approved only)
   const categories = useMemo(() => {
@@ -285,12 +328,13 @@ const TrendingNFTsOne = () => {
                         >
                           {(service.reviews?.length || service.reviewCount || 0) > 0 ? 'Reviews' : 'Write a review'}
                         </button>
-                        <Link
-                          to="#"
-                          className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6 flex-grow-1"
+                        <button
+                          type="button"
+                          className={subs.has(String(service.id)) ? "btn rounded-pill bg-neutral-200 text-neutral-900 radius-8 px-12 py-6 flex-grow-1" : "btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6 flex-grow-1"}
+                          onClick={() => toggleSubscribe(service.id)}
                         >
-                          Subscribe
-                        </Link>
+                          {subs.has(String(service.id)) ? 'Subscribed' : 'Subscribe'}
+                        </button>
                       </div>
                     </div>
                   </div>

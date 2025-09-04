@@ -127,6 +127,37 @@ router.get("/lookup", firebaseAuthRequired, async (req, res) => {
   }
 });
 
+// Admin-only: delete a user mapping and the Firebase user account
+// Does NOT touch any listings or vendor/startup data.
+router.delete("/", firebaseAuthRequired, async (req, res) => {
+  try {
+    if (!isAdminRequest(req)) return res.status(403).json({ status: "error", message: "Forbidden" });
+    const raw = req.body?.email || req.query?.email;
+    const email = normalizeEmail(raw);
+    if (!email) return res.status(400).json({ status: "error", message: "Missing email" });
+
+    // Remove role mapping from data store
+    const updated = saveData((data) => {
+      const list = Array.isArray(data.users) ? data.users : [];
+      const next = list.filter((u) => normalizeEmail(u.email) !== email);
+      data.users = next;
+      return data;
+    });
+
+    // Best-effort deletion in Firebase Auth
+    try {
+      const user = await admin.auth().getUserByEmail(email);
+      if (user?.uid) await admin.auth().deleteUser(user.uid);
+    } catch (_) {
+      // ignore if user not found or deletion fails
+    }
+
+    res.json({ ok: true, users: updated.users });
+  } catch (e) {
+    res.status(500).json({ status: "error", message: e?.message || "Failed to delete user" });
+  }
+});
+
 // Admin-only: list platform users (email, uid, displayName) with optional substring search
 router.get("/all", firebaseAuthRequired, async (req, res) => {
   try {

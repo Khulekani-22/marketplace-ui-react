@@ -26,7 +26,8 @@ export default function StartupSignupPage() {
 
   async function recordUserMapping(email) {
     try {
-      await api.post("/api/users", { email, tenantId: "public", role: "member" });
+      // Grant startups the "basic" tenant on signup
+      await api.post("/api/users", { email, tenantId: "basic", role: "member" });
     } catch {
       // non-fatal for UI; mapping can be created later if API offline
     }
@@ -62,7 +63,8 @@ export default function StartupSignupPage() {
       const email = (user.email || form.email).toLowerCase();
       sessionStorage.setItem("userEmail", email);
       sessionStorage.setItem("role", "member");
-      sessionStorage.setItem("tenantId", "public");
+      // Set startup users to the "basic" tenant after signup
+      sessionStorage.setItem("tenantId", "basic");
 
       await recordUserMapping(email);
       try { await writeAuditLog({ action: "STARTUP_SIGNUP", userEmail: email, targetType: "user" }); } catch {}
@@ -111,8 +113,8 @@ export default function StartupSignupPage() {
               </div>
             </div>
             <div className="d-flex gap-2 mt-3">
-              <button className="btn btn-primary" disabled={busy}>{busy ? "Creating…" : "Create account"}</button>
-              <Link to="/signup/vendor" className="btn btn-outline-secondary">Become a Vendor</Link>
+              <button className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6" disabled={busy}>{busy ? "Creating…" : "Create account"}</button>
+              <Link to="/signup/vendor" className="btn rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white">Become a Vendor</Link>
             </div>
           </form>
         </div>
@@ -120,4 +122,3 @@ export default function StartupSignupPage() {
     </div>
   );
 }
-

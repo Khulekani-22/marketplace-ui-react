@@ -42,7 +42,7 @@ function summarize(appData) {
 /* ------------------------------ page ------------------------------ */
 export default function LmsAdminPage() {
   const tenantId = useMemo(
-    () => sessionStorage.getItem("tenantId") || "public",
+    () => sessionStorage.getItem("tenantId") || "vendor",
     []
   );
 

@@ -16,7 +16,7 @@ export default function MasterLayout({ children }) {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [openKeys, setOpenKeys] = useState({});
   const [isAdmin, setIsAdmin] = useState(() => (sessionStorage.getItem("role") === "admin"));
-  const [tenantId, setTenantId] = useState(() => sessionStorage.getItem("tenantId") || "public");
+  const [tenantId, setTenantId] = useState(() => sessionStorage.getItem("tenantId") || "vendor");
   const [tenants, setTenants] = useState([]);
 
   // Auto-open dropdown containing current route + close mobile on route change
@@ -43,7 +43,7 @@ export default function MasterLayout({ children }) {
   // Keep role/tenant in sync when navigating (sessionStorage as simple source of truth)
   useEffect(() => {
     const role = sessionStorage.getItem("role") || "";
-    const tenant = sessionStorage.getItem("tenantId") || "public";
+    const tenant = sessionStorage.getItem("tenantId") || "vendor";
     setIsAdmin(role === "admin");
     setTenantId(tenant);
   }, [location.pathname]);
@@ -55,7 +55,7 @@ export default function MasterLayout({ children }) {
       try {
         const { data } = await api.get("/api/users/me", { params: { email: byEmail } });
         const role = data?.role || "member";
-        const tenant = data?.tenantId || "public";
+        const tenant = data?.tenantId || "vendor";
         sessionStorage.setItem("userEmail", byEmail);
         sessionStorage.setItem("role", role);
         sessionStorage.setItem("tenantId", tenant);
@@ -76,7 +76,7 @@ export default function MasterLayout({ children }) {
       if (email) refreshRole(email);
       else {
         setIsAdmin(false);
-        setTenantId("public");
+        setTenantId("vendor");
       }
     });
     return () => unsub?.();
@@ -87,11 +87,13 @@ export default function MasterLayout({ children }) {
     (async () => {
       try {
         const { data } = await api.get("/api/tenants");
-        const arr = Array.isArray(data) ? data : [];
-        const withPublic = [{ id: "public", name: "Public" }, ...arr.filter((t) => t?.id !== "public")];
-        setTenants(withPublic);
+        const arr = Array.isArray(data)
+          ? data.map((t) => (t?.id === "public" ? { ...t, id: "vendor", name: t?.name || "Vendor" } : t))
+          : [];
+        const withVendor = [{ id: "vendor", name: "Vendor" }, ...arr.filter((t) => t?.id !== "vendor")];
+        setTenants(withVendor);
       } catch {
-        setTenants([{ id: "public", name: "Public" }]);
+        setTenants([{ id: "vendor", name: "Vendor" }]);
       }
     })();
   }, []);
@@ -117,6 +119,9 @@ export default function MasterLayout({ children }) {
     navigate("/login", { replace: true });
   }
 
+  // Access flags
+  const isBasic = !isAdmin && tenantId === "basic";
+
   return (
     <section className={overlayClass} onClick={(e) => e.target.classList?.contains("overlay") && setMobileMenu(false)}>
       {/* Sidebar */}
@@ -138,7 +143,7 @@ export default function MasterLayout({ children }) {
           </Link>
         </div>
 
-        <div className="sidebar-menu-area">
+        <div className="sidebar-menu-area p-0 m-0">
           <ul className="sidebar-menu" id="sidebar-menu">
             <li>
               <NavLink to="/dashboard" className={navClass}>
@@ -147,34 +152,42 @@ export default function MasterLayout({ children }) {
               </NavLink>
             </li>
 
-            <li>
-              <NavLink to="/listings-vendors" className={navClass}>
-                <Icon icon="solar:document-text-outline" className="menu-icon" />
-                <span>Add Listings</span>
-              </NavLink>
-            </li>
+            {!isBasic && (
+              <li>
+                <NavLink to="/listings-vendors" className={navClass}>
+                  <Icon icon="solar:document-text-outline" className="menu-icon" />
+                  <span>Add Listings</span>
+                </NavLink>
+              </li>
+            )}
 
-             <li>
-              <NavLink to="/listings-vendors-mine" className={navClass}>
-                <Icon icon="mdi:view-list-outline" className="menu-icon" />
-                <span>My Listings</span>
-              </NavLink>
-            </li>
+            {!isBasic && (
+              <li>
+                <NavLink to="/listings-vendors-mine" className={navClass}>
+                  <Icon icon="mdi:view-list-outline" className="menu-icon" />
+                  <span>My Listings</span>
+                </NavLink>
+              </li>
+            )}
 
 
-            <li>
-              <NavLink to="/profile-vendor" className={navClass}>
-                <Icon icon="solar:user-linear" className="menu-icon" />
-                <span>Vendor Profile</span>
-              </NavLink>
-            </li>
+            {!isBasic && (
+              <li>
+                <NavLink to="/profile-vendor" className={navClass}>
+                  <Icon icon="solar:user-linear" className="menu-icon" />
+                  <span>Vendor Profile</span>
+                </NavLink>
+              </li>
+            )}
 
-            <li>
-              <NavLink to="/vendor-home" className={navClass}>
-                <Icon icon="mdi:view-dashboard-outline" className="menu-icon" />
-                <span>Vendor Home</span>
-              </NavLink>
-            </li>
+            {!isBasic && (
+              <li>
+                <NavLink to="/vendor-home" className={navClass}>
+                  <Icon icon="mdi:view-dashboard-outline" className="menu-icon" />
+                  <span>Vendor Home</span>
+                </NavLink>
+              </li>
+            )}
 
             <li>
               <NavLink to="/profile-startup" className={navClass}>
@@ -223,6 +236,14 @@ export default function MasterLayout({ children }) {
 
 
             <hr></hr>
+
+            {/* My Subscriptions (available to all signed-in users; useful for basic) */}
+            <li>
+              <NavLink to="/subscriptions" className={navClass}>
+                <Icon icon="mdi:bell-ring-outline" className="menu-icon" />
+                <span>My Subscriptions</span>
+              </NavLink>
+            </li>
 
             <li>
               <NavLink to="/sloane-academy" className={navClass}>

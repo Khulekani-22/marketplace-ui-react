@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
+import VendorRoute from "./components/VendorRoute.jsx";
 import LoginForm from "./components/LoginForm.jsx";
 import VendorSignupPage from "./pages/VendorSignupPage.jsx";
 
@@ -103,6 +104,7 @@ const WidgetsPage = React.lazy(() => import("./pages/WidgetsPage.jsx"));
 const WizardPage = React.lazy(() => import("./pages/WizardPage.jsx"));
 const AuditLogsPage = React.lazy(() => import("./pages/AuditLogsPage.jsx"));
 const UserRoleManagementPage = React.lazy(() => import("./pages/UserRoleManagementPage.jsx"));
+const MySubscriptionsPage = React.lazy(() => import("./pages/MySubscriptionsPage.jsx"));
 
 // data views (these were missing before)
 const AllDataTable = React.lazy(() => import("./pages/AllDataTable.jsx"));
@@ -211,6 +213,14 @@ export default function App() {
             <Route path="/list" element={<ListPage />} />
             <Route path="/marketplace-details" element={<MarketplaceDetailsPage />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route
+              path="/subscriptions"
+              element={
+                <PrivateRoute>
+                  <MySubscriptionsPage />
+                </PrivateRoute>
+              }
+            />
             <Route path="/notification-alert" element={<NotificationAlertPage />} />
             <Route path="/notification" element={<NotificationPage />} />
             <Route path="/pagination" element={<PaginationPage />} />
@@ -277,12 +287,40 @@ export default function App() {
                 </AdminRoute>
               }
             />
-            <Route path="/listings-vendors" element={<VendorAddListingPage />} />
+            <Route
+              path="/listings-vendors"
+              element={
+                <VendorRoute>
+                  <VendorAddListingPage />
+                </VendorRoute>
+              }
+            />
             <Route path="/signup/vendor" element={<VendorSignupPage />} />
             <Route path="/profile-startup" element={<StartupProfilePage />} />
-            <Route path="/vendor-home" element={<VendorDashboardPage />} />
-            <Route path="/listings-vendors-mine" element={<VendorMyListings />} />
-            <Route path="/profile-vendor" element={<VendorProfilePage />} />
+            <Route
+              path="/vendor-home"
+              element={
+                <VendorRoute>
+                  <VendorDashboardPage />
+                </VendorRoute>
+              }
+            />
+            <Route
+              path="/listings-vendors-mine"
+              element={
+                <VendorRoute>
+                  <VendorMyListings />
+                </VendorRoute>
+              }
+            />
+            <Route
+              path="/profile-vendor"
+              element={
+                <VendorRoute>
+                  <VendorProfilePage />
+                </VendorRoute>
+              }
+            />
             <Route
               path="/profile-vendor-admin"
               element={

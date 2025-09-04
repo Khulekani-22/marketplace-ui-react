@@ -24,7 +24,7 @@ export default function VendorMyListings() {
   const navigate = useNavigate();
   const { vendor, ensureVendorId } = useVendor();
   const tenantId = useMemo(
-    () => sessionStorage.getItem("tenantId") || "public",
+    () => sessionStorage.getItem("tenantId") || "vendor",
     []
   );
 

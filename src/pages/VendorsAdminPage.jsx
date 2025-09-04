@@ -132,7 +132,7 @@ function pickVendorPayload(v) {
 
 /* --------------------------------- page --------------------------------- */
 export default function VendorsAdminPage() {
-  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "public", []);
+  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
 
   // Working copy of FULL appData (we edit startups/vendors here)
   const [data, setData] = useState(() => {

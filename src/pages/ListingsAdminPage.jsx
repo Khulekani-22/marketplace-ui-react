@@ -103,7 +103,7 @@ function normalizeService(s) {
 
 export default function ListingsAdminPage() {
   const tenantId = useMemo(
-    () => sessionStorage.getItem("tenantId") || "public",
+    () => sessionStorage.getItem("tenantId") || "vendor",
     []
   );
 

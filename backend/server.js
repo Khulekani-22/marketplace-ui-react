@@ -16,6 +16,7 @@ import servicesRouter from "./routes/services.js";
 import vendorsRouter from "./routes/vendors.js";
 import startupsRouter from "./routes/startups.js";
 import tenantsRouter from "./routes/tenants.js";
+import subscriptionsRouter from "./routes/subscriptions.js";
 import usersRouter from "./routes/users.js";
 import auditLogsRouter from "./routes/auditLogs.js";
 import { tenantContext } from "./middleware/tenantContext.js";
@@ -370,6 +371,7 @@ app.use("/api/data/startups", startupsRouter);
 app.use("/api/tenants", tenantsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/audit-logs", auditLogsRouter);
+app.use("/api/subscriptions", subscriptionsRouter);
 
 /* --------------------------------- 404 ----------------------------------- */
 app.use((req, res) => {

@@ -59,7 +59,7 @@ export default function LoginForm({
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [tenantId, setTenantId] = useState(
-    () => sessionStorage.getItem("tenantId") || "public"
+    () => sessionStorage.getItem("tenantId") || "vendor"
   );
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -173,7 +173,7 @@ export default function LoginForm({
                 onChange={(e) => setTenantId(e.target.value)}
                 aria-describedby="tenantHelp"
               >
-                <option value="public">public</option>
+                <option value="vendor">vendor</option>
                 {/* Add more tenants here if needed */}
               </select>
               <div id="tenantHelp" className="form-text">

@@ -35,7 +35,7 @@ export function normalizeAuditItem(item) {
     targetId: item.targetId || item.entityId || null,
     ip: item.ip || item.ipAddress || null,
     metadata: item.metadata || item.meta || {},
-    tenantId: item.tenantId || item.tenant || (sessionStorage.getItem("tenantId") || "public"),
+    tenantId: item.tenantId || item.tenant || (sessionStorage.getItem("tenantId") || "vendor"),
   };
 }
 
@@ -103,7 +103,7 @@ export async function writeAuditLog({
   ip,
   metadata = {},
 }) {
-  const tenantId = sessionStorage.getItem("tenantId") || "public";
+  const tenantId = sessionStorage.getItem("tenantId") || "vendor";
   const payload = {
     action,
     userId: userId || null,

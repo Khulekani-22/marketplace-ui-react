@@ -9,11 +9,13 @@ import appDataLocal from "../data/appData.json";
 export default function VendorDashboardPage() {
   const { vendor } = useVendor?.() || { vendor: null };
   const vendorId = vendor?.vendorId || vendor?.id || vendor?.ownerUid || vendor?.email || "me";
-  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "public", []);
+  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
   const [stats, setStats] = useState(null);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [myListings, setMyListings] = useState([]);
+  const [subByService, setSubByService] = useState({});
+  const [salesTime, setSalesTime] = useState({ monthly: {}, quarterly: {}, annual: {} });
 
   useEffect(() => {
     (async () => {
@@ -53,6 +55,22 @@ export default function VendorDashboardPage() {
           reviewStats: { totalReviews, avgRating },
           subscription: { plan: vendor?.subscriptionPlan || "Free", status: (vendor?.status || vendor?.kycStatus || "pending").toLowerCase() },
         });
+
+        // Fetch server-side analytics for this vendor (subs + time buckets)
+        try {
+          const params = {
+            email: (vendor?.email || vendor?.contactEmail || '').toLowerCase(),
+            uid: vendor?.ownerUid || '',
+            name: vendor?.name || ''
+          };
+          const vId = vendor?.vendorId || vendor?.id || 'me';
+          const resp = await api.get(`/api/data/vendors/${encodeURIComponent(vId)}/stats`, { params });
+          const s = resp.data || {};
+          setSubByService(s?.subscriptionStats?.byService || {});
+          setSalesTime(s?.salesTime || { monthly: {}, quarterly: {}, annual: {} });
+        } catch (e) {
+          // non-fatal
+        }
       } catch (e) {
         setErr(e?.message || "Failed to load vendor listings");
       } finally {
@@ -157,6 +175,7 @@ export default function VendorDashboardPage() {
                     <th>Category</th>
                     <th>Rating</th>
                     <th>Reviews</th>
+                    <th>Subscribers</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -167,12 +186,76 @@ export default function VendorDashboardPage() {
                       <td>{s.category || '—'}</td>
                       <td>{Number(s.rating || 0).toFixed(1)}★</td>
                       <td>{Number(s.reviewCount || (Array.isArray(s.reviews) ? s.reviews.length : 0) || 0)}</td>
+                      <td>{Number(subByService[String(s.id)] || 0)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Sales Analytics (based on subscriptions pricing) */}
+      <div className="row g-3 mt-3">
+        <div className="col-md-6">
+          <div className="card h-100">
+            <div className="card-body">
+              <h6 className="mb-2">Monthly Sales</h6>
+              <div className="table-responsive">
+                <table className="table table-sm mb-0">
+                  <thead><tr><th>Month</th><th className="text-end">Orders</th><th className="text-end">Revenue (R)</th></tr></thead>
+                  <tbody>
+                    {Object.entries(salesTime.monthly || {})
+                      .sort((a,b)=> a[0] < b[0] ? 1 : -1)
+                      .slice(0, 6)
+                      .map(([k,v]) => (
+                        <tr key={k}><td>{k}</td><td className="text-end">{v.count||0}</td><td className="text-end">{Number(v.revenue||0).toLocaleString()}</td></tr>
+                      ))}
+                    {Object.keys(salesTime.monthly || {}).length === 0 && (
+                      <tr><td colSpan={3} className="text-secondary">No completed sales yet.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3">
+          <div className="card h-100">
+            <div className="card-body">
+              <h6 className="mb-2">Quarterly Sales</h6>
+              <ul className="list-unstyled mb-0">
+                {Object.entries(salesTime.quarterly || {})
+                  .sort((a,b)=> a[0] < b[0] ? 1 : -1)
+                  .slice(0, 4)
+                  .map(([k,v]) => (
+                    <li key={k} className="d-flex justify-content-between"><span>{k}</span><span>R {Number(v.revenue||0).toLocaleString()}</span></li>
+                  ))}
+                {Object.keys(salesTime.quarterly || {}).length === 0 && (
+                  <li className="text-secondary">No data</li>
+                )}
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3">
+          <div className="card h-100">
+            <div className="card-body">
+              <h6 className="mb-2">Annual Sales</h6>
+              <ul className="list-unstyled mb-0">
+                {Object.entries(salesTime.annual || {})
+                  .sort((a,b)=> a[0] < b[0] ? 1 : -1)
+                  .slice(0, 3)
+                  .map(([k,v]) => (
+                    <li key={k} className="d-flex justify-content-between"><span>{k}</span><span>R {Number(v.revenue||0).toLocaleString()}</span></li>
+                  ))}
+                {Object.keys(salesTime.annual || {}).length === 0 && (
+                  <li className="text-secondary">No data</li>
+                )}
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 

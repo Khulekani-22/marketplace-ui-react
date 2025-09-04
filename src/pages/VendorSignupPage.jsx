@@ -47,6 +47,17 @@ export default function VendorSignupPage() {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
+  async function upgradeTenantForVendor(email) {
+    try {
+      // Upgrade tenant so vendor pages are accessible (basic -> vendor)
+      await api.post("/api/users", { email, tenantId: "vendor", role: "member" });
+    } catch {}
+    try {
+      sessionStorage.setItem("tenantId", "vendor");
+      sessionStorage.setItem("role", sessionStorage.getItem("role") || "member");
+    } catch {}
+  }
+
   async function persistVendorToBackend(profile) {
     try {
       const payload = {
@@ -112,6 +123,7 @@ export default function VendorSignupPage() {
       }
 
       await persistVendorToBackend(profile);
+      await upgradeTenantForVendor(profile.contactEmail);
 
       await finalizeAndGo();
     } catch (e) {
@@ -155,6 +167,7 @@ export default function VendorSignupPage() {
       };
 
       await persistVendorToBackend(profile);
+      await upgradeTenantForVendor(profile.contactEmail);
 
       await finalizeAndGo();
     } catch (e) {
@@ -179,6 +192,7 @@ export default function VendorSignupPage() {
 
           // Upsert vendor profile so existing users can become vendors and retain the same vendor number (uid)
           await persistVendorToBackend(profile);
+          await upgradeTenantForVendor(profile.contactEmail);
 
           await finalizeAndGo();
         } catch (signinErr) {

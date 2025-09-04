@@ -19,6 +19,19 @@ let currentBase = CANDIDATES[candidateIndex];
 
 export const api = axios.create({ baseURL: currentBase });
 
+function mapTenantOut(id) {
+  return id === "vendor" ? "public" : id;
+}
+
+function shimTenantInPayload(payload) {
+  if (!payload || typeof payload !== "object") return payload;
+  try {
+    if (typeof payload.tenantId === "string") payload.tenantId = mapTenantOut(payload.tenantId);
+    if (typeof payload.newTenantId === "string") payload.newTenantId = mapTenantOut(payload.newTenantId);
+  } catch {}
+  return payload;
+}
+
 api.interceptors.request.use(async (config) => {
   const user = auth.currentUser;
   if (user) {
@@ -26,11 +39,14 @@ api.interceptors.request.use(async (config) => {
     const tok = await user.getIdToken();
     config.headers.Authorization = `Bearer ${tok}`;
   }
-  const tenantId = sessionStorage.getItem("tenantId") || "public";
-  // Respect an explicit header if the caller set one on this request
-  if (!config.headers["x-tenant-id"]) {
-    config.headers["x-tenant-id"] = tenantId;
-  }
+  const tenantId = sessionStorage.getItem("tenantId") || "vendor";
+  // Always ensure the backend receives legacy-compatible tenant id
+  const headerTenant = config.headers["x-tenant-id"] || tenantId;
+  config.headers["x-tenant-id"] = mapTenantOut(headerTenant);
+
+  // Shim common payload shapes that include tenant identifiers
+  if (config.data && typeof config.data === "object") config.data = shimTenantInPayload(config.data);
+  if (config.params && typeof config.params === "object") config.params = shimTenantInPayload(config.params);
   return config;
 });
 

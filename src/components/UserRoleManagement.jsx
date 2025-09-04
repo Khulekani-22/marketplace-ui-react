@@ -9,7 +9,7 @@ export default function UserRoleManagement() {
   const [tenant, setTenant] = useState("");
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
-  const [tenants, setTenants] = useState([{ id: "public", name: "Public" }]);
+  const [tenants, setTenants] = useState([{ id: "vendor", name: "Vendor" }]);
   const meEmail = (auth.currentUser?.email || sessionStorage.getItem("userEmail") || "").toLowerCase();
   const [vendorByEmail, setVendorByEmail] = useState({});
   const [vendorByOwner, setVendorByOwner] = useState({});
@@ -50,7 +50,7 @@ export default function UserRoleManagement() {
       const { data } = await api.get("/api/users");
       const list = Array.isArray(data) ? data : [];
       // Basic normalization
-      setUsers(list.map((u) => ({ email: (u.email || "").toLowerCase(), tenantId: u.tenantId || "public", role: u.role || "member" })));
+      setUsers(list.map((u) => ({ email: (u.email || "").toLowerCase(), tenantId: u.tenantId || "vendor", role: u.role || "member" })));
       // Also fetch vendors in current tenant to know who already has a vendor profile
       try {
         const vendors = await api.get("/api/data/vendors").then((r) => r.data || []);
@@ -87,15 +87,17 @@ export default function UserRoleManagement() {
         const { data } = await api.get("/api/tenants");
         const arr = Array.isArray(data) ? data : [];
         const normalized = [
-          { id: "public", name: "Public" },
-          ...arr.map((t) => (typeof t === "string" ? { id: t, name: t } : { id: t?.id, name: t?.name || t?.id }))
+          { id: "vendor", name: "Vendor" },
+          ...arr
+            .map((t) => (typeof t === "string" ? { id: t, name: t } : { id: t?.id, name: t?.name || t?.id }))
+            .map((t) => (t.id === "public" ? { ...t, id: "vendor", name: t.name || "Vendor" } : t))
         ].filter((t) => t && t.id);
         // Dedup by id
         const map = new Map();
         normalized.forEach((t) => map.set(t.id, t));
         setTenants(Array.from(map.values()));
       } catch {
-        setTenants([{ id: "public", name: "Public" }]);
+        setTenants([{ id: "vendor", name: "Vendor" }]);
       }
     })();
   }, []);
@@ -138,7 +140,7 @@ export default function UserRoleManagement() {
     setError(""); setOk("");
     const nextRole = (u.role === "admin" ? "member" : "admin");
     try {
-      await saveUser({ email: u.email, tenantId: u.tenantId || "public", role: nextRole });
+      await saveUser({ email: u.email, tenantId: u.tenantId || "vendor", role: nextRole });
       setUsers((prev) => prev.map((x) => (x.email === u.email ? { ...x, role: nextRole } : x)));
       setOk(`${u.email} is now ${nextRole}`);
     } catch (e) {
@@ -154,6 +156,20 @@ export default function UserRoleManagement() {
       setOk(`${u.email} moved to ${nextTenant}`);
     } catch (e) {
       setError(e?.response?.data?.message || e?.message || "Failed to change tenant");
+    }
+  }
+
+  async function removeUser(u) {
+    setError(""); setOk("");
+    const key = (u.email || "").toLowerCase();
+    if (!key) return;
+    if (!window.confirm(`Delete user ${key}? This removes their account and role mapping but keeps listings.`)) return;
+    try {
+      await api.delete("/api/users", { data: { email: key } });
+      setUsers((prev) => prev.filter((x) => (x.email || "").toLowerCase() !== key));
+      setOk(`Deleted ${key}`);
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message || "Failed to delete user");
     }
   }
 
@@ -203,7 +219,7 @@ export default function UserRoleManagement() {
       }
 
       // 2) Persist UID on users mapping so future reads know it
-      await api.post("/api/users", { email: key, tenantId: u.tenantId || "public", role: u.role || "member", uid });
+      await api.post("/api/users", { email: key, tenantId: u.tenantId || "vendor", role: u.role || "member", uid });
 
       // 3) Upsert ownerUid on vendor: try current tenant, else search all tenants and update where found,
       // else create minimal vendor in current tenant
@@ -220,7 +236,7 @@ export default function UserRoleManagement() {
           const tenantsResp = await api.get('/api/tenants');
           const tenantList = Array.isArray(tenantsResp.data) ? tenantsResp.data : [];
           const ids = tenantList.map((t) => (typeof t === 'string' ? t : t?.id)).filter(Boolean);
-          const allTenantIds = Array.from(new Set(['public', ...ids]));
+          const allTenantIds = Array.from(new Set(['vendor', ...ids]));
           for (const tId of allTenantIds) {
             try {
               const { data: vRows } = await api.get('/api/data/vendors', { headers: { 'x-tenant-id': tId } });
@@ -299,8 +315,8 @@ export default function UserRoleManagement() {
           const tenantList = Array.isArray(tenantsResp.data) ? tenantsResp.data : [];
           const ids = tenantList.map((t) => (typeof t === 'string' ? t : t?.id)).filter(Boolean);
           const all = [];
-          // Always include public as well
-          const allTenantIds = Array.from(new Set(['public', ...ids]));
+          // Always include vendor as well
+          const allTenantIds = Array.from(new Set(['vendor', ...ids]));
           for (const tId of allTenantIds) {
             try {
               const { data: vRows } = await api.get('/api/data/vendors', { headers: { 'x-tenant-id': tId } });
@@ -346,7 +362,7 @@ export default function UserRoleManagement() {
   }, []);
 
   async function grantAdmin(email) {
-    const t = tenantPick[email] || "public";
+    const t = tenantPick[email] || "vendor";
     try {
       await saveUser({ email, tenantId: t, role: "admin" });
       // reflect in main users table
@@ -368,7 +384,7 @@ export default function UserRoleManagement() {
 
   async function revokeAdmin(email) {
     const existing = users.find((u) => u.email === (email || '').toLowerCase());
-    const t = existing?.tenantId || tenantPick[email] || 'public';
+    const t = existing?.tenantId || tenantPick[email] || 'vendor';
     try {
       await saveUser({ email, tenantId: t, role: 'member' });
       setUsers((prev) => prev.map((x) => (x.email === email ? { ...x, role: 'member' } : x)));
@@ -450,7 +466,7 @@ export default function UserRoleManagement() {
                   <td>
                     <select
                       className="form-select form-select-sm w-auto bg-base border text-secondary-light rounded-pill"
-                      value={u.tenantId || "public"}
+                      value={u.tenantId || "vendor"}
                       onChange={(e)=>changeTenant(u, e.target.value)}
                       title="Switch tenant"
                     >
@@ -477,7 +493,7 @@ export default function UserRoleManagement() {
                       by email: {trace[u.email].viaEmail ? (
                         <>
                           <code>{String(trace[u.email].viaEmail.contactEmail || trace[u.email].viaEmail.email || "")}</code>
-                          {" "}(vendorId: <code>{String(trace[u.email].viaEmail.id || trace[u.email].viaEmail.vendorId)}</code>, tenant: <code>{String(trace[u.email].viaEmail.tenantId || trace[u.email].viaEmail._tenantId || 'public')}</code>)
+                          {" "}(vendorId: <code>{String(trace[u.email].viaEmail.id || trace[u.email].viaEmail.vendorId)}</code>, tenant: <code>{String(trace[u.email].viaEmail.tenantId || trace[u.email].viaEmail._tenantId || 'vendor')}</code>)
                         </>
                       ) : (
                         "—"
@@ -487,7 +503,7 @@ export default function UserRoleManagement() {
                       by ownerUid: {trace[u.email].viaUid ? (
                         <>
                           <code>{String(trace[u.email].viaUid.ownerUid || "")}</code>{" "}
-                          (vendorId: <code>{String(trace[u.email].viaUid.id || trace[u.email].viaUid.vendorId)}</code>, tenant: <code>{String(trace[u.email].viaUid.tenantId || trace[u.email].viaUid._tenantId || 'public')}</code>)
+                          (vendorId: <code>{String(trace[u.email].viaUid.id || trace[u.email].viaUid.vendorId)}</code>, tenant: <code>{String(trace[u.email].viaUid.tenantId || trace[u.email].viaUid._tenantId || 'vendor')}</code>)
                         </>
                       ) : (
                         "—"
@@ -497,7 +513,7 @@ export default function UserRoleManagement() {
                       by id==uid: {trace[u.email].viaId ? (
                         <>
                           <code>{String(trace[u.email].viaId.id || trace[u.email].viaId.vendorId)}</code>{" "}
-                          (tenant: <code>{String(trace[u.email].viaId.tenantId || trace[u.email].viaId._tenantId || 'public')}</code>)
+                          (tenant: <code>{String(trace[u.email].viaId.tenantId || trace[u.email].viaId._tenantId || 'vendor')}</code>)
                         </>
                       ) : (
                         "—"
@@ -548,6 +564,15 @@ export default function UserRoleManagement() {
                       >
                         {syncBusy[u.email] ? 'Syncing…' : 'Sync UID'}
                       </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger btn-sm"
+                        onClick={()=>removeUser(u)}
+                        title="Delete user from Firebase and remove role mapping (keeps listings)"
+                        disabled={((auth.currentUser?.email || '').toLowerCase() === (u.email || '').toLowerCase())}
+                      >
+                        Delete User
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -593,7 +618,7 @@ export default function UserRoleManagement() {
                     <td>
                       <select
                         className="form-select form-select-sm w-auto bg-base border text-secondary-light rounded-pill"
-                        value={tenantPick[r.email] || 'public'}
+                        value={tenantPick[r.email] || 'vendor'}
                         onChange={(e)=>setTenantPick((prev)=>({ ...prev, [r.email]: e.target.value }))}
                       >
                         {tenants.map((t)=> (

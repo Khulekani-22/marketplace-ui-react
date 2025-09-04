@@ -86,7 +86,7 @@ export default function VendorAddListingPage() {
   const { vendor: ctxVendor, ensureVendorId, refresh } = useVendor();
 
   const tenantId = useMemo(
-    () => sessionStorage.getItem("tenantId") || "public",
+    () => sessionStorage.getItem("tenantId") || "vendor",
     []
   );
 

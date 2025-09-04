@@ -214,3 +214,9 @@ table.dataTable td.dt-type-date {
   width: 100%;
   height: 100vh;
 }
+
+/* Sidebar spacing tweaks: bring items closer to left edge */
+.sidebar-menu li a {
+  /* default from theme is padding: 0.625rem 0.75rem; */
+  padding: 0.625rem 0.5rem 0.625rem 0.25rem !important;
+}

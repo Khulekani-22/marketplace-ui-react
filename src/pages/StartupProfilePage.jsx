@@ -13,7 +13,7 @@ export default function StartupProfilePage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
-  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "public", []);
+  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
   const [hasVendor, setHasVendor] = useState(false);
 
   const [form, setForm] = useState({

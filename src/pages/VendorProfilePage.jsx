@@ -130,7 +130,7 @@ function findVendorInLive(live, fb) {
 export default function VendorProfilePage() {
   const { vendor: ctxVendor, ensureVendorId, refresh } = useVendor();
   const tenantId = useMemo(
-    () => sessionStorage.getItem("tenantId") || "public",
+    () => sessionStorage.getItem("tenantId") || "vendor",
     []
   );
 

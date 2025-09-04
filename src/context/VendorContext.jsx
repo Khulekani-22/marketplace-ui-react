@@ -60,7 +60,7 @@ function findVendorInLive(live, user) {
 const VendorContext = createContext(null);
 
 export function VendorProvider({ children }) {
-  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "public", []);
+  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
   const [authUser, setAuthUser] = useState(null);
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -12,8 +12,8 @@ export default function AuditLogsLayer() {
   const [action, setAction] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [tenantId, setTenantId] = useState(() => sessionStorage.getItem("tenantId") || "public");
-  const [tenants, setTenants] = useState([{ id: "public", name: "Public" }]);
+  const [tenantId, setTenantId] = useState(() => sessionStorage.getItem("tenantId") || "vendor");
+  const [tenants, setTenants] = useState([{ id: "vendor", name: "Vendor" }]);
 
   useEffect(() => {
     let mounted = true;
@@ -22,13 +22,15 @@ export default function AuditLogsLayer() {
         const { data } = await api.get("/api/tenants");
         const items = Array.isArray(data) ? data : [];
         const normalized = [
-          { id: "public", name: "Public" },
-          ...items.map((t) => (typeof t === "string" ? { id: t, name: t } : { id: t?.id, name: t?.name || t?.id }))
+          { id: "vendor", name: "Vendor" },
+          ...items
+            .map((t) => (typeof t === "string" ? { id: t, name: t } : { id: t?.id, name: t?.name || t?.id }))
+            .map((t) => (t.id === "public" ? { ...t, id: "vendor", name: t.name || "Vendor" } : t))
         ].filter((t) => t && t.id);
         const unique = Object.values(normalized.reduce((acc, t) => { acc[t.id] = t; return acc; }, {}));
         if (mounted) setTenants(unique);
       } catch {
-        if (mounted) setTenants([{ id: "public", name: "Public" }]);
+        if (mounted) setTenants([{ id: "vendor", name: "Vendor" }]);
       }
     })();
     return () => { mounted = false; };
@@ -223,7 +225,7 @@ export default function AuditLogsLayer() {
                     )}
                   </td>
                   <td>{r.ip || "—"}</td>
-                  <td>{r.tenantId || "public"}</td>
+                  <td>{r.tenantId || "vendor"}</td>
                 </tr>
               ))}
               {loading && (

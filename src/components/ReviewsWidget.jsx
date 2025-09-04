@@ -5,7 +5,7 @@ import { api } from "../lib/api";
 import { Link } from "react-router-dom";
 
 export default function ReviewsWidget() {
-  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "public", []);
+  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
   const [services, setServices] = useState([]);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
