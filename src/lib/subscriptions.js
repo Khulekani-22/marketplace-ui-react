@@ -12,8 +12,7 @@ export async function subscribeToService(serviceId) {
 }
 
 export async function unsubscribeFromService(serviceId) {
-  // axios allows body on DELETE via config.data
-  await api.delete("/api/subscriptions/service", { data: { serviceId } });
+  // Soft cancel to preserve history in analytics
+  await api.put("/api/subscriptions/service/cancel", { serviceId });
   return true;
 }
-

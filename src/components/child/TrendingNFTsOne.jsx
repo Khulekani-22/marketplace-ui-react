@@ -282,59 +282,46 @@ const TrendingNFTsOne = () => {
 
             {!loading &&
               filteredServices.map((service) => (
-                <div className="col-xxl-3 col-sm-6 col-xs-6" key={service.id}>
-                  <div className="card text-light nft-card bg-base radius-16 overflow-hidden">
-                    <div className="radius-16 overflow-hidden">
-                      <img
-                        style={{ width: "100%", maxHeight: "15vh" }}
-                        src={service.imageUrl}
-                        alt={service.title}
-                        className="w-100 h-100 object-fit-cover"
-                      />
-                    </div>
-                    <div className="p-10">
-                      <h6 className="text-md fw-bold text-primary-light">
-                        {service.title}
-                      </h6>
-                      <div className="d-flex align-items-center gap-8">
+                <div className="col-12 col-md-6 col-lg-4" key={service.id}>
+                  <div className="card bg-base radius-16 overflow-hidden h-100">
+                    <div className="row g-0 align-items-stretch">
+                      <div className="col-auto">
                         <img
-                          src={
-                            service.reviews?.[0]?.authorAvatar ||
-                            "/assets/images/default-user.png"
-                          }
-                          className="w-28-px h-28-px rounded-circle object-fit-cover"
-                          alt={service.reviews?.[0]?.author || "Startup"}
+                          style={{ width: 160, height: '100%', maxHeight: 140, objectFit: 'cover' }}
+                          src={service.imageUrl}
+                          alt={service.title}
+                          className="d-block"
                         />
-                        <span className="text-sm text-secondary-light fw-medium">
-                          {service.vendor}
-                        </span>
                       </div>
-                      <div className="mt-10 d-flex align-items-center justify-content-between gap-8 flex-wrap">
-                        <span className="text-sm text-secondary-light fw-medium">
-                          Price:{" "}
-                          <span className="text-sm text-primary-light fw-semibold">
-                            R{Number(service.price || 0).toLocaleString()}
-                          </span>
-                        </span>
-                        <span className="text-sm fw-semibold text-primary-600">
-                          ★ {Number(service.rating || 0).toFixed(1)}
-                        </span>
-                      </div>
-                      <div className="d-flex align-items-center flex-wrap mt-12 gap-8">
-                        <button
-                          type="button"
-                          onClick={() => openReview(service.id)}
-                          className="btn rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white flex-grow-1"
-                        >
-                          {(service.reviews?.length || service.reviewCount || 0) > 0 ? 'Reviews' : 'Write a review'}
-                        </button>
-                        <button
-                          type="button"
-                          className={subs.has(String(service.id)) ? "btn rounded-pill bg-neutral-200 text-neutral-900 radius-8 px-12 py-6 flex-grow-1" : "btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6 flex-grow-1"}
-                          onClick={() => toggleSubscribe(service.id)}
-                        >
-                          {subs.has(String(service.id)) ? 'Subscribed' : 'Subscribe'}
-                        </button>
+                      <div className="col">
+                        <div className="p-12 d-flex flex-column h-100">
+                          <div className="d-flex align-items-start justify-content-between gap-2">
+                            <h6 className="text-md fw-bold text-primary-light mb-1">{service.title}</h6>
+                            <span className="text-sm fw-semibold text-primary-600">★ {Number(service.rating || 0).toFixed(1)}</span>
+                          </div>
+                          <div className="text-secondary small mb-2">{service.vendor}{service.category ? ` · ${service.category}` : ''}</div>
+                          <div className="mt-auto d-flex align-items-center justify-content-between gap-8 flex-wrap">
+                            <span className="text-sm text-secondary-light fw-medium">
+                              Price: <span className="text-sm text-primary-light fw-semibold">R{Number(service.price || 0).toLocaleString()}</span>
+                            </span>
+                            <div className="d-flex align-items-center gap-8">
+                              <button
+                                type="button"
+                                onClick={() => openReview(service.id)}
+                                className="btn btn-sm rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white"
+                              >
+                                {(service.reviews?.length || service.reviewCount || 0) > 0 ? 'Reviews' : 'Write a review'}
+                              </button>
+                              <button
+                                type="button"
+                                className={subs.has(String(service.id)) ? "btn btn-sm rounded-pill bg-neutral-200 text-neutral-900 radius-8 px-12 py-6" : "btn btn-sm rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"}
+                                onClick={() => toggleSubscribe(service.id)}
+                              >
+                                {subs.has(String(service.id)) ? 'Subscribed' : 'Subscribe'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

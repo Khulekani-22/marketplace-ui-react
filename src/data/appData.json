@@ -1520,7 +1520,8 @@
           "date": "2024-06-25T00:00:00Z",
           "content": "Highly recommend! The logo they designed for us is modern, memorable, and has received great feedback from our users."
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "2",
@@ -1548,7 +1549,8 @@
           "date": "2024-07-15T00:00:00Z",
           "content": "The team at DevHouse is top-notch. They built a robust and scalable web app for us on time and on budget. Excellent communication throughout."
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "3",
@@ -1558,8 +1560,8 @@
       "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 1500,
-      "rating": 4.900467289719626,
-      "reviewCount": 214,
+      "rating": 4.9,
+      "reviewCount": 213,
       "imageUrl": "https://images.unsplash.com/photo-1556155092-490a1ba16284?q=80&w=600&h=400&fit=crop",
       "aiHint": "CRM software",
       "listingType": "saas",
@@ -1584,17 +1586,9 @@
           "rating": 4,
           "date": "2024-07-18T00:00:00Z",
           "content": "A very powerful CRM. There is a bit of a learning curve, but their customer support is fantastic and helped us get up to speed."
-        },
-        {
-          "id": "b1e23cd9-8d6c-46eb-a61d-bbe4101d994a",
-          "rating": 5,
-          "comment": "Testing",
-          "author": "22 On Sloane",
-          "authorEmail": "khulekani@22onsloane.co",
-          "createdAt": "2025-09-04T03:38:14.074Z"
         }
       ],
-      "lastReviewedAt": "2025-09-04T03:38:14.074Z"
+      "tenantId": "public"
     },
     {
       "id": "4",
@@ -1612,7 +1606,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Get investor-ready with a professional financial model and a compelling pitch deck. We help you tell your story with data, making it easier to secure funding.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "5",
@@ -1622,25 +1617,16 @@
       "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 5000,
-      "rating": 4.701986754966887,
-      "reviewCount": 151,
+      "rating": 4.7,
+      "reviewCount": 150,
       "imageUrl": "https://www.w3.org/cms-uploads/scales.svg",
       "aiHint": "legal advice",
       "listingType": "service",
       "status": "approved",
       "isFeatured": true,
       "description": "Navigate the complex legal landscape with confidence. Our experienced corporate lawyers provide expert advice on company registration, contracts, compliance, and more.",
-      "reviews": [
-        {
-          "id": "c236d5a2-fcca-49aa-926d-5278df618182",
-          "rating": 5,
-          "comment": "Testing",
-          "author": "22 On Sloane",
-          "authorEmail": "khulekani@22onsloane.co",
-          "createdAt": "2025-09-04T03:38:42.488Z"
-        }
-      ],
-      "lastReviewedAt": "2025-09-04T03:38:42.488Z"
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "6",
@@ -1658,7 +1644,8 @@
       "status": "pending",
       "isFeatured": false,
       "description": "Organize your projects, track progress, and collaborate with your team seamlessly. TaskMaster is the all-in-one solution for keeping your projects on time and on budget.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "7",
@@ -1676,7 +1663,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Let us create and manage a high-impact social media campaign for your brand. We handle everything from content creation and scheduling to community management and performance analytics.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "8",
@@ -1694,7 +1682,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Simplify your complex ideas with a beautiful and engaging animated explainer video. Perfect for your homepage, social media, or investor presentations.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "9",
@@ -1712,7 +1701,8 @@
       "status": "approved",
       "isFeatured": true,
       "description": "Improve your search engine rankings and attract more organic traffic with our expert SEO content writing package. Includes keyword research, blog posts, and on-page optimization.",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "X6rF03vck1HIXfg4hbjy",
@@ -1749,7 +1739,8 @@
           "date": "2025-07-25T10:41:58.399Z",
           "content": "Great app! Thanks "
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "uTgKXEWI2SYqoK1DeEYU",
@@ -1784,7 +1775,8 @@
           "date": "2025-07-22T14:40:02.103Z",
           "content": "Testing connection to db again"
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "memubqft-fcmcw1",
@@ -1812,7 +1804,8 @@
           "date": "2024-07-15T00:00:00Z",
           "content": "The team at DevHouse is top-notch. They built a robust and scalable web app for us on time and on budget. Excellent communication throughout."
         }
-      ]
+      ],
+      "tenantId": "public"
     },
     {
       "id": "mepapax8-ibz1dv",
@@ -1830,7 +1823,8 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Testing feature - vendor submit a new listing for approval",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "meqwiou0-3q8ofl",
@@ -1840,25 +1834,16 @@
       "vendorId": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 8000,
-      "rating": 2.5,
-      "reviewCount": 2,
+      "rating": 0,
+      "reviewCount": 0,
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/05/gecafrica-hero.jpg",
       "aiHint": "",
       "listingType": "service",
       "status": "approved",
       "isFeatured": false,
       "description": "Testing",
-      "reviews": [
-        {
-          "id": "20b69da4-4d6e-435a-9dc9-cda9a098ad0d",
-          "rating": 5,
-          "comment": "Testing review",
-          "author": "22 On Sloane",
-          "authorEmail": "khulekani@22onsloane.co",
-          "createdAt": "2025-09-04T03:32:59.894Z"
-        }
-      ],
-      "lastReviewedAt": "2025-09-04T03:32:59.894Z"
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "mewcr2ki-ocdatn",
@@ -1868,25 +1853,15 @@
       "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "contactEmail": "22onsloanedigitalteam@gmail.com",
       "price": 250,
-      "rating": 5,
-      "reviewCount": 2,
+      "rating": 0,
+      "reviewCount": 0,
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/07/envato-labs-ai-5ee6d584-420f-4614-9307-fdb693d538b9.jpg",
       "aiHint": "",
       "listingType": "saas",
       "status": "approved",
       "isFeatured": false,
       "description": "Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing",
-      "reviews": [
-        {
-          "id": "d506c427-81e6-40f4-ad49-4a470c7314ac",
-          "rating": 5,
-          "comment": "Testing Reviews",
-          "author": "22 On Sloane",
-          "authorEmail": "khulekani@22onsloane.co",
-          "createdAt": "2025-09-04T03:39:30.741Z"
-        }
-      ],
-      "lastReviewedAt": "2025-09-04T03:39:30.741Z"
+      "reviews": []
     },
     {
       "id": "mewl4bna-xil1yi",
@@ -1896,25 +1871,16 @@
       "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 1000,
-      "rating": 5,
-      "reviewCount": 2,
+      "rating": 0,
+      "reviewCount": 0,
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/Web_banners_SERIES_27_Aug_2025_web_banner001_1681x965-copy-2.png",
       "aiHint": "",
       "listingType": "service",
       "status": "approved",
       "isFeatured": false,
       "description": "Share your pitch deck and our expert team will give you pointers on how to improve it",
-      "reviews": [
-        {
-          "id": "12475614-5490-43fd-9de9-b6fbc35f8a55",
-          "rating": 5,
-          "comment": "Testing",
-          "author": "22 On Sloane",
-          "authorEmail": "khulekani@22onsloane.co",
-          "createdAt": "2025-09-03T06:44:20.655Z"
-        }
-      ],
-      "lastReviewedAt": "2025-09-03T06:44:20.655Z"
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "mewl77g2-tidsnp",
@@ -1924,25 +1890,16 @@
       "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
       "contactEmail": "ruthmaphosa2024@gmail.com",
       "price": 1500,
-      "rating": 5,
-      "reviewCount": 2,
+      "rating": 0,
+      "reviewCount": 0,
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/Web_banners_SERIES_27_Aug_2025_web_banner001_1681x965-copy-2.png",
       "aiHint": "",
       "listingType": "service",
       "status": "approved",
       "isFeatured": false,
       "description": "Our team of experts will anlayze and review your pitch deck",
-      "reviews": [
-        {
-          "id": "e8c54ec9-a52d-4e3d-b6dc-5b52ee1af90a",
-          "rating": 5,
-          "comment": "Testing",
-          "author": "22 On Sloane",
-          "authorEmail": "khulekani@22onsloane.co",
-          "createdAt": "2025-09-03T07:18:59.885Z"
-        }
-      ],
-      "lastReviewedAt": "2025-09-03T07:18:59.885Z"
+      "reviews": [],
+      "tenantId": "public"
     }
   ],
   "leads": [
@@ -2095,7 +2052,9 @@
       "id": "aiKIomLPB81DDGKIPmqG",
       "status": "suspended",
       "lastUpdated": "2025-09-01T10:08:08.079Z",
-      "vendorId": "aiKIomLPB81DDGKIPmqG"
+      "vendorId": "aiKIomLPB81DDGKIPmqG",
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s1",
@@ -2130,7 +2089,9 @@
           "aiHint": "woman portrait"
         }
       ],
-      "followers": 1250
+      "followers": 1250,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s2",
@@ -2159,7 +2120,9 @@
           "aiHint": "woman portrait"
         }
       ],
-      "followers": 850
+      "followers": 850,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s3",
@@ -2188,7 +2151,9 @@
           "aiHint": "woman portrait"
         }
       ],
-      "followers": 480
+      "followers": 480,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s4",
@@ -2217,7 +2182,9 @@
           "aiHint": "man portrait"
         }
       ],
-      "followers": 920
+      "followers": 920,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s5",
@@ -2246,7 +2213,9 @@
           "aiHint": "man portrait"
         }
       ],
-      "followers": 2100
+      "followers": 2100,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s6",
@@ -2275,7 +2244,9 @@
           "aiHint": "woman portrait"
         }
       ],
-      "followers": 1800
+      "followers": 1800,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s7",
@@ -2304,7 +2275,9 @@
           "aiHint": "woman portrait"
         }
       ],
-      "followers": 1450
+      "followers": 1450,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "s8",
@@ -2333,7 +2306,9 @@
           "aiHint": "man portrait"
         }
       ],
-      "followers": 1600
+      "followers": 1600,
+      "tenantId": "public",
+      "contactEmail": ""
     },
     {
       "id": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
@@ -2407,13 +2382,14 @@
         "registrationNo": "",
         "status": "pending",
         "tenantId": "22onsloane"
-      }
+      },
+      "tenantId": "public"
     },
     {
       "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "name": "22onsloanedigitalteam",
-      "contactEmail": "khulekani@22onsloane.co",
+      "contactEmail": "22onsloanedigitalteam@gmail.com",
       "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "website": "",
       "phone": "0114637602",
@@ -2438,13 +2414,13 @@
         "github": ""
       },
       "lastUpdated": "",
-      "email": "khulekani@22onsloane.co",
+      "email": "22onsloanedigitalteam@gmail.com",
       "companyName": "22onsloanedigitalteam",
       "raw": {
         "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
         "name": "22onsloanedigitalteam",
         "kycStatus": "approved",
-        "contactEmail": "khulekani@22onsloane.co",
+        "contactEmail": "22onsloanedigitalteam@gmail.com",
         "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
         "phone": "0114637602",
         "website": "",
@@ -2469,7 +2445,8 @@
         "registrationNo": "",
         "status": "active",
         "tenantId": "22onsloane"
-      }
+      },
+      "tenantId": "public"
     },
     {
       "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
@@ -2531,7 +2508,8 @@
         "registrationNo": "",
         "status": "active",
         "tenantId": "22onsloane"
-      }
+      },
+      "tenantId": "public"
     },
     {
       "id": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
@@ -2593,24 +2571,8 @@
         "registrationNo": "",
         "status": "active",
         "tenantId": "22onsloane"
-      }
-    },
-    {
-      "id": "NQNk2k62YJMtBZ2GpiQJlbt8IEl1",
-      "name": "smme marketplace",
-      "elevatorPitch": "",
-      "productsServices": "",
-      "employeeCount": 0,
-      "contactEmail": "smmemarketplace@22onsloanecapital.co",
-      "ownerUid": "NQNk2k62YJMtBZ2GpiQJlbt8IEl1",
-      "phone": "",
-      "website": "",
-      "country": "",
-      "city": "",
-      "addressLine": "",
-      "categories": [],
-      "tags": [],
-      "tenantId": "vendor"
+      },
+      "tenantId": "public"
     }
   ],
   "vendors": [
@@ -2644,97 +2606,8 @@
         "github": ""
       },
       "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "lastUpdated": "2025-08-28T11:17:06.926Z"
-    },
-    {
-      "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "name": "22onsloanedigitalteam",
-      "kycStatus": "approved",
-      "contactEmail": "22onsloanedigitalteam@gmail.com",
-      "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "phone": "0114637602",
-      "website": "",
-      "description": "",
-      "logoUrl": "",
-      "bannerUrl": "",
-      "country": "South Africa",
-      "city": "Johannesburg",
-      "addressLine": "",
-      "socials": {
-        "twitter": "",
-        "linkedin": "",
-        "facebook": "",
-        "instagram": "",
-        "youtube": "",
-        "github": ""
-      },
-      "categories": [],
-      "tags": [],
-      "foundedYear": "",
-      "teamSize": "",
-      "registrationNo": "",
-      "status": "active",
-      "tenantId": "22onsloane"
-    },
-    {
-      "name": "khulekani",
-      "kycStatus": "pending",
-      "contactEmail": "khulekani@22onsloane.co",
-      "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "phone": "",
-      "website": "",
-      "description": "",
-      "logoUrl": "",
-      "bannerUrl": "",
-      "country": "",
-      "city": "",
-      "addressLine": "",
-      "socials": {
-        "twitter": "",
-        "linkedin": "",
-        "facebook": "",
-        "instagram": "",
-        "youtube": "",
-        "github": ""
-      },
-      "categories": [],
-      "tags": [],
-      "foundedYear": "",
-      "teamSize": "",
-      "registrationNo": "",
-      "status": "pending",
-      "id": "9b103fe7-213d-4155-8e37-191f78babc57",
-      "tenantId": "22onsloane"
-    },
-    {
-      "id": "NQNk2k62YJMtBZ2GpiQJlbt8IEl1",
-      "name": "smme marketplace",
-      "kycStatus": "pending",
-      "contactEmail": "mmemarketplace@22onsloanecapital.co",
-      "ownerUid": "NQNk2k62YJMtBZ2GpiQJlbt8IEl1",
-      "phone": "",
-      "website": "",
-      "description": "",
-      "logoUrl": "",
-      "bannerUrl": "",
-      "country": "",
-      "city": "",
-      "addressLine": "",
-      "socials": {
-        "twitter": "",
-        "linkedin": "",
-        "facebook": "",
-        "instagram": "",
-        "youtube": "",
-        "github": ""
-      },
-      "categories": [],
-      "tags": [],
-      "foundedYear": "",
-      "teamSize": "",
-      "registrationNo": "",
-      "status": "pending",
-      "tenantId": "vendor"
+      "lastUpdated": "2025-08-28T11:17:06.926Z",
+      "tenantId": "public"
     }
   ],
   "companies": [
@@ -2811,56 +2684,38 @@
       "nonce": "yab9eqzsv7"
     }
   },
-  "users": [
-    {
-      "email": "khulekani@22onsloane.co",
-      "tenantId": "22onsloane",
-      "role": "admin",
-      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3"
-    },
-    {
-      "email": "22onsloanedigitalteam@gmail.com",
-      "tenantId": "vendor",
-      "role": "member",
-      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22"
-    }
-  ],
-  "tenants": [
-    {
-      "id": "22onsloane",
-      "name": "22onsloane"
-    }
-  ],
+  "users": [],
+  "tenants": [],
   "subscriptions": [
     {
-      "id": "9eb151a6-77e6-409f-9b0a-95b1970be7f5",
+      "id": "e70c1ed0-ce80-4c15-af45-4e03d9e38bc1",
+      "type": "service",
+      "serviceId": "mewcr2ki-ocdatn",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "email": "khulekani@22onsloane.co",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "22onsloane",
+      "createdAt": "2025-09-04T14:57:17.217Z"
+    },
+    {
+      "id": "df0ef055-55f1-4498-afa2-be9594e7cf10",
       "type": "service",
       "serviceId": "2",
       "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "22onsloane",
-      "createdAt": "2025-09-04T13:42:35.730Z"
+      "createdAt": "2025-09-04T14:57:30.227Z"
     },
     {
-      "id": "b67f8d79-4a5b-4c88-8a54-b5694508520b",
+      "id": "bdd4925b-d58c-4645-a1ac-f9de429744f7",
       "type": "service",
-      "serviceId": "mewl4bna-xil1yi",
+      "serviceId": "uTgKXEWI2SYqoK1DeEYU",
       "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "22onsloane",
-      "createdAt": "2025-09-04T13:48:19.523Z"
-    },
-    {
-      "id": "53dc46e1-ea2e-4870-aa4c-cf6373748e8d",
-      "type": "service",
-      "serviceId": "mewl77g2-tidsnp",
-      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
-      "email": "khulekani@22onsloane.co",
-      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "tenantId": "22onsloane",
-      "createdAt": "2025-09-04T13:48:22.467Z"
+      "createdAt": "2025-09-04T14:57:47.051Z"
     }
   ]
 }

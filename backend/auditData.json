@@ -1860,5 +1860,65 @@
     "ip": "::1",
     "metadata": {},
     "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf5hl3tx-sasd1t",
+    "timestamp": "2025-09-04T14:13:34.235Z",
+    "action": "LISTING_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "listing",
+    "targetId": "mewcr2ki-ocdatn",
+    "ip": "::1",
+    "metadata": {
+      "from": "approved",
+      "to": "pending",
+      "title": "Testing New Saas Listing"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf5hl6jw-0i29n7",
+    "timestamp": "2025-09-04T14:13:37.770Z",
+    "action": "LISTINGS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "services",
+    "ip": "::1",
+    "metadata": {
+      "count": 17
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf5hlp8e-7sc5a4",
+    "timestamp": "2025-09-04T14:14:01.924Z",
+    "action": "LISTING_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "listing",
+    "targetId": "mewcr2ki-ocdatn",
+    "ip": "::1",
+    "metadata": {
+      "from": "pending",
+      "to": "approved",
+      "title": "Testing New Saas Listing"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf5hlrj9-doqsut",
+    "timestamp": "2025-09-04T14:14:04.963Z",
+    "action": "LISTINGS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "services",
+    "ip": "::1",
+    "metadata": {
+      "count": 17
+    },
+    "tenantId": "22onsloane"
   }
 ]

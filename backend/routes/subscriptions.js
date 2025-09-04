@@ -10,7 +10,7 @@ router.get("/my", firebaseAuthRequired, (req, res) => {
   const email = (req.user?.email || "").toLowerCase();
   const tenantId = req.tenant.id;
   const { subscriptions = [] } = getData();
-  const items = subscriptions.filter((s) => (s.tenantId ?? "public") === tenantId && (s.email || "").toLowerCase() === email);
+  const items = subscriptions.filter((s) => (s.tenantId ?? "public") === tenantId && (s.email || "").toLowerCase() === email && !s.canceledAt);
   res.json(items);
 });
 
@@ -30,9 +30,17 @@ router.post("/service", firebaseAuthRequired, (req, res) => {
     const svc = services.find((s) => String(s.id) === serviceId && (s.tenantId ?? "public") === tenantId) || services.find((s) => String(s.id) === serviceId);
     const vendorId = svc ? String(svc.vendorId || svc.id || "") : "";
 
-    // Idempotent: unique key by (tenantId, email, type=service, serviceId)
+    // Idempotent/reactivation: unique key by (tenantId, email, type=service, serviceId)
     const exists = data.subscriptions.find((x) => (x.tenantId ?? "public") === tenantId && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
-    if (exists) { created = exists; return data; }
+    if (exists) {
+      // If canceled previously, reactivate by clearing canceledAt and bumping createdAt
+      if (exists.canceledAt) {
+        exists.canceledAt = undefined;
+        exists.createdAt = new Date().toISOString();
+      }
+      created = exists;
+      return data;
+    }
 
     const obj = { id: uuid(), type: "service", serviceId, vendorId, email, uid, tenantId, createdAt: new Date().toISOString() };
     data.subscriptions.push(obj);
@@ -61,5 +69,25 @@ router.delete("/service", firebaseAuthRequired, (req, res) => {
   res.status(204).send();
 });
 
-export default router;
+// Cancel (soft) a subscription to preserve revenue history
+router.put("/service/cancel", firebaseAuthRequired, (req, res) => {
+  const serviceId = String(req.body?.serviceId || req.query?.serviceId || "").trim();
+  const tenantId = req.tenant.id;
+  const email = (req.user?.email || "").toLowerCase();
+  if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
+  let updated = null;
+  saveData((data) => {
+    const list = Array.isArray(data.subscriptions) ? data.subscriptions : [];
+    const idx = list.findIndex((x) => (x.tenantId ?? "public") === tenantId && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
+    if (idx >= 0) {
+      list[idx].canceledAt = new Date().toISOString();
+      updated = list[idx];
+    }
+    data.subscriptions = list;
+    return data;
+  });
+  if (!updated) return res.status(404).json({ status: "error", message: "Subscription not found" });
+  res.json(updated);
+});
 
+export default router;
