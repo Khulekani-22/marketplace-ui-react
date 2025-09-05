@@ -2608,6 +2608,36 @@
       "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "lastUpdated": "2025-08-28T11:17:06.926Z",
       "tenantId": "public"
+    },
+    {
+      "name": "khulekani",
+      "kycStatus": "pending",
+      "contactEmail": "khulekani@22onsloane.co",
+      "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "phone": "",
+      "website": "",
+      "description": "",
+      "logoUrl": "",
+      "bannerUrl": "",
+      "country": "",
+      "city": "",
+      "addressLine": "",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "pending",
+      "id": "d53d99c4-0ac1-449e-ac61-d25cfd5b8bc7",
+      "tenantId": "public"
     }
   ],
   "companies": [
@@ -2684,7 +2714,20 @@
       "nonce": "yab9eqzsv7"
     }
   },
-  "users": [],
+  "users": [
+    {
+      "email": "22onsloanedigitalteam@gmail.com",
+      "tenantId": "public",
+      "role": "member",
+      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22"
+    },
+    {
+      "email": "khulekani@22onsloane.co",
+      "tenantId": "public",
+      "role": "admin",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3"
+    }
+  ],
   "tenants": [],
   "subscriptions": [
     {
@@ -2716,6 +2759,56 @@
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "22onsloane",
       "createdAt": "2025-09-04T14:57:47.051Z"
+    },
+    {
+      "id": "39ba4260-6251-47b7-93a6-f7d723ba58ab",
+      "type": "service",
+      "serviceId": "mewcr2ki-ocdatn",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "email": "khulekani@22onsloane.co",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "public",
+      "createdAt": "2025-09-05T01:38:39.738Z"
+    },
+    {
+      "id": "de63118a-f68b-4268-b798-ad9a7f49764d",
+      "type": "service",
+      "serviceId": "memubqft-fcmcw1",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "email": "khulekani@22onsloane.co",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "public",
+      "createdAt": "2025-09-05T01:38:43.410Z"
+    },
+    {
+      "id": "c59b0c9f-bb46-4cde-8cd2-326718c8142b",
+      "type": "service",
+      "serviceId": "mepapax8-ibz1dv",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "email": "khulekani@22onsloane.co",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "public",
+      "createdAt": "2025-09-05T01:38:45.359Z"
+    },
+    {
+      "id": "883d9f30-56e1-4146-9c41-a533ad9108a0",
+      "type": "service",
+      "serviceId": "uTgKXEWI2SYqoK1DeEYU",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "email": "khulekani@22onsloane.co",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "public",
+      "createdAt": "2025-09-05T01:38:47.050Z"
+    },
+    {
+      "id": "824f8a3a-7899-4a9f-9ed3-dec0cfff81ce",
+      "type": "service",
+      "serviceId": "3",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "email": "khulekani@22onsloane.co",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "public",
+      "createdAt": "2025-09-05T01:54:32.154Z"
     }
   ]
 }

@@ -430,3 +430,35 @@
 5:07:33 PM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
 5:09:21 PM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
 5:09:51 PM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
+3:34:47 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/pages/Dashboard.jsx
+3:35:03 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/pages/Dashboard.jsx
+3:35:13 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/pages/Dashboard.jsx
+3:38:39 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/pages/Dashboard.jsx
+3:38:43 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/pages/Dashboard.jsx
+3:38:45 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/pages/Dashboard.jsx
+3:38:47 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/pages/Dashboard.jsx
+3:41:29 AM [vite] (client) hmr update /src/components/DashBoardLayerSeven.jsx
+3:42:02 AM [vite] (client) hmr update /src/components/DashBoardLayerSeven.jsx
+3:42:28 AM [vite] (client) hmr update /src/components/DashBoardLayerSeven.jsx
+3:43:25 AM [vite] (client) hmr update /src/components/DashBoardLayerSeven.jsx
+3:43:28 AM [vite] (client) hmr update /src/components/DashBoardLayerSeven.jsx
+3:43:43 AM [vite] (client) hmr update /src/components/DashBoardLayerSeven.jsx
+3:44:12 AM [vite] (client) hmr update /src/components/DashBoardLayerSeven.jsx
+3:46:39 AM [vite] (client) hmr update /src/styles/theme-patch.css
+3:47:10 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+3:47:27 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+3:50:51 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+3:52:23 AM [vite] (client) hmr update /src/App.jsx
+3:54:08 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+3:54:32 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/pages/Dashboard.jsx
+3:56:15 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+4:01:42 AM [vite] (client) hmr update /src/pages/Dashboard.jsx
+4:04:02 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
+4:08:22 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
+4:08:35 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
+4:08:42 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
+4:09:13 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
+4:09:22 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
+4:09:34 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
+4:09:47 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
+4:10:00 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx

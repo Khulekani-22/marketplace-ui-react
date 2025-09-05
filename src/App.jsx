@@ -4,7 +4,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import RouteScrollToTop from "./helper/RouteScrollToTop";
 
 // Shell / guards
-import Navbar from "./components/Navbar.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
@@ -136,7 +135,6 @@ export default function App() {
   return (
     <>
       <RouteScrollToTop />
-      <Navbar />
       <ErrorBoundary>
         <Suspense fallback={<Fallback />}>
           <Routes>

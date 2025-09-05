@@ -12,6 +12,7 @@ import { writeAuditLog } from "../lib/audit";
 export default function MasterLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [sidebarActive, setSidebarActive] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [openKeys, setOpenKeys] = useState({});
@@ -71,8 +72,9 @@ export default function MasterLayout({ children }) {
     if (initialEmail) refreshRole(initialEmail);
 
     // subscribe to auth state changes
-    const unsub = onAuthStateChanged(auth, (user) => {
-      const email = user?.email || sessionStorage.getItem("userEmail");
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u || null);
+      const email = u?.email || sessionStorage.getItem("userEmail");
       if (email) refreshRole(email);
       else {
         setIsAdmin(false);
@@ -308,61 +310,33 @@ export default function MasterLayout({ children }) {
                 {/* Theme toggle */}
                 <ThemeToggleButton />
 
-                {/* Language */}
-                <div className="dropdown d-none d-sm-inline-block">
-                  <button
-                    className="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    aria-label="Change language"
-                  >
-                    <img
-                      src="assets/images/lang-flag.png"
-                      alt="language"
-                      className="w-24 h-24 object-fit-cover rounded-circle"
-                    />
-                  </button>
-                  <div className="dropdown-menu to-top dropdown-menu-sm">
-                    <div className="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
-                      <div>
-                        <h6 className="text-lg text-primary-light fw-semibold mb-0">Choose Your Language</h6>
-                      </div>
-                    </div>
-                    <div className="max-h-400-px overflow-y-auto scroll-sm pe-8">
-                      {[
-                        { id: "english", img: "flag1.png", label: "English" },
-                        { id: "japan", img: "flag2.png", label: "Japan" },
-                        { id: "france", img: "flag3.png", label: "France" },
-                        { id: "germany", img: "flag4.png", label: "Germany" },
-                        { id: "korea", img: "flag5.png", label: "South Korea" },
-                        { id: "bangladesh", img: "flag6.png", label: "Bangladesh" },
-                        { id: "india", img: "flag7.png", label: "India" },
-                        { id: "canada", img: "flag8.png", label: "Canada" },
-                      ].map((opt) => (
-                        <div
-                          key={opt.id}
-                          className="form-check style-check d-flex align-items-center justify-content-between mb-16"
-                        >
-                          <label
-                            className="form-check-label line-height-1 fw-medium text-secondary-light"
-                            htmlFor={opt.id}
-                          >
-                            <span className="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
-                              <img
-                                src={`assets/images/flags/${opt.img}`}
-                                alt={opt.label}
-                                className="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0"
-                              />
-                              <span className="text-md fw-semibold mb-0">{opt.label}</span>
-                            </span>
-                          </label>
-                          <input className="form-check-input" type="radio" name="lang" id={opt.id} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                {/* Tenant badge (visible to all) */}
+                <span className="badge text-bg-secondary d-none d-sm-inline">Tenant: {tenantId}</span>
+
+                {/* Quick portal/actions from Navbar.jsx */}
+                {user ? (
+                  <>
+                    <span className="text-muted small d-none d-md-inline">{user.email}</span>
+                    
+                    <button className="btn btn-sm rounded-pill btn-outline-danger" onClick={handleLogout}>Logout</button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      className="btn rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white"
+                      to="/signup/startup"
+                    >
+                      Startup Sign Up
+                    </Link>
+                    <Link
+                      className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"
+                      to="/login"
+                    >
+                      Login
+                    </Link>
+                  </>
+                )}
+
 
                 {/* Messages */}
                 <div className="dropdown">
@@ -457,8 +431,8 @@ export default function MasterLayout({ children }) {
                   <div className="dropdown-menu to-top dropdown-menu-sm">
                     <div className="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
                       <div>
-                        <h6 className="text-lg text-primary-light fw-semibold mb-2">Shaidul Islam</h6>
-                        <span className="text-secondary-light fw-medium text-sm">Admin</span>
+                        <h6 className="text-lg text-primary-light fw-semibold mb-2">{user?.email || "User"}</h6>
+                        <span className="text-secondary-light fw-medium text-sm">{isAdmin ? "Admin" : "Member"}</span>
                       </div>
                       <button type="button" className="hover-text-danger" aria-label="Close">
                         <Icon icon="radix-icons:cross-1" className="icon text-xl" />

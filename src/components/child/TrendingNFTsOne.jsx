@@ -39,6 +39,7 @@ const TrendingNFTsOne = () => {
   const versionRef = useRef(0); // guards against stale fetch overwriting fresher state
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("All");
+  const [query, setQuery] = useState("");
   const [reviews, setReviews] = useState({}); // serviceId -> { rating, comment }
   const [modal, setModal] = useState({ open: false, id: null, showAll: false, page: 0 });
   const [toast, setToast] = useState("");
@@ -161,12 +162,25 @@ const TrendingNFTsOne = () => {
   }, [services]);
 
   const filteredServices = useMemo(() => {
-    if (activeTab === "All") return services;
     const tab = activeTab.toLowerCase();
-    return services.filter(
-      (s) => (s.category || "").trim().toLowerCase() === tab
-    );
-  }, [services, activeTab]);
+    const q = (query || "").trim().toLowerCase();
+    let base = activeTab === "All"
+      ? services
+      : services.filter((s) => (s.category || "").trim().toLowerCase() === tab);
+    if (!q) return base;
+    return base.filter((s) => {
+      const hay = [
+        s.title || "",
+        s.vendor || "",
+        s.category || "",
+        s.description || s.summary || "",
+        Array.isArray(s.tags) ? s.tags.join(" ") : "",
+      ]
+        .join(" \n ")
+        .toLowerCase();
+      return hay.includes(q);
+    });
+  }, [services, activeTab, query]);
 
   // Keep a live ref of services to avoid stale closures during async merges
   useEffect(() => {
@@ -253,9 +267,31 @@ const TrendingNFTsOne = () => {
 
   return (
     <div className="col-12">
-      <div className="mb-16 mt-8 d-flex flex-wrap justify-content-between gap-16">
+      <div className="mb-16 mt-8 d-flex flex-wrap justify-content-between align-items-center gap-12">
         <h6 className="mb-0">All Listings</h6>
-        <ul className="nav button-tab nav-pills mb-16 gap-12" role="tablist">
+        <div className="d-flex flex-wrap align-items-center gap-12">
+          <div className="position-relative">
+            <input
+              type="text"
+              className="form-control form-control-sm rounded-3 border-1 border-neutral-300 bg-neutral-100 text-sm ps-12 pe-32 py-8"
+              placeholder="Search listings by name, vendor, category…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ minWidth: 260 }}
+              aria-label="Search listings"
+            />
+            {query && (
+              <button
+                type="button"
+                className="btn btn-sm btn-link position-absolute end-0 top-50 translate-middle-y me-2"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <ul className="nav button-tab nav-pills mb-0 gap-12" role="tablist">
           {categories.map((category) => (
             <li className="nav-item" key={category} role="presentation">
               <button
@@ -268,7 +304,8 @@ const TrendingNFTsOne = () => {
               </button>
             </li>
           ))}
-        </ul>
+          </ul>
+        </div>
       </div>
 
       <div className="tab-content">

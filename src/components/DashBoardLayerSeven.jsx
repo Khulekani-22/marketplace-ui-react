@@ -15,7 +15,7 @@ const DashBoardLayerSeven = () => {
     <>
       <div className='row gy-4'>
         <div className='col-xxl-12'>
-          <div className='row gy-4'>
+          <div className='row gy-4 card shadow-sm rounded-4'>
             {/* BannerInnerOne */}
             <BannerInnerOne />
 
@@ -24,8 +24,6 @@ const DashBoardLayerSeven = () => {
 
             {/* TrendingNFTsOne */}
             <TrendingNFTsOne />
-
-
 
 
           </div>

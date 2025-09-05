@@ -625,35 +625,27 @@ API Error: ZodError: [
 [0mGET /api/lms/live [32m200[0m 8.045 ms - 75900[0m
 [0mGET /api/subscriptions/my [33m404[0m 0.844 ms - 46[0m
 [0mGET /api/lms/live [32m200[0m 6.545 ms - 75900[0m
-      code: 'invalid_string',
-      message: 'Invalid email',
-      path: [Array]
-    }
-  ]
-}
-[0mPUT /api/data/vendors/duFghKRYhyRFUhlBRm66iMLKgh22 [31m500[0m 12.109 ms - 197[0m
-API Error: ZodError: [
-  {
-    "validation": "email",
-    "code": "invalid_string",
-    "message": "Invalid email",
-    "path": [
-      "contactEmail"
-    ]
-  }
-]
-    at get error [as error] (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/node_modules/zod/v3/types.js:39:31)
-    at ZodObject.parse (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/node_modules/zod/v3/types.js:114:22)
-    at file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/routes/vendors.js:77:44
-    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
-    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/route.js:149:13)
-    at firebaseAuthRequired (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/middleware/authFirebase.js:54:5)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
-  issues: [
-    {
-      validation: 'email',
-      code: 'invalid_string',
-      message: 'Invalid email',
+[0mGET /api/data/vendors [32m200[0m 10.804 ms - 2[0m
+[0mGET /api/data/vendors [36m304[0m 2.148 ms - -[0m
+[0mGET /api/data/vendors [36m304[0m 1.796 ms - -[0m
+[0mGET /api/data/vendors [36m304[0m 0.938 ms - -[0m
+[0mGET /api/users/me?email=khulekani%4022onsloane.co [36m304[0m 2.461 ms - -[0m
+[0mGET /api/tenants [36m304[0m 0.425 ms - -[0m
+[0mGET /api/users/me?email=khulekani%4022onsloane.co [36m304[0m 6.978 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 14.210 ms - 75900[0m
+[0mGET /api/data/vendors/tAsFySNxnsW4a7L43wMRVLkJAqE3/stats?email=khulekani%4022onsloane.co&uid=tAsFySNxnsW4a7L43wMRVLkJAqE3&name=22+On+Sloane [36m304[0m 2.533 ms - -[0m
+[0mGET /api/data/vendors [36m304[0m 1.380 ms - -[0m
+[0mGET /api/data/vendors [36m304[0m 1.345 ms - -[0m
+[0mGET /api/subscriptions/my [33m404[0m 5.001 ms - 46[0m
+[0mGET /api/users/me?email=khulekani%4022onsloane.co [36m304[0m 8.242 ms - -[0m
+[0mGET /api/users/me?email=khulekani%4022onsloane.co [36m304[0m 1.082 ms - -[0m
+[0mGET /api/tenants [36m304[0m 0.904 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 24.989 ms - 75900[0m
+[0mGET /api/subscriptions/my [33m404[0m 0.547 ms - 46[0m
+[0mGET /api/lms/live [32m200[0m 3.350 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 4.555 ms - 75900[0m
+[0mGET /api/data/vendors/tAsFySNxnsW4a7L43wMRVLkJAqE3/stats?email=khulekani%4022onsloane.co&uid=tAsFySNxnsW4a7L43wMRVLkJAqE3&name=22+On+Sloane [36m304[0m 0.587 ms - -[0m
+ 'Invalid email',
       path: [Array]
     }
   ],
@@ -2736,3 +2728,57 @@ API Error: ZodError: [
 [0mGET /api/lms/live [32m200[0m 7.645 ms - 75900[0m
 [0mGET /api/lms/live [32m200[0m 11.124 ms - 75900[0m
 [0mGET /api/lms/live [32m200[0m 12.162 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 22.172 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 20.121 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 23.288 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 6.960 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 3.306 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 3.160 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 57.947 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 28.116 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 5.806 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 11.607 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 5.730 ms - 75900[0m
+[0mGET / [33m404[0m 11.058 ms - 46[0m
+[0mGET /api/lms/live [32m200[0m 5.145 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 5.861 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 5.385 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 9.634 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 6.700 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 2.370 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 2.314 ms - 75900[0m
+[0mGET /api/data/vendors [36m304[0m 4.862 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 4.879 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 2.216 ms - 75900[0m
+[0mGET /api/lms/checkpoints [36m304[0m 1.251 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 10.037 ms - 75900[0m
+[0mGET /api/lms/checkpoints [36m304[0m 1.104 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 2.256 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 2.904 ms - 75900[0m
+[0mGET /api/lms/checkpoints [36m304[0m 1.287 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 6.203 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 6.408 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 5.459 ms - 75900[0m
+[0mGET /api/lms/checkpoints [36m304[0m 1.756 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 6.299 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 13.005 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 18.341 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 20.347 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 4.120 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 2.147 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 2.326 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 8.542 ms - 75900[0m
+[0mGET /api/lms/checkpoints [36m304[0m 1.096 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 1.439 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 6.311 ms - 75900[0m
+[0mGET /api/lms/checkpoints [36m304[0m 1.904 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 11.801 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 7.246 ms - 75900[0m
+[0mGET /api/lms/checkpoints [36m304[0m 2.212 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 2.907 ms - 75900[0m
+[0mGET /api/lms/live [32m200[0m 4.228 ms - 75900[0m
+[0mGET /api/lms/checkpoints [36m304[0m 1.354 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 3.711 ms - 75900[0m
+[0mGET /api/lms/checkpoints [36m304[0m 2.715 ms - -[0m
+[0mGET /api/lms/live [32m200[0m 5.784 ms - 75900[0m
+[0mGET /api/lms/checkpoints [36m304[0m 2.538 ms - -[0m

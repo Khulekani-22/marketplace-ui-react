@@ -1920,5 +1920,29 @@
       "count": 17
     },
     "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf66mz6o-nkbq0c",
+    "timestamp": "2025-09-05T01:54:51.929Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf66n26s-zjxbb8",
+    "timestamp": "2025-09-05T01:54:55.798Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
   }
 ]

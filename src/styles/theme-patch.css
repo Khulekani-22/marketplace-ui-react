@@ -87,6 +87,14 @@ html, body {
 }
 .sidebar .menu-icon,
 .sidebar a { color: var(--sidebar-fg) !important; }
+.sidebar .sidebar-menu a {
+  text-decoration: none !important;
+}
+.sidebar .sidebar-menu a:hover,
+.sidebar .sidebar-menu a:focus,
+.sidebar .active-page {
+  text-decoration: none !important;
+}
 .sidebar .active-page {
   background: color-mix(in oklab, var(--primary) 20%, transparent);
   color: var(--on-primary) !important;
