@@ -1127,6 +1127,155 @@
   ],
   "messageThreads": [
     {
+      "id": "tmf9azomh",
+      "subject": "Testing",
+      "participants": [
+        {
+          "id": "vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3",
+          "name": "22 On Sloane",
+          "role": "Vendor"
+        },
+        {
+          "id": "user:khulekani@22onsloane.co",
+          "name": "khulekani@22onsloane.co",
+          "role": "Subscriber"
+        }
+      ],
+      "participantIds": [
+        "vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "user:khulekani@22onsloane.co"
+      ],
+      "messages": [
+        {
+          "id": "m1757226001767",
+          "senderId": "user:khulekani@22onsloane.co",
+          "senderName": "khulekani@22onsloane.co",
+          "senderAvatar": "",
+          "senderRole": "Subscriber",
+          "content": "Testing Testing Testing Testing Testing Testing Testing Testing",
+          "date": "2025-09-07T06:20:01.767Z"
+        }
+      ],
+      "lastMessage": {
+        "snippet": "Testing Testing Testing Testing Testing Testing Testing Testing",
+        "date": "2025-09-07T06:20:01.767Z"
+      },
+      "read": true,
+      "context": {
+        "type": "listing-subscriber",
+        "serviceId": "uTgKXEWI2SYqoK1DeEYU",
+        "serviceTitle": "Sage Business Cloud Accounting",
+        "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "subscriberEmail": "khulekani@22onsloane.co"
+      },
+      "tenantId": "22onsloane"
+    },
+    {
+      "id": "tmf9awv3q",
+      "subject": "Testing",
+      "participants": [
+        {
+          "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+          "name": "22OnSloane Digital Team",
+          "role": "Vendor"
+        },
+        {
+          "id": "user:khulekani@22onsloane.co",
+          "name": "khulekani@22onsloane.co",
+          "role": "Subscriber"
+        }
+      ],
+      "participantIds": [
+        "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+        "user:khulekani@22onsloane.co"
+      ],
+      "messages": [
+        {
+          "id": "m1757225870197",
+          "senderId": "user:khulekani@22onsloane.co",
+          "senderName": "khulekani@22onsloane.co",
+          "senderAvatar": "",
+          "senderRole": "Subscriber",
+          "content": "TestingTestingTestingTestingTestingTestingTestingTesting",
+          "date": "2025-09-07T06:17:50.197Z"
+        }
+      ],
+      "lastMessage": {
+        "snippet": "TestingTestingTestingTestingTestingTestingTestingTesting",
+        "date": "2025-09-07T06:17:50.197Z"
+      },
+      "read": true,
+      "context": {
+        "type": "listing-subscriber",
+        "serviceId": "mewcr2ki-ocdatn",
+        "serviceTitle": "Testing New Saas Listing",
+        "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "subscriberEmail": "khulekani@22onsloane.co"
+      },
+      "tenantId": "22onsloane"
+    },
+    {
+      "id": "tmf99jngn",
+      "subject": "Feedback request: Pitch deck revision service",
+      "participants": [
+        {
+          "id": "vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3",
+          "name": "22 On Sloane",
+          "role": "Vendor"
+        },
+        {
+          "id": "admin",
+          "name": "Admin",
+          "role": "Admin"
+        }
+      ],
+      "participantIds": [
+        "vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "admin"
+      ],
+      "messages": [
+        {
+          "id": "m1757223574151",
+          "senderId": "vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3",
+          "senderName": "22 On Sloane",
+          "senderAvatar": "",
+          "senderRole": "Vendor",
+          "content": "Hello Admin\n\nMy listing \"Pitch deck revision service\" (ID: mewl4bna-xil1yi) was rejected. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!",
+          "date": "2025-09-07T05:39:34.151Z"
+        },
+        {
+          "id": "m1757223631197",
+          "senderId": "vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3",
+          "senderName": "22 On Sloane",
+          "senderAvatar": "",
+          "senderRole": "Vendor",
+          "content": "Hello 22 On Sloane,\n\nRegarding your listing \"Pitch deck revision service\" (ID: mewl4bna-xil1yi).\n\nReason / guidance:\n- \n\nPlease update and resubmit when ready.\n\nRegards,\nAdmin",
+          "date": "2025-09-07T05:40:31.197Z"
+        },
+        {
+          "id": "m1757224254560",
+          "senderId": "vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3",
+          "senderName": "22 On Sloane",
+          "senderAvatar": "",
+          "senderRole": "Vendor",
+          "content": "Please add a listing photo\n\nRegards,\nAdmin",
+          "date": "2025-09-07T05:50:54.560Z"
+        }
+      ],
+      "read": true,
+      "context": {
+        "type": "listing-feedback",
+        "listingId": "mewl4bna-xil1yi",
+        "listingTitle": "Pitch deck revision service",
+        "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3"
+      },
+      "tenantId": "22onsloane",
+      "lastMessage": {
+        "snippet": "Please add a listing photo\n\nRegards,\nAdmin",
+        "date": "2025-09-07T05:50:54.560Z"
+      }
+    },
+    {
       "subject": "Testing",
       "read": false,
       "participantIds": [
@@ -1858,7 +2007,7 @@
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/07/envato-labs-ai-5ee6d584-420f-4614-9307-fdb693d538b9.jpg",
       "aiHint": "",
       "listingType": "saas",
-      "status": "approved",
+      "status": "rejected",
       "isFeatured": false,
       "description": "Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing",
       "reviews": []
@@ -1876,11 +2025,10 @@
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/Web_banners_SERIES_27_Aug_2025_web_banner001_1681x965-copy-2.png",
       "aiHint": "",
       "listingType": "service",
-      "status": "approved",
+      "status": "rejected",
       "isFeatured": false,
       "description": "Share your pitch deck and our expert team will give you pointers on how to improve it",
-      "reviews": [],
-      "tenantId": "public"
+      "reviews": []
     },
     {
       "id": "mewl77g2-tidsnp",
@@ -1898,6 +2046,43 @@
       "status": "approved",
       "isFeatured": false,
       "description": "Our team of experts will anlayze and review your pitch deck",
+      "reviews": [],
+      "tenantId": "public"
+    },
+    {
+      "id": "mf6s3ah0-wqqlk5",
+      "title": "Financial modelling consultation",
+      "category": "Finance",
+      "vendor": "Zinhle Mncube",
+      "vendorId": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+      "contactEmail": "zinhlesloane@gmail.com",
+      "price": 20000,
+      "rating": 0,
+      "reviewCount": 0,
+      "imageUrl": "",
+      "aiHint": "",
+      "listingType": "service",
+      "status": "pending",
+      "isFeatured": false,
+      "description": "Testing",
+      "reviews": []
+    },
+    {
+      "id": "mf6s58mu-616wi6",
+      "title": "Financial analysis consultation",
+      "category": "Finance",
+      "vendor": "Zinhle Mncube",
+      "vendorId": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+      "contactEmail": "zinhlesloane@gmail.com",
+      "price": 20000,
+      "rating": 0,
+      "reviewCount": 0,
+      "imageUrl": "",
+      "aiHint": "",
+      "listingType": "service",
+      "status": "rejected",
+      "isFeatured": false,
+      "description": "Testing",
       "reviews": [],
       "tenantId": "public"
     }
@@ -2388,15 +2573,15 @@
     {
       "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "name": "22onsloanedigitalteam",
+      "name": "22OnSloane Digital Team",
       "contactEmail": "22onsloanedigitalteam@gmail.com",
       "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "website": "",
-      "phone": "0114637602",
-      "country": "South Africa",
-      "city": "Johannesburg",
+      "phone": "",
+      "country": "",
+      "city": "",
       "addressLine": "",
-      "logoUrl": "",
+      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2024/06/logo-mark.jpg",
       "bannerUrl": "",
       "description": "",
       "categories": [],
@@ -2413,23 +2598,30 @@
         "youtube": "",
         "github": ""
       },
-      "lastUpdated": "",
+      "lastUpdated": "2025-08-28T11:17:06.926Z",
       "email": "22onsloanedigitalteam@gmail.com",
-      "companyName": "22onsloanedigitalteam",
+      "companyName": "22OnSloane Digital Team",
       "raw": {
         "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
-        "name": "22onsloanedigitalteam",
-        "kycStatus": "approved",
+        "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "name": "22OnSloane Digital Team",
+        "companyName": "22OnSloane Digital Team",
+        "email": "22onsloanedigitalteam@gmail.com",
         "contactEmail": "22onsloanedigitalteam@gmail.com",
-        "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-        "phone": "0114637602",
         "website": "",
-        "description": "",
-        "logoUrl": "",
-        "bannerUrl": "",
-        "country": "South Africa",
-        "city": "Johannesburg",
+        "phone": "",
+        "country": "",
+        "city": "",
         "addressLine": "",
+        "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2024/06/logo-mark.jpg",
+        "bannerUrl": "",
+        "description": "",
+        "categories": [],
+        "tags": [],
+        "foundedYear": "",
+        "teamSize": "",
+        "registrationNo": "",
+        "status": "active",
         "socials": {
           "twitter": "",
           "linkedin": "",
@@ -2438,13 +2630,9 @@
           "youtube": "",
           "github": ""
         },
-        "categories": [],
-        "tags": [],
-        "foundedYear": "",
-        "teamSize": "",
-        "registrationNo": "",
-        "status": "active",
-        "tenantId": "22onsloane"
+        "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "lastUpdated": "2025-08-28T11:17:06.926Z",
+        "tenantId": "public"
       },
       "tenantId": "public"
     },
@@ -2573,6 +2761,132 @@
         "tenantId": "22onsloane"
       },
       "tenantId": "public"
+    },
+    {
+      "id": "d53d99c4-0ac1-449e-ac61-d25cfd5b8bc7",
+      "vendorId": "d53d99c4-0ac1-449e-ac61-d25cfd5b8bc7",
+      "name": "khulekani",
+      "companyName": "khulekani",
+      "contactEmail": "khulekani@22onsloane.co",
+      "email": "khulekani@22onsloane.co",
+      "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "website": "",
+      "phone": "",
+      "country": "",
+      "city": "",
+      "addressLine": "",
+      "logoUrl": "",
+      "bannerUrl": "",
+      "description": "",
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "lastUpdated": "",
+      "raw": {
+        "name": "khulekani",
+        "kycStatus": "approved",
+        "contactEmail": "khulekani@22onsloane.co",
+        "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "phone": "",
+        "website": "",
+        "description": "",
+        "logoUrl": "",
+        "bannerUrl": "",
+        "country": "",
+        "city": "",
+        "addressLine": "",
+        "socials": {
+          "twitter": "",
+          "linkedin": "",
+          "facebook": "",
+          "instagram": "",
+          "youtube": "",
+          "github": ""
+        },
+        "categories": [],
+        "tags": [],
+        "foundedYear": "",
+        "teamSize": "",
+        "registrationNo": "",
+        "status": "active",
+        "id": "d53d99c4-0ac1-449e-ac61-d25cfd5b8bc7",
+        "tenantId": "public"
+      },
+      "tenantId": "public"
+    },
+    {
+      "id": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+      "vendorId": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+      "name": "Zinhle Mncube",
+      "companyName": "Zinhle Mncube",
+      "contactEmail": "zinhlesloane@gmail.com",
+      "email": "zinhlesloane@gmail.com",
+      "ownerUid": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+      "website": "",
+      "phone": "",
+      "country": "",
+      "city": "",
+      "addressLine": "",
+      "logoUrl": "",
+      "bannerUrl": "",
+      "description": "",
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "lastUpdated": "",
+      "raw": {
+        "id": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+        "name": "Zinhle Mncube",
+        "kycStatus": "approved",
+        "contactEmail": "zinhlesloane@gmail.com",
+        "ownerUid": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+        "phone": "",
+        "website": "",
+        "description": "",
+        "logoUrl": "",
+        "bannerUrl": "",
+        "country": "",
+        "city": "",
+        "addressLine": "",
+        "socials": {
+          "twitter": "",
+          "linkedin": "",
+          "facebook": "",
+          "instagram": "",
+          "youtube": "",
+          "github": ""
+        },
+        "categories": [],
+        "tags": [],
+        "foundedYear": "",
+        "teamSize": "",
+        "registrationNo": "",
+        "status": "active",
+        "tenantId": "public"
+      },
+      "tenantId": "public"
     }
   ],
   "vendors": [
@@ -2607,36 +2921,6 @@
       },
       "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "lastUpdated": "2025-08-28T11:17:06.926Z",
-      "tenantId": "public"
-    },
-    {
-      "name": "khulekani",
-      "kycStatus": "pending",
-      "contactEmail": "khulekani@22onsloane.co",
-      "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "phone": "",
-      "website": "",
-      "description": "",
-      "logoUrl": "",
-      "bannerUrl": "",
-      "country": "",
-      "city": "",
-      "addressLine": "",
-      "socials": {
-        "twitter": "",
-        "linkedin": "",
-        "facebook": "",
-        "instagram": "",
-        "youtube": "",
-        "github": ""
-      },
-      "categories": [],
-      "tags": [],
-      "foundedYear": "",
-      "teamSize": "",
-      "registrationNo": "",
-      "status": "pending",
-      "id": "d53d99c4-0ac1-449e-ac61-d25cfd5b8bc7",
       "tenantId": "public"
     }
   ],
@@ -2714,20 +2998,7 @@
       "nonce": "yab9eqzsv7"
     }
   },
-  "users": [
-    {
-      "email": "22onsloanedigitalteam@gmail.com",
-      "tenantId": "public",
-      "role": "member",
-      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22"
-    },
-    {
-      "email": "khulekani@22onsloane.co",
-      "tenantId": "public",
-      "role": "admin",
-      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3"
-    }
-  ],
+  "users": [],
   "tenants": [],
   "subscriptions": [
     {

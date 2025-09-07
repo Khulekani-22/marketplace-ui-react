@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/VendorContext";
 import appDataLocal from "../data/appData.json";
+import { api } from "../lib/api";
 
 const API_BASE = "/api/lms";
 
@@ -30,6 +31,7 @@ export default function VendorMyListings() {
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedback, setFeedback] = useState({ open: false, listing: null, subject: "", content: "", sending: false, err: null, done: false });
 
   // Redirect vendors who are not yet approved to their profile page
   useEffect(() => {
@@ -89,6 +91,34 @@ export default function VendorMyListings() {
       })
     );
     navigate(`/listings-vendors?prefill=${prefill}`);
+  }
+
+  function openFeedback(i) {
+    const subj = `Feedback request: ${i.title}`;
+    const body = `Hello Admin\n\nMy listing "${i.title}" (ID: ${i.id}) was ${String(i.status || 'rejected')}. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!`;
+    setFeedback({ open: true, listing: i, subject: subj, content: body, sending: false, err: null, done: false });
+  }
+  function closeFeedback() {
+    setFeedback({ open: false, listing: null, subject: "", content: "", sending: false, err: null, done: false });
+  }
+  async function sendFeedback(e) {
+    e?.preventDefault?.();
+    if (!feedback.listing || !feedback.content.trim()) return;
+    setFeedback((f) => ({ ...f, sending: true, err: null }));
+    try {
+      await api.post(`/api/messages`, {
+        listingId: feedback.listing.id,
+        listingTitle: feedback.listing.title,
+        vendorId: vendor?.vendorId || "",
+        vendorEmail: vendor?.email || "",
+        subject: feedback.subject,
+        content: feedback.content,
+      });
+      setFeedback((f) => ({ ...f, sending: false, done: true }));
+      setTimeout(() => closeFeedback(), 1200);
+    } catch (e) {
+      setFeedback((f) => ({ ...f, sending: false, err: e?.response?.data?.message || e?.message || "Failed to send" }));
+    }
   }
 
   return (
@@ -162,6 +192,15 @@ export default function VendorMyListings() {
                           >
                             Duplicate & edit
                           </button>
+                          {String(i.status || "").toLowerCase() === "rejected" && (
+                            <button
+                              className="btn btn-sm btn-danger"
+                              onClick={() => openFeedback(i)}
+                              title="Ask admin why this was rejected"
+                            >
+                              Message Admin
+                            </button>
+                          )}
                           {/* You can add “withdraw” for pending later; it needs a safe server API */}
                         </td>
                       </tr>
@@ -172,6 +211,35 @@ export default function VendorMyListings() {
             )}
           </div>
         </div>
+        {feedback.open && feedback.listing && (
+          <div className="position-fixed top-0 start-0 w-100 h-100" style={{ background: "rgba(0,0,0,0.5)", zIndex: 1070 }} onClick={(e) => e.target === e.currentTarget && closeFeedback()}>
+            <div className="card" style={{ maxWidth: 560, margin: "10vh auto" }}>
+              <div className="card-header d-flex align-items-center justify-content-between">
+                <h6 className="mb-0">Message Admin about: {feedback.listing.title}</h6>
+                <button className="btn btn-sm btn-outline-secondary" onClick={closeFeedback}>Close</button>
+              </div>
+              <form onSubmit={sendFeedback}>
+                <div className="card-body">
+                  {feedback.err && <div className="alert alert-danger py-2 mb-2">{feedback.err}</div>}
+                  {feedback.done && <div className="alert alert-success py-2 mb-2">Sent</div>}
+                  <div className="mb-2">
+                    <label className="form-label">Subject</label>
+                    <input className="form-control" value={feedback.subject} onChange={(e) => setFeedback((f)=>({ ...f, subject: e.target.value }))} />
+                  </div>
+                  <div className="mb-2">
+                    <label className="form-label">Message</label>
+                    <textarea className="form-control" rows={6} value={feedback.content} onChange={(e) => setFeedback((f)=>({ ...f, content: e.target.value }))} />
+                    <div className="text-secondary small mt-1">Sent as {vendor?.email || "you"}</div>
+                  </div>
+                </div>
+                <div className="card-footer d-flex justify-content-end gap-2">
+                  <button type="button" className="btn btn-outline-secondary" onClick={closeFeedback} disabled={feedback.sending}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" disabled={feedback.sending || !feedback.content.trim()}>{feedback.sending ? 'Sending…' : 'Send'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </MasterLayout>
   );

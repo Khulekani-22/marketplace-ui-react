@@ -26,13 +26,13 @@ const BannerInnerTwo = () => {
             </p>
             <div className='d-flex align-items-center flex-wrap mt-24 gap-16'>
               <Link
-                to='#'
+                to='/profile-vendor-admin'
                 className='btn rounded-pill border br-white text-white radius-8 px-32 py-11 hover-bg-white text-hover-neutral-900'
               >
                 Manage Vendors
               </Link>
               <Link
-                to='#'
+                to='/dashboard'
                 className='btn rounded-pill btn-primary-600 radius-8 px-28 py-11'
               >
                 Back to Dashboard

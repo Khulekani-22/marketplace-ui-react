@@ -19,6 +19,8 @@ import tenantsRouter from "./routes/tenants.js";
 import subscriptionsRouter from "./routes/subscriptions.js";
 import usersRouter from "./routes/users.js";
 import auditLogsRouter from "./routes/auditLogs.js";
+import assistantRouter from "./routes/assistant.js";
+import messagesRouter from "./routes/messages.js";
 import { tenantContext } from "./middleware/tenantContext.js";
 import { jwtAuthOptional } from "./middleware/authJWT.js";
 import { firebaseAuthRequired } from "./middleware/authFirebase.js";
@@ -372,6 +374,8 @@ app.use("/api/tenants", tenantsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/audit-logs", auditLogsRouter);
 app.use("/api/subscriptions", subscriptionsRouter);
+app.use("/api/assistant", assistantRouter);
+app.use("/api/messages", messagesRouter);
 
 /* --------------------------------- 404 ----------------------------------- */
 app.use((req, res) => {

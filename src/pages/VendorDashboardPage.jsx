@@ -5,6 +5,7 @@ import { useVendor } from "../context/VendorContext";
 import { api } from "../lib/api";
 import { Link } from "react-router-dom";
 import appDataLocal from "../data/appData.json";
+import ReactApexChart from "react-apexcharts";
 
 export default function VendorDashboardPage() {
   const { vendor } = useVendor?.() || { vendor: null };
@@ -16,6 +17,7 @@ export default function VendorDashboardPage() {
   const [myListings, setMyListings] = useState([]);
   const [subByService, setSubByService] = useState({});
   const [salesTime, setSalesTime] = useState({ monthly: {}, quarterly: {}, annual: {} });
+  const [rangeMonths, setRangeMonths] = useState(6);
 
   useEffect(() => {
     (async () => {
@@ -86,6 +88,133 @@ export default function VendorDashboardPage() {
   const plan = stats?.subscription?.plan || "Free";
   const subStatus = stats?.subscription?.status || "pending";
 
+  // Build chart data for ApexCharts
+  // Theme-aware colors from CSS variables with safe fallbacks
+  const getCssVar = (name, fallback) => {
+    try {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return v || fallback;
+    } catch (e) {
+      return fallback;
+    }
+  };
+  const cPrimary = getCssVar("--primary-600", "#487FFF");
+  const cSuccess = getCssVar("--success-600", "#45B369");
+  const cWarning = getCssVar("--warning-600", "#FF9F29");
+  const cMuted = getCssVar("--neutral-400", "#94A3B8");
+  const cGrid = getCssVar("--border-300", "#D1D5DB");
+
+  const monthlyChart = useMemo(() => {
+    const entries = Object.entries(salesTime?.monthly || {});
+    if (!entries.length) return null;
+    // Sort by key ascending, keep last 6 buckets
+    const sorted = entries.sort((a, b) => (a[0] > b[0] ? 1 : -1)).slice(-rangeMonths);
+    const categories = sorted.map(([k]) => k);
+    const orders = sorted.map(([, v]) => Number(v?.count || 0));
+    const revenue = sorted.map(([, v]) => Number(v?.revenue || 0));
+    return {
+      categories,
+      series: [
+        { name: "Orders", type: "column", data: orders },
+        { name: "Revenue (R)", type: "line", data: revenue },
+      ],
+      options: {
+        chart: { id: "vendor-monthly-sales", stacked: false, toolbar: { show: false } },
+        stroke: { width: [0, 3] },
+        dataLabels: { enabled: false },
+        xaxis: { categories },
+        yaxis: [
+          { title: { text: "Orders" }, labels: { formatter: (v) => Math.round(v) } },
+          {
+            opposite: true,
+            title: { text: "Revenue (R)" },
+            labels: { formatter: (v) => `R ${Number(v).toLocaleString()}` },
+          },
+        ],
+        colors: [cPrimary, cSuccess],
+        tooltip: {
+          shared: true,
+          y: {
+            formatter: (val, { seriesIndex }) =>
+              seriesIndex === 0 ? `${Math.round(val)} orders` : `R ${Number(val).toLocaleString()}`,
+          },
+        },
+        legend: { position: "top" },
+        grid: { borderColor: cGrid, strokeDashArray: 4 },
+      },
+    };
+  }, [salesTime?.monthly, rangeMonths, cPrimary, cSuccess, cGrid]);
+
+  const subsByServiceChart = useMemo(() => {
+    const items = (myListings || []).map((s) => ({
+      name: s.title || "Untitled",
+      id: String(s.id),
+      value: Number(subByService[String(s.id)] || 0),
+    }));
+    const top = items
+      .filter((x) => x.value > 0)
+      .sort((a, b) => (a.value < b.value ? 1 : -1))
+      .slice(0, 5);
+    if (!top.length) return null;
+    const categories = top.map((x) => x.name);
+    const data = top.map((x) => x.value);
+    return {
+      categories,
+      series: [{ name: "Subscribers", data }],
+      options: {
+        chart: { id: "vendor-subs-by-service", toolbar: { show: false } },
+        plotOptions: { bar: { borderRadius: 6, horizontal: true } },
+        dataLabels: { enabled: false },
+        xaxis: { categories, labels: { formatter: (v) => Math.round(Number(v)) } },
+        colors: [cWarning],
+        grid: { borderColor: cGrid, strokeDashArray: 4 },
+      },
+    };
+  }, [myListings, subByService, cWarning, cGrid]);
+
+  const statusDonut = useMemo(() => {
+    const approved = Number((stats?.listingStats?.byStatus || {}).approved || 0);
+    const pending = Number((stats?.listingStats?.byStatus || {}).pending || 0);
+    const rejected = Number((stats?.listingStats?.byStatus || {}).rejected || 0);
+    const total = approved + pending + rejected;
+    if (!total) return null;
+    return {
+      series: [approved, pending, rejected],
+      options: {
+        labels: ["Approved", "Pending", "Rejected"],
+        colors: [cSuccess, cWarning, cMuted],
+        chart: { type: "donut", toolbar: { show: false } },
+        legend: { position: "bottom" },
+        dataLabels: { enabled: false },
+      },
+    };
+  }, [stats?.listingStats?.byStatus, cSuccess, cWarning, cMuted]);
+
+  const ratingRadial = useMemo(() => {
+    const avg = Number(avgRating || 0);
+    if (!avg || Number.isNaN(avg)) return null;
+    const pct = Math.max(0, Math.min(100, (avg / 5) * 100));
+    return {
+      series: [Number(pct.toFixed(0))],
+      options: {
+        chart: { type: "radialBar", sparkline: { enabled: true } },
+        plotOptions: {
+          radialBar: {
+            hollow: { size: "65%" },
+            dataLabels: {
+              name: { show: false },
+              value: {
+                formatter: () => `${avg.toFixed(1)}★`,
+                fontSize: "18px",
+              },
+            },
+          },
+        },
+        colors: [cPrimary],
+      },
+    };
+  }, [avgRating, cPrimary]);
+
   return (
     <MasterLayout>
       <Breadcrumb title="Vendor Home" />
@@ -149,6 +278,81 @@ export default function VendorDashboardPage() {
               </div>
               <div className="display-6 fw-bold mt-2">{plan}</div>
               <div className="mt-2 text-secondary small">Upgrade coming soon.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts */}
+      <div className="row g-3 mt-3">
+        <div className="col-lg-8">
+          <div className="card h-100">
+            <div className="card-body">
+              <div className="d-flex align-items-center justify-content-between mb-2">
+                <h6 className="mb-0">Monthly Sales</h6>
+                <div className="d-flex align-items-center gap-2">
+                  <span className="text-secondary small">Orders vs Revenue</span>
+                  <select
+                    className="form-select form-select-sm w-auto bg-base border text-secondary-light"
+                    value={rangeMonths}
+                    onChange={(e) => setRangeMonths(Number(e.target.value))}
+                    aria-label="Select time range"
+                  >
+                    <option value={3}>Last 3 months</option>
+                    <option value={6}>Last 6 months</option>
+                    <option value={12}>Last 12 months</option>
+                  </select>
+                </div>
+              </div>
+              {monthlyChart ? (
+                <ReactApexChart
+                  options={monthlyChart.options}
+                  series={monthlyChart.series}
+                  type="line"
+                  height={300}
+                />
+              ) : (
+                <div className="text-secondary">No monthly sales yet.</div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="col-lg-4">
+          <div className="card h-100">
+            <div className="card-body">
+              <h6 className="mb-2">Listing Status</h6>
+              {statusDonut ? (
+                <ReactApexChart options={statusDonut.options} series={statusDonut.series} type="donut" height={300} />
+              ) : (
+                <div className="text-secondary">No listings yet.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row g-3 mt-3">
+        <div className="col-lg-8">
+          <div className="card h-100">
+            <div className="card-body">
+              <h6 className="mb-2">Top Services by Subscribers</h6>
+              {subsByServiceChart ? (
+                <ReactApexChart options={subsByServiceChart.options} series={subsByServiceChart.series} type="bar" height={300} />
+              ) : (
+                <div className="text-secondary">No subscribers yet.</div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="col-lg-4">
+          <div className="card h-100">
+            <div className="card-body d-flex flex-column align-items-center justify-content-center">
+              <h6 className="mb-2">Average Rating</h6>
+              {ratingRadial ? (
+                <ReactApexChart options={ratingRadial.options} series={ratingRadial.series} type="radialBar" height={250} />
+              ) : (
+                <div className="text-secondary">No ratings yet.</div>
+              )}
             </div>
           </div>
         </div>

@@ -1,0 +1,92 @@
+/* Minimal styling for the floating assistant */
+.sl-ai-root {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1040;
+}
+
+.sl-ai-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bs-primary);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.sl-ai-toggle:hover { filter: brightness(0.95); }
+.sl-ai-toggle-icon { font-size: 20px; }
+
+.sl-ai-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(70vh, 640px);
+  background: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color, #222);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+}
+
+.sl-ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.sl-ai-body { display: grid; grid-template-rows: 1fr auto; }
+.sl-ai-messages {
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.sl-ai-msg { display: flex; margin: 6px 0; }
+.sl-ai-msg.user { justify-content: flex-end; }
+.sl-ai-msg.assistant { justify-content: flex-start; }
+
+.sl-ai-bubble {
+  border-radius: 14px;
+  padding: 8px 10px;
+  max-width: 85%;
+  white-space: pre-wrap;
+  line-height: 1.35;
+}
+.sl-ai-msg.user .sl-ai-bubble { background: var(--bs-primary); color: #fff; }
+.sl-ai-msg.assistant .sl-ai-bubble { background: var(--bs-secondary-bg, #f4f5f7); }
+
+.sl-ai-typing { display: inline-flex; gap: 4px; align-items: center; }
+.sl-ai-typing .dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #888; opacity: 0.6;
+  animation: slPulse 1.2s infinite ease-in-out;
+}
+.sl-ai-typing .dot:nth-child(2) { animation-delay: 0.15s; }
+.sl-ai-typing .dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes slPulse { 0%, 80%, 100% { transform: scale(0.8); opacity: .4; } 40% { transform: scale(1); opacity: .9; } }
+
+.sl-ai-suggestions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border-top: 1px dashed rgba(0,0,0,0.06);
+}
+
+.sl-ai-input {
+  display: grid; grid-template-columns: 1fr auto; gap: 8px;
+  padding: 10px; border-top: 1px solid rgba(0,0,0,0.08);
+}
+.sl-ai-input input {
+  border: 1px solid rgba(0,0,0,0.15); border-radius: 999px; padding: 10px 12px; background: transparent;
+}
+

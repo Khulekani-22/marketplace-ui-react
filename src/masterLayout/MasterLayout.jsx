@@ -7,9 +7,21 @@ import { auth } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
+import HeroBanner from "../components/HeroBanner";
+import { getHeroForPath } from "../utils/heroConfig";
+import AIAssistant from "../components/assistant/AIAssistant";
+import { MessagesProvider, useMessages } from "../context/MessagesContext.jsx";
 
 
 export default function MasterLayout({ children }) {
+  return (
+    <MessagesProvider>
+      <MasterLayoutInner>{children}</MasterLayoutInner>
+    </MessagesProvider>
+  );
+}
+
+function MasterLayoutInner({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -339,33 +351,7 @@ export default function MasterLayout({ children }) {
 
 
                 {/* Messages */}
-                <div className="dropdown">
-                  <button
-                    className="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    aria-label="Open messages"
-                  >
-                    <Icon icon="mage:email" className="text-primary-light text-xl" />
-                  </button>
-                  <div className="dropdown-menu to-top dropdown-menu-lg p-0">
-                    <div className="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
-                      <div>
-                        <h6 className="text-lg text-primary-light fw-semibold mb-0">Message</h6>
-                      </div>
-                      <span className="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
-                        05
-                      </span>
-                    </div>
-                    {/* … your message items … */}
-                    <div className="text-center py-12 px-16">
-                      <Link to="#" className="text-primary-600 fw-semibold text-md">
-                        See All Message
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+                <MessageBell />
 
                 {/* Notifications */}
                 <div className="dropdown">
@@ -484,7 +470,33 @@ export default function MasterLayout({ children }) {
         </div>
 
         {/* Page body */}
-        <div className="dashboard-main-body">{children}</div>
+        <div className="dashboard-main-body">
+          {/* Contextual hero banner (avoid duplicates via config) */}
+          {(() => {
+            const role = sessionStorage.getItem("role") || "member";
+            const hero = getHeroForPath(location.pathname, {
+              isAdmin,
+              tenantId,
+              role,
+              authed: !!user,
+            });
+            if (!hero) return null;
+            return (
+              <div className="container py-4">
+                <div className="row mb-3">
+                  <HeroBanner
+                    title={hero.title}
+                    subtitle={hero.subtitle}
+                    primary={hero.primary}
+                    secondary={hero.secondary}
+                  />
+                </div>
+              </div>
+            );
+          })()}
+
+          {children}
+        </div>
 
         {/* Footer */}
         <footer className="d-footer">
@@ -500,6 +512,61 @@ export default function MasterLayout({ children }) {
           </div>
         </footer>
       </main>
+      {/* Global AI assistant (vendor + basic only) */}
+      <AIAssistant isAdmin={isAdmin} tenantId={tenantId} />
     </section>
+  );
+}
+
+function MessageBell() {
+  const { unreadCount, latestFive } = useMessages();
+  return (
+    <div className="dropdown">
+      <button
+        className="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center position-relative"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        aria-label="Open messages"
+      >
+        <Icon icon="mage:email" className="text-primary-light text-xl" />
+        {unreadCount > 0 && (
+          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {Math.min(99, unreadCount)}
+          </span>
+        )}
+      </button>
+      <div className="dropdown-menu to-top dropdown-menu-lg p-0">
+        <div className="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+          <div>
+            <h6 className="text-lg text-primary-light fw-semibold mb-0">Messages</h6>
+          </div>
+          <span className="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
+            {unreadCount}
+          </span>
+        </div>
+        <div className="list-group list-group-flush px-2">
+          {latestFive.length === 0 && (
+            <div className="text-center text-muted small py-2">No messages</div>
+          )}
+          {latestFive.map((t) => (
+            <Link key={t.id} className="list-group-item list-group-item-action d-flex align-items-start gap-2" to={`/view-details?tid=${encodeURIComponent(t.id)}`}>
+              <div className={`badge ${t.read ? 'text-bg-light' : 'text-bg-primary'}`} style={{ alignSelf: 'center' }}>
+                {t.read ? 'read' : 'new'}
+              </div>
+              <div>
+                <div className="fw-semibold text-truncate" style={{ maxWidth: 260 }}>{t.subject || 'Message'}</div>
+                <div className="small text-muted text-truncate" style={{ maxWidth: 260 }}>{t.lastMessage?.snippet || t.messages?.[t.messages?.length-1]?.content || ''}</div>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div className="text-center py-12 px-16">
+          <Link to="/email" className="text-primary-600 fw-semibold text-md">
+            See all messages
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

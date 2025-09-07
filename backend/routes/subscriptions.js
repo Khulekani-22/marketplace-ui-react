@@ -14,6 +14,26 @@ router.get("/my", firebaseAuthRequired, (req, res) => {
   res.json(items);
 });
 
+// List subscribers for a specific service/listing (tenant-scoped)
+// Returns minimal info: id, email, uid, createdAt. Requires auth.
+router.get("/service/:id", firebaseAuthRequired, (req, res) => {
+  const serviceId = String(req.params.id || "");
+  const tenantId = req.tenant.id;
+  const q = (req.query.q || "").toString().trim().toLowerCase();
+  const page = Math.max(1, parseInt(req.query.page || "1", 10));
+  const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize || "10", 10)));
+  if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
+  const { subscriptions = [] } = getData();
+  let rows = subscriptions
+    .filter((s) => (s.tenantId ?? "public") === tenantId && (s.type || "service") === "service" && String(s.serviceId || "") === serviceId && !s.canceledAt)
+    .map((s) => ({ id: s.id, email: (s.email || "").toLowerCase(), uid: s.uid, createdAt: s.createdAt }));
+  if (q) rows = rows.filter((r) => r.email.includes(q));
+  const total = rows.length;
+  const start = (page - 1) * pageSize;
+  const items = rows.slice(start, start + pageSize);
+  res.json({ page, pageSize, total, items });
+});
+
 // Subscribe to a service/listing
 router.post("/service", firebaseAuthRequired, (req, res) => {
   const serviceId = String(req.body?.serviceId || "").trim();

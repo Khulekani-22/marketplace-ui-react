@@ -462,3 +462,254 @@
 4:09:34 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
 4:09:47 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
 4:10:00 AM [vite] (client) hmr update /src/components/child/TrendingNFTsOne.jsx
+4:21:11 AM [vite] (client) hmr update /src/pages/VendorDashboardPage.jsx
+4:23:17 AM [vite] (client) hmr update /src/pages/VendorDashboardPage.jsx
+4:37:44 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+4:37:53 AM [vite] (client) hmr update /src/components/child/BannerInnerOne.jsx
+4:37:57 AM [vite] (client) hmr update /src/components/child/BannerInnerTwo.jsx
+4:40:06 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+4:40:13 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+4:42:51 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+4:46:54 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+4:46:59 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+4:47:00 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+4:47:02 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+4:48:40 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+8:35:46 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+8:35:46 AM [vite] (client) Pre-transform error: Failed to parse source for import analysis because the content contains invalid JS syntax. If you are using JSX, make sure to name the file with the .jsx or .tsx extension.
+  Plugin: vite:import-analysis
+  File: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/components/assistant/aiKnowledge.js:25:146
+  23 |      match: ["my listings", "manage listings", "edit listing", "update listing", "draft"],
+  24 |      answer:
+  25 |        "Open ‘My Listings’ to view, edit, or unpublish your vendor listings. Use the action menu on each row to edit details or change visibility.
+     |                                                                                                                                                   ^
+  26 |  ",
+  27 |    },
+8:35:46 AM [vite] Internal server error: Failed to parse source for import analysis because the content contains invalid JS syntax. If you are using JSX, make sure to name the file with the .jsx or .tsx extension.
+  Plugin: vite:import-analysis
+  File: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/components/assistant/aiKnowledge.js:25:146
+  23 |      match: ["my listings", "manage listings", "edit listing", "update listing", "draft"],
+  24 |      answer:
+  25 |        "Open ‘My Listings’ to view, edit, or unpublish your vendor listings. Use the action menu on each row to edit details or change visibility.
+     |                                                                                                                                                   ^
+  26 |  ",
+  27 |    },
+      at TransformPluginContext._formatLog (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42499:41)
+      at TransformPluginContext.error (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42496:16)
+      at TransformPluginContext.transform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:40426:14)
+      at async EnvironmentPluginContainer.transform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42294:18)
+      at async loadAndTransform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:35735:27)
+      at async viteTransformMiddleware (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:37250:24)
+8:38:00 AM [vite] (client) hmr update /src/components/assistant/AIAssistant.jsx
+8:39:14 AM [vite] (client) Pre-transform error: Failed to parse source for import analysis because the content contains invalid JS syntax. If you are using JSX, make sure to name the file with the .jsx or .tsx extension.
+  Plugin: vite:import-analysis
+  File: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/components/assistant/aiKnowledge.js:25:146
+  23 |      match: ["my listings", "manage listings", "edit listing", "update listing", "draft"],
+  24 |      answer:
+  25 |        "Open ‘My Listings’ to view, edit, or unpublish your vendor listings. Use the action menu on each row to edit details or change visibility.
+     |                                                                                                                                                   ^
+  26 |  ",
+  27 |    },
+8:39:14 AM [vite] Internal server error: Failed to parse source for import analysis because the content contains invalid JS syntax. If you are using JSX, make sure to name the file with the .jsx or .tsx extension.
+  Plugin: vite:import-analysis
+  File: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/components/assistant/aiKnowledge.js:25:146
+  23 |      match: ["my listings", "manage listings", "edit listing", "update listing", "draft"],
+  24 |      answer:
+  25 |        "Open ‘My Listings’ to view, edit, or unpublish your vendor listings. Use the action menu on each row to edit details or change visibility.
+     |                                                                                                                                                   ^
+  26 |  ",
+  27 |    },
+      at TransformPluginContext._formatLog (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42499:41)
+      at TransformPluginContext.error (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42496:16)
+      at TransformPluginContext.transform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:40426:14)
+      at async EnvironmentPluginContainer.transform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42294:18)
+      at async loadAndTransform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:35735:27)
+      at async viteTransformMiddleware (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:37250:24)
+8:42:37 AM [vite] Internal server error: Failed to parse source for import analysis because the content contains invalid JS syntax. If you are using JSX, make sure to name the file with the .jsx or .tsx extension.
+  Plugin: vite:import-analysis
+  File: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/components/assistant/aiKnowledge.js:25:146
+  23 |      match: ["my listings", "manage listings", "edit listing", "update listing", "draft"],
+  24 |      answer:
+  25 |        "Open ‘My Listings’ to view, edit, or unpublish your vendor listings. Use the action menu on each row to edit details or change visibility.
+     |                                                                                                                                                   ^
+  26 |  ",
+  27 |    },
+      at TransformPluginContext._formatLog (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42499:41)
+      at TransformPluginContext.error (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42496:16)
+      at TransformPluginContext.transform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:40426:14)
+      at async EnvironmentPluginContainer.transform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:42294:18)
+      at async loadAndTransform (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:35735:27)
+      at async viteTransformMiddleware (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:37250:24)
+11:15:23 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+11:35:41 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+11:35:42 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:14:26 PM [vite] (client) hmr update /src/components/DashBoardLayerSeven.jsx
+1:30:54 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:35:43 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:38:23 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:42:54 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:43:05 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:49:10 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:49:17 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:49:21 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:50:45 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:51:44 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:51:54 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+1:52:34 PM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+7:28:29 AM [vite] (client) hmr update /src/pages/VendorMyListings.jsx
+7:29:05 AM [vite] (client) hmr update /src/pages/ListingsAdminPage.jsx
+7:29:24 AM [vite] (client) hmr update /src/pages/ListingsAdminPage.jsx
+7:29:45 AM [vite] (client) hmr update /src/pages/ListingsAdminPage.jsx
+7:38:56 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+7:39:34 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+7:40:31 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+7:46:41 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+7:46:53 AM [vite] (client) hmr update /src/masterLayout/MasterLayout.jsx
+7:47:43 AM [vite] (client) hmr update /src/components/EmailLayer.jsx
+7:48:01 AM [vite] (client) hmr update /src/components/ViewDetailsLayer.jsx
+7:50:07 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+7:50:54 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx
+7:58:14 AM [vite] (client) hmr update /src/components/EmailLayer.jsx
+7:58:51 AM [vite] (client) hmr update /src/components/EmailLayer.jsx
+8:14:10 AM [vite] (client) hmr update /src/components/EmailLayer.jsx
+8:14:10 AM [vite] Internal server error: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/components/EmailLayer.jsx: Unexpected token, expected "," (174:4)
+
+  172 |       </div>
+  173 |     </div>
+> 174 |     {compose.open && (
+      |     ^
+  175 |       <div className='position-fixed top-0 start-0 w-100 h-100' style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1070 }} onClick={(e) => e.target === e.currentTarget && closeCompose()}>
+  176 |         <div className='card' style={{ maxWidth: 640, margin: '8vh auto' }}>
+  177 |           <div className='card-header d-flex align-items-center justify-content-between'>
+  Plugin: vite:react-babel
+  File: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/components/EmailLayer.jsx:174:4
+  172|        </div>
+  173|      </div>
+  174|      {compose.open && (
+     |      ^
+  175|        <div className='position-fixed top-0 start-0 w-100 h-100' style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1070 }} onClick={(e) => e.target === e.currentTarget && closeCompose()}>
+  176|          <div className='card' style={{ maxWidth: 640, margin: '8vh auto' }}>
+      at constructor (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:367:19)
+      at JSXParserMixin.raise (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:6627:19)
+      at JSXParserMixin.unexpected (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:6647:16)
+      at JSXParserMixin.expect (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:6927:12)
+      at JSXParserMixin.parseParenAndDistinguishExpression (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11660:14)
+      at JSXParserMixin.parseExprAtom (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11326:23)
+      at JSXParserMixin.parseExprAtom (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:4794:20)
+      at JSXParserMixin.parseExprSubscripts (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11076:23)
+      at JSXParserMixin.parseUpdate (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11061:21)
+      at JSXParserMixin.parseMaybeUnary (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11041:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10894:61)
+      at JSXParserMixin.parseExprOps (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10899:23)
+      at JSXParserMixin.parseMaybeConditional (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10876:23)
+      at JSXParserMixin.parseMaybeAssign (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10826:21)
+      at JSXParserMixin.parseExpressionBase (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10779:23)
+      at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10775:39
+      at JSXParserMixin.allowInAnd (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12422:16)
+      at JSXParserMixin.parseExpression (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10775:17)
+      at JSXParserMixin.parseReturnStatement (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13142:28)
+      at JSXParserMixin.parseStatementContent (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12798:21)
+      at JSXParserMixin.parseStatementLike (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12767:17)
+      at JSXParserMixin.parseStatementListItem (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12747:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13316:61)
+      at JSXParserMixin.parseBlockBody (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13309:10)
+      at JSXParserMixin.parseBlock (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13297:10)
+      at JSXParserMixin.parseFunctionBody (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12101:24)
+      at JSXParserMixin.parseArrowExpression (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12076:10)
+      at JSXParserMixin.parseParenAndDistinguishExpression (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11686:12)
+      at JSXParserMixin.parseExprAtom (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11326:23)
+      at JSXParserMixin.parseExprAtom (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:4794:20)
+      at JSXParserMixin.parseExprSubscripts (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11076:23)
+      at JSXParserMixin.parseUpdate (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11061:21)
+      at JSXParserMixin.parseMaybeUnary (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11041:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10894:61)
+      at JSXParserMixin.parseExprOps (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10899:23)
+      at JSXParserMixin.parseMaybeConditional (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10876:23)
+      at JSXParserMixin.parseMaybeAssign (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10826:21)
+      at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10795:39
+      at JSXParserMixin.allowInAnd (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12422:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10795:17)
+      at JSXParserMixin.parseVar (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13384:91)
+      at JSXParserMixin.parseVarStatement (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13230:10)
+      at JSXParserMixin.parseStatementContent (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12851:23)
+      at JSXParserMixin.parseStatementLike (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12767:17)
+      at JSXParserMixin.parseModuleItem (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12744:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13316:36)
+      at JSXParserMixin.parseBlockBody (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13309:10)
+      at JSXParserMixin.parseProgram (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12625:10)
+      at JSXParserMixin.parseTopLevel (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12615:25)
+      at JSXParserMixin.parse (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:14492:10)
+8:14:10 AM [vite] Internal server error: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/components/EmailLayer.jsx: Unexpected token, expected "," (174:4)
+
+  172 |       </div>
+  173 |     </div>
+> 174 |     {compose.open && (
+      |     ^
+  175 |       <div className='position-fixed top-0 start-0 w-100 h-100' style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1070 }} onClick={(e) => e.target === e.currentTarget && closeCompose()}>
+  176 |         <div className='card' style={{ maxWidth: 640, margin: '8vh auto' }}>
+  177 |           <div className='card-header d-flex align-items-center justify-content-between'>
+  Plugin: vite:react-babel
+  File: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/components/EmailLayer.jsx:174:4
+  172|        </div>
+  173|      </div>
+  174|      {compose.open && (
+     |      ^
+  175|        <div className='position-fixed top-0 start-0 w-100 h-100' style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1070 }} onClick={(e) => e.target === e.currentTarget && closeCompose()}>
+  176|          <div className='card' style={{ maxWidth: 640, margin: '8vh auto' }}>
+      at constructor (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:367:19)
+      at JSXParserMixin.raise (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:6627:19)
+      at JSXParserMixin.unexpected (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:6647:16)
+      at JSXParserMixin.expect (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:6927:12)
+      at JSXParserMixin.parseParenAndDistinguishExpression (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11660:14)
+      at JSXParserMixin.parseExprAtom (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11326:23)
+      at JSXParserMixin.parseExprAtom (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:4794:20)
+      at JSXParserMixin.parseExprSubscripts (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11076:23)
+      at JSXParserMixin.parseUpdate (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11061:21)
+      at JSXParserMixin.parseMaybeUnary (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11041:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10894:61)
+      at JSXParserMixin.parseExprOps (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10899:23)
+      at JSXParserMixin.parseMaybeConditional (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10876:23)
+      at JSXParserMixin.parseMaybeAssign (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10826:21)
+      at JSXParserMixin.parseExpressionBase (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10779:23)
+      at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10775:39
+      at JSXParserMixin.allowInAnd (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12422:16)
+      at JSXParserMixin.parseExpression (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10775:17)
+      at JSXParserMixin.parseReturnStatement (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13142:28)
+      at JSXParserMixin.parseStatementContent (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12798:21)
+      at JSXParserMixin.parseStatementLike (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12767:17)
+      at JSXParserMixin.parseStatementListItem (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12747:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13316:61)
+      at JSXParserMixin.parseBlockBody (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13309:10)
+      at JSXParserMixin.parseBlock (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13297:10)
+      at JSXParserMixin.parseFunctionBody (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12101:24)
+      at JSXParserMixin.parseArrowExpression (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12076:10)
+      at JSXParserMixin.parseParenAndDistinguishExpression (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11686:12)
+      at JSXParserMixin.parseExprAtom (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11326:23)
+      at JSXParserMixin.parseExprAtom (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:4794:20)
+      at JSXParserMixin.parseExprSubscripts (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11076:23)
+      at JSXParserMixin.parseUpdate (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11061:21)
+      at JSXParserMixin.parseMaybeUnary (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:11041:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10894:61)
+      at JSXParserMixin.parseExprOps (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10899:23)
+      at JSXParserMixin.parseMaybeConditional (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10876:23)
+      at JSXParserMixin.parseMaybeAssign (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10826:21)
+      at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10795:39
+      at JSXParserMixin.allowInAnd (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12422:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:10795:17)
+      at JSXParserMixin.parseVar (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13384:91)
+      at JSXParserMixin.parseVarStatement (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13230:10)
+      at JSXParserMixin.parseStatementContent (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12851:23)
+      at JSXParserMixin.parseStatementLike (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12767:17)
+      at JSXParserMixin.parseModuleItem (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12744:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13316:36)
+      at JSXParserMixin.parseBlockBody (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:13309:10)
+      at JSXParserMixin.parseProgram (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12625:10)
+      at JSXParserMixin.parseTopLevel (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:12615:25)
+      at JSXParserMixin.parse (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/node_modules/@babel/parser/lib/index.js:14492:10)
+8:15:01 AM [vite] (client) hmr update /src/components/EmailLayer.jsx
+8:17:50 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/components/EmailLayer.jsx
+8:20:01 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/components/EmailLayer.jsx
+8:20:56 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/components/EmailLayer.jsx
+8:21:38 AM [vite] (client) hmr update /src/pages/VendorsAdminPage.jsx, /src/pages/ListingsAdminPage.jsx, /src/pages/VendorMyListings.jsx, /src/components/child/FeaturedCreatorsOne.jsx, /src/components/child/TrendingBidsOne.jsx, /src/components/child/StatisticsOne.jsx, /src/components/child/ETHPriceOne.jsx, /src/components/child/Workspace1.jsx, /src/components/child/TrendingNFTsOne.jsx, /src/pages/VendorAddListingPage.jsx, /src/pages/VendorProfilePage.jsx, /src/pages/VendorDashboardPage.jsx, /src/components/ReviewsWidget.jsx, /src/components/EmailLayer.jsx
+8:24:18 AM [vite] (client) hmr update /src/components/EmailLayer.jsx
+8:39:17 AM [vite] (client) hmr update /src/components/EmailLayer.jsx

@@ -1944,5 +1944,657 @@
     "ip": "::1",
     "metadata": {},
     "tenantId": "public"
+  },
+  {
+    "id": "mf68gda1-6jkb2b",
+    "timestamp": "2025-09-05T02:45:42.813Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf68gqjw-1drnbd",
+    "timestamp": "2025-09-05T02:46:00.013Z",
+    "action": "LOGIN_GOOGLE",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6gf3gs-u6g43b",
+    "timestamp": "2025-09-05T06:28:40.378Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6gf6a4-0lzt9q",
+    "timestamp": "2025-09-05T06:28:44.037Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6mdhs4-wnrpej",
+    "timestamp": "2025-09-05T09:15:23.323Z",
+    "action": "VENDOR_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "vendor",
+    "targetId": "d53d99c4-0ac1-449e-ac61-d25cfd5b8bc7",
+    "ip": "::1",
+    "metadata": {
+      "from": "pending",
+      "to": "active",
+      "email": "khulekani@22onsloane.co"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6mdrop-fdhi0g",
+    "timestamp": "2025-09-05T09:15:36.165Z",
+    "action": "VENDORS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "vendors",
+    "ip": "::1",
+    "metadata": {
+      "count": 14
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6r8k9z-p7sb0f",
+    "timestamp": "2025-09-05T11:31:31.358Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6r8x83-air4z5",
+    "timestamp": "2025-09-05T11:31:48.102Z",
+    "action": "LOGIN_GOOGLE",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rdhcp-mzs846",
+    "timestamp": "2025-09-05T11:35:20.834Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rdu17-y5pybl",
+    "timestamp": "2025-09-05T11:35:37.252Z",
+    "action": "LOGIN_GOOGLE",
+    "userId": null,
+    "userEmail": "zinhlesloane@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rfmhr-8yp4hc",
+    "timestamp": "2025-09-05T11:37:00.824Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "zinhlesloane@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rhecb-fubj9r",
+    "timestamp": "2025-09-05T11:38:23.572Z",
+    "action": "STARTUP_SIGNUP",
+    "userId": null,
+    "userEmail": "khulekani@gecafrica.co",
+    "targetType": "user",
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "basic"
+  },
+  {
+    "id": "mf6rn740-1xn95d",
+    "timestamp": "2025-09-05T11:42:54.139Z",
+    "action": "STARTUP_UPDATE",
+    "userId": null,
+    "userEmail": "khulekani@gecafrica.co",
+    "targetType": "startup",
+    "targetId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "basic"
+  },
+  {
+    "id": "mf6rnfyv-67m3bl",
+    "timestamp": "2025-09-05T11:43:05.619Z",
+    "action": "VENDOR_CREATE_FROM_STARTUP",
+    "userId": null,
+    "userEmail": "khulekani@gecafrica.co",
+    "targetType": "vendor",
+    "targetId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "basic"
+  },
+  {
+    "id": "mf6rnwew-emh37u",
+    "timestamp": "2025-09-05T11:43:26.928Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@gecafrica.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "basic"
+  },
+  {
+    "id": "mf6ro11m-8t4jfz",
+    "timestamp": "2025-09-05T11:43:32.933Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@gecafrica.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "basic"
+  },
+  {
+    "id": "mf6roq93-me3l94",
+    "timestamp": "2025-09-05T11:44:05.599Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@gecafrica.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rpfti-t29pg5",
+    "timestamp": "2025-09-05T11:44:38.726Z",
+    "action": "LOGIN_GOOGLE",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "basic"
+  },
+  {
+    "id": "mf6rqyh4-6vlhsn",
+    "timestamp": "2025-09-05T11:45:49.569Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rr9o2-8202nr",
+    "timestamp": "2025-09-05T11:46:04.068Z",
+    "action": "LOGIN_GOOGLE",
+    "userId": null,
+    "userEmail": "zinhlesloane@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rrxis-t5zoyh",
+    "timestamp": "2025-09-05T11:46:34.988Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "zinhlesloane@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rs70m-2soejk",
+    "timestamp": "2025-09-05T11:46:47.296Z",
+    "action": "LOGIN_GOOGLE",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rstk0-ohdwfp",
+    "timestamp": "2025-09-05T11:47:16.506Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rt1n6-rxg2zi",
+    "timestamp": "2025-09-05T11:47:26.987Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rv8o2-ihwfcl",
+    "timestamp": "2025-09-05T11:49:09.387Z",
+    "action": "VENDOR_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "vendor",
+    "targetId": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+    "ip": "::1",
+    "metadata": {
+      "from": "pending",
+      "to": "active",
+      "email": "zinhlesloane@gmail.com"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rves8-rih4pm",
+    "timestamp": "2025-09-05T11:49:17.318Z",
+    "action": "VENDOR_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "vendor",
+    "targetId": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+    "ip": "::1",
+    "metadata": {
+      "from": "active",
+      "to": "suspended",
+      "email": "zinhlesloane@gmail.com"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rvhxj-owxp2c",
+    "timestamp": "2025-09-05T11:49:21.401Z",
+    "action": "VENDOR_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "vendor",
+    "targetId": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+    "ip": "::1",
+    "metadata": {
+      "from": "suspended",
+      "to": "active",
+      "email": "zinhlesloane@gmail.com"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6rvnic-0hw41h",
+    "timestamp": "2025-09-05T11:49:28.640Z",
+    "action": "VENDORS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "vendors",
+    "ip": "::1",
+    "metadata": {
+      "count": 15
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s163g-vhv2oo",
+    "timestamp": "2025-09-05T11:53:45.995Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s1k9t-k6xjn4",
+    "timestamp": "2025-09-05T11:54:04.375Z",
+    "action": "LOGIN_GOOGLE",
+    "userId": null,
+    "userEmail": "zinhlesloane@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s5e8y-l79etd",
+    "timestamp": "2025-09-05T11:57:03.191Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "zinhlesloane@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s5h0k-8o1lu9",
+    "timestamp": "2025-09-05T11:57:06.782Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s69lx-18voj3",
+    "timestamp": "2025-09-05T11:57:43.832Z",
+    "action": "LISTING_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "listing",
+    "targetId": "mf6s3ah0-wqqlk5",
+    "ip": "::1",
+    "metadata": {
+      "from": "pending",
+      "to": "approved",
+      "title": "Financial modelling consultation"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s6egk-63hf1r",
+    "timestamp": "2025-09-05T11:57:50.128Z",
+    "action": "LISTINGS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "services",
+    "ip": "::1",
+    "metadata": {
+      "count": 19
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s6k7k-f8ro0g",
+    "timestamp": "2025-09-05T11:57:57.569Z",
+    "action": "LISTING_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "listing",
+    "targetId": "mf6s58mu-616wi6",
+    "ip": "::1",
+    "metadata": {
+      "from": "pending",
+      "to": "rejected",
+      "title": "Financial analysis consultation"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s6zvz-92rbn0",
+    "timestamp": "2025-09-05T11:58:17.900Z",
+    "action": "LISTINGS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "services",
+    "ip": "::1",
+    "metadata": {
+      "count": 19
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s7uy4-86pwmo",
+    "timestamp": "2025-09-05T11:58:58.152Z",
+    "action": "LISTINGS_CHECKPOINT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "services",
+    "targetId": "checkpoint",
+    "ip": "::1",
+    "metadata": {
+      "message": "5 september backup version control"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s8w8s-da4l4x",
+    "timestamp": "2025-09-05T11:59:46.475Z",
+    "action": "LISTING_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "listing",
+    "targetId": "mf6s3ah0-wqqlk5",
+    "ip": "::1",
+    "metadata": {
+      "from": "approved",
+      "to": "rejected",
+      "title": "Financial modelling consultation"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6s9rur-qtyabw",
+    "timestamp": "2025-09-05T12:00:27.450Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6sa0wa-9tsnol",
+    "timestamp": "2025-09-05T12:00:39.165Z",
+    "action": "LOGIN_GOOGLE",
+    "userId": null,
+    "userEmail": "zinhlesloane@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6sh7r5-s7jglo",
+    "timestamp": "2025-09-05T12:06:14.627Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "zinhlesloane@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf6shdxn-nxpcj2",
+    "timestamp": "2025-09-05T12:06:22.640Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf8kra9n-8r1idp",
+    "timestamp": "2025-09-06T18:05:39.851Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf8krdau-cd7dj1",
+    "timestamp": "2025-09-06T18:05:43.806Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf8l7jjk-t05s3x",
+    "timestamp": "2025-09-06T18:18:18.382Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf8l7mt2-2nbg57",
+    "timestamp": "2025-09-06T18:18:22.614Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf99hzwd-oc00nu",
+    "timestamp": "2025-09-07T05:38:16.929Z",
+    "action": "LISTING_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "listing",
+    "targetId": "mf6s3ah0-wqqlk5",
+    "ip": "::1",
+    "metadata": {
+      "from": "approved",
+      "to": "pending",
+      "title": "Financial modelling consultation"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf99igas-pq4071",
+    "timestamp": "2025-09-07T05:38:38.181Z",
+    "action": "LISTING_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "listing",
+    "targetId": "mewl4bna-xil1yi",
+    "ip": "::1",
+    "metadata": {
+      "from": "approved",
+      "to": "rejected",
+      "title": "Pitch deck revision service"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf99is79-gdv4fq",
+    "timestamp": "2025-09-07T05:38:53.600Z",
+    "action": "LISTING_STATUS_CHANGE",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "listing",
+    "targetId": "mewcr2ki-ocdatn",
+    "ip": "::1",
+    "metadata": {
+      "from": "approved",
+      "to": "rejected",
+      "title": "Testing New Saas Listing"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "mf99iu0y-p30oo8",
+    "timestamp": "2025-09-07T05:38:56.000Z",
+    "action": "LISTINGS_PUBLISH",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "appData",
+    "targetId": "services",
+    "ip": "::1",
+    "metadata": {
+      "count": 19
+    },
+    "tenantId": "public"
   }
 ]

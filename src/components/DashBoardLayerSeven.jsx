@@ -19,8 +19,7 @@ const DashBoardLayerSeven = () => {
             {/* BannerInnerOne */}
             <BannerInnerOne />
 
-            {/* TrendingBidsOne */}
-            <TrendingBidsOne />
+          
 
             {/* TrendingNFTsOne */}
             <TrendingNFTsOne />
@@ -31,6 +30,9 @@ const DashBoardLayerSeven = () => {
 
         <div className='col-xxl-12 d-none'>
           <div className='row gy-4'>
+
+              {/* TrendingBidsOne */}
+            <TrendingBidsOne />
 
             {/* Workspace */}
             <Workspace1 />

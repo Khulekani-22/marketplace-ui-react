@@ -1,8 +1,32 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useMessages } from "../context/MessagesContext.jsx";
+
+function useQuery() {
+  const loc = useLocation();
+  return useMemo(() => new URLSearchParams(loc.search), [loc.search]);
+}
 
 const ViewDetailsLayer = () => {
+  const { threads, markRead, reply } = useMessages();
+  const q = useQuery();
+  const tid = q.get('tid');
+  const thread = useMemo(() => threads.find((t) => t.id === tid), [threads, tid]);
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    if (thread && !thread.read) markRead(thread.id, true);
+  }, [thread, markRead]);
+
+  async function handleSend(e) {
+    e?.preventDefault?.();
+    if (!tid || !text.trim()) return;
+    await reply(tid, text.trim());
+    setText("");
+  }
+
   return (
     <div className='row gy-4'>
       <div className='col-xxl-3'>
@@ -210,72 +234,38 @@ const ViewDetailsLayer = () => {
               </div>
             </div>
             <div className='card-body p-0'>
-              <div className='py-16 px-24 border-bottom'>
-                <div className='d-flex align-items-start gap-3'>
-                  <img
-                    src='assets/images/user-list/user-list1.png'
-                    alt='Wowdash'
-                    className='w-40-px h-40-px rounded-pill'
-                  />
-                  <div className=''>
-                    <div className='d-flex align-items-center flex-wrap gap-2'>
-                      <h6 className='mb-0 text-lg'>Kathryn Murphy</h6>
-                      <span className='text-secondary-light text-md'>
-                        kathrynmurphy@gmail.com
-                      </span>
-                    </div>
-                    <div className='mt-20'>
-                      <p className='mb-16 text-primary-light'>Hi William</p>
-                      <p className='mb-16 text-primary-light'>
-                        Just confirming that we transferred $63.86 to you via
-                        PayPal
-                        <Link
-                          to='#'
-                          className='text-primary-600 text-decoration-underline'
-                        >
-                          (info367@gmail.com)
-                        </Link>{" "}
-                        which you earned on the themewow Market since your last
-                        payout.
-                      </p>
-                      <p className='mb-0 text-primary-light'>
-                        Thank you for selling with us!
-                      </p>
+              {thread ? (
+                thread.messages?.map((m) => (
+                  <div key={m.id} className='py-16 px-24 border-bottom'>
+                    <div className='d-flex align-items-start gap-3'>
+                      <img src='assets/images/user.png' alt='' className='w-40-px h-40-px rounded-pill' />
+                      <div>
+                        <div className='d-flex align-items-center flex-wrap gap-2'>
+                          <h6 className='mb-0 text-lg'>{m.senderName || m.senderId || 'User'}</h6>
+                          <span className='text-secondary-light text-md'>{m.senderRole || ''}</span>
+                        </div>
+                        <div className='mt-20'>
+                          <p className='mb-0 text-primary-light' style={{ whiteSpace: 'pre-wrap' }}>{m.content}</p>
+                          <div className='text-secondary small mt-1'>{m.date ? new Date(m.date).toLocaleString() : ''}</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className='py-16 px-24'>
+                  <div className='text-muted'>Select a message from your inbox.</div>
                 </div>
-              </div>
-              <div className='py-16 px-24 border-bottom'>
-                <div className='d-flex align-items-start gap-3'>
-                  <img
-                    src='assets/images/user-list/user-list2.png'
-                    alt='Wowdash'
-                    className='w-40-px h-40-px rounded-pill'
-                  />
-                  <div className=''>
-                    <div className='d-flex align-items-center flex-wrap gap-2'>
-                      <h6 className='mb-0 text-lg'>Subrata Sen</h6>
-                      <span className='text-secondary-light text-md'>
-                        subratasen@gmail.com
-                      </span>
-                    </div>
-                    <div className='mt-20'>
-                      <p className='mb-0 text-primary-light'>
-                        Awesome, thank you so much!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
             <div className='card-footer py-16 px-24 bg-base shadow-top'>
-              <form action='#'>
+              <form onSubmit={handleSend}>
                 <div className='d-flex align-items-center justify-content-between'>
                   <textarea
                     className='textarea-max-height form-control p-0 border-0 py-8 pe-16 resize-none scroll-sm'
-                    oninput='adjustHeight(this)'
-                    placeholder='Write massage'
-                    defaultValue={""}
+                    placeholder='Write a message'
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
                   />
                   <div className='d-flex align-items-center gap-4 ms-16'>
                     <div className=''>

@@ -954,6 +954,34 @@ function ServicesEditor(props) {
 
   const selectedResolved = selected ? resolveVendor(selected) : null;
 
+  const [msgModal, setMsgModal] = React.useState({ open: false, subject: "", content: "", sending: false, err: null, done: false });
+  function openMsg() {
+    if (!selected) return;
+    const subj = `Listing feedback: ${selected.title}`;
+    const body = `Hello ${selectedResolved?.name || 'Vendor'},\n\nRegarding your listing "${selected.title}" (ID: ${selected.id}).\n\nReason / guidance:\n- \n\nPlease update and resubmit when ready.\n\nRegards,\nAdmin`;
+    setMsgModal({ open: true, subject: subj, content: body, sending: false, err: null, done: false });
+  }
+  function closeMsg() { setMsgModal({ open: false, subject: "", content: "", sending: false, err: null, done: false }); }
+  async function sendMsg(e) {
+    e?.preventDefault?.();
+    if (!selected || !msgModal.content.trim()) return;
+    setMsgModal((m) => ({ ...m, sending: true, err: null }));
+    try {
+      await api.post(`/api/messages`, {
+        listingId: selected.id,
+        listingTitle: selected.title,
+        vendorId: selected.vendorId || "",
+        vendorEmail: selectedResolved?.email || "",
+        subject: msgModal.subject,
+        content: msgModal.content,
+      });
+      setMsgModal((m) => ({ ...m, sending: false, done: true }));
+      setTimeout(() => closeMsg(), 1200);
+    } catch (e) {
+      setMsgModal((m) => ({ ...m, sending: false, err: e?.response?.data?.message || e?.message || "Failed to send" }));
+    }
+  }
+
   return (
     <div className="card">
       <div className="card-header d-flex justify-content-between align-items-center">
@@ -1272,6 +1300,17 @@ function ServicesEditor(props) {
                   />
                 </div>
 
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <div className="text-secondary small">
+                    Vendor: <strong>{selectedResolved?.name || 'Unknown'}</strong>{selectedResolved?.email ? ` · ${selectedResolved.email}` : ''}
+                  </div>
+                  <div>
+                    <button type="button" className="btn btn-outline-danger btn-sm" onClick={openMsg} disabled={!selectedResolved?.email && !selected?.vendorId}>
+                      Message Vendor
+                    </button>
+                  </div>
+                </div>
+
                 {/* Preview */}
                 <div className="border rounded p-2">
                   <div className="text-muted small mb-1">Card preview</div>
@@ -1314,9 +1353,39 @@ function ServicesEditor(props) {
           </div>
         </div>
       </div>
+      {msgModal.open && (
+        <div className="position-fixed top-0 start-0 w-100 h-100" style={{ background: "rgba(0,0,0,0.5)", zIndex: 1070 }} onClick={(e) => e.target === e.currentTarget && closeMsg()}>
+          <div className="card" style={{ maxWidth: 560, margin: "10vh auto" }}>
+            <div className="card-header d-flex align-items-center justify-content-between">
+              <h6 className="mb-0">Message Vendor</h6>
+              <button className="btn btn-sm btn-outline-secondary" onClick={closeMsg}>Close</button>
+            </div>
+            <form onSubmit={sendMsg}>
+              <div className="card-body">
+                {msgModal.err && <div className="alert alert-danger py-2 mb-2">{msgModal.err}</div>}
+                {msgModal.done && <div className="alert alert-success py-2 mb-2">Sent</div>}
+                <div className="mb-2">
+                  <label className="form-label">Subject</label>
+                  <input className="form-control" value={msgModal.subject} onChange={(e) => setMsgModal((m)=>({ ...m, subject: e.target.value }))} />
+                </div>
+                <div className="mb-2">
+                  <label className="form-label">Message</label>
+                  <textarea className="form-control" rows={6} value={msgModal.content} onChange={(e) => setMsgModal((m)=>({ ...m, content: e.target.value }))} />
+                  <div className="text-secondary small mt-1">To: {selectedResolved?.email || selected?.vendorId || 'Vendor'}</div>
+                </div>
+              </div>
+              <div className="card-footer d-flex justify-content-end gap-2">
+                <button type="button" className="btn btn-outline-secondary" onClick={closeMsg} disabled={msgModal.sending}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={msgModal.sending || !msgModal.content.trim()}>{msgModal.sending ? 'Sending…' : 'Send'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 function VersionHistory({ items, onRestore }) {
   return (
