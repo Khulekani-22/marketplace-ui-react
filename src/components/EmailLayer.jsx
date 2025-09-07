@@ -5,26 +5,51 @@ import { useMessages } from "../context/MessagesContext.jsx";
 import { useVendor } from "../context/VendorContext.jsx";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
+import { auth } from "../lib/firebase";
 
 const EmailLayer = () => {
-  const { threads, unreadCount, markRead, refresh } = useMessages();
+  const { threads, unreadCount, markRead, refresh, loading } = useMessages();
   const { vendor } = useVendor();
   const [search, setSearch] = useState("");
+  const [folder, setFolder] = useState("inbox"); // inbox | sent
   const [compose, setCompose] = useState({ open: false, mode: vendor?.vendorId ? "vendor_admin" : "vendor_subscriber", serviceId: "", subject: "", content: "", sending: false, err: null, ok: false, subscriberEmail: "" });
   const [myListings, setMyListings] = useState([]);
   const [mySubs, setMySubs] = useState([]);
   const [subsSuggest, setSubsSuggest] = useState({ q: "", page: 1, pageSize: 10, total: 0, items: [], loading: false });
   const tenantId = (typeof window !== 'undefined' ? sessionStorage.getItem('tenantId') : null) || 'vendor';
 
+  const userEmail = (auth.currentUser?.email || sessionStorage.getItem('userEmail') || "").toLowerCase();
+  const role = (typeof window !== 'undefined' ? sessionStorage.getItem('role') : null) || '';
+  const myVendorId = vendor?.vendorId || vendor?.id || '';
+  const mySenderIds = useMemo(() => {
+    const ids = [];
+    if (userEmail) ids.push(`user:${userEmail}`);
+    if (myVendorId) ids.push(`vendor:${String(myVendorId).toLowerCase()}`);
+    if (userEmail) ids.push(`vendor:${userEmail}`); // legacy vendor keyed by email
+    if (role === 'admin') ids.push('admin');
+    return ids;
+  }, [userEmail, myVendorId, role]);
+
+  const sentThreads = useMemo(() => {
+    return threads.filter((t) => Array.isArray(t?.messages) && t.messages.some((m) => mySenderIds.includes(String(m.senderId || '').toLowerCase())));
+  }, [threads, mySenderIds]);
+  const inboxThreads = useMemo(() => {
+    return threads.filter((t) => Array.isArray(t?.messages) && t.messages.some((m) => !mySenderIds.includes(String(m.senderId || '').toLowerCase())));
+  }, [threads, mySenderIds]);
+  const sentCount = sentThreads.length;
+  const inboxCount = inboxThreads.length;
+
+  const baseList = folder === 'sent' ? sentThreads : inboxThreads;
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return threads;
-    return threads.filter((t) => {
+    if (!q) return baseList;
+    return baseList.filter((t) => {
       const subject = (t.subject || "").toLowerCase();
       const snippet = (t.lastMessage?.snippet || "").toLowerCase();
       return subject.includes(q) || snippet.includes(q);
     });
-  }, [threads, search]);
+  }, [baseList, search]);
 
   const allRead = unreadCount === 0;
   const handleMarkAllRead = async () => {
@@ -104,7 +129,10 @@ const EmailLayer = () => {
       await refresh();
       setTimeout(() => closeCompose(), 1200);
     } catch (e) {
-      setCompose((c) => ({ ...c, sending: false, err: e?.response?.data?.message || e?.message || 'Failed to send' }));
+      const status = e?.response?.status;
+      const msg = e?.response?.data?.message || e?.message || 'Failed to send';
+      const extra = status === 401 ? ' Please sign in to send messages.' : '';
+      setCompose((c) => ({ ...c, sending: false, err: msg + extra }));
     }
   }
 
@@ -121,7 +149,7 @@ const EmailLayer = () => {
               </button>
               <ul>
                 <li className='item-active mb-4'>
-                  <Link to='/email' className='bg-hover-primary-50 px-12 py-8 w-100 radius-8 text-secondary-light'>
+                  <button type='button' onClick={() => setFolder('inbox')} className={`bg-hover-primary-50 px-12 py-8 w-100 radius-8 text-start ${folder==='inbox' ? 'text-primary-600 fw-semibold' : 'text-secondary-light'}`}>
                     <span className='d-flex align-items-center gap-10 justify-content-between w-100'>
                       <span className='d-flex align-items-center gap-10'>
                         <span className='icon text-xxl line-height-1 d-flex'>
@@ -129,22 +157,22 @@ const EmailLayer = () => {
                         </span>
                         <span className='fw-semibold'>Inbox</span>
                       </span>
-                      <span className='fw-medium'>{threads.length}</span>
+                      <span className='fw-medium'>{inboxCount}</span>
                     </span>
-                  </Link>
+                  </button>
                 </li>
                 <li className='mb-4'>
-                  <Link to='/email' className='bg-hover-primary-50 px-12 py-8 w-100 radius-8 text-secondary-light'>
+                  <button type='button' onClick={() => setFolder('sent')} className={`bg-hover-primary-50 px-12 py-8 w-100 radius-8 text-start ${folder==='sent' ? 'text-primary-600 fw-semibold' : 'text-secondary-light'}`}>
                     <span className='d-flex align-items-center gap-10 justify-content-between w-100'>
                       <span className='d-flex align-items-center gap-10'>
                         <span className='icon text-xxl line-height-1 d-flex'>
-                          <Icon icon='ph:star-bold' className='icon line-height-1' />
+                          <Icon icon='ion:paper-plane-outline' className='icon line-height-1' />
                         </span>
-                        <span className='fw-semibold'>Unread</span>
+                        <span className='fw-semibold'>Sent</span>
                       </span>
-                      <span className='fw-medium'>{unreadCount}</span>
+                      <span className='fw-medium'>{sentCount}</span>
                     </span>
-                  </Link>
+                  </button>
                 </li>
               </ul>
             </div>
@@ -156,8 +184,8 @@ const EmailLayer = () => {
           <div className='card-header border-bottom bg-base py-16 px-24'>
             <div className='d-flex flex-wrap align-items-center justify-content-between gap-4'>
               <div className='d-flex align-items-center gap-3'>
-                <button type='button' className='btn btn-sm btn-outline-secondary' onClick={refresh}>
-                  <Icon icon='tabler:reload' className='me-1' /> Refresh
+                <button type='button' className='btn btn-sm btn-outline-secondary' onClick={refresh} disabled={loading}>
+                  <Icon icon='tabler:reload' className='me-1' /> {loading ? 'Refreshing…' : 'Refresh'}
                 </button>
                 <button type='button' className='btn btn-sm btn-outline-secondary' onClick={handleMarkAllRead} disabled={allRead}>
                   <Icon icon='gravity-ui:envelope-open' className='me-1' /> Mark all as read

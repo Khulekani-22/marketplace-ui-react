@@ -11,12 +11,16 @@ export function MessagesProvider({ children }) {
 
   async function refresh() {
     setError(null);
+    setLoading(true);
     try {
-      const { data } = await api.get(`/api/messages`);
+      // cache-bust param to avoid any intermediate caching proxies
+      const { data } = await api.get(`/api/messages`, { params: { t: Date.now() } });
       const items = Array.isArray(data?.items) ? data.items : [];
       setThreads(items);
     } catch (e) {
       setError(e?.message || "Failed to load messages");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -58,4 +62,3 @@ export function useMessages() {
   if (!ctx) throw new Error("useMessages must be used inside <MessagesProvider />");
   return ctx;
 }
-

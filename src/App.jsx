@@ -192,7 +192,14 @@ export default function App() {
             <Route path="/company" element={<CompanyPage />} />
             <Route path="/currencies" element={<CurrenciesPage />} />
             <Route path="/dropdown" element={<DropdownPage />} />
-            <Route path="/email" element={<EmailPage />} />
+            <Route
+              path="/email"
+              element={
+                <PrivateRoute>
+                  <EmailPage />
+                </PrivateRoute>
+              }
+            />
             <Route path="/faq" element={<FaqPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/form-layout" element={<FormLayoutPage />} />
@@ -247,7 +254,14 @@ export default function App() {
             <Route path="/typography" element={<TypographyPage />} />
             <Route path="/users-grid" element={<UsersGridPage />} />
             <Route path="/users-list" element={<UsersListPage />} />
-            <Route path="/view-details" element={<ViewDetailsPage />} />
+            <Route
+              path="/view-details"
+              element={
+                <PrivateRoute>
+                  <ViewDetailsPage />
+                </PrivateRoute>
+              }
+            />
             <Route path="/video-generator" element={<VideoGeneratorPage />} />
             <Route path="/videos" element={<VideosPage />} />
             <Route path="/view-profile" element={<ViewProfilePage />} />
