@@ -2716,5 +2716,89 @@
     "ip": "::1",
     "metadata": {},
     "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf9sv08q-hpvpaa",
+    "timestamp": "2025-09-07T14:40:16.626Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf9svb51-uasd1r",
+    "timestamp": "2025-09-07T14:40:30.728Z",
+    "action": "LOGIN_GOOGLE",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mf9swwk2-oag9k1",
+    "timestamp": "2025-09-07T14:41:45.162Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mf9swz4o-7jxmcx",
+    "timestamp": "2025-09-07T14:41:48.469Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "mfar1oqs-tdmcfx",
+    "timestamp": "2025-09-08T06:37:15.262Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mfckurha-js5y2h",
+    "timestamp": "2025-09-09T13:19:26.871Z",
+    "action": "LOGOUT",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "mfckv5de-8yhcbl",
+    "timestamp": "2025-09-09T13:19:44.848Z",
+    "action": "LOGIN_GOOGLE",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": null,
+    "targetId": null,
+    "ip": "::1",
+    "metadata": {},
+    "tenantId": "22onsloane"
   }
 ]

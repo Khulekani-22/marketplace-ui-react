@@ -251,6 +251,14 @@ function MasterLayoutInner({ children }) {
 
             <hr></hr>
 
+            {/* Messages / Inbox */}
+            <li>
+              <NavLink to="/email" className={navClass}>
+                <Icon icon="tabler:message-check" className="menu-icon" />
+                <span>Inbox</span>
+              </NavLink>
+            </li>
+
             {/* My Subscriptions (available to all signed-in users; useful for basic) */}
             <li>
               <NavLink to="/subscriptions" className={navClass}>

@@ -1154,9 +1154,18 @@
           "senderRole": "Vendor",
           "content": "Testing",
           "date": "2025-09-07T11:07:01.885Z"
+        },
+        {
+          "id": "m1757256095499",
+          "senderId": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+          "senderName": "22OnSloane Digital Team",
+          "senderAvatar": "",
+          "senderRole": "Vendor",
+          "content": "Hello Admin\n\nMy listing \"Testing New Saas Listing\" (ID: mewcr2ki-ocdatn) was rejected. Could you please share more details on what needs to be corrected so I can resubmit?\n\nSincerely",
+          "date": "2025-09-07T14:41:35.499Z"
         }
       ],
-      "read": true,
+      "read": false,
       "context": {
         "type": "listing-feedback",
         "listingId": "mewcr2ki-ocdatn",
@@ -1165,8 +1174,8 @@
       },
       "tenantId": "public",
       "lastMessage": {
-        "snippet": "Testing",
-        "date": "2025-09-07T11:07:01.885Z"
+        "snippet": "Hello Admin\n\nMy listing \"Testing New Saas Listing\" (ID: mewcr2ki-ocdatn) was rejected. Could you please share more details on what needs to be corrected so I ca",
+        "date": "2025-09-07T14:41:35.499Z"
       }
     },
     {
@@ -1242,7 +1251,7 @@
           "date": "2025-09-07T10:48:42.071Z"
         }
       ],
-      "read": false,
+      "read": true,
       "context": {
         "type": "listing-feedback",
         "listingId": "mewcr2ki-ocdatn",
@@ -3257,6 +3266,26 @@
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "public",
       "createdAt": "2025-09-05T01:54:32.154Z"
+    },
+    {
+      "id": "57d02a8b-6ab4-45a9-aec3-0f6dc4c12168",
+      "type": "service",
+      "serviceId": "mepapax8-ibz1dv",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "email": "khulekani@22onsloane.co",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "22onsloane",
+      "createdAt": "2025-09-07T14:39:27.427Z"
+    },
+    {
+      "id": "9cc8a929-a09c-454e-bfea-0a0a45929ee2",
+      "type": "service",
+      "serviceId": "7",
+      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+      "email": "khulekani@22onsloane.co",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "22onsloane",
+      "createdAt": "2025-09-09T06:30:10.707Z"
     }
   ]
 }

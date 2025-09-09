@@ -1,1 +1,0 @@
-import{a as i}from"./index-DEDmLTnF.js";async function t(){const{data:s}=await i.get("/api/subscriptions/my");return Array.isArray(s)?s:[]}async function c(s){const{data:a}=await i.post("/api/subscriptions/service",{serviceId:s});return a}async function n(s){return await i.put("/api/subscriptions/service/cancel",{serviceId:s}),!0}export{t as f,c as s,n as u};

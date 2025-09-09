@@ -319,12 +319,12 @@ const TrendingNFTsOne = () => {
 
             {!loading &&
               filteredServices.map((service) => (
-                <div className="col-12 col-md-6 col-lg-4" key={service.id}>
+                <div className="col-12 col-md-6 col-lg-3" key={service.id}>
                   <div className="card bg-base radius-16 overflow-hidden h-100">
                     <div className="row g-0 align-items-stretch">
                       <div className="col-auto">
                         <img
-                          style={{ width: 160, height: '100%', maxHeight: 140, objectFit: 'cover' }}
+                          style={{ width: 150, height: '100%', maxHeight: 200, objectFit: 'cover' }}
                           src={service.imageUrl}
                           alt={service.title}
                           className="d-block"

@@ -151,10 +151,13 @@ function canAccessThread(t, { isAdmin, email, vendorId }) {
   const isVendorParticipant = (vendorId && vendorKeyMatches(String(vendorId))) || (e && vendorKeyMatches(e));
   const isSubscriber = e && (normalizeEmail(ctx.subscriberEmail) === e || pid.includes(`user:${e}`));
   if (isAdmin) {
-    // If no admin has claimed the thread (no adminEmail and generic 'admin' participant), all admins can see
-    if (ctx.type === 'listing-feedback' && !ctx.adminEmail && pid.includes('admin')) return true;
-    const isThisAdmin = e && (pid.includes(`admin:${e}`) || normalizeEmail(ctx.adminEmail) === e);
-    return isThisAdmin;
+    // Admin can see:
+    // 1) Admin-participant listing-feedback threads (unclaimed or claimed by this admin)
+    const adminThread = (ctx.type === 'listing-feedback' && !ctx.adminEmail && pid.includes('admin'))
+      || (e && (pid.includes(`admin:${e}`) || normalizeEmail(ctx.adminEmail) === e));
+    // 2) Their vendor/subscriber participation if they are also a vendor or subscriber
+    const vendorOrSubscriber = isVendorParticipant || isSubscriber;
+    return adminThread || vendorOrSubscriber;
   }
   // Vendor->Admin threads are visible only to admins (senders do not see them in inbox/sent)
   if (ctx.type === 'listing-feedback') return false;

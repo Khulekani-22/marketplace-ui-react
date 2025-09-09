@@ -26,7 +26,11 @@ const EmailLayer = () => {
     if (userEmail) ids.push(`user:${userEmail}`);
     if (myVendorId) ids.push(`vendor:${String(myVendorId).toLowerCase()}`);
     if (userEmail) ids.push(`vendor:${userEmail}`); // legacy vendor keyed by email
-    if (role === 'admin') ids.push('admin');
+    // Admin can appear as plain 'admin' (replies) or 'admin:<email>' (new threads)
+    if (role === 'admin') {
+      ids.push('admin');
+      if (userEmail) ids.push(`admin:${userEmail}`);
+    }
     return ids;
   }, [userEmail, myVendorId, role]);
 
