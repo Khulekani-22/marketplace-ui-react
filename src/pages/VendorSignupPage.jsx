@@ -324,7 +324,7 @@ export default function VendorSignupPage() {
 
           <div className="d-grid">
             <button
-              className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"
+              className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-600 bg-hover-primary-800 radius-8 px-12 py-6"
               onClick={handleGoogle}
               disabled={busy || !form.company || !form.agree}
               title="Continue with Google"

@@ -63,13 +63,17 @@ function MasterLayoutInner({ children }) {
 
   // Resolve role/tenant for current user (on mount and on auth changes)
   useEffect(() => {
-    async function refreshRole(byEmail) {
-      if (!byEmail) return;
+    async function refreshRole(byEmail, byUid) {
+      if (!byEmail && !byUid) return;
       try {
-        const { data } = await api.get("/api/users/me", { params: { email: byEmail } });
+        const params = {};
+        if (byEmail) params.email = byEmail;
+        if (byUid) params.uid = byUid;
+        const { data } = await api.get("/api/users/me", { params });
         const role = data?.role || "member";
         const tenant = data?.tenantId || "vendor";
-        sessionStorage.setItem("userEmail", byEmail);
+        if (byEmail) sessionStorage.setItem("userEmail", byEmail);
+        if (byUid) sessionStorage.setItem("userId", byUid);
         sessionStorage.setItem("role", role);
         sessionStorage.setItem("tenantId", tenant);
         setIsAdmin(role === "admin");
@@ -81,13 +85,30 @@ function MasterLayoutInner({ children }) {
 
     // initial
     const initialEmail = auth.currentUser?.email || sessionStorage.getItem("userEmail");
-    if (initialEmail) refreshRole(initialEmail);
+    const initialUid = auth.currentUser?.uid || sessionStorage.getItem("userId");
+    if (auth.currentUser) {
+      // ensure session sync on first paint
+      if (auth.currentUser.email) sessionStorage.setItem("userEmail", auth.currentUser.email);
+      if (auth.currentUser.uid) sessionStorage.setItem("userId", auth.currentUser.uid);
+      setUser(auth.currentUser);
+    }
+    if (initialEmail || initialUid) refreshRole(initialEmail, initialUid);
 
     // subscribe to auth state changes
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u || null);
+      if (u) {
+        // keep UID + email in session for cross-app usage
+        if (u.email) sessionStorage.setItem("userEmail", u.email);
+        if (u.uid) sessionStorage.setItem("userId", u.uid);
+      } else {
+        // signed out in this or another tab
+        sessionStorage.removeItem("userId");
+        sessionStorage.removeItem("userEmail");
+      }
       const email = u?.email || sessionStorage.getItem("userEmail");
-      if (email) refreshRole(email);
+      const uid = u?.uid || sessionStorage.getItem("userId");
+      if (email || uid) refreshRole(email, uid);
       else {
         setIsAdmin(false);
         setTenantId("vendor");
@@ -120,9 +141,10 @@ function MasterLayoutInner({ children }) {
 
   async function handleLogout(e) {
     e?.preventDefault?.();
-    const userEmail = auth.currentUser?.email || null;
+    const userEmail = auth.currentUser?.email || sessionStorage.getItem("userEmail") || null;
+    const userId = auth.currentUser?.uid || sessionStorage.getItem("userId") || null;
     try {
-      await writeAuditLog({ action: "LOGOUT", userEmail });
+      await writeAuditLog({ action: "LOGOUT", userEmail, userId });
     } catch {}
     try {
       await auth.signOut?.();
@@ -130,6 +152,7 @@ function MasterLayoutInner({ children }) {
     sessionStorage.removeItem("tenantId");
     sessionStorage.removeItem("role");
     sessionStorage.removeItem("userEmail");
+    sessionStorage.removeItem("userId");
     navigate("/login", { replace: true });
   }
 

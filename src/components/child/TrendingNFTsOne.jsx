@@ -318,52 +318,70 @@ const TrendingNFTsOne = () => {
             )}
 
             {!loading &&
-              filteredServices.map((service) => (
-                <div className="col-12 col-md-6 col-lg-3" key={service.id}>
-                  <div className="card bg-base radius-16 overflow-hidden h-100">
-                    <div className="row g-0 align-items-stretch">
-                      <div className="col-auto">
-                        <img
-                          style={{ width: 150, height: '100%', maxHeight: 200, objectFit: 'cover' }}
-                          src={service.imageUrl}
-                          alt={service.title}
-                          className="d-block"
-                        />
-                      </div>
-                      <div className="col">
-                        <div className="p-12 d-flex flex-column h-100">
-                          <div className="d-flex align-items-start justify-content-between gap-2">
-                            <h6 className="text-md fw-bold text-primary-light mb-1">{service.title}</h6>
-                            <span className="text-sm fw-semibold text-primary-600">★ {Number(service.rating || 0).toFixed(1)}</span>
-                          </div>
-                          <div className="text-secondary small mb-2">{service.vendor}{service.category ? ` · ${service.category}` : ''}</div>
-                          <div className="mt-auto d-flex align-items-center justify-content-between gap-8 flex-wrap">
-                            <span className="text-sm text-secondary-light fw-medium">
-                              Price: <span className="text-sm text-primary-light fw-semibold">R{Number(service.price || 0).toLocaleString()}</span>
-                            </span>
-                            <div className="d-flex align-items-center gap-8">
+              filteredServices.map((service) => {
+                const rating = Number(service.rating || 0);
+                const reviewsCount = Number(service.reviewCount || (Array.isArray(service.reviews) ? service.reviews.length : 0) || 0);
+                const isSub = subs.has(String(service.id));
+                return (
+                  <div className="col-12 col-md-6 col-lg-4" key={service.id}>
+                    <article
+                      className="card p-1 h-100"
+                      tabIndex={0}
+                      aria-label={`${service.title || 'Listing'} card`}
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      <div className="row g-1 align-items-start">
+                        <div className="col-4 d-flex align-items-center justify-content-center">
+                          <img
+                            src={service.imageUrl}
+                            alt={service.title || 'Listing image'}
+                            className="img-fluid rounded"
+                            style={{ maxHeight: '6.8rem', objectFit: 'contain' }}
+                          />
+                        </div>
+
+                        <div className="col-8 d-flex flex-column">
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div>
+                              <p className="fw-medium mb-1" style={{ fontSize: '1.1rem', lineHeight: 1.2 }}>{service.title}</p>
+                              <div className="text-muted small" style={{ fontSize: '0.74rem' }}>
+                                {service.vendor || 'Unknown'}
+                                {service.category ? <span><span className="mx-1">|</span>{service.category}</span> : null}
+                              </div>
+                            </div>
+                            <div className="d-flex flex-column gap-1 pt-1">
                               <button
                                 type="button"
-                                onClick={() => openReview(service.id)}
-                                className="btn btn-sm rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white"
+                                className={isSub ? "btn btn-sm rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6" : "btn btn-sm  rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"}
+                                style={{ fontSize: '0.74rem', padding: '0.2rem 0.45rem' }}
+                                onClick={() => toggleSubscribe(service.id)}
                               >
-                                {(service.reviews?.length || service.reviewCount || 0) > 0 ? 'Reviews' : 'Write a review'}
+                                {isSub ? 'Subscribed' : 'Subscribe'}
                               </button>
                               <button
                                 type="button"
-                                className={subs.has(String(service.id)) ? "btn btn-sm rounded-pill bg-neutral-200 text-neutral-900 radius-8 px-12 py-6" : "btn btn-sm rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"}
-                                onClick={() => toggleSubscribe(service.id)}
+                                className="btn rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white"
+                                style={{ fontSize: '0.74rem', padding: '0.2rem 0.45rem' }}
+                                onClick={() => openReview(service.id)}
                               >
-                                {subs.has(String(service.id)) ? 'Subscribed' : 'Subscribe'}
+                                {reviewsCount > 0 ? 'Review' : 'Write review'}
                               </button>
                             </div>
                           </div>
+
+                          <div className="d-flex align-items-center small" style={{ fontSize: '0.74rem' }}>
+                            <svg className="me-1" width="12" height="12" fill="currentColor" viewBox="0 0 24 24" role="img" aria-label="rating star">
+                              <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            </svg>
+                            <span className="me-1">{rating.toFixed(1)}</span>
+                            <span className="text-muted">({reviewsCount} {reviewsCount === 1 ? 'rating' : 'ratings'})</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </article>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
             {!loading && filteredServices.length === 0 && (
               <div className="col-12 text-center text-secondary-light">
