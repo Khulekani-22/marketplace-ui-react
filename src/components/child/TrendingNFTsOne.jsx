@@ -23,7 +23,13 @@ const normalize = (s) => ({
 // Only show approved items to end users
 const isApproved = (s) => s.status === "approved";
 
-const TrendingNFTsOne = ({ query: controlledQuery, onQueryChange }) => {
+const TrendingNFTsOne = ({
+  query: controlledQuery,
+  onQueryChange,
+  category: controlledCategory,
+  onCategoryChange,
+  onCategoriesChange,
+}) => {
   const tenantId = useMemo(
     () => sessionStorage.getItem("tenantId") || "vendor",
     []
@@ -38,7 +44,10 @@ const TrendingNFTsOne = ({ query: controlledQuery, onQueryChange }) => {
   const servicesRef = useRef(baseApproved);
   const versionRef = useRef(0); // guards against stale fetch overwriting fresher state
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("All");
+  // Category filter (controlled or internal)
+  const [internalActiveTab, setInternalActiveTab] = useState("All");
+  const activeTab = controlledCategory ?? internalActiveTab;
+  const setActiveTab = onCategoryChange ?? setInternalActiveTab;
   // Allow parent to control the search query; fall back to local state
   const [internalQuery, setInternalQuery] = useState("");
   const query = controlledQuery ?? internalQuery;
@@ -163,6 +172,13 @@ const TrendingNFTsOne = ({ query: controlledQuery, onQueryChange }) => {
     );
     return ["All", ...uniq];
   }, [services]);
+
+  // Bubble up categories to parent when available
+  useEffect(() => {
+    try {
+      if (typeof onCategoriesChange === 'function') onCategoriesChange(categories);
+    } catch {}
+  }, [categories, onCategoriesChange]);
 
   const filteredServices = useMemo(() => {
     const tab = activeTab.toLowerCase();

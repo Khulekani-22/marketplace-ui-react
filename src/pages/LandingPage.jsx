@@ -1,14 +1,17 @@
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import TrendingNFTsOne from "../components/child/TrendingNFTsOne.jsx";
 
 export default function LandingPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] = useState(["All"]);
+  const [category, setCategory] = useState("All");
   const trendingRef = useRef(null);
   const handleHeroSubmit = (e) => {
     e.preventDefault();
     // Smooth scroll to the trending section when searching
     try { trendingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch {}
   };
+  const categoryOptions = useMemo(() => (Array.isArray(categories) && categories.length ? categories : ["All"]), [categories]);
   return (
     <>
       {/* Navbar */}
@@ -49,7 +52,7 @@ export default function LandingPage() {
           <div className="row justify-content-center text-center">
             <div className="col-12 col-lg-9">
               <h1 className="display-4 fw-bold lh-sm mb-3">
-                Find effective <span className="text-gradient">solutions</span> ,grow
+                Find effective <span className="text-gradient">solutions</span>, grow
                 your <span className="text-gradient">business</span> with a click
               </h1>
               <p className="lead text-secondary mb-4">
@@ -60,7 +63,7 @@ export default function LandingPage() {
                   <i className="bi bi-play-fill" />
                   Watch Demo <span className="opacity-75">(3min)</span>
                 </a>
-                <a className="btn btn-outline-dark btn-lg rounded-pill px-4" href="#">View Listings</a>
+                <a className="btn btn-outline-dark bg-hover-primary-800 hover-text-primary-200 border text-neutral-500 border-neutral-700 btn-lg rounded-pill px-4" href="#">View Listings</a>
               </div>
             </div>
           </div>
@@ -92,13 +95,17 @@ export default function LandingPage() {
 
                         {/* Category dropdown */}
                         <div className="col-12 col-md-3">
-                          <select className="form-select form-select-lg" defaultValue="">
-                            <option value="">All Categories</option>
-                            <option value="1">Legal</option>
-                            <option value="2">Accounting</option>
-                            <option value="3">Governance</option>
-                            <option value="4">Mentors</option>
-                            <option value="5">Business Development</option>
+                          <select
+                            className="form-select form-select-lg"
+                            value={category}
+                            onChange={(e) => {
+                              const next = e.target.value || "All";
+                              setCategory(next);
+                            }}
+                          >
+                            {categoryOptions.map((c) => (
+                              <option key={c} value={c}>{c === 'All' ? 'All Categories' : c}</option>
+                            ))}
                           </select>
                         </div>
 
@@ -149,7 +156,13 @@ export default function LandingPage() {
           </div>
           <div className="row">
             <div className="col-12">
-              <TrendingNFTsOne query={searchQuery} onQueryChange={setSearchQuery} />
+              <TrendingNFTsOne
+                query={searchQuery}
+                onQueryChange={setSearchQuery}
+                category={category}
+                onCategoryChange={setCategory}
+                onCategoriesChange={setCategories}
+              />
             </div>
           </div>
         </div>
