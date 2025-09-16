@@ -16,6 +16,7 @@ import { lazyWithRetry } from "./utils/lazyWithRetry";
 // --- Lazy pages ---
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard.jsx"));
 const HomePageOne = React.lazy(() => import("./pages/HomePageOne.jsx"));
+const LandingPage = React.lazy(() => import("./pages/LandingPage.jsx"));
 const HomePageTwo = React.lazy(() => import("./pages/HomePageTwo.jsx"));
 const HomePageThree = React.lazy(() => import("./pages/HomePageThree.jsx"));
 const HomePageFour = React.lazy(() => import("./pages/HomePageFour.jsx"));
@@ -160,7 +161,7 @@ export default function App() {
             />
 
             {/* public homes */}
-            <Route path="/" element={<HomePageOne />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/index-2" element={<HomePageTwo />} />
             <Route path="/index-3" element={<HomePageThree />} />
             <Route path="/index-4" element={<HomePageFour />} />
@@ -346,7 +347,6 @@ export default function App() {
 
             {/* legacy -> dashboard */}
             <Route path="/index-7" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/profile" element={<Navigate to="/profile-vendor" replace />} />
             
 

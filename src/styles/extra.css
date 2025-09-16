@@ -52,3 +52,27 @@ html.theme-smooth, html.theme-smooth body, html.theme-smooth * {
   color: var(--primary-text-200) !important;
   opacity: .85;
 }
+
+/* --- Landing hero utilities --- */
+.text-gradient{background:linear-gradient(90deg,#f6be3b,#ed853a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.glass{background:rgba(255,255,255,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:1rem}
+.blob{
+  position:absolute; inset:auto 0 -4rem 0; height:16rem;
+  background:radial-gradient(60% 50% at 30% 50%, rgba(59,130,246,.35), transparent 70%),
+             radial-gradient(60% 50% at 70% 50%, rgba(250,204,21,.35), transparent 70%),
+             radial-gradient(70% 60% at 50% 100%, rgba(16,185,129,.35), transparent 70%);
+  filter:blur(30px); border-radius:2rem; pointer-events:none;
+}
+.float-badge{
+  position:absolute; padding:.75rem; border-radius:1rem; box-shadow:0 10px 30px rgba(0,0,0,.08);
+  background:#fff;
+  animation:float 7s ease-in-out infinite;
+}
+.float-badge img{width:28px; height:28px}
+@keyframes float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-10px)}
+}
+@media (prefers-reduced-motion: reduce){
+  .float-badge, .hero-fade{animation:none}
+}
