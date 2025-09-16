@@ -23,7 +23,7 @@ const normalize = (s) => ({
 // Only show approved items to end users
 const isApproved = (s) => s.status === "approved";
 
-const TrendingNFTsOne = () => {
+const TrendingNFTsOne = ({ query: controlledQuery, onQueryChange }) => {
   const tenantId = useMemo(
     () => sessionStorage.getItem("tenantId") || "vendor",
     []
@@ -39,7 +39,10 @@ const TrendingNFTsOne = () => {
   const versionRef = useRef(0); // guards against stale fetch overwriting fresher state
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("All");
-  const [query, setQuery] = useState("");
+  // Allow parent to control the search query; fall back to local state
+  const [internalQuery, setInternalQuery] = useState("");
+  const query = controlledQuery ?? internalQuery;
+  const setQuery = onQueryChange ?? setInternalQuery;
   const [reviews, setReviews] = useState({}); // serviceId -> { rating, comment }
   const [modal, setModal] = useState({ open: false, id: null, showAll: false, page: 0 });
   const [toast, setToast] = useState("");

@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import TrendingNFTsOne from "../components/child/TrendingNFTsOne.jsx";
 
 export default function LandingPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const trendingRef = useRef(null);
+  const handleHeroSubmit = (e) => {
+    e.preventDefault();
+    // Smooth scroll to the trending section when searching
+    try { trendingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch {}
+  };
   return (
     <>
       {/* Navbar */}
@@ -26,9 +33,9 @@ export default function LandingPage() {
           <div id="nav" className="collapse navbar-collapse">
             <ul className="navbar-nav mx-lg-auto gap-lg-3">
               <li className="nav-item"><a className="nav-link active" aria-current="page" href="#">Home</a></li>
-              <li className="nav-item"><a className="nav-link" href="#">Solutions</a></li>
-              <li className="nav-item"><a className="nav-link" href="#">Product</a></li>
-              <li className="nav-item"><a className="nav-link" href="#">Resources</a></li>
+              <li className="nav-item"><a className="nav-link" href="#">Software</a></li>
+              <li className="nav-item"><a className="nav-link" href="#">Services</a></li>
+              <li className="nav-item"><a className="nav-link" href="#">Mentors</a></li>
               <li className="nav-item"><a className="nav-link" href="#">Pricing</a></li>
             </ul>
             <a className="btn btn-primary bg-hover-primary-800 hover-text-primary-200 rounded-pill px-4" href="/login">Get Started</a>
@@ -71,10 +78,16 @@ export default function LandingPage() {
                 <div className="row g-3 justify-content-center">
                   <div className="col-12 col-lg-10">
                     <div className="p-4 rounded border bg-white shadow-sm">
-                      <form className="row g-2 align-items-center">
+                      <form className="row g-2 align-items-center" onSubmit={handleHeroSubmit}>
                         {/* Search input */}
                         <div className="col-12 col-md-8">
-                          <input type="text" className="form-control form-control-lg" placeholder="Search categories, or mentors..." />
+                          <input
+                            type="text"
+                            className="form-control form-control-lg"
+                            placeholder="Search categories, or mentors..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                          />
                         </div>
 
                         {/* Category dropdown */}
@@ -91,7 +104,7 @@ export default function LandingPage() {
 
                         {/* Search button */}
                         <div className="col-12 col-md-1 d-grid">
-                          <button type="submit" className="btn btn-primary btn-lg w-100">
+                          <button type="submit" className="btn btn-primary bg-hover-primary-800 hover-text-primary-200 btn-lg w-100">
                             <i className="bi bi-search" />
                           </button>
                         </div>
@@ -104,29 +117,29 @@ export default function LandingPage() {
 
             {/* Floating integrations */}
             <div className="float-badge shadow-sm" style={{ top: '-10px', left: '6%', animationDelay: '.2s' }} aria-hidden="true">
-              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/quickbooks.svg" alt="" />
+              <img src="assets/images/microsoft-teams.svg" alt="" />
             </div>
             <div className="float-badge shadow-sm" style={{ top: '30px', right: '10%', animationDelay: '.6s' }} aria-hidden="true">
-              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/microsoft-excel.svg" alt="" />
+              <img src="assets/images/skype.svg" alt="" />
             </div>
             <div className="float-badge shadow-sm" style={{ top: '55%', left: '2%', animationDelay: '.9s' }} aria-hidden="true">
-              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/shopify.svg" alt="" />
+              <img src="assets/images/paypal.svg" alt="" />
             </div>
             <div className="float-badge shadow-sm" style={{ top: '60%', right: '6%', animationDelay: '1.2s' }} aria-hidden="true">
-              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/google-sheets.svg" alt="" />
+              <img src="assets/images/wordpress.svg" alt="" />
             </div>
             <div className="float-badge shadow-sm" style={{ top: '15%', left: '22%', animationDelay: '1.4s' }} aria-hidden="true">
-              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/stripe.svg" alt="" />
+              <img src="assets/images/vimeo.svg" alt="" />
             </div>
             <div className="float-badge shadow-sm" style={{ top: '22%', right: '22%', animationDelay: '1.6s' }} aria-hidden="true">
-              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/airtable.svg" alt="" />
+              <img src="assets/images/slack.svg" alt="" />
             </div>
           </div>
         </div>
       </header>
 
       {/* Trending listings (login required to subscribe) */}
-      <main className="bg-light py-5">
+      <main className="bg-light py-5" ref={trendingRef}>
         <div className="container">
           <div className="row justify-content-center mb-4">
             <div className="col-12 col-lg-9 text-center">
@@ -136,7 +149,7 @@ export default function LandingPage() {
           </div>
           <div className="row">
             <div className="col-12">
-              <TrendingNFTsOne />
+              <TrendingNFTsOne query={searchQuery} onQueryChange={setSearchQuery} />
             </div>
           </div>
         </div>
