@@ -8,7 +8,7 @@ const ViewDetailsPage = () => {
       {/* MasterLayout */}
       <MasterLayout>
         {/* Breadcrumb */}
-        <Breadcrumb title='Components / Email' />
+        <Breadcrumb title='Message Center' />
 
         {/* ViewDetailsLayer */}
         <ViewDetailsLayer />

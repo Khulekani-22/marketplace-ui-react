@@ -1,6 +1,7 @@
 // src/pages/VendorMyListings.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useMessages } from "../context/MessagesContext.jsx";
 import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/VendorContext";
 import appDataLocal from "../data/appData.json";
@@ -24,6 +25,7 @@ function StatusChip({ s }) {
 export default function VendorMyListings() {
   const navigate = useNavigate();
   const { vendor, ensureVendorId } = useVendor();
+  const { refresh: refreshMessages, syncMessagesToLive } = useMessages();
   const tenantId = useMemo(
     () => sessionStorage.getItem("tenantId") || "vendor",
     []
@@ -115,6 +117,7 @@ export default function VendorMyListings() {
         content: feedback.content,
       });
       setFeedback((f) => ({ ...f, sending: false, done: true }));
+      try { await refreshMessages(); await syncMessagesToLive(); } catch {}
       setTimeout(() => closeFeedback(), 1200);
     } catch (e) {
       setFeedback((f) => ({ ...f, sending: false, err: e?.response?.data?.message || e?.message || "Failed to send" }));

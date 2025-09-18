@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
 import { auth } from "../lib/firebase";
-import { api } from "../lib/api";
+import { useAppSync } from "../context/AppSyncContext.jsx";
 import { Link } from "react-router-dom";
 
 export default function ReviewsWidget() {
@@ -13,19 +13,18 @@ export default function ReviewsWidget() {
   const versionRef = useRef(0);
   const [modal, setModal] = useState({ open: false, id: null, showAll: false, page: 0 });
   const [toast, setToast] = useState("");
+  const { appData } = useAppSync();
 
   useEffect(() => {
-    const startVer = versionRef.current;
-    (async () => {
-      try {
-        const { data: live } = await api.get(`/api/lms/live`);
-        const items = Array.isArray(live?.services) ? live.services.slice(0, 8) : [];
-        if (startVer === versionRef.current) setServices(items);
-      } catch (e) {
-        setErr(e?.message || "Failed to load listings");
-      }
-    })();
-  }, [tenantId]);
+    try {
+      const live = appData || appDataLocal;
+      const items = Array.isArray(live?.services) ? live.services.slice(0, 8) : [];
+      setServices(items);
+    } catch (e) {
+      setErr(e?.message || "Failed to load listings");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId, appData]);
 
   function setField(id, k, v) {
     setReviews((prev) => ({ ...prev, [id]: { ...(prev[id] || {}), [k]: v } }));

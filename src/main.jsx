@@ -3,7 +3,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
-import { VendorProvider, useVendor } from "./context/VendorContext";
+import { VendorProvider } from "./context/VendorContext";
+import { MessagesProvider } from "./context/MessagesContext.jsx";
 
 // --- Styles (order matters: base CSS before component CSS) ---
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -40,7 +41,9 @@ createRoot(rootEl).render(
   // <React.StrictMode> can be re-enabled if desired
   <BrowserRouter>
     <VendorProvider>
-      <App />
+      <MessagesProvider>
+        <App />
+      </MessagesProvider>
     </VendorProvider>
   </BrowserRouter>
 );

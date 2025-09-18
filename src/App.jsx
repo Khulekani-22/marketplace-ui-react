@@ -2,6 +2,7 @@
 import React, { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import RouteScrollToTop from "./helper/RouteScrollToTop";
+import { AppSyncProvider } from "./context/AppSyncContext.jsx";
 
 // Shell / guards
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
@@ -138,6 +139,7 @@ export default function App() {
       <RouteScrollToTop />
       <ErrorBoundary>
         <Suspense fallback={<Fallback />}>
+          <AppSyncProvider>
           <Routes>
             {/* auth */}
             <Route path="/login" element={<LoginForm />} />
@@ -353,6 +355,7 @@ export default function App() {
             {/* 404 */}
             <Route path="*" element={<ErrorPage />} />
           </Routes>
+          </AppSyncProvider>
         </Suspense>
       </ErrorBoundary>
     </>

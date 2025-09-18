@@ -3,6 +3,7 @@ import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
 import { useVendor } from "../context/VendorContext";
 import { api } from "../lib/api";
+import { useAppSync } from "../context/AppSyncContext.jsx";
 import { Link } from "react-router-dom";
 import appDataLocal from "../data/appData.json";
 import ReactApexChart from "react-apexcharts";
@@ -18,6 +19,7 @@ export default function VendorDashboardPage() {
   const [subByService, setSubByService] = useState({});
   const [salesTime, setSalesTime] = useState({ monthly: {}, quarterly: {}, annual: {} });
   const [rangeMonths, setRangeMonths] = useState(6);
+  const { appData } = useAppSync();
 
   useEffect(() => {
     (async () => {
@@ -25,10 +27,7 @@ export default function VendorDashboardPage() {
       if (!vendor) return;
       setLoading(true);
       try {
-        const live = await api
-          .get(`/api/lms/live`)
-          .then((r) => r.data)
-          .catch(() => appDataLocal);
+        const live = appData || appDataLocal;
         const all = Array.isArray(live?.services) ? live.services : [];
         const vId = vendor?.vendorId || vendor?.id || "";
         const vEmail = (vendor?.email || vendor?.contactEmail || "").toLowerCase();

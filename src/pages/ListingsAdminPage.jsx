@@ -1,7 +1,9 @@
 // src/pages/ListingsAdminPage.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
+import { useMessages } from "../context/MessagesContext.jsx";
 import { api } from "../lib/api";
+import { useAppSync } from "../context/AppSyncContext.jsx";
 import { auth } from "../lib/firebase";
 import { writeAuditLog } from "../lib/audit";
 import MasterLayout from "../masterLayout/MasterLayout";
@@ -348,16 +350,19 @@ export default function ListingsAdminPage() {
     setText(JSON.stringify(prev, null, 2));
   }
 
+  const { appData } = useAppSync();
   // --------- Backend I/O ----------
   useEffect(() => {
     (async () => {
       setBusy(true);
       try {
-        const { data: live } = await api.get(`/api/lms/live`);
-        setData(live);
-        setText(JSON.stringify(live, null, 2));
-        localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(live));
-        setSelectedId(live?.services?.[0]?.id || "");
+        const live = appData;
+        if (live && Object.keys(live).length) {
+          setData(live);
+          setText(JSON.stringify(live, null, 2));
+          localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(live));
+          setSelectedId(live?.services?.[0]?.id || "");
+        }
         await refreshHistory();
       } catch {
         // stay with local fallback
@@ -366,7 +371,7 @@ export default function ListingsAdminPage() {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [appData]);
 
   async function refreshHistory() {
     try {
@@ -955,6 +960,7 @@ function ServicesEditor(props) {
   const selectedResolved = selected ? resolveVendor(selected) : null;
 
   const [msgModal, setMsgModal] = React.useState({ open: false, subject: "", content: "", sending: false, err: null, done: false });
+  const { syncMessagesToLive, refresh: refreshMessages } = useMessages();
   function openMsg() {
     if (!selected) return;
     const subj = `Listing feedback: ${selected.title}`;
@@ -976,6 +982,7 @@ function ServicesEditor(props) {
         content: msgModal.content,
       });
       setMsgModal((m) => ({ ...m, sending: false, done: true }));
+      try { await refreshMessages(); await syncMessagesToLive(); } catch {}
       setTimeout(() => closeMsg(), 1200);
     } catch (e) {
       setMsgModal((m) => ({ ...m, sending: false, err: e?.response?.data?.message || e?.message || "Failed to send" }));

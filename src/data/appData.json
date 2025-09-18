@@ -2806,14 +2806,14 @@
     {
       "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "name": "22OnSloane Digital Team",
+      "name": "22 On Sloane",
       "companyName": "22OnSloane Digital Team",
       "email": "22onsloanedigitalteam@gmail.com",
       "contactEmail": "22onsloanedigitalteam@gmail.com",
       "website": "",
-      "phone": "",
-      "country": "",
-      "city": "",
+      "phone": "+27763732884",
+      "country": "South Africa",
+      "city": "Sandton",
       "addressLine": "",
       "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2024/06/logo-mark.jpg",
       "bannerUrl": "",
@@ -2834,10 +2834,11 @@
       },
       "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "lastUpdated": "2025-08-28T11:17:06.926Z",
-      "tenantId": "public"
+      "tenantId": "public",
+      "kycStatus": "pending"
     },
     {
-      "name": "khulekani",
+      "name": "22 On Sloane",
       "kycStatus": "pending",
       "contactEmail": "khulekani@22onsloane.co",
       "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
@@ -2864,6 +2865,36 @@
       "registrationNo": "",
       "status": "pending",
       "id": "72866876-2d5e-4a90-84d8-ab9b50db4611",
+      "tenantId": "22onsloane"
+    },
+    {
+      "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "name": "22OnSloane Digital Team",
+      "kycStatus": "approved",
+      "contactEmail": "22onsloanedigitalteam@gmail.com",
+      "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "phone": "",
+      "website": "",
+      "description": "",
+      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2024/06/logo-mark.jpg",
+      "bannerUrl": "",
+      "country": "",
+      "city": "",
+      "addressLine": "",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
       "tenantId": "22onsloane"
     }
   ],
@@ -3044,8 +3075,40 @@
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "22onsloane",
-      "createdAt": "2025-09-16T06:31:21.475Z",
-      "canceledAt": "2025-09-16T06:31:22.794Z"
+      "createdAt": "2025-09-16T12:14:56.640Z",
+      "canceledAt": "2025-09-16T12:14:57.318Z"
+    },
+    {
+      "id": "6384bfc6-3ef3-41f2-b512-75f0cf88b886",
+      "type": "service",
+      "serviceId": "9",
+      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+      "email": "khulekani@22onsloane.co",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "22onsloane",
+      "createdAt": "2025-09-16T12:14:58.448Z",
+      "canceledAt": "2025-09-16T12:15:02.004Z"
+    },
+    {
+      "id": "dab386aa-ad25-4a97-9b4e-bdda16ac4d12",
+      "type": "service",
+      "serviceId": "4",
+      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
+      "email": "khulekani@22onsloane.co",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "22onsloane",
+      "createdAt": "2025-09-16T12:14:55.220Z",
+      "canceledAt": "2025-09-16T12:14:55.788Z"
+    },
+    {
+      "id": "310f483c-5f7a-4636-9ba0-2e1651b7c19a",
+      "type": "service",
+      "serviceId": "2",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "email": "22onsloanedigitalteam@gmail.com",
+      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "tenantId": "public",
+      "createdAt": "2025-09-17T11:51:09.146Z"
     }
   ]
 }

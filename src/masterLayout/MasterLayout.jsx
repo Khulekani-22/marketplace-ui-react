@@ -10,15 +10,11 @@ import { writeAuditLog } from "../lib/audit";
 import HeroBanner from "../components/HeroBanner";
 import { getHeroForPath } from "../utils/heroConfig";
 import AIAssistant from "../components/assistant/AIAssistant";
-import { MessagesProvider, useMessages } from "../context/MessagesContext.jsx";
+import { useMessages } from "../context/MessagesContext.jsx";
 
 
 export default function MasterLayout({ children }) {
-  return (
-    <MessagesProvider>
-      <MasterLayoutInner>{children}</MasterLayoutInner>
-    </MessagesProvider>
-  );
+  return <MasterLayoutInner>{children}</MasterLayoutInner>;
 }
 
 function MasterLayoutInner({ children }) {
@@ -274,11 +270,11 @@ function MasterLayoutInner({ children }) {
 
             <hr></hr>
 
-            {/* Messages / Inbox */}
+            {/* Messages / Message Center */}
             <li>
               <NavLink to="/email" className={navClass}>
                 <Icon icon="tabler:message-check" className="menu-icon" />
-                <span>Inbox</span>
+                <span>Message Center</span>
               </NavLink>
             </li>
 
@@ -470,7 +466,7 @@ function MasterLayoutInner({ children }) {
                           className="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"
                           to="/email"
                         >
-                          <Icon icon="tabler:message-check" className="icon text-xl" /> Inbox
+                          <Icon icon="tabler:message-check" className="icon text-xl" /> Message Center
                         </Link>
                       </li>
                       <li>

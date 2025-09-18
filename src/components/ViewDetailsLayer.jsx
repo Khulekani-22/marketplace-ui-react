@@ -59,7 +59,7 @@ const ViewDetailsLayer = () => {
                             className='icon line-height-1'
                           />
                         </span>
-                        <span className='fw-semibold'>Inbox</span>
+                        <span className='fw-semibold'>Message Center</span>
                       </span>
                       <span className='fw-medium'>800</span>
                     </span>

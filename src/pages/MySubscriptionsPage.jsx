@@ -2,7 +2,7 @@ import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
 import { useEffect, useMemo, useState } from "react";
 import { auth } from "../lib/firebase";
-import { api } from "../lib/api";
+import { useAppSync } from "../context/AppSyncContext.jsx";
 import { fetchMySubscriptions, unsubscribeFromService } from "../lib/subscriptions";
 
 export default function MySubscriptionsPage() {
@@ -11,6 +11,7 @@ export default function MySubscriptionsPage() {
   const [err, setErr] = useState("");
   const [busyMap, setBusyMap] = useState({}); // serviceId -> boolean
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
+  const { appData } = useAppSync();
 
   useEffect(() => {
     let cancelled = false;
@@ -26,14 +27,7 @@ export default function MySubscriptionsPage() {
         const subs = await fetchMySubscriptions();
         const ids = new Set(subs.filter((x)=> (x.type||'service')==='service').map((x)=> String(x.serviceId)));
 
-        // Load live services across tenant and filter by ids
-        let services = [];
-        try {
-          const { data: live } = await api.get(`/api/lms/live`);
-          services = Array.isArray(live?.services) ? live.services : [];
-        } catch {
-          services = [];
-        }
+        const services = Array.isArray(appData?.services) ? appData.services : [];
         const selected = services.filter((s) => ids.has(String(s.id)));
         if (!cancelled) setItems(selected);
       } catch (e) {
@@ -105,4 +99,3 @@ export default function MySubscriptionsPage() {
     </MasterLayout>
   );
 }
-

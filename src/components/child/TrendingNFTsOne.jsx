@@ -2,8 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../../lib/firebase";
-import { api } from "../../lib/api";
-import appData from "../../data/appData.json";
+import { useAppSync } from "../../context/AppSyncContext.jsx";
+import appDataLocal from "../../data/appData.json";
 import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../../lib/subscriptions";
 
 const API_BASE = "/api/lms";
@@ -37,7 +37,7 @@ const TrendingNFTsOne = ({
 
   // Start with local file as an immediate render fallback (approved only)
   const baseApproved = useMemo(
-    () => (appData.services || []).map(normalize).filter(isApproved),
+    () => (appDataLocal.services || []).map(normalize).filter(isApproved),
     []
   );
   const [services, setServices] = useState(baseApproved);
@@ -59,6 +59,7 @@ const TrendingNFTsOne = ({
   const [busy, setBusy] = useState(false);
   const [subs, setSubs] = useState(() => new Set()); // serviceId set
   const navigate = useNavigate();
+  const { appData } = useAppSync();
 
   function pickFresher(a = {}, b = {}) {
     const ca = Number(a.reviewCount || (Array.isArray(a.reviews) ? a.reviews.length : 0) || 0);
@@ -93,33 +94,19 @@ const TrendingNFTsOne = ({
   }
 
   async function refreshFromLive() {
-    const startVer = versionRef.current;
-    const { data: live } = await api.get(`/api/lms/live`);
-    const liveApproved = (live?.services || []).map(normalize).filter(isApproved);
+    const liveApproved = (appData?.services || []).map(normalize).filter(isApproved);
     const merged = mergeLists(servicesRef.current ?? services, baseApproved, liveApproved);
-    if (startVer === versionRef.current) setServices(merged);
+    setServices(merged);
   }
 
   // Load live data from backend; fall back silently on any error
   useEffect(() => {
-    let cancelled = false;
-    const startVer = versionRef.current;
-    (async () => {
-      try {
-        const { data: live } = await api.get(`/api/lms/live`);
-        const liveApproved = (live?.services || []).map(normalize).filter(isApproved);
-        const merged = mergeLists(servicesRef.current ?? services, baseApproved, liveApproved);
-        if (!cancelled && startVer === versionRef.current) setServices(merged);
-      } catch {
-        // ignore; keep bundled data
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [tenantId]);
+    const liveApproved = (appData?.services || []).map(normalize).filter(isApproved);
+    const merged = mergeLists(servicesRef.current ?? services, baseApproved, liveApproved);
+    setServices(merged);
+    setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId, appData]);
 
   // Load my subscriptions (if authed)
   useEffect(() => {

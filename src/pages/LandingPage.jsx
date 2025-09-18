@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import TrendingNFTsOne from "../components/child/TrendingNFTsOne.jsx";
 
 export default function LandingPage() {
@@ -11,6 +11,12 @@ export default function LandingPage() {
     // Smooth scroll to the trending section when searching
     try { trendingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch {}
   };
+  // Also autoscroll when typing in hero search
+  useEffect(() => {
+    if (!trendingRef.current) return;
+    // only scroll if user has typed something or cleared it; keeps behavior responsive
+    try { trendingRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch {}
+  }, [searchQuery]);
   const categoryOptions = useMemo(() => (Array.isArray(categories) && categories.length ? categories : ["All"]), [categories]);
   return (
     <>

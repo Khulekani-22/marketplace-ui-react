@@ -870,7 +870,7 @@ const SideNavAdmin = ({ children }) => {
                             icon='tabler:message-check'
                             className='icon text-xl'
                           />{" "}
-                          Inbox
+                          Message Center
                         </Link>
                       </li>
                       <li>

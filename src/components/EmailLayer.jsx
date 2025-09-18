@@ -5,34 +5,45 @@ import { useMessages } from "../context/MessagesContext.jsx";
 import { useVendor } from "../context/VendorContext.jsx";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
+import { useAppSync } from "../context/AppSyncContext.jsx";
 import { auth } from "../lib/firebase";
 
 const EmailLayer = () => {
-  const { threads, unreadCount, markRead, refresh, loading } = useMessages();
+  const { threads, unreadCount, markRead, refresh, loading, syncMessagesToLive } = useMessages();
   const { vendor } = useVendor();
   const [search, setSearch] = useState("");
   const [folder, setFolder] = useState("inbox"); // inbox | sent
+  // Role selection for viewing/sending context
+  const sessionRole = (typeof window !== 'undefined' ? sessionStorage.getItem('role') : null) || '';
+  const [viewAs, setViewAs] = useState(() => {
+    const saved = (typeof window !== 'undefined' ? sessionStorage.getItem('messageViewAs') : null) || '';
+    if (saved) return saved;
+    if (sessionRole === 'admin') return vendor?.vendorId ? 'vendor' : 'admin';
+    return vendor?.vendorId ? 'vendor' : 'user';
+  });
   const [compose, setCompose] = useState({ open: false, mode: vendor?.vendorId ? "vendor_admin" : "vendor_subscriber", serviceId: "", subject: "", content: "", sending: false, err: null, ok: false, subscriberEmail: "" });
   const [myListings, setMyListings] = useState([]);
   const [mySubs, setMySubs] = useState([]);
   const [subsSuggest, setSubsSuggest] = useState({ q: "", page: 1, pageSize: 10, total: 0, items: [], loading: false });
   const tenantId = (typeof window !== 'undefined' ? sessionStorage.getItem('tenantId') : null) || 'vendor';
+  const { appData } = useAppSync();
 
   const userEmail = (auth.currentUser?.email || sessionStorage.getItem('userEmail') || "").toLowerCase();
-  const role = (typeof window !== 'undefined' ? sessionStorage.getItem('role') : null) || '';
+  const role = sessionRole;
   const myVendorId = vendor?.vendorId || vendor?.id || '';
   const mySenderIds = useMemo(() => {
     const ids = [];
-    if (userEmail) ids.push(`user:${userEmail}`);
-    if (myVendorId) ids.push(`vendor:${String(myVendorId).toLowerCase()}`);
-    if (userEmail) ids.push(`vendor:${userEmail}`); // legacy vendor keyed by email
-    // Admin can appear as plain 'admin' (replies) or 'admin:<email>' (new threads)
-    if (role === 'admin') {
+    if (viewAs === 'user') {
+      if (userEmail) ids.push(`user:${userEmail}`);
+    } else if (viewAs === 'vendor') {
+      if (myVendorId) ids.push(`vendor:${String(myVendorId).toLowerCase()}`);
+      if (userEmail) ids.push(`vendor:${userEmail}`); // legacy vendor keyed by email
+    } else if (viewAs === 'admin') {
       ids.push('admin');
       if (userEmail) ids.push(`admin:${userEmail}`);
     }
     return ids;
-  }, [userEmail, myVendorId, role]);
+  }, [viewAs, userEmail, myVendorId]);
 
   const sentThreads = useMemo(() => {
     return threads.filter((t) => Array.isArray(t?.messages) && t.messages.some((m) => mySenderIds.includes(String(m.senderId || '').toLowerCase())));
@@ -43,7 +54,8 @@ const EmailLayer = () => {
   const sentCount = sentThreads.length;
   const inboxCount = inboxThreads.length;
 
-  const baseList = folder === 'sent' ? sentThreads : inboxThreads;
+  // Show all threads in Message Center inbox to avoid over-filtering by role identity.
+  const baseList = folder === 'sent' ? sentThreads : threads;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -60,6 +72,43 @@ const EmailLayer = () => {
     await Promise.all(threads.filter((t) => !t.read).map((t) => markRead(t.id, true)));
   };
 
+  // Manual sync state
+  const [syncBusy, setSyncBusy] = useState(false);
+  const [syncOk, setSyncOk] = useState(false);
+  const [syncErr, setSyncErr] = useState("");
+  const [lastSync, setLastSync] = useState(() => {
+    try { return localStorage.getItem('sl_messages_last_sync') || ""; } catch { return ""; }
+  });
+
+  async function handleSyncNow() {
+    setSyncBusy(true); setSyncErr(""); setSyncOk(false);
+    try {
+      const ok = await syncMessagesToLive();
+      if (!ok) throw new Error("Sync did not complete");
+      const ts = new Date().toISOString();
+      try { localStorage.setItem('sl_messages_last_sync', ts); } catch {}
+      setLastSync(ts);
+      setSyncOk(true);
+      setTimeout(() => setSyncOk(false), 1500);
+    } catch (e) {
+      setSyncErr(e?.message || "Sync failed");
+      setTimeout(() => setSyncErr(""), 2500);
+    } finally {
+      setSyncBusy(false);
+    }
+  }
+
+  // Persist role selection and adjust compose defaults
+  useEffect(() => {
+    try { sessionStorage.setItem('messageViewAs', viewAs); } catch {}
+    setCompose((c) => ({
+      ...c,
+      mode: viewAs === 'vendor' ? 'vendor_admin' : 'vendor_subscriber',
+      serviceId: '',
+      subscriberEmail: ''
+    }));
+  }, [viewAs]);
+
   function openCompose() {
     setCompose((c) => ({ ...c, open: true }));
   }
@@ -68,8 +117,7 @@ const EmailLayer = () => {
   }
   async function loadLists() {
     try {
-      const res = await fetch(`/api/lms/live`, { headers: { 'x-tenant-id': tenantId } });
-      const live = res.ok ? await res.json() : appDataLocal;
+      const live = appData || appDataLocal;
       const services = Array.isArray(live?.services) ? live.services : [];
       // Vendor listings
       if (vendor?.vendorId) {
@@ -131,6 +179,7 @@ const EmailLayer = () => {
       await api.post(`/api/messages/compose`, payload);
       setCompose((c) => ({ ...c, sending: false, ok: true }));
       await refresh();
+      try { await syncMessagesToLive(); } catch {}
       setTimeout(() => closeCompose(), 1200);
     } catch (e) {
       const status = e?.response?.status;
@@ -147,7 +196,7 @@ const EmailLayer = () => {
         <div className='card h-100 p-0'>
           <div className='card-body p-24'>
             <div className='mt-16'>
-              <button type='button' className='btn btn-primary btn-sm w-100 mb-3 d-flex align-items-center gap-2' onClick={openCompose}>
+              <button type='button' className='btn btn-primary btn-sm w-100 mb-3 d-flex align-items-center gap-2' onClick={openCompose} disabled={viewAs === 'admin'}>
                 <Icon icon='fa6-regular:square-plus' className='icon text-lg line-height-1' />
                 Compose
               </button>
@@ -159,7 +208,7 @@ const EmailLayer = () => {
                         <span className='icon text-xxl line-height-1 d-flex'>
                           <Icon icon='uil:envelope' className='icon line-height-1' />
                         </span>
-                        <span className='fw-semibold'>Inbox</span>
+                        <span className='fw-semibold'>Message Center</span>
                       </span>
                       <span className='fw-medium'>{inboxCount}</span>
                     </span>
@@ -194,11 +243,27 @@ const EmailLayer = () => {
                 <button type='button' className='btn btn-sm btn-outline-secondary' onClick={handleMarkAllRead} disabled={allRead}>
                   <Icon icon='gravity-ui:envelope-open' className='me-1' /> Mark all as read
                 </button>
+                <button type='button' className='btn btn-sm btn-outline-secondary' onClick={handleSyncNow} disabled={syncBusy} title='Write messages to server appData.json'>
+                  <Icon icon='mdi:cloud-upload-outline' className='me-1' /> {syncBusy ? 'Syncing…' : 'Sync Now'}
+                </button>
+                <div className='d-flex align-items-center gap-2'>
+                  <label className='form-label mb-0 small text-muted'>View as</label>
+                  <select className='form-select form-select-sm' value={viewAs} onChange={(e)=>setViewAs(e.target.value)}>
+                    <option value='user'>Startup</option>
+                    {vendor?.vendorId && (<option value='vendor'>Vendor</option>)}
+                    {role === 'admin' && (<option value='admin'>Admin</option>)}
+                  </select>
+                </div>
               </div>
-              <form className='navbar-search d-flex' onSubmit={(e) => e.preventDefault()}>
-                <input type='text' className='bg-base h-40-px w-auto' name='search' placeholder='Search' value={search} onChange={(e) => setSearch(e.target.value)} />
-                <Icon icon='ion:search-outline' className='icon' />
-              </form>
+              <div className='d-flex align-items-center gap-3'>
+                <form className='navbar-search d-flex' onSubmit={(e) => e.preventDefault()}>
+                  <input type='text' className='bg-base h-40-px w-auto' name='search' placeholder='Search' value={search} onChange={(e) => setSearch(e.target.value)} />
+                  <Icon icon='ion:search-outline' className='icon' />
+                </form>
+                <div className='small text-muted'>
+                  {syncErr ? (<span className='text-danger'>{syncErr}</span>) : syncOk ? (<span className='text-success'>Synced</span>) : (lastSync ? `Last sync: ${new Date(lastSync).toLocaleString()}` : '')}
+                </div>
+              </div>
             </div>
           </div>
           <div className='card-body p-0'>
@@ -217,7 +282,9 @@ const EmailLayer = () => {
                 </li>
               ))}
               {filtered.length === 0 && (
-                <li className='px-24 py-16 text-muted'>No messages</li>
+                <li className='px-24 py-16 text-muted'>
+                  {folder === 'sent' ? 'No sent messages for this role; try switching “View as”.' : 'No messages yet. Try switching “View as” or start a conversation.'}
+                </li>
               )}
             </ul>
           </div>
@@ -238,12 +305,12 @@ const EmailLayer = () => {
               <div className='mb-2'>
                 <label className='form-label'>Type</label>
                 <select className='form-select' value={compose.mode} onChange={(e) => setCompose((c) => ({ ...c, mode: e.target.value, serviceId: '', subscriberEmail: '' }))}>
-                  {vendor?.vendorId && <option value='vendor_admin'>Ask Admin about my listing</option>}
-                  <option value='vendor_subscriber'>Message Vendor about a subscribed listing</option>
-                  {vendor?.vendorId && <option value='vendor_to_subscriber'>Message a subscriber of my listing</option>}
+                  {viewAs === 'vendor' && vendor?.vendorId && <option value='vendor_admin'>Ask Admin about my listing</option>}
+                  {viewAs === 'user' && <option value='vendor_subscriber'>Message Vendor about a subscribed listing</option>}
+                  {viewAs === 'vendor' && vendor?.vendorId && <option value='vendor_to_subscriber'>Message a subscriber of my listing</option>}
                 </select>
               </div>
-              {compose.mode === 'vendor_admin' && vendor?.vendorId && (
+              {compose.mode === 'vendor_admin' && viewAs === 'vendor' && vendor?.vendorId && (
                 <div className='mb-2'>
                   <label className='form-label'>Select one of my listings</label>
                   <select className='form-select' value={compose.serviceId} onChange={(e) => setCompose((c) => ({ ...c, serviceId: e.target.value }))}>
@@ -254,7 +321,7 @@ const EmailLayer = () => {
                   </select>
                 </div>
               )}
-              {compose.mode === 'vendor_subscriber' && (
+              {compose.mode === 'vendor_subscriber' && viewAs === 'user' && (
                 <div className='mb-2'>
                   <label className='form-label'>Select one of my subscriptions</label>
                   <select className='form-select' value={compose.serviceId} onChange={(e) => setCompose((c) => ({ ...c, serviceId: e.target.value }))}>
@@ -265,7 +332,7 @@ const EmailLayer = () => {
                   </select>
                 </div>
               )}
-              {compose.mode === 'vendor_to_subscriber' && (
+              {compose.mode === 'vendor_to_subscriber' && viewAs === 'vendor' && (
                 <>
                   <div className='mb-2'>
                     <label className='form-label'>Select my listing</label>

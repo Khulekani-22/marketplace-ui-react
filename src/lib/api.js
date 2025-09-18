@@ -9,8 +9,8 @@ function computeApiBases() {
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
   const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
   const make = (port) => `${protocol}//${host}:${port}`;
-  // Prefer typical backend ports first: 5000, then 5001, 5500; include 5055 as a legacy fallback
-  return [make(5000), make(5001), make(5500), make(5055)];
+  // Prefer ports in this order: 5001, 5055, then 5000 (per environment requirement)
+  return [make(5001), make(5055), make(5000)];
 }
 
 const CANDIDATES = computeApiBases();

@@ -79,8 +79,28 @@ async function ensureFile(p, defaultContent) {
 }
 
 async function readJson(p) {
-  const txt = await fsp.readFile(p, "utf8");
-  return JSON.parse(txt);
+  const full = path.resolve(p);
+  try {
+    const txt = await fsp.readFile(full, "utf8");
+    return JSON.parse(txt);
+  } catch (e) {
+    // If the primary appData.json is unreadable or invalid, fall back to src/data/appData.json
+    const isAppData = full === APP_DATA;
+    const code = e && typeof e === 'object' ? e.code : undefined;
+    const parseErr = e instanceof SyntaxError || /JSON/.test(String(e?.message || ""));
+    const readErr = code === 'ENOENT' || code === 'EISDIR' || code === 'EPERM';
+    if (isAppData && (parseErr || readErr)) {
+      try {
+        const txt2 = await fsp.readFile(APP_DATA_SRC, "utf8");
+        const json2 = JSON.parse(txt2);
+        console.warn("[LMS] Falling back to src/data/appData.json due to invalid backend/appData.json");
+        return json2;
+      } catch (e2) {
+        // fall through and rethrow the original error
+      }
+    }
+    throw e;
+  }
 }
 
 async function writeJson(p, data) {
