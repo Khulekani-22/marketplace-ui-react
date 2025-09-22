@@ -30,6 +30,7 @@ export default function UserRoleManagement() {
   const [uidLookupAvailable, setUidLookupAvailable] = useState(true);
   const [alignSummary, setAlignSummary] = useState(null); // { email, changes }
   const [saveBusy, setSaveBusy] = useState(false);
+  const [checkpointBusy, setCheckpointBusy] = useState(false);
   const autoRetryRef = useRef(false);
 
   const sorted = useMemo(() => {
@@ -49,6 +50,15 @@ export default function UserRoleManagement() {
     });
   }, [sorted, query, roleFilter]);
 
+  function buildUserPayload(list) {
+    const safe = Array.isArray(list) ? list : [];
+    return safe.map((u) => ({
+      email: (u.email || "").toLowerCase(),
+      tenantId: (u.tenantId === "vendor" ? "public" : (u.tenantId || "public")),
+      role: u.role || "member",
+    }));
+  }
+
   async function refresh() {
     setLoading(true);
     setError("");
@@ -56,7 +66,11 @@ export default function UserRoleManagement() {
       const { data } = await api.get("/api/users");
       const list = Array.isArray(data) ? data : [];
       // Basic normalization
-      setUsers(list.map((u) => ({ email: (u.email || "").toLowerCase(), tenantId: u.tenantId || "vendor", role: u.role || "member" })));
+      setUsers(list.map((u) => ({
+        email: (u.email || "").toLowerCase(),
+        tenantId: (!u.tenantId || u.tenantId === "public") ? "vendor" : u.tenantId,
+        role: u.role || "member"
+      })));
       // Also fetch vendors in current tenant to know who already has a vendor profile
       try {
         const vendors = await api.get("/api/data/vendors").then((r) => r.data || []);
@@ -148,7 +162,8 @@ export default function UserRoleManagement() {
   }
 
   async function saveUser({ email, tenantId, role }) {
-    await api.post("/api/users", { email, tenantId, role });
+    const payloadTenant = tenantId === 'vendor' ? 'public' : tenantId;
+    await api.post("/api/users", { email, tenantId: payloadTenant, role });
     // If the current signed-in user was updated, sync session hints
     if (email.toLowerCase() === meEmail) {
       sessionStorage.setItem("tenantId", tenantId);
@@ -501,18 +516,14 @@ export default function UserRoleManagement() {
     try {
       // 1) Load current live appData
       const live = await api.get('/api/lms/live').then((r)=> r.data || {});
-      const base = live?.data && typeof live.data === 'object' ? live.data : {};
 
       // 2) Merge normalized users from current UI state
-      const normUsers = users.map((u)=> ({
-        email: (u.email || '').toLowerCase(),
-        tenantId: (u.tenantId === 'vendor' ? 'public' : (u.tenantId || 'public')),
-        role: u.role || 'member',
-      }));
-      const next = { ...base, users: normUsers };
+      const normUsers = buildUserPayload(users);
+      const merged = { ...live, users: normUsers };
 
-      // 3) Publish to live appData.json
-      await api.put('/api/lms/publish', { data: next });
+      // 3) Persist users mapping directly, then publish merged payload for other LMS consumers
+      await api.put('/api/users/bulk', { users: normUsers });
+      await api.put('/api/lms/publish', { data: merged });
       try {
         await writeAuditLog({
           action: 'USERS_SAVE_ALL',
@@ -523,10 +534,39 @@ export default function UserRoleManagement() {
         });
       } catch {}
       setOk('All changes saved to appData.json');
+      await refresh();
     } catch (e) {
       setError(e?.response?.data?.message || e?.message || 'Failed to save changes');
     } finally {
       setSaveBusy(false);
+    }
+  }
+
+  async function saveCheckpoint() {
+    setError("");
+    setOk("");
+    setCheckpointBusy(true);
+    try {
+      const live = await api.get('/api/lms/live').then((r)=> r.data || {});
+      const normUsers = buildUserPayload(users);
+      const merged = { ...live, users: normUsers };
+      await api.put('/api/users/bulk', { users: normUsers });
+      await api.post('/api/lms/checkpoints', { message: 'User Roles checkpoint', data: merged });
+      try {
+        await writeAuditLog({
+          action: 'USERS_CHECKPOINT',
+          userEmail: auth.currentUser?.email,
+          targetType: 'appData',
+          targetId: 'users',
+          metadata: { count: normUsers.length },
+        });
+      } catch {}
+      setOk('Checkpoint saved');
+      await refresh();
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message || 'Failed to save checkpoint');
+    } finally {
+      setCheckpointBusy(false);
     }
   }
 
@@ -576,11 +616,19 @@ export default function UserRoleManagement() {
                 <option>member</option>
               </select>
             </div>
-            <div className="align-self-end mb-1">
+            <div className="align-self-end mb-1 d-flex gap-2">
+              <button
+                className="btn btn-outline-secondary"
+                onClick={saveCheckpoint}
+                disabled={checkpointBusy || saveBusy}
+                title="Create a checkpoint containing the current user role assignments"
+              >
+                {checkpointBusy ? 'Saving…' : 'Save Checkpoint'}
+              </button>
               <button
                 className="btn btn-primary"
                 onClick={saveAllChanges}
-                disabled={saveBusy}
+                disabled={saveBusy || checkpointBusy}
                 title="Publish all user role/tenant mappings to live appData.json"
               >
                 {saveBusy ? 'Saving…' : 'Save All Changes'}

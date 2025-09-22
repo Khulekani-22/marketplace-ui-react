@@ -5,16 +5,19 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const proxyTarget = env.VITE_PROXY_TARGET || process.env.VITE_PROXY_TARGET || 'http://localhost:5055'
+  const host = env.VITE_HOST || 'localhost'
+  const port = Number(env.VITE_PORT || 5173)
 
   return {
     plugins: [react()],
     server: {
-      // Bind explicitly to localhost to avoid HMR reconnect loops
-      host: 'localhost',
-      port: 5173,
+      // Bind to the requested host (defaults to localhost for dev convenience)
+      host,
+      port,
+      strictPort: false,
       hmr: {
-        host: 'localhost',
-        clientPort: 5173,
+        host,
+        clientPort: port,
         protocol: 'ws',
       },
       // Ignore files that can change frequently and cause reload loops

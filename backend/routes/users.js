@@ -38,6 +38,23 @@ function collectUsers(data) {
   return Array.from(seen.values());
 }
 
+function sanitizeUsersPayload(list = []) {
+  const seen = new Map();
+  for (const entry of list) {
+    if (!entry || typeof entry !== "object") continue;
+    const email = normalizeEmail(entry.email);
+    if (!email) continue;
+    const role = entry.role === "admin" ? "admin" : "member";
+    const rawTenant = typeof entry.tenantId === "string" ? entry.tenantId.trim() : "";
+    const tenantId = mapTenant(rawTenant);
+    const uid = typeof entry.uid === "string" && entry.uid.trim() ? entry.uid.trim() : undefined;
+    const payload = { email, tenantId, role };
+    if (uid) payload.uid = uid;
+    seen.set(email, payload);
+  }
+  return Array.from(seen.values());
+}
+
 // List all user role mappings
 router.get("/", (_req, res) => {
   const data = getData();
@@ -100,7 +117,36 @@ router.post("/upgrade", (req, res) => {
   res.json({ ok: true, users: updated.users });
 });
 
-export default router;
+// Bulk replace users list (admin only, backs the "Save All Changes" action)
+router.put("/bulk", firebaseAuthRequired, (req, res) => {
+  try {
+    if (!isAdminRequest(req)) {
+      return res.status(403).json({ status: "error", message: "Forbidden" });
+    }
+
+    const incoming = Array.isArray(req.body?.users) ? req.body.users : [];
+    const sanitized = sanitizeUsersPayload(incoming);
+
+    const updated = saveData((data) => {
+      data.users = sanitized;
+      const tenants = Array.isArray(data.tenants) ? [...data.tenants] : [];
+      const known = new Set(tenants.map((t) => (t && typeof t === "object" ? t.id : t)).filter(Boolean));
+      sanitized.forEach((u) => {
+        const id = u.tenantId || "public";
+        if (id && id !== "public" && !known.has(id)) {
+          tenants.push({ id, name: id });
+          known.add(id);
+        }
+      });
+      data.tenants = tenants;
+      return data;
+    });
+
+    res.json({ ok: true, users: updated.users });
+  } catch (e) {
+    res.status(500).json({ status: "error", message: e?.message || "Failed to save users" });
+  }
+});
 
 // Admin-only: lookup Firebase UID by email
 function mapTenant(id){ return (id === 'vendor') ? 'public' : (id || 'public'); }
@@ -186,3 +232,5 @@ router.get("/all", firebaseAuthRequired, async (req, res) => {
     res.status(500).json({ status: "error", message: e?.message || "Failed to list users" });
   }
 });
+
+export default router;
