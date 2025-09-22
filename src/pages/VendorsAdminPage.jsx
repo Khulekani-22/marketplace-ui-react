@@ -150,7 +150,9 @@ export default function VendorsAdminPage() {
     const map = new Map();
     pools.flat().forEach((v) => {
       const n = normalizeVendor(v);
-      const key = n.vendorId || n.email || n.id;
+      // Prefer email as primary identity when available,
+      // fall back to vendorId, then id.
+      const key = n.email || n.vendorId || n.id;
       if (!map.has(key)) map.set(key, n);
     });
     return Array.from(map.values());
@@ -215,7 +217,11 @@ export default function VendorsAdminPage() {
         draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
         list.forEach((v) => {
           const n = normalizeVendor(v);
-          const idx = draft.startups.findIndex((x) => String(x.vendorId || x.id) === n.vendorId);
+          const idx = draft.startups.findIndex(
+            (x) =>
+              String(x.vendorId || x.id) === n.vendorId ||
+              ((x.email || x.contactEmail || "").toLowerCase() === (n.email || "").toLowerCase() && n.email)
+          );
           if (idx >= 0) draft.startups[idx] = { ...draft.startups[idx], ...n };
           else draft.startups.push(n);
         });
@@ -460,7 +466,11 @@ export default function VendorsAdminPage() {
           draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
           list.forEach((v) => {
             const n = normalizeVendor(v);
-            const idx = draft.startups.findIndex((x) => String(x.vendorId || x.id) === n.vendorId);
+            const idx = draft.startups.findIndex(
+              (x) =>
+                String(x.vendorId || x.id) === n.vendorId ||
+                ((x.email || x.contactEmail || "").toLowerCase() === (n.email || "").toLowerCase() && n.email)
+            );
             if (idx >= 0) draft.startups[idx] = { ...draft.startups[idx], ...n };
             else draft.startups.push(n);
           });

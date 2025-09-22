@@ -1,6 +1,7 @@
 import { Router } from "express";
 import admin from "firebase-admin";
 import { getData, saveData } from "../utils/dataStore.js";
+import { isAdminForTenant } from "../middleware/isAdmin.js";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 
 const router = Router();
@@ -102,18 +103,8 @@ router.post("/upgrade", (req, res) => {
 export default router;
 
 // Admin-only: lookup Firebase UID by email
-function isAdminRequest(req) {
-  try {
-    const email = (req.user?.email || "").toLowerCase();
-    if (!email) return false;
-    const data = getData();
-    const users = collectUsers(data);
-    const found = users.find((u) => (u.email || "").toLowerCase() === email);
-    return (found?.role || "") === "admin";
-  } catch {
-    return false;
-  }
-}
+function mapTenant(id){ return (id === 'vendor') ? 'public' : (id || 'public'); }
+function isAdminRequest(req) { return isAdminForTenant(req); }
 
 router.get("/lookup", firebaseAuthRequired, async (req, res) => {
   try {

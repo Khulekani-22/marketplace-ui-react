@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 import { getData, saveData } from "../utils/dataStore.js";
+import { isAdminForTenant } from "../middleware/isAdmin.js";
 
 const router = Router();
 
@@ -8,18 +9,8 @@ function normalizeEmail(x) {
   return (x || "").toString().trim().toLowerCase();
 }
 
-function isAdminRequest(req) {
-  try {
-    const email = normalizeEmail(req.user?.email);
-    if (!email) return false;
-    const data = getData();
-    const users = Array.isArray(data.users) ? data.users : [];
-    const found = users.find((u) => normalizeEmail(u.email) === email);
-    return (found?.role || "") === "admin";
-  } catch {
-    return false;
-  }
-}
+function mapTenant(id){ return (id === 'vendor') ? 'public' : (id || 'public'); }
+function isAdminRequest(req) { return isAdminForTenant(req); }
 
 function nowIso() {
   return new Date().toISOString();
@@ -155,9 +146,11 @@ function canAccessThread(t, { isAdmin, email, vendorId }) {
     // 1) Admin-participant listing-feedback threads (unclaimed or claimed by this admin)
     const adminThread = (ctx.type === 'listing-feedback' && !ctx.adminEmail && pid.includes('admin'))
       || (e && (pid.includes(`admin:${e}`) || normalizeEmail(ctx.adminEmail) === e));
+    // 2) All subscriber<->vendor threads for the tenant
+    const subscriberThread = ctx.type === 'listing-subscriber';
     // 2) Their vendor/subscriber participation if they are also a vendor or subscriber
     const vendorOrSubscriber = isVendorParticipant || isSubscriber;
-    return adminThread || vendorOrSubscriber;
+    return adminThread || subscriberThread || vendorOrSubscriber;
   }
   // Vendor->Admin threads are visible only to admins (senders do not see them in inbox/sent)
   if (ctx.type === 'listing-feedback') return false;

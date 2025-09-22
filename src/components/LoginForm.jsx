@@ -9,6 +9,7 @@ import {
   onIdTokenChanged,
 } from "firebase/auth";
 import { auth } from "../lib/firebase";
+import { bootstrapSession } from "../lib/api";
 import { useVendor } from "../context/VendorContext";
 import { writeAuditLog } from "../lib/audit";
 
@@ -94,7 +95,15 @@ export default function LoginForm({
             // swallow afterLogin errors so navigation still occurs
           }
         }
-        nav(returnTo, { replace: true });
+        // Resolve role/tenant from API, then redirect admins to admin portal
+        let nextPath = returnTo;
+        try {
+          const sess = await bootstrapSession();
+          if ((sess?.role || "member") === "admin") {
+            nextPath = "/listings-admin"; // default admin landing
+          }
+        } catch { /* ignore and use returnTo */ }
+        nav(nextPath, { replace: true });
       }
     });
 

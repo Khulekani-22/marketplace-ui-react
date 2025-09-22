@@ -65,8 +65,40 @@ function normalizeVendor(v) {
     website: v.website || "",
     phone: v.phone || v.phoneNumber || "",
     avatar: v.avatar || v.logoUrl || "",
+    status: (v.status || "").toLowerCase(),
+    kycStatus: (v.kycStatus || "").toLowerCase(),
     raw: v,
   };
+}
+function collectVendorsFromData(d) {
+  const pools = [
+    Array.isArray(d?.startups) && d.startups,
+    Array.isArray(d?.vendors) && d.vendors,
+    Array.isArray(d?.companies) && d.companies,
+    Array.isArray(d?.profiles) && d.profiles,
+  ].filter(Boolean);
+  return dedupeVendors(pools.flat().map(normalizeVendor));
+}
+function dedupeVendors(list = []) {
+  const map = new Map();
+  list.forEach((v) => {
+    // prefer email as stable key, fallback to vendorId, then id
+    const key = (v.email || "").toLowerCase() || v.vendorId || v.id;
+    if (!key) return;
+    if (!map.has(key)) {
+      map.set(key, v);
+    } else {
+      const cur = map.get(key);
+      // shallow-merge preferring non-empty values from incoming record
+      const merged = { ...cur };
+      for (const [k, val] of Object.entries(v)) {
+        const isEmpty = val === undefined || val === null || val === "";
+        if (!isEmpty) merged[k] = val;
+      }
+      map.set(key, merged);
+    }
+  });
+  return Array.from(map.values());
 }
 function makeVendorMaps(list = []) {
   const byId = {};
@@ -120,9 +152,7 @@ export default function ListingsAdminPage() {
   );
 
   // -------- Vendor directory (API -> fallback to appData.startups) --------
-  const [vendors, setVendors] = useState(() =>
-    (data?.startups || []).map(normalizeVendor)
-  );
+  const [vendors, setVendors] = useState(() => collectVendorsFromData(data));
 
   useEffect(() => {
     let alive = true;
@@ -130,8 +160,8 @@ export default function ListingsAdminPage() {
       try {
         // API-first: pull vendors via axios
         const arr = await api.get(`/api/data/vendors`).then((r) => r.data || []);
-        const norm = Array.isArray(arr) ? arr.map(normalizeVendor) : [];
-        if (alive && norm.length) setVendors(norm);
+        const norm = Array.isArray(arr) ? dedupeVendors(arr.map(normalizeVendor)) : [];
+        if (alive) setVendors((prev) => dedupeVendors([...(prev || []), ...norm]));
       } catch {
         // keep fallback
       }
@@ -937,12 +967,15 @@ function ServicesEditor(props) {
   } = props;
 
   const vendorOptions = useMemo(
-    () =>
-      vendors.map((v) => ({
-        id: v.vendorId,
-        label:
-          `${v.companyName || v.name || "(unnamed)"}${v.email ? " — " + v.email : ""}`,
-      })),
+    () => {
+      const isApproved = (v) => (v.status === "active") || (v.kycStatus === "approved");
+      return vendors
+        .filter(isApproved)
+        .map((v) => ({
+          id: v.vendorId,
+          label: `${v.companyName || v.name || "(unnamed)"}${v.email ? " — " + v.email : ""}`,
+        }));
+    },
     [vendors]
   );
 
@@ -956,6 +989,15 @@ function ServicesEditor(props) {
       contactEmail: v?.email || (selected?.contactEmail || ""),
     });
   }
+
+  // If listing has only contactEmail, reflect the matched vendor in the dropdown
+  const selectedVendorIdEffective = React.useMemo(() => {
+    if (!selected) return "";
+    if (selected.vendorId) return selected.vendorId;
+    const email = (selected.contactEmail || "").toLowerCase();
+    const v = email ? vendorsByEmail[email] : null;
+    return v?.vendorId || "";
+  }, [selected, vendorsByEmail]);
 
   const selectedResolved = selected ? resolveVendor(selected) : null;
 
@@ -1177,7 +1219,7 @@ function ServicesEditor(props) {
                     </label>
                     <select
                       className="form-select"
-                      value={selected.vendorId || ""}
+                      value={selectedVendorIdEffective}
                       onChange={(e) => handleBindVendorById(e.target.value)}
                     >
                       <option value="">—</option>
@@ -1202,6 +1244,14 @@ function ServicesEditor(props) {
                           contactEmail: e.target.value.toLowerCase(),
                         })
                       }
+                      onBlur={() => {
+                        if (!selected) return;
+                        const email = (selected.contactEmail || "").toLowerCase();
+                        const v = email ? vendorsByEmail[email] : null;
+                        if (v && selected.vendorId !== v.vendorId) {
+                          handleBindVendorById(v.vendorId);
+                        }
+                      }}
                     />
                   </div>
                   <div className="col-md-3 d-flex align-items-end">

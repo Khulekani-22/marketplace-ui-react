@@ -1,10 +1,39 @@
 import { Router } from "express";
 import { v4 as uuid } from "uuid";
 import { getData, saveData } from "../utils/dataStore.js";
+import { isAdminForTenant } from "../middleware/isAdmin.js";
 import { VendorSchema } from "../utils/validators.js";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 
 const router = Router();
+
+function normalizeEmail(x){ return (x||"").toString().trim().toLowerCase(); }
+function collectUsers(data){
+  const seen = new Map();
+  const add = (list)=>{
+    if (!Array.isArray(list)) return;
+    for (const u of list){
+      if (!u || typeof u !== 'object') continue;
+      const em = normalizeEmail(u.email);
+      if (!em) continue;
+      if (!seen.has(em)) seen.set(em, { email: em, tenantId: u.tenantId || 'public', role: u.role || 'member' });
+    }
+  };
+  add(data?.users);
+  if (seen.size) return Array.from(seen.values());
+  (function walk(node){
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)){
+      if (node.length && typeof node[0] === 'object' && node[0] && ('email' in node[0])) add(node);
+      for (const v of node) walk(v);
+      return;
+    }
+    for (const k of Object.keys(node)) walk(node[k]);
+  })(data);
+  return Array.from(seen.values());
+}
+function mapTenant(id){ return (id === 'vendor') ? 'public' : (id || 'public'); }
+function isAdminRequest(req) { return isAdminForTenant(req); }
 
 router.get("/", (req, res) => {
   const { vendors = [] } = getData();
@@ -113,6 +142,170 @@ router.delete("/:id", firebaseAuthRequired, (req, res) => {
 });
 
 export default router;
+
+// ---- Admin: Rename a vendor id across the datastore (tenant-scoped) ----
+// POST /api/data/vendors/rename-id
+// Body: { ownerUid?: string, oldId?: string, newId: string }
+// Matches vendor in current tenant by (ownerUid OR oldId). Updates:
+// - startups[].{id,vendorId}
+// - vendors[].{id}
+// - services[].vendorId
+// - subscriptions[].vendorId
+// - bookings[].vendorId
+// - messageThreads[].participantIds/participants.id/messages[].senderId containing `vendor:<id>`; and context.vendorId
+router.post("/rename-id", firebaseAuthRequired, (req, res) => {
+  const tenantId = req.tenant.id;
+  const ownerUid = (req.body?.ownerUid || "").toString().trim();
+  const oldId = (req.body?.oldId || "").toString().trim();
+  const newId = (req.body?.newId || "").toString().trim();
+  const emailParam = (req.body?.email || "").toString().trim().toLowerCase();
+  if (!newId) return res.status(400).json({ status: "error", message: "Missing newId" });
+
+  // Require admin OR the vendor owner themself
+  const isSelf = ownerUid && (req.user?.uid === ownerUid);
+  if (!isAdminRequest(req) && !isSelf) {
+    return res.status(403).json({ status: "error", message: "Forbidden" });
+  }
+
+  const result = { tenantId, matched: false, changes: { startups: 0, vendors: 0, services: 0, subscriptions: 0, bookings: 0, threads: 0 } };
+
+  try {
+    saveData((data) => {
+      // Resolve email for convenience matching in services without vendorId (optional)
+      let vendorEmail = emailParam || "";
+
+      // Update startups directory (primary vendor directory)
+      const startups = Array.isArray(data.startups) ? data.startups : [];
+      startups.forEach((v, i) => {
+        const sameTenant = (v.tenantId ?? "public") === tenantId;
+        if (!sameTenant) return;
+        const vid = String(v.vendorId || v.id || "");
+        const isMatch = (!!ownerUid && String(v.ownerUid || "") === ownerUid) || (!!oldId && vid === oldId);
+        if (isMatch) {
+          result.matched = true;
+          vendorEmail = (v.contactEmail || v.email || "").toLowerCase();
+          const prev = startups[i];
+          startups[i] = { ...prev, id: newId, vendorId: newId };
+          result.changes.startups += 1;
+        }
+      });
+      data.startups = startups;
+
+      // If not matched in startups, try other pools (vendors/companies/profiles) within tenant
+      if (!result.matched) {
+        const pools = [
+          Array.isArray(data.vendors) ? data.vendors : [],
+          Array.isArray(data.companies) ? data.companies : [],
+          Array.isArray(data.profiles) ? data.profiles : [],
+        ];
+        let found = null;
+        for (const arr of pools) {
+          const hit = arr.find((v) => {
+            const sameTenant = (v.tenantId ?? "public") === tenantId;
+            if (!sameTenant) return false;
+            const vid = String(v.vendorId || v.id || "");
+            const vEmail = (v.contactEmail || v.email || "").toLowerCase();
+            return (!!ownerUid && String(v.ownerUid || "") === ownerUid) || (!!oldId && vid === oldId) || (!!vendorEmail && vEmail === vendorEmail);
+          });
+          if (hit) { found = hit; break; }
+        }
+        if (found || vendorEmail) {
+          const e = (found?.contactEmail || found?.email || vendorEmail || "").toLowerCase();
+          vendorEmail = e;
+          const name = found?.companyName || found?.name || (e ? e.split("@")[0] : "Vendor");
+          startups.push({
+            ...(found || {}),
+            id: newId,
+            vendorId: newId,
+            contactEmail: e,
+            tenantId,
+          });
+          data.startups = startups;
+          result.matched = true;
+          result.changes.startups += 1;
+        }
+      }
+
+      // Update vendors collection (if used)
+      const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+      vendors.forEach((v, i) => {
+        const sameTenant = (v.tenantId ?? "public") === tenantId;
+        if (!sameTenant) return;
+        const vid = String(v.vendorId || v.id || "");
+        const isMatch = (!!ownerUid && String(v.ownerUid || "") === ownerUid) || (!!oldId && vid === oldId);
+        if (isMatch) {
+          const prev = vendors[i];
+          vendors[i] = { ...prev, id: newId };
+          result.changes.vendors += 1;
+        }
+      });
+      data.vendors = vendors;
+
+      // Update services (listings)
+      const services = Array.isArray(data.services) ? data.services : [];
+      services.forEach((s, i) => {
+        const sameTenant = (s.tenantId ?? "public") === tenantId;
+        if (!sameTenant) return;
+        const sid = String(s.vendorId || "");
+        if ((oldId && sid === oldId) || (!sid && vendorEmail && (s.contactEmail || "").toLowerCase() === vendorEmail)) {
+          services[i] = { ...s, vendorId: newId };
+          result.changes.services += 1;
+        }
+      });
+      data.services = services;
+
+      // Update subscriptions convenience vendorId
+      const subscriptions = Array.isArray(data.subscriptions) ? data.subscriptions : [];
+      subscriptions.forEach((x) => {
+        const sameTenant = (x.tenantId ?? "public") === tenantId;
+        if (!sameTenant) return;
+        if (String(x.vendorId || "") === oldId) { x.vendorId = newId; result.changes.subscriptions += 1; }
+      });
+      data.subscriptions = subscriptions;
+
+      // Update bookings vendorId
+      const bookings = Array.isArray(data.bookings) ? data.bookings : [];
+      bookings.forEach((b) => {
+        const sameTenant = (b.tenantId ?? "public") === tenantId;
+        if (!sameTenant) return;
+        if (String(b.vendorId || "") === oldId) { b.vendorId = newId; result.changes.bookings += 1; }
+      });
+      data.bookings = bookings;
+
+      // Update message threads: participantIds, participants.id, context.vendorId, messages[].senderId
+      const threads = Array.isArray(data.messageThreads) ? data.messageThreads : [];
+      const from = `vendor:${oldId}`;
+      const to = `vendor:${newId}`;
+      threads.forEach((t, idx) => {
+        const sameTenant = (t.tenantId ?? "public") === tenantId;
+        if (!sameTenant) return;
+        let touched = false;
+        if (t.context && String(t.context.vendorId || "") === oldId) {
+          t.context.vendorId = newId; touched = true;
+        }
+        if (Array.isArray(t.participantIds)) {
+          const nextIds = t.participantIds.map((id) => (id === from ? to : id));
+          if (nextIds.join("|") !== t.participantIds.join("|")) { t.participantIds = Array.from(new Set(nextIds)); touched = true; }
+        }
+        if (Array.isArray(t.participants)) {
+          t.participants = t.participants.map((p) => (p?.id === from ? { ...p, id: to } : p));
+        }
+        if (Array.isArray(t.messages)) {
+          t.messages = t.messages.map((m) => (m?.senderId === from ? { ...m, senderId: to } : m));
+        }
+        if (touched) { threads[idx] = t; result.changes.threads += 1; }
+      });
+      data.messageThreads = threads;
+
+      return data;
+    });
+
+    if (!result.matched) return res.status(404).json({ status: "error", message: "Vendor not found for given ownerUid/oldId in tenant and no email provided" });
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    res.status(500).json({ status: "error", message: e?.message || "Failed to rename vendor id" });
+  }
+});
 
 // ---- Migration: upgrade all startups -> vendors (idempotent) ----
 // POST /api/data/vendors/migrate-startups

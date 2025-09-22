@@ -48,10 +48,27 @@ const TTL_MS = 1000; // 1s cache
 function load() {
   const now = Date.now();
   if (cache && now - lastLoaded < TTL_MS) return cache;
-  const text = fs.readFileSync(appDataPath, "utf-8");
-  cache = JSON.parse(text);
-  lastLoaded = now;
-  return cache;
+  try {
+    const text = fs.readFileSync(appDataPath, "utf-8");
+    cache = JSON.parse(text);
+    lastLoaded = now;
+    return cache;
+  } catch (e) {
+    // Fallback to src/data/appData.json if backend file is missing or invalid
+    try {
+      if (srcFallbackPath && fs.existsSync(srcFallbackPath)) {
+        const text2 = fs.readFileSync(srcFallbackPath, "utf-8");
+        const json2 = JSON.parse(text2);
+        cache = json2;
+        lastLoaded = now;
+        console.warn("[dataStore] Falling back to src/data/appData.json due to backend appData.json error");
+        return cache;
+      }
+    } catch (e2) {
+      // If fallback also fails, rethrow original error to surface the problem
+    }
+    throw e;
+  }
 }
 
 function persist(data) {

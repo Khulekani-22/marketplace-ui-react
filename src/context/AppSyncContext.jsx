@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
+import { onIdTokenChanged } from "firebase/auth";
+import appDataLocal from "../data/appData.json";
 
 const AppSyncContext = createContext({
   appData: null,
@@ -60,8 +62,11 @@ export function AppSyncProvider({ children }) {
       const { data } = await api.get("/api/lms/live");
       setAppData(data || null);
     } catch (e) {
-      setAppData(null);
-      setAppDataError(e?.response?.data?.message || e?.message || "Failed to load app data");
+      // API failed: best-effort fallback to local bundled appData.json
+      setAppData(appDataLocal || null);
+      setAppDataError(
+        e?.response?.data?.message || e?.message || "Loaded local fallback app data"
+      );
     } finally {
       setAppDataLoading(false);
     }
@@ -93,6 +98,21 @@ export function AppSyncProvider({ children }) {
     syncNow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
+
+  // Also sync immediately on sign-in (axios API-first via api client with token)
+  useEffect(() => {
+    const unsub = onIdTokenChanged(auth, async (user) => {
+      if (user) {
+        try { await syncNow(); } catch {}
+      } else {
+        // On sign-out: clear role/appData (UI may still use local fallback where needed)
+        setRole(sessionStorage.getItem("role") || "member");
+        setTenantId(sessionStorage.getItem("tenantId") || "vendor");
+        setAppData(null);
+      }
+    });
+    return () => unsub();
+  }, [syncNow]);
 
   const value = useMemo(
     () => ({ appData, appDataLoading, appDataError, role, tenantId, isAdmin, lastSyncAt, syncNow }),

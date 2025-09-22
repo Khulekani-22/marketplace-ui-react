@@ -1125,372 +1125,14 @@
       "id": "S7fXbqndXNTAMRHzKuPw"
     }
   ],
-  "messageThreads": [
-    {
-      "subject": "Testing",
-      "read": false,
-      "participantIds": [
-        "user2",
-        "s7"
-      ],
-      "participants": [
-        {
-          "id": "s7",
-          "name": "EduSphere",
-          "role": "Startup",
-          "avatarUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' fill='%239B59B6' rx='16'/%3E%3Cpath d='M30 90 L64 30 L98 90 Z' fill='none' stroke='%23FFFFFF' stroke-width='10'/%3E%3Cpath d='M42 78 L86 78' stroke='%23FFFFFF' stroke-width='10'/%3E%3C/svg%3E",
-          "aiHint": "education logo"
-        },
-        {
-          "id": "user2",
-          "name": "Me",
-          "role": "Startup",
-          "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait"
-        }
-      ],
-      "messages": [
-        {
-          "id": "m1753440599690",
-          "senderId": "user2",
-          "senderName": "Me",
-          "senderAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait",
-          "senderRole": "Startup",
-          "content": "Testing Testing Testing Testing Testing Testing Testing",
-          "date": "2025-07-25T10:49:59.690Z"
-        }
-      ],
-      "lastMessage": {
-        "snippet": "Testing Testing Testing Testing Testing Testing Testing",
-        "date": {
-          "_seconds": 1753440600,
-          "_nanoseconds": 1000000
-        }
-      },
-      "id": "7ev8Xeh6Fick2iMdcdRu"
-    },
-    {
-      "subject": "Testing",
-      "read": false,
-      "participants": [
-        {
-          "id": "s1",
-          "name": "AfriTech",
-          "role": "Startup",
-          "avatarUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' fill='%232C3E50' rx='16'/%3E%3Cpath fill='%23FFFFFF' d='M40 98 L52 68 L76 68 L88 98 L74 98 L69 84 L59 84 L54 98 Z'/%3E%3Cpath fill='%233498DB' d='M64 30 L84 62 L44 62 Z'/%3E%3C/svg%3E",
-          "aiHint": "tech logo"
-        },
-        {
-          "id": "user2",
-          "name": "Me",
-          "role": "Startup",
-          "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait"
-        }
-      ],
-      "messages": [
-        {
-          "id": "m1753364462586",
-          "sender": "Me",
-          "senderAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait",
-          "senderRole": "Startup",
-          "content": "Testing Testing Testing Testing",
-          "date": "2025-07-24T13:41:02.586Z"
-        }
-      ],
-      "lastMessage": {
-        "snippet": "Testing Testing Testing Testing",
-        "date": {
-          "_seconds": 1753364462,
-          "_nanoseconds": 906000000
-        }
-      },
-      "id": "F69DQkgVMoXeQf5Y4cYn"
-    },
-    {
-      "subject": "Testing Testing",
-      "read": false,
-      "participants": [
-        {
-          "id": "s1",
-          "name": "AfriTech",
-          "role": "Startup",
-          "avatarUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' fill='%232C3E50' rx='16'/%3E%3Cpath fill='%23FFFFFF' d='M40 98 L52 68 L76 68 L88 98 L74 98 L69 84 L59 84 L54 98 Z'/%3E%3Cpath fill='%233498DB' d='M64 30 L84 62 L44 62 Z'/%3E%3C/svg%3E",
-          "aiHint": "tech logo"
-        },
-        {
-          "id": "user2",
-          "name": "Me",
-          "role": "Startup",
-          "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait"
-        }
-      ],
-      "messages": [
-        {
-          "id": "m1753351175228",
-          "sender": "Me",
-          "senderAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait",
-          "senderRole": "Startup",
-          "content": "Testing Testing",
-          "date": "2025-07-24T09:59:35.228Z"
-        }
-      ],
-      "lastMessage": {
-        "snippet": "Testing Testing",
-        "date": {
-          "_seconds": 1753351175,
-          "_nanoseconds": 691000000
-        }
-      },
-      "id": "LCkI7AJhX9IgLowk9tz6"
-    },
-    {
-      "subject": "Testing",
-      "read": false,
-      "participants": [
-        {
-          "id": "s3",
-          "name": "InsurEasy",
-          "role": "Startup",
-          "avatarUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' fill='%232980B9' rx='16'/%3E%3Cpath d='M24 60 C24,30 104,30 104,60 L64,110 Z' fill='%23FFFFFF'/%3E%3C/svg%3E",
-          "aiHint": "insurance logo"
-        },
-        {
-          "id": "user2",
-          "name": "Me",
-          "role": "Startup",
-          "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait"
-        }
-      ],
-      "messages": [
-        {
-          "id": "m1753362634348",
-          "sender": "Me",
-          "senderAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait",
-          "senderRole": "Startup",
-          "content": "Testing Testing Testing Testing",
-          "date": "2025-07-24T13:10:34.348Z"
-        }
-      ],
-      "lastMessage": {
-        "snippet": "Testing Testing Testing Testing",
-        "date": {
-          "_seconds": 1753362634,
-          "_nanoseconds": 613000000
-        }
-      },
-      "id": "TRMrqpwCPDRDvohmIVs3"
-    },
-    {
-      "id": "msg1",
-      "subject": "Re: Best practices for B2B SaaS pricing",
-      "participantIds": [
-        "user1",
-        "user2"
-      ],
-      "participants": [
-        {
-          "id": "user1",
-          "name": "Naledi Naidoo",
-          "role": "Mentor",
-          "avatarUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&h=100&fit=crop",
-          "aiHint": "woman portrait"
-        },
-        {
-          "id": "user2",
-          "name": "AfriTech",
-          "role": "Startup",
-          "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait"
-        }
-      ],
-      "lastMessage": {
-        "snippet": "You're welcome! Let me know if you have more questions...",
-        "date": "2024-07-22T15:00:00Z"
-      },
-      "read": false,
-      "messages": [
-        {
-          "id": "m1a",
-          "senderId": "user1",
-          "senderName": "Naledi Naidoo",
-          "senderAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&h=100&fit=crop",
-          "aiHint": "woman portrait",
-          "senderRole": "Mentor",
-          "content": "Hi Khulekani, I saw your post in the forum. Happy to chat more about pricing strategies if you'd like. We've had good results with a value-based model for our portfolio companies.",
-          "date": "2024-07-22T14:45:00Z"
-        },
-        {
-          "id": "m1b",
-          "senderId": "user2",
-          "senderName": "AfriTech",
-          "senderAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait",
-          "senderRole": "Startup",
-          "content": "Thanks, Naledi! That would be great. I'm particularly interested in how to structure the tiers without giving too much away in the free plan.",
-          "date": "2024-07-22T14:55:00Z"
-        },
-        {
-          "id": "m1c",
-          "senderId": "user1",
-          "senderName": "Naledi Naidoo",
-          "senderAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&h=100&fit=crop",
-          "aiHint": "woman portrait",
-          "senderRole": "Mentor",
-          "content": "You're welcome! Let me know if you have more questions after you've had a chance to think about it. The key is linking paid features directly to revenue-generating activities for your customers.",
-          "date": "2024-07-22T15:00:00Z"
-        }
-      ]
-    },
-    {
-      "id": "msg2",
-      "subject": "InsurTech Meetup Details",
-      "participantIds": [
-        "user3",
-        "user2"
-      ],
-      "participants": [
-        {
-          "id": "user3",
-          "name": "Thandiwe Ngwenya",
-          "role": "Mentor",
-          "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&h=100&fit=crop",
-          "aiHint": "woman portrait"
-        },
-        {
-          "id": "user2",
-          "name": "AfriTech",
-          "role": "Startup",
-          "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait"
-        }
-      ],
-      "lastMessage": {
-        "snippet": "Sounds great, looking forward to it!",
-        "date": "2024-07-21T11:30:00Z"
-      },
-      "read": true,
-      "messages": [
-        {
-          "id": "m2a",
-          "senderId": "user2",
-          "senderName": "AfriTech",
-          "senderAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait",
-          "senderRole": "Startup",
-          "content": "Hi Thandiwe, I saw your forum post about the InsurTech meetup. I'm very interested in joining. Could you please send me the details?",
-          "date": "2024-07-21T11:00:00Z"
-        },
-        {
-          "id": "m2b",
-          "senderId": "user3",
-          "senderName": "Thandiwe Ngwenya",
-          "senderAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&h=100&fit=crop",
-          "aiHint": "woman portrait",
-          "senderRole": "Mentor",
-          "content": "Hi! Of course, happy to have you. The virtual meetup is next Tuesday at 4 PM SAST. Here is the link: [zoom-link]. Please let me know if you have any trouble accessing it.",
-          "date": "2024-07-21T11:15:00Z"
-        },
-        {
-          "id": "m2c",
-          "senderId": "user2",
-          "senderName": "AfriTech",
-          "senderAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait",
-          "senderRole": "Startup",
-          "content": "Sounds great, looking forward to it!",
-          "date": "2024-07-21T11:30:00Z"
-        }
-      ]
-    },
-    {
-      "id": "msg3",
-      "subject": "Networking opportunity",
-      "participantIds": [
-        "user4",
-        "user2"
-      ],
-      "participants": [
-        {
-          "id": "user4",
-          "name": "Christian van der Merwe",
-          "role": "Mentor",
-          "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait"
-        },
-        {
-          "id": "user2",
-          "name": "AfriTech",
-          "role": "Startup",
-          "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait"
-        }
-      ],
-      "lastMessage": {
-        "snippet": "Just wanted to reach out and connect. Your work on...",
-        "date": "2024-07-20T09:00:00Z"
-      },
-      "read": true,
-      "messages": []
-    },
-    {
-      "subject": "Testing (Pty) Ltd | Business deal",
-      "participantIds": [
-        "user2",
-        "s1"
-      ],
-      "participants": [
-        {
-          "id": "s1",
-          "name": "AfriTech",
-          "role": "Startup",
-          "avatarUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' fill='%232C3E50' rx='16'/%3E%3Cpath fill='%23FFFFFF' d='M40 98 L52 68 L76 68 L88 98 L74 98 L69 84 L59 84 L54 98 Z'/%3E%3Cpath fill='%233498DB' d='M64 30 L84 62 L44 62 Z'/%3E%3C/svg%3E",
-          "aiHint": "tech logo"
-        },
-        {
-          "id": "user2",
-          "name": "Me",
-          "role": "Startup",
-          "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait"
-        }
-      ],
-      "messages": [
-        {
-          "id": "m1753438682904",
-          "senderId": "user2",
-          "senderName": "Me",
-          "senderAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&h=100&fit=crop",
-          "aiHint": "man portrait",
-          "senderRole": "Startup",
-          "content": "Hi there\n\nAs discussed at the startup huddle, ..........\n\n\nSincerely,\n\nSMME\n\n",
-          "date": "2025-07-25T10:18:02.904Z"
-        }
-      ],
-      "lastMessage": {
-        "snippet": "Hi there\n\nAs discussed at the startup huddle, ..........\n\n\nSincerely,\n\nSMME\n\n",
-        "date": {
-          "_seconds": 1753438683,
-          "_nanoseconds": 114000000
-        }
-      },
-      "read": true,
-      "id": "ng5XuTHboWo2vaHp8G89"
-    }
-  ],
+  "messageThreads": [],
   "services": [
     {
       "id": "1",
       "title": "Logo & Brand Identity Pack",
       "category": "Design & Graphics",
       "vendor": "22 On Sloane",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 7000,
       "rating": 4.9,
@@ -1528,7 +1170,7 @@
       "title": "Scalable Web App Development",
       "category": "Tech & Programming",
       "vendor": "22 On Sloane",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 42000,
       "rating": 4.8,
@@ -1557,7 +1199,7 @@
       "title": "AI-Powered CRM Platform",
       "category": "SaaS",
       "vendor": "22 On Sloane",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 1500,
       "rating": 4.9,
@@ -1614,7 +1256,7 @@
       "title": "Professional Legal Consultation",
       "category": "Legal",
       "vendor": "22 On Sloane",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 5000,
       "rating": 4.7,
@@ -1633,7 +1275,7 @@
       "title": "Project Management Suite",
       "category": "SaaS",
       "vendor": "22 On Sloane",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 850,
       "rating": 4.8,
@@ -1708,9 +1350,9 @@
       "id": "X6rF03vck1HIXfg4hbjy",
       "title": "Business plan generator",
       "category": "Business",
-      "vendor": "22 On Sloane",
-      "vendorId": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
-      "contactEmail": "",
+      "vendor": "22OnSloane Digital Team",
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "contactEmail": "22onsloanedigitalteam@gmail.com",
       "price": 200,
       "rating": 4.5,
       "reviewCount": 2,
@@ -1747,7 +1389,7 @@
       "title": "Sage Business Cloud Accounting",
       "category": "SaaS",
       "vendor": "22 On Sloane",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 400,
       "rating": 3.5,
@@ -1783,7 +1425,7 @@
       "title": "Scalable Web App Development",
       "category": "Tech & Programming",
       "vendor": "22 On Sloane",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 42000,
       "rating": 4.8,
@@ -1831,7 +1473,7 @@
       "title": "Testing",
       "category": "SaaS",
       "vendor": "22 On Sloane",
-      "vendorId": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 8000,
       "rating": 0,
@@ -1869,7 +1511,7 @@
       "title": "Pitch deck revision service",
       "category": "Business",
       "vendor": "22 On Sloane",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
       "contactEmail": "khulekani@22onsloane.co",
       "price": 1000,
       "rating": 0,
@@ -1918,7 +1560,8 @@
       "status": "rejected",
       "isFeatured": false,
       "description": "Testing",
-      "reviews": []
+      "reviews": [],
+      "tenantId": "public"
     },
     {
       "id": "mf6s58mu-616wi6",
@@ -2442,7 +2085,7 @@
       "foundedYear": "",
       "teamSize": "",
       "registrationNo": "",
-      "status": "suspended",
+      "status": "active",
       "socials": {
         "twitter": "",
         "linkedin": "",
@@ -2457,7 +2100,7 @@
       "raw": {
         "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
         "name": "22OnSloane Digital Team",
-        "kycStatus": "pending",
+        "kycStatus": "approved",
         "contactEmail": "22onsloanedigitalteam@gmail.com",
         "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
         "phone": "",
@@ -2481,25 +2124,25 @@
         "foundedYear": "",
         "teamSize": "",
         "registrationNo": "",
-        "status": "suspended",
+        "status": "active",
         "tenantId": "22onsloane"
       },
       "tenantId": "public"
     },
     {
-      "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "id": "72866876-2d5e-4a90-84d8-ab9b50db4611",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
       "name": "22 On Sloane",
       "companyName": "22 On Sloane",
       "contactEmail": "khulekani@22onsloane.co",
       "email": "khulekani@22onsloane.co",
       "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "website": "",
-      "phone": "+27763732884",
+      "phone": "0763732884",
       "country": "South Africa",
-      "city": "Sandton",
+      "city": "Johannesburg",
       "addressLine": "",
-      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
+      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2024/06/logo-mark.jpg",
       "bannerUrl": "",
       "description": "",
       "categories": [],
@@ -2518,18 +2161,17 @@
       },
       "lastUpdated": "",
       "raw": {
-        "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
         "name": "22 On Sloane",
         "kycStatus": "approved",
         "contactEmail": "khulekani@22onsloane.co",
         "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-        "phone": "+27763732884",
+        "phone": "0114637602",
         "website": "",
         "description": "",
-        "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
+        "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2024/06/logo-mark.jpg",
         "bannerUrl": "",
         "country": "South Africa",
-        "city": "Sandton",
+        "city": "",
         "addressLine": "",
         "socials": {
           "twitter": "",
@@ -2545,6 +2187,7 @@
         "teamSize": "",
         "registrationNo": "",
         "status": "active",
+        "id": "72866876-2d5e-4a90-84d8-ab9b50db4611",
         "tenantId": "22onsloane"
       },
       "tenantId": "public"
@@ -2800,6 +2443,69 @@
         "tenantId": "22onsloane"
       },
       "tenantId": "public"
+    },
+    {
+      "id": "72866876-2d5e-4a90-84d8-ab9b50db4611",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611",
+      "name": "22 On Sloane",
+      "companyName": "22 On Sloane",
+      "contactEmail": "khulekani@22onsloane.co",
+      "email": "khulekani@22onsloane.co",
+      "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "website": "",
+      "phone": "0114637602",
+      "country": "South Africa",
+      "city": "Sandton",
+      "addressLine": "",
+      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
+      "bannerUrl": "",
+      "description": "",
+      "categories": [],
+      "tags": [],
+      "foundedYear": "",
+      "teamSize": "",
+      "registrationNo": "",
+      "status": "active",
+      "socials": {
+        "twitter": "",
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "github": ""
+      },
+      "lastUpdated": "",
+      "raw": {
+        "name": "22 On Sloane",
+        "kycStatus": "approved",
+        "contactEmail": "khulekani@22onsloane.co",
+        "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "phone": "0114637602",
+        "website": "",
+        "description": "",
+        "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
+        "bannerUrl": "",
+        "country": "South Africa",
+        "city": "Sandton",
+        "addressLine": "",
+        "socials": {
+          "twitter": "",
+          "linkedin": "",
+          "facebook": "",
+          "instagram": "",
+          "youtube": "",
+          "github": ""
+        },
+        "categories": [],
+        "tags": [],
+        "foundedYear": "",
+        "teamSize": "",
+        "registrationNo": "",
+        "status": "active",
+        "id": "72866876-2d5e-4a90-84d8-ab9b50db4611",
+        "tenantId": "22onsloane"
+      },
+      "tenantId": "public"
     }
   ],
   "vendors": [
@@ -2839,16 +2545,16 @@
     },
     {
       "name": "22 On Sloane",
-      "kycStatus": "pending",
+      "kycStatus": "approved",
       "contactEmail": "khulekani@22onsloane.co",
       "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "phone": "",
+      "phone": "0763732884",
       "website": "",
       "description": "",
       "logoUrl": "",
       "bannerUrl": "",
       "country": "",
-      "city": "",
+      "city": "Johannesburg",
       "addressLine": "",
       "socials": {
         "twitter": "",
@@ -2863,9 +2569,10 @@
       "foundedYear": "",
       "teamSize": "",
       "registrationNo": "",
-      "status": "pending",
+      "status": "active",
       "id": "72866876-2d5e-4a90-84d8-ab9b50db4611",
-      "tenantId": "22onsloane"
+      "tenantId": "22onsloane",
+      "vendorId": "72866876-2d5e-4a90-84d8-ab9b50db4611"
     },
     {
       "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
@@ -2968,18 +2675,11 @@
   ],
   "_meta": {
     "lastClientWriteStamp": {
-      "at": "2025-08-24T13:24:44.717Z",
-      "nonce": "yab9eqzsv7"
+      "at": "2025-09-21T07:41:40.487Z",
+      "nonce": "mry7tb11lpi"
     }
   },
-  "users": [
-    {
-      "email": "khulekani@22onsloane.co",
-      "tenantId": "22onsloane",
-      "role": "admin",
-      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3"
-    }
-  ],
+  "users": [],
   "tenants": [
     {
       "id": "22onsloane",

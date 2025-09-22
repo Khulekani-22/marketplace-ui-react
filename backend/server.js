@@ -24,6 +24,8 @@ import messagesRouter from "./routes/messages.js";
 import { tenantContext } from "./middleware/tenantContext.js";
 import { jwtAuthOptional } from "./middleware/authJWT.js";
 import { firebaseAuthRequired } from "./middleware/authFirebase.js";
+import { requireAdmin } from "./middleware/isAdmin.js";
+import { auditMutations } from "./middleware/audit.js";
 
 dotenv.config();
 
@@ -37,11 +39,26 @@ const PORT = Number(process.env.PORT || DEFAULT_PORT);
 /* ------------------------ Core security & parsing ------------------------ */
 app.use(helmet());
 app.use(express.json({ limit: "20mb" })); // checkpoints can be large
+// CORS: echo a concrete origin to satisfy browsers when credentials are used
+const DEFAULT_ORIGINS = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
+const ENV_ORIGINS = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const ALLOW_ORIGINS = Array.from(new Set([...ENV_ORIGINS, ...DEFAULT_ORIGINS]));
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN
-      ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
-      : "*",
+    origin: function (origin, callback) {
+      // allow non-browser or same-origin requests (no origin header)
+      if (!origin) return callback(null, true);
+      if (ALLOW_ORIGINS.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -50,6 +67,8 @@ app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 /* -------- Attach tenant and (optional) user to each request globally ----- */
 app.use(tenantContext);
 app.use(jwtAuthOptional);
+// Audit mutating requests (POST/PUT/PATCH/DELETE)
+app.use(auditMutations);
 
 /* -------------------------- Authenticated identity ---------------------- */
 app.get("/api/me", firebaseAuthRequired, (req, res) => res.json(req.user));
@@ -231,7 +250,7 @@ lmsRouter.get("/live", async (_req, res, next) => {
 });
 
 // Publish working copy to live (PUT from UI)
-lmsRouter.put("/publish", async (req, res, next) => {
+lmsRouter.put("/publish", firebaseAuthRequired, requireAdmin, async (req, res, next) => {
   try {
     const { data } = req.body || {};
     if (!isPlainObject(data))
@@ -268,7 +287,7 @@ lmsRouter.put("/publish", async (req, res, next) => {
 });
 
 // List checkpoints (latest first, with deltas)
-lmsRouter.get("/checkpoints", async (_req, res, next) => {
+lmsRouter.get("/checkpoints", firebaseAuthRequired, requireAdmin, async (_req, res, next) => {
   try {
     const index = (await readJson(INDEX_FILE)).sort((a, b) => b.ts - a.ts);
     res.json({ items: withDeltas(index) });
@@ -278,7 +297,7 @@ lmsRouter.get("/checkpoints", async (_req, res, next) => {
 });
 
 // Save checkpoint
-lmsRouter.post("/checkpoints", async (req, res, next) => {
+lmsRouter.post("/checkpoints", firebaseAuthRequired, requireAdmin, async (req, res, next) => {
   try {
     const { message = "", data } = req.body || {};
     if (!isPlainObject(data))
@@ -315,7 +334,7 @@ lmsRouter.post("/checkpoints", async (req, res, next) => {
 });
 
 // Download one checkpoint
-lmsRouter.get("/checkpoints/:id", async (req, res, next) => {
+lmsRouter.get("/checkpoints/:id", firebaseAuthRequired, requireAdmin, async (req, res, next) => {
   try {
     const { id } = req.params;
     const snapPath = path.join(SNAPSHOT_DIR, `${id}.json`);
@@ -334,7 +353,7 @@ lmsRouter.get("/checkpoints/:id", async (req, res, next) => {
 });
 
 // Restore a checkpoint to live
-lmsRouter.post("/restore/:id", async (req, res, next) => {
+lmsRouter.post("/restore/:id", firebaseAuthRequired, requireAdmin, async (req, res, next) => {
   try {
     const { id } = req.params;
     const snapPath = path.join(SNAPSHOT_DIR, `${id}.json`);
@@ -367,7 +386,7 @@ lmsRouter.post("/restore/:id", async (req, res, next) => {
 });
 
 // Clear history (admin)
-lmsRouter.delete("/checkpoints", async (_req, res, next) => {
+lmsRouter.delete("/checkpoints", firebaseAuthRequired, requireAdmin, async (_req, res, next) => {
   try {
     const index = await readJson(INDEX_FILE);
     await Promise.all(
@@ -412,10 +431,12 @@ app.use((err, req, res, next) => {
 
 /* --------------------------------- Start --------------------------------- */
 async function listenWithPort(port) {
+  const HOST = process.env.HOST || "127.0.0.1";
   return new Promise((resolve, reject) => {
     const server = app
-      .listen(port, () => {
-        console.log(`SCDM backend running on http://localhost:${port}`);
+      .listen(port, HOST, () => {
+        const hostLabel = HOST === "0.0.0.0" ? "localhost" : HOST;
+        console.log(`SCDM backend running on http://${hostLabel}:${port}`);
         console.log(`Live appData.json: ${APP_DATA}`);
         console.log(`Snapshots dir:     ${SNAPSHOT_DIR}`);
         resolve(server);
@@ -429,6 +450,36 @@ async function listenWithPort(port) {
 (async function start() {
   try {
     await initLmsStorage();
+    // Start background replicator from backend/appData.json -> src/data/appData.json every 1 minute
+    (function startAppDataReplicator() {
+      const TARGET = APP_DATA_SRC;
+      if (!TARGET || TARGET === APP_DATA) {
+        // Nothing to replicate to or same file path; skip.
+        return;
+      }
+      let lastMtime = 0;
+      async function tick() {
+        try {
+          const st = await fsp.stat(APP_DATA);
+          const mt = st.mtimeMs || st.mtime?.getTime?.() || 0;
+          if (mt > lastMtime) {
+            // Ensure destination directory exists
+            await fsp.mkdir(path.dirname(TARGET), { recursive: true });
+            // Copy bytes atomically via temp file then rename
+            const content = await fsp.readFile(APP_DATA, "utf8");
+            await fsp.writeFile(TARGET + ".tmp", content, "utf8");
+            await fsp.rename(TARGET + ".tmp", TARGET);
+            lastMtime = mt;
+            console.log(`[Replicator] appData.json -> src/data replicated at ${new Date().toISOString()}`);
+          }
+        } catch (e) {
+          console.warn("[Replicator] Failed to replicate appData:", e?.message || e);
+        }
+      }
+      // Kick once immediately, then every minute
+      tick();
+      setInterval(tick, 60 * 1000);
+    })();
     // Try ports in order: requested/5000, then 5001, then 5500
     const tried = new Set();
     const ports = [PORT, 5001, 5500].filter((p, i, arr) => arr.indexOf(p) === i);
