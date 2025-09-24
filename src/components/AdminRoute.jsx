@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { auth } from "../lib/firebase";
-import { api } from "../lib/api";
+import { getCurrentUser } from "../lib/sdk";
 
 export default function AdminRoute({ children }) {
   const [state, setState] = useState({ loading: true, ok: false, authed: false });
@@ -18,8 +18,8 @@ export default function AdminRoute({ children }) {
       }
       try {
         const email = user.email;
-        const { data } = await api.get("/api/users/me", { params: { email } });
-        const ok = (data?.role || sessionStorage.getItem("role")) === "admin";
+        const userData = await getCurrentUser({ email });
+        const ok = (userData.role || sessionStorage.getItem("role")) === "admin";
         if (!cancelled) setState({ loading: false, ok, authed: true });
       } catch {
         if (!cancelled) setState({ loading: false, ok: false, authed: true });

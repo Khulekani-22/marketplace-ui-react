@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { auth } from "../lib/firebase";
-import { api } from "../lib/api";
+import { getCurrentUser } from "../lib/sdk";
 
 // Allows access only if the user is authenticated AND not a "basic" tenant
 // Admins are always allowed.
@@ -30,9 +30,9 @@ export default function VendorRoute({ children }) {
 
       try {
         // Best-effort authoritative check
-        const { data } = await api.get("/api/users/me", { params: { email: user.email } });
-        const role = data?.role || ssRole || "member";
-        const tenantId = data?.tenantId || ssTenant || "vendor";
+        const userData = await getCurrentUser({ email: user.email });
+        const role = userData.role || ssRole || "member";
+        const tenantId = userData.tenantId || ssTenant || "vendor";
         const isAdmin = role === "admin";
         const isBasic = !isAdmin && tenantId === "basic";
         if (!cancelled) setState({ loading: false, allowed: isAdmin || !isBasic, authed: true });
