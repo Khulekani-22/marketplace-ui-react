@@ -29059,5 +29059,63 @@
       "status": 201,
       "durationMs": 54
     }
+  },
+  {
+    "id": "mfxk2l85-04i3mi",
+    "timestamp": "2025-09-24T05:40:42.063Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": null,
+    "targetType": "route",
+    "targetId": "/",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "member",
+      "tenantId": "vendor"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "b46a00e7-5caf-4304-8d3a-e3965ffa7ad6",
+    "timestamp": "2025-09-24T05:40:42.125Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "public",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 24
+    }
+  },
+  {
+    "id": "mfxk34ma-jmugql",
+    "timestamp": "2025-09-24T05:41:07.222Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": null,
+    "targetType": "route",
+    "targetId": "/login",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "member",
+      "tenantId": "vendor"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "e73a6ee7-2f57-4c39-9757-b3b57006079e",
+    "timestamp": "2025-09-24T05:41:07.248Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "public",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 14
+    }
   }
 ]

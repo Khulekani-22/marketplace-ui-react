@@ -2,7 +2,7 @@
 // src/pages/VendorAddListingPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import MasterLayout from "../MasterLayout/MasterLayout.jsx";
+import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/VendorContext";
 import { auth } from "../lib/firebase";
 import appDataLocal from "../data/appData.json";

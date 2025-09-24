@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import MasterLayout from "../MasterLayout/MasterLayout.jsx";
+import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/VendorContext";
 import { auth } from "../lib/firebase";
 import appDataLocal from "../data/appData.json";
