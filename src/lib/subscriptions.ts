@@ -13,8 +13,9 @@ export async function fetchMySubscriptions() {
   }
 }
 
-export async function subscribeToService(serviceId) {
-  const { data } = await api.post("/api/subscriptions/service", { serviceId });
+export async function subscribeToService(serviceId, details = {}) {
+  const payload = { serviceId, ...details };
+  const { data } = await api.post("/api/subscriptions/service", payload);
   return data;
 }
 

@@ -14,6 +14,7 @@ export function MessagesProvider({ children }) {
     }
   });
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const pollRef = useRef(null);
   const autosyncRef = useRef(null);
@@ -34,9 +35,10 @@ export function MessagesProvider({ children }) {
     [threads]
   );
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async ({ silent }: { silent?: boolean } = {}) => {
     setError(null);
-    setLoading(true);
+    if (silent) setRefreshing(true);
+    else setLoading(true);
     try {
       const { data } = await api.get(`/api/messages`, { params: { t: Date.now() } });
       const items = Array.isArray(data?.items) ? data.items : [];
@@ -45,15 +47,17 @@ export function MessagesProvider({ children }) {
     } catch (e) {
       setError(e?.message || "Failed to load messages");
     } finally {
-      setLoading(false);
+      if (silent) setRefreshing(false);
+      else setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    refresh().finally(() => setLoading(false));
+    refresh().catch(() => void 0);
     // soft poll every 30s
-    pollRef.current = setInterval(refresh, 30000);
+    pollRef.current = setInterval(() => {
+      refresh({ silent: true }).catch(() => void 0);
+    }, 30000);
     // auto-sync messages to LIVE every 5 minutes
     autosyncRef.current = setInterval(async () => {
       if (syncingRef.current) return;
@@ -88,15 +92,15 @@ export function MessagesProvider({ children }) {
   const reply = useCallback(
     async (threadId: string, content: string) => {
       await api.post(`/api/messages/reply`, { threadId, content });
-      await refresh();
+      await refresh({ silent: true });
       await syncMessagesToLive();
     },
     [refresh, syncMessagesToLive]
   );
 
   const value = useMemo(
-    () => ({ threads, unreadCount, latestFive, loading, error, refresh, markRead, reply, syncMessagesToLive }),
-    [threads, unreadCount, latestFive, loading, error, refresh, markRead, reply, syncMessagesToLive]
+    () => ({ threads, unreadCount, latestFive, loading, refreshing, error, refresh, markRead, reply, syncMessagesToLive }),
+    [threads, unreadCount, latestFive, loading, refreshing, error, refresh, markRead, reply, syncMessagesToLive]
   );
 
   useEffect(() => {

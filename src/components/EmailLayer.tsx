@@ -9,7 +9,16 @@ import { useAppSync } from "../context/useAppSync";
 import { auth } from "../lib/firebase";
 
 const EmailLayer = () => {
-  const { threads, unreadCount, markRead, refresh, loading, syncMessagesToLive } = useMessages();
+  const {
+    threads,
+    unreadCount,
+    markRead,
+    refresh,
+    loading,
+    refreshing,
+    error,
+    syncMessagesToLive,
+  } = useMessages();
   const { vendor } = useVendor();
   const [search, setSearch] = useState("");
   const [folder, setFolder] = useState("inbox"); // inbox | sent
@@ -237,8 +246,16 @@ const EmailLayer = () => {
           <div className='card-header border-bottom bg-base py-16 px-24'>
             <div className='d-flex flex-wrap align-items-center justify-content-between gap-4'>
               <div className='d-flex align-items-center gap-3'>
-                <button type='button' className='btn btn-sm btn-outline-secondary' onClick={refresh} disabled={loading}>
-                  <Icon icon='tabler:reload' className='me-1' /> {loading ? 'Refreshing…' : 'Refresh'}
+                <button
+                  type='button'
+                  className='btn btn-sm btn-outline-secondary'
+                  onClick={() => {
+                    void refresh({ silent: true });
+                  }}
+                  disabled={loading || refreshing}
+                >
+                  <Icon icon='tabler:reload' className='me-1' />
+                  {refreshing ? 'Refreshing…' : 'Refresh'}
                 </button>
                 <button type='button' className='btn btn-sm btn-outline-secondary' onClick={handleMarkAllRead} disabled={allRead}>
                   <Icon icon='gravity-ui:envelope-open' className='me-1' /> Mark all as read
@@ -267,6 +284,11 @@ const EmailLayer = () => {
             </div>
           </div>
           <div className='card-body p-0'>
+            {error && (
+              <div className='alert alert-danger rounded-0 border-bottom mb-0'>
+                {error}
+              </div>
+            )}
             <ul className='overflow-x-auto'>
               {filtered.map((t) => (
                 <li key={t.id} className={`email-item px-24 py-16 d-flex gap-4 align-items-center border-bottom cursor-pointer bg-hover-neutral-200 min-w-max-content ${t.read ? '' : 'bg-primary-50'}`}>

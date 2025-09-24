@@ -22,6 +22,41 @@ const normalize = (s) => ({
 // Only show approved items to end users
 const isApproved = (s) => s.status === "approved";
 
+const SERVICE_DAY_START = 8;
+const SERVICE_DAY_END = 17;
+
+function formatHourLabel(hour) {
+  const normalized = ((hour + 11) % 12) + 1;
+  const period = hour >= 12 ? "PM" : "AM";
+  return `${normalized}:00 ${period}`;
+}
+
+function createHourlySlots(start = SERVICE_DAY_START, end = SERVICE_DAY_END) {
+  const slots = [];
+  for (let h = start; h < end; h += 1) {
+    const next = h + 1;
+    const value = `${String(h).padStart(2, "0")}:00`;
+    slots.push({ value, label: `${formatHourLabel(h)} – ${formatHourLabel(next)}` });
+  }
+  return slots;
+}
+
+function isServiceListing(service = {}) {
+  const type = (service.listingType || service.type || "").toString().toLowerCase();
+  return type === "service" || type === "services";
+}
+
+function formatBookingDate(dateString) {
+  if (!dateString) return "";
+  try {
+    const date = new Date(`${dateString}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString();
+  } catch (e) {
+    return dateString;
+  }
+}
+
 const TrendingNFTsOne = ({
   query: controlledQuery,
   onQueryChange,
@@ -53,12 +88,24 @@ const TrendingNFTsOne = ({
   const setQuery = onQueryChange ?? setInternalQuery;
   const [reviews, setReviews] = useState({}); // serviceId -> { rating, comment }
   const [modal, setModal] = useState({ open: false, id: null, showAll: false, page: 0 });
+  const [detailsModal, setDetailsModal] = useState({ open: false, id: null });
   const [toast, setToast] = useState("");
   const [toastType, setToastType] = useState("success"); // success | danger
   const [busy, setBusy] = useState(false);
   const [subs, setSubs] = useState(() => new Set()); // serviceId set
+  const [bookings, setBookings] = useState({}); // serviceId -> { date, slot }
+  const [bookingModal, setBookingModal] = useState({ open: false, id: null, date: "", slot: "", error: "" });
+  const [bookingBusy, setBookingBusy] = useState(false);
   const navigate = useNavigate();
   const { appData } = useAppSync();
+  const bookingSlots = useMemo(() => createHourlySlots(), []);
+  const slotLabelMap = useMemo(() => {
+    const map = {};
+    bookingSlots.forEach((slot) => {
+      map[slot.value] = slot.label;
+    });
+    return map;
+  }, [bookingSlots]);
 
   function pickFresher(a = {}, b = {}) {
     const ca = Number(a.reviewCount || (Array.isArray(a.reviews) ? a.reviews.length : 0) || 0);
@@ -115,14 +162,27 @@ const TrendingNFTsOne = ({
         if (!auth.currentUser) return;
         const items = await fetchMySubscriptions();
         if (cancelled) return;
-        const set = new Set(items.filter((x)=> (x.type||'service')==='service').map((x)=> String(x.serviceId)));
+        const bookingMap = {};
+        const set = new Set(
+          items
+            .filter((x) => (x.type || 'service') === 'service')
+            .map((x) => {
+              const id = String(x.serviceId);
+              if (x.scheduledDate || x.scheduledSlot) {
+                bookingMap[id] = { date: x.scheduledDate || '', slot: x.scheduledSlot || '' };
+              }
+              return id;
+            })
+        );
         setSubs(set);
+        setBookings(bookingMap);
       } catch {}
     })();
     return () => { cancelled = true; };
   }, []);
 
-  async function toggleSubscribe(serviceId) {
+  async function toggleSubscribe(serviceId, options = {}) {
+    const { bookable = false } = options;
     try {
       if (!auth.currentUser) {
         navigate('/login', { replace: true, state: { from: window.location?.pathname || '/' } });
@@ -135,7 +195,12 @@ const TrendingNFTsOne = ({
         setSubs((prev) => {
           const n = new Set(Array.from(prev)); n.delete(id); return n;
         });
-        setToastType('success'); setToast('Unsubscribed'); setTimeout(()=>setToast(''), 2000);
+        setBookings((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        setToastType('success'); setToast(bookable ? 'Booking cancelled' : 'Unsubscribed'); setTimeout(()=>setToast(''), 2000);
       } else {
         await subscribeToService(id);
         setSubs((prev) => new Set([...Array.from(prev), id]));
@@ -202,6 +267,55 @@ const TrendingNFTsOne = ({
   }
   function closeReview() {
     setModal({ open: false, id: null, showAll: false, page: 0 });
+  }
+  function openDetails(id) {
+    setDetailsModal({ open: true, id });
+  }
+  function closeDetails() {
+    setDetailsModal({ open: false, id: null });
+  }
+  function openBooking(service) {
+    if (!auth.currentUser) {
+      navigate('/login', { replace: true, state: { from: window.location?.pathname || '/' } });
+      return;
+    }
+    const id = service?.id;
+    const existing = bookings[String(id)] || {};
+    setBookingModal({ open: true, id, date: existing.date || '', slot: existing.slot || '', error: '' });
+  }
+  function closeBooking() {
+    setBookingModal({ open: false, id: null, date: '', slot: '', error: '' });
+  }
+  function setBookingField(field, value) {
+    setBookingModal((prev) => ({ ...prev, [field]: value, error: field === 'date' || field === 'slot' ? '' : prev.error }));
+  }
+  async function confirmBooking() {
+    const { id, date, slot } = bookingModal;
+    if (!id) return;
+    if (!date) {
+      setBookingModal((prev) => ({ ...prev, error: 'Please choose a date.' }));
+      return;
+    }
+    if (!slot) {
+      setBookingModal((prev) => ({ ...prev, error: 'Please choose a time slot.' }));
+      return;
+    }
+    setBookingBusy(true);
+    try {
+      const payload = { scheduledDate: date, scheduledSlot: slot };
+      await subscribeToService(String(id), payload);
+      setSubs((prev) => new Set([...Array.from(prev), String(id)]));
+      setBookings((prev) => ({ ...prev, [String(id)]: { date, slot } }));
+      setToastType('success');
+      setToast(`Session booked for ${formatBookingDate(date)} at ${slotLabelMap[slot] || slot}.`);
+      setTimeout(() => setToast(''), 2500);
+      closeBooking();
+    } catch (e) {
+      const msg = e?.response?.data?.message || e?.message || 'Failed to book session';
+      setBookingModal((prev) => ({ ...prev, error: msg }));
+    } finally {
+      setBookingBusy(false);
+    }
   }
   function setStar(id, n) { setField(id, "rating", n); }
   function renderStars(n) {
@@ -326,7 +440,10 @@ const TrendingNFTsOne = ({
               filteredServices.map((service) => {
                 const rating = Number(service.rating || 0);
                 const reviewsCount = Number(service.reviewCount || (Array.isArray(service.reviews) ? service.reviews.length : 0) || 0);
-                const isSub = subs.has(String(service.id));
+                const id = String(service.id);
+                const isSub = subs.has(id);
+                const bookable = isServiceListing(service);
+                const bookingInfo = bookings[id];
                 return (
                   <div className="col-12 col-md-6 col-lg-4" key={service.id}>
                     <article
@@ -337,32 +454,69 @@ const TrendingNFTsOne = ({
                     >
                       <div className="row g-1 align-items-start">
                         <div className="col-4 d-flex align-items-center justify-content-center">
-                          <img
-                            src={service.imageUrl}
-                            alt={service.title || 'Listing image'}
-                            className="img-fluid rounded"
-                            style={{ maxHeight: '6.8rem', objectFit: 'contain' }}
-                          />
+                          <button
+                            type="button"
+                            className="btn p-0 border-0 bg-transparent"
+                            onClick={() => openDetails(service.id)}
+                            aria-label={`View details for ${service.title || 'listing'}`}
+                          >
+                            <img
+                              src={service.imageUrl}
+                              alt={service.title || 'Listing image'}
+                              className="img-fluid rounded"
+                              style={{ maxHeight: '6.8rem', objectFit: 'contain' }}
+                            />
+                          </button>
                         </div>
 
                         <div className="col-8 d-flex flex-column">
                           <div className="d-flex justify-content-between align-items-start">
                             <div>
-                              <p className="fw-medium mb-1" style={{ fontSize: '1.1rem', lineHeight: 1.2 }}>{service.title}</p>
+                              <button
+                                type="button"
+                                className="btn btn-link p-0 fw-medium text-start"
+                                style={{ fontSize: '1.1rem', lineHeight: 1.2, textDecoration: 'none' }}
+                                onClick={() => openDetails(service.id)}
+                                aria-label={`Open details for ${service.title || 'listing'}`}
+                              >
+                                {service.title}
+                              </button>
                               <div className="text-muted small" style={{ fontSize: '0.74rem' }}>
                                 {service.vendor || 'Unknown'}
                                 {service.category ? <span><span className="mx-1">|</span>{service.category}</span> : null}
                               </div>
+                              {bookable && bookingInfo && (
+                                <div className="text-success small mt-1" style={{ fontSize: '0.7rem' }}>
+                                  Next session: {formatBookingDate(bookingInfo.date)}
+                                  {bookingInfo.slot ? <span className="ms-1">· {slotLabelMap[bookingInfo.slot] || bookingInfo.slot}</span> : null}
+                                </div>
+                              )}
                             </div>
                             <div className="d-flex flex-column gap-1 pt-1">
                               <button
                                 type="button"
                                 className={isSub ? "btn btn-sm rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6" : "btn btn-sm  rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"}
                                 style={{ fontSize: '0.74rem', padding: '0.2rem 0.45rem' }}
-                                onClick={() => toggleSubscribe(service.id)}
+                                onClick={() => {
+                                  if (bookable) {
+                                    openBooking(service);
+                                  } else {
+                                    toggleSubscribe(service.id);
+                                  }
+                                }}
                               >
-                                {isSub ? 'Subscribed' : 'Subscribe'}
+                                {bookable ? (isSub ? 'Reschedule' : 'Book session') : (isSub ? 'Subscribed' : 'Subscribe')}
                               </button>
+                              {bookable && isSub && (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white"
+                                  style={{ fontSize: '0.74rem', padding: '0.2rem 0.45rem' }}
+                                  onClick={() => toggleSubscribe(service.id, { bookable: true })}
+                                >
+                                  Cancel booking
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 className="btn rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white"
@@ -406,6 +560,161 @@ const TrendingNFTsOne = ({
           </div>
         </div>
       )}
+
+      {bookingModal.open && (() => {
+        const svc = services.find((s) => s.id === bookingModal.id);
+        if (!svc) return null;
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const minDate = `${yyyy}-${mm}-${dd}`;
+        const baseId = String(bookingModal.id ?? '');
+        const dateInputId = `booking-date-${baseId}`;
+        const slotInputId = `booking-slot-${baseId}`;
+        return (
+          <div
+            className="position-fixed top-0 start-0 w-100 h-100"
+            style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1076 }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) closeBooking();
+            }}
+          >
+            <div className="card shadow-lg" style={{ maxWidth: 560, margin: '10vh auto', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div className="card-header d-flex align-items-center justify-content-between">
+                <h6 className="mb-0">Book session: {svc.title}</h6>
+                <button type="button" className="btn btn-sm btn-outline-secondary" onClick={closeBooking}>
+                  Close
+                </button>
+              </div>
+              <div className="card-body">
+                <div className="text-secondary small mb-3">
+                  One-hour slots available between 8:00 AM and 5:00 PM.
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold" htmlFor={dateInputId}>Choose a date</label>
+                  <input
+                    id={dateInputId}
+                    type="date"
+                    className="form-control"
+                    value={bookingModal.date}
+                    min={minDate}
+                    onChange={(e) => setBookingField('date', e.target.value)}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold" htmlFor={slotInputId}>Choose a time slot</label>
+                  <select
+                    id={slotInputId}
+                    className="form-select"
+                    value={bookingModal.slot}
+                    onChange={(e) => setBookingField('slot', e.target.value)}
+                  >
+                    <option value="">Select a slot</option>
+                    {bookingSlots.map((slot) => (
+                      <option key={slot.value} value={slot.value}>{slot.label}</option>
+                    ))}
+                  </select>
+                </div>
+                {bookingModal.error && (
+                  <div className="alert alert-danger py-2" role="alert">
+                    {bookingModal.error}
+                  </div>
+                )}
+                <div className="d-flex justify-content-end gap-2">
+                  <button type="button" className="btn btn-outline-secondary" onClick={closeBooking} disabled={bookingBusy}>
+                    Close
+                  </button>
+                  <button type="button" className="btn btn-primary" onClick={confirmBooking} disabled={bookingBusy}>
+                    {bookingBusy ? 'Booking…' : 'Confirm booking'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {detailsModal.open && (() => {
+        const svc = services.find((s) => s.id === detailsModal.id);
+        if (!svc) return null;
+        const tags = Array.isArray(svc.tags) ? svc.tags.filter(Boolean) : [];
+        const description = svc.description || svc.summary || '';
+        const hasPrice = typeof svc.price === 'number' && !Number.isNaN(Number(svc.price));
+        const formattedPrice = hasPrice ? Intl.NumberFormat(undefined, { style: 'currency', currency: svc.currency || 'USD', maximumFractionDigits: 0 }).format(Number(svc.price)) : '';
+        return (
+          <div
+            className="position-fixed top-0 start-0 w-100 h-100"
+            style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1075 }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) closeDetails();
+            }}
+          >
+            <div className="card shadow-lg" style={{ maxWidth: 640, margin: '10vh auto', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div className="card-header d-flex align-items-center justify-content-between">
+                <h6 className="mb-0">Listing details</h6>
+                <button type="button" className="btn btn-sm btn-outline-secondary" onClick={closeDetails}>
+                  Close
+                </button>
+              </div>
+              <div className="card-body">
+                <div className="d-flex flex-column flex-md-row gap-3 mb-3">
+                  {svc.imageUrl ? (
+                    <div className="flex-shrink-0 text-center">
+                      <img
+                        src={svc.imageUrl}
+                        alt={svc.title || 'Listing image'}
+                        className="img-fluid rounded"
+                        style={{ maxWidth: '12rem', objectFit: 'cover' }}
+                      />
+                    </div>
+                  ) : null}
+                  <div className="flex-grow-1">
+                    <h5 className="mb-1">{svc.title || 'Untitled listing'}</h5>
+                    <div className="text-muted small mb-2">
+                      {svc.vendor || 'Unknown vendor'}
+                      {svc.category ? <span><span className="mx-1">|</span>{svc.category}</span> : null}
+                    </div>
+                    <div className="d-flex flex-wrap align-items-center gap-2 small">
+                      <span className="badge bg-primary-600 text-white">Rating {Number(svc.rating || 0).toFixed(1)}</span>
+                      <span className="text-secondary">{Number(svc.reviewCount || (Array.isArray(svc.reviews) ? svc.reviews.length : 0))} review(s)</span>
+                      {hasPrice && (
+                        <span className="badge bg-neutral-200 text-dark">{formattedPrice}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {description && (
+                  <div className="mb-3">
+                    <h6 className="fw-semibold">Overview</h6>
+                    <p className="mb-0 text-break" style={{ whiteSpace: 'pre-wrap' }}>{description}</p>
+                  </div>
+                )}
+                {tags.length > 0 && (
+                  <div className="mb-3">
+                    <h6 className="fw-semibold">Tags</h6>
+                    <div className="d-flex flex-wrap gap-2">
+                      {tags.map((tag, idx) => (
+                        <span key={`${detailsModal.id}-${idx}`} className="badge bg-neutral-200 text-dark">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(svc.contactEmail || svc.website || svc.contactPhone) && (
+                  <div className="mb-2">
+                    <h6 className="fw-semibold">Contact</h6>
+                    <ul className="mb-0 ps-3 small">
+                      {svc.contactEmail && <li>Email: <a href={`mailto:${svc.contactEmail}`}>{svc.contactEmail}</a></li>}
+                      {svc.contactPhone && <li>Phone: {svc.contactPhone}</li>}
+                      {svc.website && <li>Website: <a href={svc.website} target="_blank" rel="noreferrer">{svc.website}</a></li>}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {modal.open && (
         (() => {

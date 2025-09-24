@@ -1,6 +1,6 @@
 import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { auth } from "../lib/firebase";
 import { useAppSync } from "../context/useAppSync";
 import { fetchMySubscriptions, unsubscribeFromService } from "../lib/subscriptions";
@@ -10,35 +10,48 @@ export default function MySubscriptionsPage() {
   const [items, setItems] = useState([]); // services enriched
   const [err, setErr] = useState("");
   const [busyMap, setBusyMap] = useState({}); // serviceId -> boolean
+  const [refreshing, setRefreshing] = useState(false);
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
   const { appData } = useAppSync();
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
+  const loadSubscriptions = useCallback(
+    async ({ silent, signal } = {}) => {
+      if (silent) setRefreshing(true);
+      else setLoading(true);
       setErr("");
       try {
         if (!auth.currentUser) {
-          setItems([]);
-          setLoading(false);
+          if (!signal?.aborted) setItems([]);
           return;
         }
         const subs = await fetchMySubscriptions();
-        const ids = new Set(subs.filter((x)=> (x.type||'service')==='service').map((x)=> String(x.serviceId)));
+        const ids = new Set(
+          subs
+            .filter((x) => (x.type || "service") === "service")
+            .map((x) => String(x.serviceId))
+        );
 
         const services = Array.isArray(appData?.services) ? appData.services : [];
         const selected = services.filter((s) => ids.has(String(s.id)));
-        if (!cancelled) setItems(selected);
+        if (!signal?.aborted) setItems(selected);
       } catch (e) {
-        if (!cancelled) setErr(e?.message || "Failed to load subscriptions");
+        if (!signal?.aborted) setErr(e?.message || "Failed to load subscriptions");
       } finally {
-        if (!cancelled) setLoading(false);
+        if (signal?.aborted) return;
+        if (silent) setRefreshing(false);
+        else setLoading(false);
       }
-    }
-    load();
-    return () => { cancelled = true; };
-  }, [tenantId, appData]);
+    },
+    [appData]
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadSubscriptions({ silent: false, signal: controller.signal });
+    return () => {
+      controller.abort();
+    };
+  }, [loadSubscriptions, tenantId]);
 
   async function handleUnsubscribe(id) {
     const key = String(id);
@@ -57,6 +70,17 @@ export default function MySubscriptionsPage() {
     <MasterLayout>
       <Breadcrumb title="My Subscriptions" />
       <div className="card">
+        <div className="card-header border-bottom py-16 px-24 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+          <h6 className="mb-0">Active Subscriptions</h6>
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm"
+            onClick={() => loadSubscriptions({ silent: true })}
+            disabled={loading || refreshing}
+          >
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </button>
+        </div>
         <div className="card-body">
           {err && <div className="alert alert-danger">{err}</div>}
           {loading ? (

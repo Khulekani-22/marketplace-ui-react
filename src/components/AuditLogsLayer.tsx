@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchAuditLogs } from "../lib/audit";
 import { api } from "../lib/api";
 
 export default function AuditLogsLayer() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
   const [search, setSearch] = useState("");
@@ -36,29 +37,34 @@ export default function AuditLogsLayer() {
     return () => { mounted = false; };
   }, []);
 
-  async function load() {
-    setLoading(true);
-    setError("");
-    try {
-      const items = await fetchAuditLogs({
-        search: search.trim(),
-        userEmail: userEmail.trim() || undefined,
-        action: action.trim() || undefined,
-        dateFrom: dateFrom ? new Date(dateFrom) : undefined,
-        dateTo: dateTo ? new Date(dateTo) : undefined,
-        limit: 250,
-        tenantId,
-      });
-      setLogs(items);
-    } catch {
-      setError("Failed to load audit logs");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const loadLogs = useCallback(
+    async ({ silent }: { silent?: boolean } = {}) => {
+      if (silent) setRefreshing(true);
+      else setLoading(true);
+      setError("");
+      try {
+        const items = await fetchAuditLogs({
+          search: search.trim(),
+          userEmail: userEmail.trim() || undefined,
+          action: action.trim() || undefined,
+          dateFrom: dateFrom ? new Date(dateFrom) : undefined,
+          dateTo: dateTo ? new Date(dateTo) : undefined,
+          limit: 250,
+          tenantId,
+        });
+        setLogs(items);
+      } catch (e: any) {
+        setError(e?.message || "Failed to load audit logs");
+      } finally {
+        if (silent) setRefreshing(false);
+        else setLoading(false);
+      }
+    },
+    [action, dateFrom, dateTo, search, tenantId, userEmail]
+  );
 
   useEffect(() => {
-    load();
+    loadLogs({ silent: false }).catch(() => void 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -159,8 +165,19 @@ export default function AuditLogsLayer() {
               onChange={(e) => setDateTo(e.target.value)}
               aria-label="To date"
             />
-            <button className="btn btn-secondary" onClick={load} disabled={loading}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => loadLogs({ silent: false })}
+              disabled={loading || refreshing}
+            >
               {loading ? "Loading…" : "Apply"}
+            </button>
+            <button
+              className="btn btn-outline-secondary"
+              onClick={() => loadLogs({ silent: true })}
+              disabled={loading || refreshing}
+            >
+              {refreshing ? "Refreshing…" : "Refresh"}
             </button>
             <button className="btn btn-outline-primary" onClick={exportCsv} disabled={!filtered.length}>
               Export CSV

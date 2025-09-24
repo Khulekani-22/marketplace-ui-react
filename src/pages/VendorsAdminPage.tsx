@@ -1,5 +1,5 @@
 // src/pages/VendorsAdminPage.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
@@ -172,6 +172,9 @@ export default function VendorsAdminPage() {
   const [tab, setTab] = useState("visual"); // "visual" | "json"
 
   // UI state
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadErr, setLoadErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState(null);
   const [err, setErr] = useState(null);
@@ -187,6 +190,7 @@ export default function VendorsAdminPage() {
 
   async function migrateStartups() {
     setErr(null);
+    setLoadErr("");
     setBusy(true);
     try {
       const res = await api.post(`/api/data/vendors/migrate-startups`).then((r) => r.data || {});
@@ -449,12 +453,12 @@ export default function VendorsAdminPage() {
     setText(JSON.stringify(prev, null, 2));
   }
 
-  // --------- Backend I/O ----------
-  useEffect(() => {
-    (async () => {
-      setBusy(true);
+  const loadDirectory = useCallback(
+    async ({ silent }: { silent?: boolean } = {}) => {
+      if (silent) setRefreshing(true);
+      else setLoading(true);
+      setLoadErr("");
       try {
-        // Start with LMS live (if available), else local
         let base = appDataLocal;
         try {
           const { data: live } = await api.get(`${API_BASE}/live`, {
@@ -465,18 +469,23 @@ export default function VendorsAdminPage() {
             suppressToast: true,
             suppressErrorLog: true,
           } as any);
-          if (live) base = live;
-        } catch {
-          base = appDataLocal;
+          if (live && typeof live === "object" && Object.keys(live).length) {
+            base = live;
+          }
+        } catch (e: any) {
+          const message =
+            e?.response?.data?.message ||
+            e?.message ||
+            "Failed to fetch live vendor data";
+          setLoadErr(message);
         }
 
-        // Merge vendors from API into working copy
+        const draft = deepClone(base);
+        draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
         try {
           const list = await api
             .get(`/api/data/vendors`, { suppressToast: true, suppressErrorLog: true } as any)
             .then((r) => r.data || []);
-          const draft = deepClone(base);
-          draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
           list.forEach((v) => {
             const n = normalizeVendor(v);
             const idx = draft.startups.findIndex(
@@ -487,23 +496,32 @@ export default function VendorsAdminPage() {
             if (idx >= 0) draft.startups[idx] = { ...draft.startups[idx], ...n };
             else draft.startups.push(n);
           });
-          base = draft;
-        } catch {}
+        } catch (e: any) {
+          const message =
+            e?.response?.data?.message ||
+            e?.message ||
+            "Failed to fetch vendors from API";
+          setLoadErr((prev) => prev || message);
+        }
 
-        setData(base);
-        setText(JSON.stringify(base, null, 2));
-        localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(base));
-        const first = base?.startups?.[0] || base?.vendors?.[0] || base?.companies?.[0];
+        setData(draft);
+        setText(JSON.stringify(draft, null, 2));
+        localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(draft));
+        const first = draft?.startups?.[0] || draft?.vendors?.[0] || draft?.companies?.[0];
         setSelectedId(String(first?.vendorId ?? first?.id ?? "") || "");
         await refreshHistory();
-      } catch {
-        // stay with local fallback
       } finally {
-        setBusy(false);
+        if (silent) setRefreshing(false);
+        else setLoading(false);
       }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    },
+    [tenantId, refreshHistory]
+  );
+
+  // --------- Backend I/O ----------
+  useEffect(() => {
+    loadDirectory({ silent: false }).catch(() => void 0);
+  }, [loadDirectory]);
 
   async function refreshHistory() {
     try {
@@ -777,6 +795,13 @@ export default function VendorsAdminPage() {
 
       {/* Toolbar */}
       <div className="pt-4 d-flex gap-2 mb-3">
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => loadDirectory({ silent: true })}
+          disabled={loading || refreshing}
+        >
+          {refreshing ? "Refreshing…" : loading ? "Loading…" : "Refresh data"}
+        </button>
         <label className="btn btn-light mb-0">
           Import JSON
           <input type="file" accept="application/json" hidden onChange={handleImport} />
@@ -796,7 +821,7 @@ export default function VendorsAdminPage() {
             );
             if (ok) migrateStartups();
           }}
-          disabled={busy}
+          disabled={busy || loading || refreshing}
           title="Convert all startups to vendors and upsert into vendor directory"
         >
           Migrate startups → vendors
@@ -804,7 +829,7 @@ export default function VendorsAdminPage() {
         <button
           className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"
           onClick={handlePublish}
-          disabled={busy}
+          disabled={busy || loading || refreshing}
           title="Write working copy to live appData.json on the server"
         >
           {busy ? "Publishing…" : "Publish to live"}
@@ -812,11 +837,17 @@ export default function VendorsAdminPage() {
       </div>
 
       {/* Alerts */}
+      {loadErr && <div className="alert alert-warning py-2">{loadErr}</div>}
       {toast && <div className="alert alert-success py-2">{toast}</div>}
       {err && <div className="alert alert-danger py-2">{err}</div>}
 
       {/* Checkpoint bar */}
-      <CheckpointBar onSave={saveCheckpoint} onClear={clearHistory} onUndo={undo} disabled={busy} />
+      <CheckpointBar
+        onSave={saveCheckpoint}
+        onClear={clearHistory}
+        onUndo={undo}
+        disabled={busy || loading || refreshing}
+      />
 
       <div className="d-flex gap-3">
         {/* Left: editor */}

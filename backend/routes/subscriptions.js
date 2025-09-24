@@ -3,6 +3,91 @@ import { v4 as uuid } from "uuid";
 import { getData, saveData } from "../utils/dataStore.js";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 
+const SERVICE_DAY_START = 8;
+const SERVICE_DAY_END = 17;
+const SLOT_REGEX = /^([01]\d|2[0-3]):00$/;
+
+function isServiceListing(service = {}) {
+  const type = (service.listingType || service.type || "").toString().toLowerCase();
+  return type === "service" || type === "services";
+}
+
+function isValidSlot(slot) {
+  if (!slot || typeof slot !== "string") return false;
+  if (!SLOT_REGEX.test(slot)) return false;
+  const hour = parseInt(slot.slice(0, 2), 10);
+  return hour >= SERVICE_DAY_START && hour < SERVICE_DAY_END;
+}
+
+function isValidDate(value) {
+  if (!value || typeof value !== "string") return false;
+  const dt = new Date(`${value}T00:00:00`);
+  return !Number.isNaN(dt.getTime());
+}
+
+function upsertBooking({ data, subscription, service, scheduledDate, scheduledSlot, customerName, bookedAt, status }) {
+  data.bookings = Array.isArray(data.bookings) ? data.bookings : [];
+  const bookings = data.bookings;
+  const nowIso = new Date().toISOString();
+  const idx = bookings.findIndex((b) => (b.subscriptionId && subscription?.id && b.subscriptionId === subscription.id) || (String(b.serviceId || "") === String(subscription.serviceId || "") && (b.customerEmail || "").toLowerCase() === (subscription.email || "").toLowerCase() && !b.canceledAt));
+  const baseDetails = {
+    subscriptionId: subscription.id,
+    serviceId: subscription.serviceId,
+    serviceTitle: service?.title || "",
+    vendorId: String(service?.vendorId || service?.id || ""),
+    vendorName: service?.vendor || service?.vendorName || "",
+    vendorEmail: service?.contactEmail || service?.email || "",
+    customerId: subscription.uid || subscription.email,
+    customerName: customerName || subscription.email,
+    customerEmail: subscription.email,
+    tenantId: subscription.tenantId,
+    price: Number(service?.price || 0) || 0,
+  };
+  const scheduleDetails = {
+    scheduledDate: scheduledDate || null,
+    scheduledSlot: scheduledSlot || null,
+    bookedAt: bookedAt || nowIso,
+    status: status || "scheduled",
+    updatedAt: nowIso,
+  };
+  if (idx >= 0) {
+    const existing = bookings[idx];
+    bookings[idx] = {
+      id: existing.id,
+      ...existing,
+      ...baseDetails,
+      ...scheduleDetails,
+      bookedAt: existing.bookedAt || scheduleDetails.bookedAt,
+    };
+  } else {
+    bookings.push({
+      id: uuid(),
+      ...baseDetails,
+      ...scheduleDetails,
+    });
+  }
+  data.bookings = bookings;
+}
+
+function markBookingStatus({ data, subscription, serviceId, customerEmail, status }) {
+  if (!subscription && !serviceId) return;
+  data.bookings = Array.isArray(data.bookings) ? data.bookings : [];
+  const bookings = data.bookings;
+  const emailLower = (customerEmail || "").toLowerCase();
+  const id = subscription?.id;
+  const nowIso = new Date().toISOString();
+  bookings.forEach((b) => {
+    const matchesSubscription = !!id && b.subscriptionId === id;
+    const matchesServiceAndEmail = !id && serviceId && String(b.serviceId || "") === String(serviceId) && (!emailLower || (b.customerEmail || "").toLowerCase() === emailLower);
+    if (matchesSubscription || matchesServiceAndEmail) {
+      b.status = status;
+      b.updatedAt = nowIso;
+      if (status === "canceled") b.canceledAt = nowIso;
+    }
+  });
+  data.bookings = bookings;
+}
+
 const router = Router();
 
 // List current user's subscriptions for this tenant
@@ -40,33 +125,104 @@ router.post("/service", firebaseAuthRequired, (req, res) => {
   const tenantId = req.tenant.id;
   const email = (req.user?.email || "").toLowerCase();
   const uid = req.user?.uid || "";
+  const displayName = req.user?.displayName || (email ? email.split("@")[0] : "");
   if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
 
+  const requestedDate = typeof req.body?.scheduledDate === "string" ? req.body.scheduledDate.trim() : "";
+  const requestedSlot = typeof req.body?.scheduledSlot === "string" ? req.body.scheduledSlot.trim() : "";
+
   let created = null;
-  saveData((data) => {
-    data.subscriptions = Array.isArray(data.subscriptions) ? data.subscriptions : [];
-    // Find vendorId for convenience
+  let serviceIsBookable = false;
+  try {
+    saveData((data) => {
+      data.subscriptions = Array.isArray(data.subscriptions) ? data.subscriptions : [];
     const services = Array.isArray(data.services) ? data.services : [];
     const svc = services.find((s) => String(s.id) === serviceId && (s.tenantId ?? "public") === tenantId) || services.find((s) => String(s.id) === serviceId);
-    const vendorId = svc ? String(svc.vendorId || svc.id || "") : "";
+    if (!svc) {
+      throw Object.assign(new Error("Service listing not found"), { statusCode: 404 });
+    }
+      const vendorId = svc ? String(svc.vendorId || svc.id || "") : "";
+    serviceIsBookable = isServiceListing(svc);
+
+    if (serviceIsBookable) {
+      if (!isValidDate(requestedDate)) {
+        throw Object.assign(new Error("Invalid or missing scheduledDate"), { statusCode: 400 });
+      }
+      if (!isValidSlot(requestedSlot)) {
+        throw Object.assign(new Error("Invalid or missing scheduledSlot"), { statusCode: 400 });
+      }
+    }
 
     // Idempotent/reactivation: unique key by (tenantId, email, type=service, serviceId)
     const exists = data.subscriptions.find((x) => (x.tenantId ?? "public") === tenantId && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
+    const nowIso = new Date().toISOString();
     if (exists) {
-      // If canceled previously, reactivate by clearing canceledAt and bumping createdAt
       if (exists.canceledAt) {
         exists.canceledAt = undefined;
-        exists.createdAt = new Date().toISOString();
+        exists.createdAt = nowIso;
+      }
+      exists.tenantId = tenantId;
+      if (serviceIsBookable) {
+        exists.scheduledDate = requestedDate;
+        exists.scheduledSlot = requestedSlot;
       }
       created = exists;
+      if (serviceIsBookable) {
+        upsertBooking({
+          data,
+          subscription: exists,
+          service: svc,
+          scheduledDate: requestedDate,
+          scheduledSlot: requestedSlot,
+          customerName: displayName,
+          bookedAt: exists.createdAt || nowIso,
+          status: "scheduled",
+        });
+      }
       return data;
     }
 
-    const obj = { id: uuid(), type: "service", serviceId, vendorId, email, uid, tenantId, createdAt: new Date().toISOString() };
+    const obj = {
+      id: uuid(),
+      type: "service",
+      serviceId,
+      vendorId,
+      email,
+      uid,
+      tenantId,
+      createdAt: nowIso,
+    };
+    if (serviceIsBookable) {
+      obj.scheduledDate = requestedDate;
+      obj.scheduledSlot = requestedSlot;
+    }
     data.subscriptions.push(obj);
     created = obj;
-    return data;
-  });
+
+    if (serviceIsBookable) {
+      upsertBooking({
+        data,
+        subscription: obj,
+        service: svc,
+        scheduledDate: requestedDate,
+        scheduledSlot: requestedSlot,
+        customerName: displayName,
+        bookedAt: nowIso,
+        status: "scheduled",
+      });
+    }
+      return data;
+    });
+  } catch (err) {
+    const statusCode = err?.statusCode || err?.status || 500;
+    const message = err?.message || "Failed to create subscription";
+    return res.status(statusCode).json({ status: "error", message });
+  }
+
+  if (serviceIsBookable && !created?.scheduledDate) {
+    return res.status(400).json({ status: "error", message: "Scheduled booking details are required for this listing" });
+  }
+
   res.status(201).json(created);
 });
 
@@ -80,9 +236,15 @@ router.delete("/service", firebaseAuthRequired, (req, res) => {
   let removed = false;
   saveData((data) => {
     const before = Array.isArray(data.subscriptions) ? data.subscriptions : [];
-    const after = before.filter((x) => !((x.tenantId ?? "public") === tenantId && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId));
+    const matches = before.filter((x) => (x.tenantId ?? "public") === tenantId && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
+    const after = before.filter((x) => !matches.includes(x));
     removed = after.length !== before.length;
     data.subscriptions = after;
+    if (removed) {
+      matches.forEach((sub) => {
+        markBookingStatus({ data, subscription: sub, serviceId, customerEmail: email, status: "canceled" });
+      });
+    }
     return data;
   });
   if (!removed) return res.status(404).json({ status: "error", message: "Subscription not found" });
@@ -102,6 +264,7 @@ router.put("/service/cancel", firebaseAuthRequired, (req, res) => {
     if (idx >= 0) {
       list[idx].canceledAt = new Date().toISOString();
       updated = list[idx];
+      markBookingStatus({ data, subscription: list[idx], serviceId, customerEmail: email, status: "canceled" });
     }
     data.subscriptions = list;
     return data;

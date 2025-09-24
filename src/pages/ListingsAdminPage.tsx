@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import appDataLocal from "../data/appData.json";
 import { useMessages } from "../context/useMessages";
 import { api } from "../lib/api";
-import { useAppSync } from "../context/useAppSync";
 import { auth } from "../lib/firebase";
 import { writeAuditLog } from "../lib/audit";
 import MasterLayout from "../masterLayout/MasterLayout";
@@ -183,6 +182,9 @@ export default function ListingsAdminPage() {
   const [tab, setTab] = useState("visual"); // "visual" | "json"
 
   // UI state
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadErr, setLoadErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState(null);
   const [err, setErr] = useState(null);
@@ -380,8 +382,6 @@ export default function ListingsAdminPage() {
     setText(JSON.stringify(prev, null, 2));
   }
 
-  const { appData } = useAppSync();
-
   const refreshHistory = useCallback(async () => {
     try {
       const hx = await api
@@ -395,26 +395,56 @@ export default function ListingsAdminPage() {
     }
   }, []);
 
+  const loadServices = useCallback(
+    async ({ silent }: { silent?: boolean } = {}) => {
+      if (silent) setRefreshing(true);
+      else setLoading(true);
+      setLoadErr("");
+      try {
+        let base: any = null;
+        try {
+          const { data: live } = await api.get(`${API_BASE}/live`, {
+            headers: {
+              "x-tenant-id": tenantId,
+              "cache-control": "no-cache",
+            },
+            suppressToast: true,
+            suppressErrorLog: true,
+          } as any);
+          if (live && typeof live === "object" && Object.keys(live).length) {
+            base = live;
+          }
+        } catch (e: any) {
+          const message =
+            e?.response?.data?.message ||
+            e?.message ||
+            "Failed to fetch latest listings";
+          setLoadErr(message);
+        }
+
+        if (base) {
+          const next = deepClone(base);
+          setData(next);
+          setText(JSON.stringify(next, null, 2));
+          localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(next));
+          const first = next?.services?.[0];
+          setSelectedId(first ? String(first.id) : "");
+          setVendors(collectVendorsFromData(next));
+        }
+
+        await refreshHistory();
+      } finally {
+        if (silent) setRefreshing(false);
+        else setLoading(false);
+      }
+    },
+    [tenantId, refreshHistory]
+  );
+
   // --------- Backend I/O ----------
   useEffect(() => {
-    (async () => {
-      setBusy(true);
-      try {
-        const live = appData;
-        if (live && Object.keys(live).length) {
-          setData(live);
-          setText(JSON.stringify(live, null, 2));
-          localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(live));
-          setSelectedId(live?.services?.[0]?.id || "");
-        }
-        await refreshHistory();
-      } catch {
-        // stay with local fallback
-      } finally {
-        setBusy(false);
-      }
-    })();
-  }, [appData, refreshHistory]);
+    loadServices({ silent: false }).catch(() => void 0);
+  }, [loadServices]);
 
   async function handlePublish() {
     setErr(null);
@@ -736,6 +766,13 @@ function handleExport() {
       </div>
 
       <div className="pt-4 d-flex gap-2 mb-3">
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => loadServices({ silent: true })}
+          disabled={loading || refreshing}
+        >
+          {refreshing ? "Refreshing…" : loading ? "Loading…" : "Refresh data"}
+        </button>
         <label className="btn btn-light mb-0 d-none">
           Import JSON
           <input
@@ -753,12 +790,21 @@ function handleExport() {
         </button>
         <button
           className="btn rounded-pill border text-neutral-500 border-neutral-700 radius-8 px-12 py-6 bg-hover-primary-700 text-hover-white"
-          disabled={busy}
+          disabled={busy || loading || refreshing}
           onClick={async () => {
             setErr(null);
             setBusy(true);
             try {
-              const live = await api.get(`/api/lms/live`).then((r) => r.data);
+              const live = await api
+                .get(`/api/lms/live`, {
+                  headers: {
+                    "x-tenant-id": tenantId,
+                    "cache-control": "no-cache",
+                  },
+                  suppressToast: true,
+                  suppressErrorLog: true,
+                } as any)
+                .then((r) => r.data);
               const next = deepClone(data);
               const liveMap = Object.fromEntries(
                 (live?.services || []).map((s) => [String(s.id), s])
@@ -795,7 +841,7 @@ function handleExport() {
         <button
           className="btn rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"
           onClick={handlePublish}
-          disabled={busy}
+          disabled={busy || loading || refreshing}
           title="Write working copy to live appData.json on the server"
         >
           {busy ? "Publishing…" : "Publish to live"}
@@ -803,6 +849,7 @@ function handleExport() {
       </div>
 
       {/* Alerts */}
+      {loadErr && <div className="alert alert-warning py-2">{loadErr}</div>}
       {toast && <div className="alert alert-success py-2">{toast}</div>}
       {err && <div className="alert alert-danger py-2">{err}</div>}
 
@@ -811,7 +858,7 @@ function handleExport() {
         onSave={saveCheckpoint}
         onClear={clearHistory}
         onUndo={undo}
-        disabled={busy}
+        disabled={busy || loading || refreshing}
       />
 
       <div className="d-flex gap-3">
