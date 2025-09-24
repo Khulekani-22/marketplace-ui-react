@@ -136,7 +136,9 @@ export default function LmsAdminPage() {
             "x-tenant-id": tenantId,
             "cache-control": "no-cache",
           },
-        });
+          suppressToast: true,
+          suppressErrorLog: true,
+        } as any);
         if (payload) {
           setData(payload);
           setText(JSON.stringify(payload, null, 2));
@@ -160,7 +162,9 @@ export default function LmsAdminPage() {
           "x-tenant-id": tenantId,
           "cache-control": "no-cache",
         },
-      });
+        suppressToast: true,
+        suppressErrorLog: true,
+      } as any);
       const items = Array.isArray(hx?.items) ? hx.items : [];
       setHistory(items);
       localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
@@ -261,7 +265,9 @@ export default function LmsAdminPage() {
             "x-tenant-id": tenantId,
             "cache-control": "no-cache",
           },
-        });
+          suppressToast: true,
+          suppressErrorLog: true,
+        } as any);
         if (live) doSetData(live);
       } catch {}
     } catch (e) {

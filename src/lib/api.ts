@@ -42,6 +42,7 @@ type ApiRequestConfig = InternalAxiosRequestConfig & {
   _retriedAuth?: boolean;
   _switchAttempts?: number;
   _resetOnce?: boolean;
+  _delayedRetry?: boolean;
 };
 
 export const api = axios.create({ baseURL: currentBase });
@@ -90,6 +91,11 @@ function reportApiError(error: AxiosError) {
   const method = (config?.method || "get").toUpperCase();
   const fullUrl = combineUrl(config.baseURL || api.defaults.baseURL || currentBase, config.url);
   const status = error.response?.status;
+  const codeSuffix = status
+    ? ` (HTTP ${status})`
+    : error.code
+    ? ` (${error.code})`
+    : "";
 
   if (!config.suppressErrorLog) {
     const context = {
@@ -103,10 +109,17 @@ function reportApiError(error: AxiosError) {
   }
 
   if (!config.suppressToast) {
+    const toastId = `${method}:${fullUrl}:${status || error.code || "err"}`;
     try {
-      toast.error(message, { toastId: `${method}:${fullUrl}:${status || error.code || "err"}` });
+      setTimeout(() => {
+        try {
+          toast.error(`${message}${codeSuffix}`, { toastId });
+        } catch {
+          /* noop: toast unavailable (e.g., during SSR) */
+        }
+      }, 1000);
     } catch {
-      /* noop: toast unavailable (e.g., during SSR) */
+      /* noop */
     }
   }
 }
@@ -127,6 +140,10 @@ function shimTenantInPayload<T extends Record<string, any>>(payload: T): T {
 function requestId() {
   try { return crypto.randomUUID(); } catch { /* older browsers */ }
   return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Public helpers: prefer server-derived session over client hints
@@ -192,6 +209,7 @@ api.interceptors.response.use(null, async (error) => {
   }
 
   const original = (error.config || {}) as ApiRequestConfig;
+  const method = (original?.method || "get").toLowerCase();
 
   // Handle auth refresh
   if (error.response?.status === 401 && !original._retriedAuth) {
@@ -227,6 +245,12 @@ api.interceptors.response.use(null, async (error) => {
       original._switchAttempts = 0;
       return api(original);
     }
+  }
+
+  if (!original._delayedRetry && method === "get") {
+    original._delayedRetry = true;
+    await delay(1000);
+    return api(original);
   }
 
   reportApiError(error);

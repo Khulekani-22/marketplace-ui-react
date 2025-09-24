@@ -101,9 +101,12 @@ export function MessagesProvider({ children }) {
 
   useEffect(() => {
     if (!error) return;
-    try {
-      toast.error(error, { toastId: "messages" });
-    } catch {}
+    const timer = setTimeout(() => {
+      try {
+        toast.error(error, { toastId: "messages" });
+      } catch {}
+    }, 1000);
+    return () => clearTimeout(timer);
   }, [error]);
 
   return <MessagesContext.Provider value={value}>{children}</MessagesContext.Provider>;

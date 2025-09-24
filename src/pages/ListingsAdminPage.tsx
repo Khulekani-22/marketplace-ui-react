@@ -159,7 +159,9 @@ export default function ListingsAdminPage() {
     (async () => {
       try {
         // API-first: pull vendors via axios
-        const arr = await api.get(`/api/data/vendors`).then((r) => r.data || []);
+        const arr = await api
+          .get(`/api/data/vendors`, { suppressToast: true, suppressErrorLog: true } as any)
+          .then((r) => r.data || []);
         const norm = Array.isArray(arr) ? dedupeVendors(arr.map(normalizeVendor)) : [];
         if (alive) setVendors((prev) => dedupeVendors([...(prev || []), ...norm]));
       } catch {
@@ -379,6 +381,20 @@ export default function ListingsAdminPage() {
   }
 
   const { appData } = useAppSync();
+
+  const refreshHistory = useCallback(async () => {
+    try {
+      const hx = await api
+        .get(`/api/lms/checkpoints`, { suppressToast: true, suppressErrorLog: true } as any)
+        .then((r) => r.data);
+      const items = hx.items ?? [];
+      setHistory(items);
+      localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // --------- Backend I/O ----------
   useEffect(() => {
     (async () => {
@@ -399,17 +415,6 @@ export default function ListingsAdminPage() {
       }
     })();
   }, [appData, refreshHistory]);
-
-  const refreshHistory = useCallback(async () => {
-    try {
-      const hx = await api.get(`/api/lms/checkpoints`).then((r) => r.data);
-      const items = hx.items ?? [];
-      setHistory(items);
-      localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
-    } catch {
-      // ignore
-    }
-  }, []);
 
   async function handlePublish() {
     setErr(null);

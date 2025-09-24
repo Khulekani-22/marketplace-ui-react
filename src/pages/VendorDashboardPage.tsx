@@ -65,7 +65,11 @@ export default function VendorDashboardPage() {
             name: vendor?.name || ''
           };
           const vId = vendor?.vendorId || vendor?.id || 'me';
-          const resp = await api.get(`/api/data/vendors/${encodeURIComponent(vId)}/stats`, { params });
+          const resp = await api.get(`/api/data/vendors/${encodeURIComponent(vId)}/stats`, {
+            params,
+            suppressToast: true,
+            suppressErrorLog: true,
+          } as any);
           const s = resp.data || {};
           setSubByService(s?.subscriptionStats?.byService || {});
           setSalesTime(s?.salesTime || { monthly: {}, quarterly: {}, annual: {} });

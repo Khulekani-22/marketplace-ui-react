@@ -28,7 +28,11 @@ export function AppSyncProvider({ children }) {
       const params = {};
       if (email) params.email = email;
       if (uid) params.uid = uid;
-      const { data } = await api.get("/api/users/me", { params });
+      const { data } = await api.get("/api/users/me", {
+        params,
+        suppressToast: true,
+        suppressErrorLog: true,
+      } as any);
       const nextRole = data?.role || "member";
       const nextTenant = data?.tenantId || "vendor";
       sessionStorage.setItem("role", nextRole);
@@ -44,14 +48,23 @@ export function AppSyncProvider({ children }) {
     setAppDataLoading(true);
     setAppDataError("");
     try {
-      const { data } = await api.get("/api/lms/live");
+      const { data } = await api.get("/api/lms/live", {
+        suppressToast: true,
+        suppressErrorLog: true,
+      } as any);
       setAppData(data || null);
     } catch (e) {
       // API failed: best-effort fallback to local bundled appData.json
       setAppData(appDataLocal || null);
-      setAppDataError(
-        e?.response?.data?.message || e?.message || "Loaded local fallback app data"
-      );
+      const err: any = e;
+      const isNetwork = err?.code === "ERR_NETWORK";
+      if (isNetwork) {
+        setAppDataError("");
+      } else {
+        setAppDataError(
+          err?.response?.data?.message || err?.message || "Loaded local fallback app data"
+        );
+      }
     } finally {
       setAppDataLoading(false);
     }
@@ -105,9 +118,12 @@ export function AppSyncProvider({ children }) {
 
   useEffect(() => {
     if (!appDataError) return;
-    try {
-      toast.error(appDataError, { toastId: "app-sync" });
-    } catch {}
+    const timer = setTimeout(() => {
+      try {
+        toast.error(appDataError, { toastId: "app-sync" });
+      } catch {}
+    }, 1000);
+    return () => clearTimeout(timer);
   }, [appDataError]);
 
   return <AppSyncContext.Provider value={value}>{children}</AppSyncContext.Provider>;

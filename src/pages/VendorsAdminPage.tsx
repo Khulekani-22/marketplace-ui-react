@@ -210,13 +210,17 @@ export default function VendorsAdminPage() {
             "x-tenant-id": tenantId,
             "cache-control": "no-cache",
           },
-        });
+          suppressToast: true,
+          suppressErrorLog: true,
+        } as any);
         if (live) base = live;
       } catch {
         base = appDataLocal;
       }
       try {
-        const list = await api.get(`/api/data/vendors`).then((r) => r.data || []);
+        const list = await api
+          .get(`/api/data/vendors`, { suppressToast: true, suppressErrorLog: true } as any)
+          .then((r) => r.data || []);
         const draft = deepClone(base);
         draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
         list.forEach((v) => {
@@ -458,7 +462,9 @@ export default function VendorsAdminPage() {
               "x-tenant-id": tenantId,
               "cache-control": "no-cache",
             },
-          });
+            suppressToast: true,
+            suppressErrorLog: true,
+          } as any);
           if (live) base = live;
         } catch {
           base = appDataLocal;
@@ -466,7 +472,9 @@ export default function VendorsAdminPage() {
 
         // Merge vendors from API into working copy
         try {
-          const list = await api.get(`/api/data/vendors`).then((r) => r.data || []);
+          const list = await api
+            .get(`/api/data/vendors`, { suppressToast: true, suppressErrorLog: true } as any)
+            .then((r) => r.data || []);
           const draft = deepClone(base);
           draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
           list.forEach((v) => {
@@ -504,7 +512,9 @@ export default function VendorsAdminPage() {
           "x-tenant-id": tenantId,
           "cache-control": "no-cache",
         },
-      });
+        suppressToast: true,
+        suppressErrorLog: true,
+      } as any);
       const items = Array.isArray(hx?.items) ? hx.items : [];
       setHistory(items);
       localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
@@ -593,7 +603,9 @@ export default function VendorsAdminPage() {
             "x-tenant-id": tenantId,
             "cache-control": "no-cache",
           },
-        });
+          suppressToast: true,
+          suppressErrorLog: true,
+        } as any);
         if (live) doSetData(live);
       } catch {}
     } catch (e) {

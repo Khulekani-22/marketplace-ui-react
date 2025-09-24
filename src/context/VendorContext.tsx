@@ -155,9 +155,12 @@ export function VendorProvider({ children }) {
 
   useEffect(() => {
     if (!error) return;
-    try {
-      toast.error(error, { toastId: "vendor-profile" });
-    } catch {}
+    const timer = setTimeout(() => {
+      try {
+        toast.error(error, { toastId: "vendor-profile" });
+      } catch {}
+    }, 1000);
+    return () => clearTimeout(timer);
   }, [error]);
 
   const value = useMemo(
