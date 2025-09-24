@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import MasterLayout from "../MasterLayout/MasterLayout.jsx";
+import MasterLayout from "../masterLayout/MasterLayout.jsx";
 
 // ✅ Vite/CRA both support importing JSON at build time
 import appData from "../../backend/appData.json";
