@@ -1,114 +1,156 @@
-// src/lib/api.ts
+// src/lib/api.js
 import axios from "axios";
-import { auth } from "../lib/firebase";
-import { onIdTokenChanged } from "firebase/auth";
+import { auth } from "./firebase";
 
-function computeApiBases(): string[] {
-  const envUrl = (import.meta as any).env?.VITE_API_URL as string | undefined;
+// In-memory session derived from the API (authoritative)
+let SESSION = {
+  email: null,
+  uid: null,
+  role: "member",
+  tenantId: null,
+  allowedTenants: [],
+};
+
+// Prefer port 5000; if unreachable, automatically fall back to 5001.
+function computeApiBases() {
+  const envUrl = import.meta.env.VITE_API_URL;
   if (envUrl) return [envUrl];
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
   const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
-  const make = (port: number) => `${protocol}//${host}:${port}`;
-  // Match JS client order: 5001, 5055, 5000
+  const make = (port) => `${protocol}//${host}:${port}`;
+  // Prefer ports in this order: 5001, 5055, then 5000 (per environment requirement)
   return [make(5001), make(5055), make(5000)];
 }
 
-
-let token: string | null = null;
-let tokenTimestamp: number | null = null;
-const TOKEN_REFRESH_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
-
-import type { User } from "firebase/auth";
-import type { InternalAxiosRequestConfig, AxiosError } from "axios";
-onIdTokenChanged(auth, async (user: User | null) => {
-  if (user) {
-    token = await user.getIdToken();
-    tokenTimestamp = Date.now();
-  } else {
-    token = null;
-    tokenTimestamp = null;
-  }
-});
-
 const CANDIDATES = computeApiBases();
 let candidateIndex = 0;
-export const api = axios.create({ baseURL: CANDIDATES[candidateIndex] });
+let currentBase = CANDIDATES[candidateIndex];
 
-function mapTenantOut(id: string | null | undefined) {
+export const api = axios.create({ baseURL: currentBase });
+
+function mapTenantOut(id) {
   return id === "vendor" ? "public" : id;
 }
 
-api.interceptors.request.use(async (cfg: InternalAxiosRequestConfig) => {
-  // Refresh token if older than threshold
+function shimTenantInPayload(payload) {
+  if (!payload || typeof payload !== "object") return payload;
+  try {
+    if (typeof payload.tenantId === "string") payload.tenantId = mapTenantOut(payload.tenantId);
+    if (typeof payload.newTenantId === "string") payload.newTenantId = mapTenantOut(payload.newTenantId);
+  } catch {}
+  return payload;
+}
+
+function requestId() {
+  try { return crypto.randomUUID(); } catch { /* older browsers */ }
+  return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
+}
+
+// Public helpers: prefer server-derived session over client hints
+export function getSession() {
+  const ssTenant = SESSION.tenantId || sessionStorage.getItem("tenantId") || "vendor";
+  const role = SESSION.role || sessionStorage.getItem("role") || "member";
+  return { ...SESSION, tenantId: ssTenant, role };
+}
+
+export async function bootstrapSession() {
+  try {
+    // Use either Firebase identity (via Authorization header) or fallback to email/uid in storage
+    const meHint = {};
+    const ssEmail = sessionStorage.getItem("userEmail");
+    const ssUid = sessionStorage.getItem("userId");
+    if (ssEmail) meHint.email = ssEmail;
+    if (ssUid) meHint.uid = ssUid;
+    const { data } = await api.get("/api/users/me", { params: meHint });
+    const role = data?.role || "member";
+    const tenantId = data?.tenantId || "vendor";
+    SESSION = {
+      email: (auth.currentUser?.email || sessionStorage.getItem("userEmail") || null),
+      uid: (auth.currentUser?.uid || sessionStorage.getItem("userId") || null),
+      role,
+      tenantId,
+      allowedTenants: data?.allowedTenants || [tenantId].filter(Boolean),
+    };
+    // Mirror to sessionStorage for UI gating only (not as an authority)
+    sessionStorage.setItem("role", role);
+    sessionStorage.setItem("tenantId", tenantId);
+    return getSession();
+  } catch {
+    // leave SESSION as-is; fall back to existing storage hints
+    return getSession();
+  }
+}
+
+api.interceptors.request.use(async (config) => {
   const user = auth.currentUser;
   if (user) {
-    const now = Date.now();
-    if (!tokenTimestamp || !token || (now - tokenTimestamp > TOKEN_REFRESH_THRESHOLD_MS)) {
-      token = await user.getIdToken(true); // force refresh
-      tokenTimestamp = now;
-    }
-    if (!cfg.headers) cfg.headers = {} as any;
-    cfg.headers.Authorization = `Bearer ${token}`;
+    // use a fresh token each request; SDK refreshes under the hood
+    const tok = await user.getIdToken();
+    config.headers.Authorization = `Bearer ${tok}`;
   }
-  const ss = sessionStorage.getItem("tenantId") || "vendor";
-  const headerTenant = (cfg.headers as any)["x-tenant-id"] || ss;
-  (cfg.headers as any)["x-tenant-id"] = mapTenantOut(String(headerTenant));
-  // Light shim for common payload keys
-  const anyCfg: any = cfg as any;
-  if (anyCfg.data && typeof anyCfg.data === "object") {
-    if (typeof anyCfg.data.tenantId === "string") anyCfg.data.tenantId = mapTenantOut(anyCfg.data.tenantId);
-    if (typeof anyCfg.data.newTenantId === "string") anyCfg.data.newTenantId = mapTenantOut(anyCfg.data.newTenantId);
-  }
-  if (anyCfg.params && typeof anyCfg.params === "object") {
-    if (typeof anyCfg.params.tenantId === "string") anyCfg.params.tenantId = mapTenantOut(anyCfg.params.tenantId);
-    if (typeof anyCfg.params.newTenantId === "string") anyCfg.params.newTenantId = mapTenantOut(anyCfg.params.newTenantId);
-  }
-  return cfg;
+  // Prefer server-derived tenant if present; else storage hint
+  const tenantId = (SESSION.tenantId || sessionStorage.getItem("tenantId") || "vendor");
+  // Always ensure the backend receives legacy-compatible tenant id
+  const headerTenant = config.headers["x-tenant-id"] || tenantId;
+  config.headers["x-tenant-id"] = mapTenantOut(headerTenant);
+  // Attach a correlation id and basic client info for accounting
+  config.headers["x-request-id"] = requestId();
+  try { config.headers["x-client-path"] = window.location.pathname; } catch {}
+
+  // Shim common payload shapes that include tenant identifiers
+  if (config.data && typeof config.data === "object") config.data = shimTenantInPayload(config.data);
+  if (config.params && typeof config.params === "object") config.params = shimTenantInPayload(config.params);
+  return config;
 });
 
-api.interceptors.response.use(undefined, async (error: AxiosError) => {
-  const original: any = error.config || {};
-  const status = error.response?.status as number | undefined;
-  const isNetworkError = !error.response || error.code === "ERR_NETWORK";
-  const isServerError = typeof status === "number" && status >= 500;
+api.interceptors.response.use(null, async (error) => {
+  const original = error.config || {};
 
-  // Handle 401/403: force refresh and retry once
-  if ((status === 401 || status === 403) && !original._retriedAuth) {
+  // Handle auth refresh
+  if (error.response?.status === 401 && !original._retriedAuth) {
     original._retriedAuth = true;
-    const user = auth.currentUser;
-    if (user) {
-      try {
-        token = await user.getIdToken(true); // force refresh
-        tokenTimestamp = Date.now();
-        original.headers = original.headers || {};
-        original.headers.Authorization = `Bearer ${token}`;
-        return api(original);
-      } catch (e) {
-        // fall through to sign out
-      }
-    }
-    // Clear local auth state and surface sign-out flow
-    if (typeof window !== "undefined") {
-      try {
-        sessionStorage.clear();
-        localStorage.clear();
-      } catch {}
-      // Optionally, redirect to sign-in page or show a sign-out UI
-      window.location.assign("/login");
-    }
-    return Promise.reject(error);
+    await auth.currentUser?.getIdToken(true);
+    return api(original);
   }
 
-  if (isNetworkError || isServerError) {
+  // Normalize 403 with a helpful message
+  if (error.response?.status === 403) {
+    const msg = error?.response?.data?.message || "Forbidden";
+    return Promise.reject(Object.assign(error, { message: msg }));
+  }
+
+  // Fallback policy: only on network errors or 5xx (not on 4xx other than 401 handled above)
+  const status = error.response?.status;
+  const isNetworkError = !error.response || error.code === "ERR_NETWORK";
+  const isServerError = typeof status === 'number' && status >= 500;
+  const shouldFallback = isNetworkError || isServerError;
+  if (shouldFallback && CANDIDATES.length > 1) {
     const attempts = Number(original._switchAttempts || 0);
     if (attempts < CANDIDATES.length - 1) {
       original._switchAttempts = attempts + 1;
-      candidateIndex = Math.min(candidateIndex + 1, CANDIDATES.length - 1);
-      const nextBase = CANDIDATES[candidateIndex];
-      (api.defaults as any).baseURL = nextBase;
+      const nextIndex = Math.min(candidateIndex + 1, CANDIDATES.length - 1);
+      const nextBase = CANDIDATES[nextIndex];
+      candidateIndex = nextIndex;
+      currentBase = nextBase;
+      api.defaults.baseURL = nextBase;
       original.baseURL = nextBase;
       return api(original);
     }
+    // Exhausted fallbacks: reset to first candidate and try once
+    if (!original._resetOnce) {
+      original._resetOnce = true;
+      candidateIndex = 0;
+      currentBase = CANDIDATES[0];
+      api.defaults.baseURL = currentBase;
+      original.baseURL = currentBase;
+      original._switchAttempts = 0;
+      return api(original);
+    }
   }
+
   throw error;
 });
+
+// Eagerly bootstrap session on import (best-effort). Consumers may also call manually.
+// Do not await to avoid blocking early renders.
+bootstrapSession().catch(() => void 0);
