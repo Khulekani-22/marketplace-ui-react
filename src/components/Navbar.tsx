@@ -4,18 +4,6 @@ import { auth } from "../lib/firebase";
 import { onIdTokenChanged, signOut } from "firebase/auth";
 import { writeAuditLog } from "../lib/audit";
 
-// inside Navbar / MasterLayout toggle handler
-import { toggleTheme } from "../utils/theme";
-
-function ThemeToggleButton() {
-  const [theme, setTheme] = useState(localStorage.getItem("ui_theme") || "light");
-  return (
-    <button onClick={() => setTheme(toggleTheme())} aria-label="Toggle theme">
-      {theme === "dark" ? "🌙" : "☀️"}
-    </button>
-  );
-}
-
 
 export default function Navbar() {
   const [user, setUser] = useState(null);

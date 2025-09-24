@@ -1,9 +1,9 @@
 // src/pages/ListingsAdminPage.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
-import { useMessages } from "../context/MessagesContext.jsx";
+import { useMessages } from "../context/useMessages";
 import { api } from "../lib/api";
-import { useAppSync } from "../context/AppSyncContext.jsx";
+import { useAppSync } from "../context/useAppSync";
 import { auth } from "../lib/firebase";
 import { writeAuditLog } from "../lib/audit";
 import MasterLayout from "../masterLayout/MasterLayout";
@@ -175,8 +175,6 @@ export default function ListingsAdminPage() {
     () => makeVendorMaps(vendors),
     [vendors]
   );
-
-  const startups = data?.startups || [];
 
   // JSON editor (full appData)
   const [text, setText] = useState(() => JSON.stringify(data, null, 2));
@@ -400,10 +398,9 @@ export default function ListingsAdminPage() {
         setBusy(false);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appData]);
+  }, [appData, refreshHistory]);
 
-  async function refreshHistory() {
+  const refreshHistory = useCallback(async () => {
     try {
       const hx = await api.get(`/api/lms/checkpoints`).then((r) => r.data);
       const items = hx.items ?? [];
@@ -412,14 +409,13 @@ export default function ListingsAdminPage() {
     } catch {
       // ignore
     }
-  }
+  }, []);
 
   async function handlePublish() {
     setErr(null);
     setBusy(true);
     try {
       // Before publishing, pull latest live to merge in user-submitted reviews
-      const idToken = await auth.currentUser?.getIdToken?.();
       let dataToPublish = data;
       try {
         const live = await api.get(`/api/lms/live`).then((r) => r.data);

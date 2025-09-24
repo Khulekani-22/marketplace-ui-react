@@ -59,7 +59,7 @@ export async function fetchAuditLogs({
     const { data } = await api.get("/api/audit-logs", { params, headers });
     const items = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
     return items.map(normalizeAuditItem);
-  } catch (e) {
+  } catch {
     // fall through to Firestore
   }
 
@@ -87,7 +87,7 @@ export async function fetchAuditLogs({
       );
     }
     return rows;
-  } catch (e) {
+  } catch {
     // As a last resort return empty
     return [];
   }
@@ -120,7 +120,7 @@ export async function writeAuditLog({
   try {
     await api.post("/api/audit-logs", payload);
     return true;
-  } catch (e) {
+  } catch {
     // fallback
   }
 
@@ -130,7 +130,7 @@ export async function writeAuditLog({
       timestamp: serverTimestamp(),
     });
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }

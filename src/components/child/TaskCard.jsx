@@ -1,8 +1,12 @@
-/* eslint-disable react/prop-types */
+import PropTypes from "prop-types";
 import { Draggable } from "@hello-pangea/dnd";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
 const TaskCard = ({ task, index, onEdit, onDelete }) => {
+  const handleEdit = () => onEdit?.(task);
+  const handleDelete = () => onDelete?.(task.id);
+  const displayDate = task.date ? new Date(task.date) : null;
+
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
@@ -47,27 +51,29 @@ const TaskCard = ({ task, index, onEdit, onDelete }) => {
                 className='icon text-lg line-height-1'
               ></Icon>
               <span className='start-date text-secondary-light'>
-                {new Date(task.date).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}
+                {displayDate
+                  ? displayDate.toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "--"}
               </span>
             </div>
             <div className='d-flex align-items-center gap-2'>
               <button
                 type='button'
                 className='card-edit-button text-success-600'
-                onClick={onEdit}
+                onClick={handleEdit}
               >
                 <Icon icon='lucide:edit' className='icon text-lg'></Icon>
               </button>
               <button
                 type='button'
                 className='card-delete-button text-danger-600'
+                onClick={handleDelete}
               >
                 <Icon
-                  onClick={onDelete}
                   icon='fluent:delete-24-regular'
                   className='icon text-lg line-height-1'
                 ></Icon>
@@ -78,6 +84,25 @@ const TaskCard = ({ task, index, onEdit, onDelete }) => {
       )}
     </Draggable>
   );
+};
+
+TaskCard.propTypes = {
+  task: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    description: PropTypes.string,
+    image: PropTypes.string,
+    date: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+    tag: PropTypes.string,
+  }).isRequired,
+  index: PropTypes.number.isRequired,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+};
+
+TaskCard.defaultProps = {
+  onEdit: undefined,
+  onDelete: undefined,
 };
 
 export default TaskCard;

@@ -2,7 +2,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { useMessages } from "../context/MessagesContext.jsx";
+import { useMessages } from "../context/useMessages";
 
 function useQuery() {
   const loc = useLocation();

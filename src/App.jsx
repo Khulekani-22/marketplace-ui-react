@@ -9,14 +9,13 @@ import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
 import VendorRoute from "./components/VendorRoute.jsx";
-import LoginForm from "./components/LoginForm.jsx";
+import LoginForm from "./components/LoginForm";
 import VendorSignupPage from "./pages/VendorSignupPage.jsx";
 
 import { lazyWithRetry } from "./utils/lazyWithRetry";
 
 // --- Lazy pages ---
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard.jsx"));
-const HomePageOne = React.lazy(() => import("./pages/HomePageOne.jsx"));
 const LandingPage = React.lazy(() => import("./pages/LandingPage.jsx"));
 const HomePageTwo = React.lazy(() => import("./pages/HomePageTwo.jsx"));
 const HomePageThree = React.lazy(() => import("./pages/HomePageThree.jsx"));

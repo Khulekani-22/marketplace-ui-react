@@ -50,7 +50,7 @@ export default function AuditLogsLayer() {
         tenantId,
       });
       setLogs(items);
-    } catch (e) {
+    } catch {
       setError("Failed to load audit logs");
     } finally {
       setLoading(false);

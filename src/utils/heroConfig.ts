@@ -24,7 +24,7 @@ const RULES = [
   {
     test: /^\/?marketplace$/,
     hero: (ctx) => {
-      const { isAdmin, isVendor, isBasic, authed } = classify(ctx);
+      const { isVendor, isBasic, authed } = classify(ctx);
       if (isVendor) {
         return make(
           "Marketplace: Discover Services",

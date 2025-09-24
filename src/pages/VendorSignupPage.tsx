@@ -10,7 +10,7 @@ import {
   updateProfile,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { useVendor } from "../context/VendorContext";
+import { useVendor } from "../context/useVendor";
 import { writeAuditLog } from "../lib/audit";
 
 const API_BASE = "/api/data/vendors"; // backend upsert endpoint
@@ -119,7 +119,7 @@ export default function VendorSignupPage() {
 
       // Keep Firebase displayName in sync with entered company
       if (form.company) {
-        try { await updateProfile(user, { displayName: form.company }); } catch (_) {}
+        try { await updateProfile(user, { displayName: form.company }); } catch {}
       }
 
       await persistVendorToBackend(profile);
@@ -179,7 +179,7 @@ export default function VendorSignupPage() {
 
           // Keep displayName in sync if a company name was provided
           if (form.company) {
-            try { await updateProfile(user, { displayName: form.company }); } catch (_) {}
+            try { await updateProfile(user, { displayName: form.company }); } catch {}
           }
 
           const profile = {

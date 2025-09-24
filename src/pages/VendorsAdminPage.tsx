@@ -205,12 +205,16 @@ export default function VendorsAdminPage() {
       // Reload base from LMS, then merge API vendors
       let base = appDataLocal;
       try {
-        const idToken = await auth.currentUser?.getIdToken?.();
-        const liveRes = await fetch(`${API_BASE}/live`, {
-          headers: { "x-tenant-id": tenantId, ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}) },
+        const { data: live } = await api.get(`${API_BASE}/live`, {
+          headers: {
+            "x-tenant-id": tenantId,
+            "cache-control": "no-cache",
+          },
         });
-        if (liveRes.ok) base = await liveRes.json();
-      } catch {}
+        if (live) base = live;
+      } catch {
+        base = appDataLocal;
+      }
       try {
         const list = await api.get(`/api/data/vendors`).then((r) => r.data || []);
         const draft = deepClone(base);
@@ -449,15 +453,16 @@ export default function VendorsAdminPage() {
         // Start with LMS live (if available), else local
         let base = appDataLocal;
         try {
-          const idToken = await auth.currentUser?.getIdToken?.();
-          const res = await fetch(`${API_BASE}/live`, {
+          const { data: live } = await api.get(`${API_BASE}/live`, {
             headers: {
               "x-tenant-id": tenantId,
-              ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+              "cache-control": "no-cache",
             },
           });
-          if (res.ok) base = await res.json();
-        } catch {}
+          if (live) base = live;
+        } catch {
+          base = appDataLocal;
+        }
 
         // Merge vendors from API into working copy
         try {
@@ -494,14 +499,13 @@ export default function VendorsAdminPage() {
 
   async function refreshHistory() {
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const hx = await fetch(`${API_BASE}/checkpoints`, {
+      const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
         headers: {
           "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+          "cache-control": "no-cache",
         },
-      }).then((r) => (r.ok ? r.json() : { items: [] }));
-      const items = hx.items ?? [];
+      });
+      const items = Array.isArray(hx?.items) ? hx.items : [];
       setHistory(items);
       localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
     } catch {
@@ -513,17 +517,16 @@ export default function VendorsAdminPage() {
     setErr(null);
     setBusy(true);
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/publish`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        body: JSON.stringify({ data }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await api.put(
+        `${API_BASE}/publish`,
+        { data },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-tenant-id": tenantId,
+          },
+        }
+      );
       toastOK("Published vendor directory to live");
       try {
         await writeAuditLog({
@@ -544,17 +547,16 @@ export default function VendorsAdminPage() {
 
   async function saveCheckpoint(message) {
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/checkpoints`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        body: JSON.stringify({ message: message || "Vendor admin update", data }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await api.post(
+        `${API_BASE}/checkpoints`,
+        { message: message || "Vendor admin update", data },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-tenant-id": tenantId,
+          },
+        }
+      );
       toastOK("Checkpoint saved");
       try {
         await writeAuditLog({
@@ -574,16 +576,26 @@ export default function VendorsAdminPage() {
   async function restoreCheckpoint(id) {
     if (!window.confirm("Restore this snapshot to LIVE appData.json?")) return;
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/restore/${id}`, {
-        method: "POST",
-        headers: { "x-tenant-id": tenantId, ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}) },
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await api.post(
+        `${API_BASE}/restore/${id}`,
+        null,
+        {
+          headers: {
+            "x-tenant-id": tenantId,
+          },
+        }
+      );
       toastOK("Restored snapshot");
       await refreshHistory();
-      const live = await fetch(`${API_BASE}/live`).then((r) => r.json());
-      doSetData(live);
+      try {
+        const { data: live } = await api.get(`${API_BASE}/live`, {
+          headers: {
+            "x-tenant-id": tenantId,
+            "cache-control": "no-cache",
+          },
+        });
+        if (live) doSetData(live);
+      } catch {}
     } catch (e) {
       setErr(e.message || "Restore failed");
     }
@@ -592,12 +604,11 @@ export default function VendorsAdminPage() {
   async function clearHistory() {
     if (!window.confirm("Delete ALL checkpoints on the server?")) return;
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/checkpoints`, {
-        method: "DELETE",
-        headers: { "x-tenant-id": tenantId, ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}) },
+      await api.delete(`${API_BASE}/checkpoints`, {
+        headers: {
+          "x-tenant-id": tenantId,
+        },
       });
-      if (!res.ok) throw new Error(await res.text());
       toastOK("Cleared history");
       try {
         await writeAuditLog({

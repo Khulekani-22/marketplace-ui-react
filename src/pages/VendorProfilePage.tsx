@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import MasterLayout from "../MasterLayout/MasterLayout.jsx";
-import { useVendor } from "../context/VendorContext";
+import { useVendor } from "../context/useVendor";
 import { auth } from "../lib/firebase";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
@@ -188,15 +188,13 @@ export default function VendorProfilePage() {
         // Start with LMS live if available
         let base = appDataLocal;
         try {
-          const idToken = await auth.currentUser?.getIdToken?.();
-          const liveRes = await fetch(`${API_BASE}/live`, {
+          const { data: live } = await api.get(`${API_BASE}/live`, {
             headers: {
               "x-tenant-id": tenantId,
               "cache-control": "no-cache",
-              ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
             },
           });
-          if (alive && liveRes.ok) base = await liveRes.json();
+          if (alive && live) base = live;
         } catch {}
 
         // Merge API vendors
@@ -215,7 +213,7 @@ export default function VendorProfilePage() {
 
         doSetData(base);
         await refreshHistory();
-      } catch (e) {
+      } catch {
         // keep local fallback
       } finally {
         alive && setBusy(false);
@@ -229,14 +227,13 @@ export default function VendorProfilePage() {
 
   async function refreshHistory() {
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const hx = await fetch(`${API_BASE}/checkpoints`, {
+      const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
         headers: {
           "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+          "cache-control": "no-cache",
         },
-      }).then((r) => (r.ok ? r.json() : { items: [] }));
-      const items = hx.items ?? [];
+      });
+      const items = Array.isArray(hx?.items) ? hx.items : [];
       setHistory(items);
       localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
     } catch {
@@ -260,7 +257,7 @@ export default function VendorProfilePage() {
   const [form, setForm] = useState(() => detectedVendor);
   useEffect(() => {
     setForm(detectedVendor);
-  }, [detectedVendor?.vendorId]);
+  }, [detectedVendor]);
 
   const showGuard = !auth.currentUser;
 
@@ -280,20 +277,19 @@ export default function VendorProfilePage() {
 
   async function saveCheckpoint(messageText) {
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/checkpoints`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        body: JSON.stringify({
+      await api.post(
+        `${API_BASE}/checkpoints`,
+        {
           message: messageText || "Vendor profile update",
           data,
-        }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-tenant-id": tenantId,
+          },
+        }
+      );
       setOk("Checkpoint saved");
       await refreshHistory();
       setMessage("");

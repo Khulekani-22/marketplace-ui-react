@@ -1,25 +1,12 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
 import { onIdTokenChanged } from "firebase/auth";
 import appDataLocal from "../data/appData.json";
-
-const AppSyncContext = createContext({
-  appData: null,
-  appDataLoading: false,
-  appDataError: "",
-  role: "member",
-  tenantId: "vendor",
-  isAdmin: false,
-  lastSyncAt: 0,
-  syncNow: async () => {},
-});
-
-export function useAppSync() {
-  return useContext(AppSyncContext);
-}
+import { AppSyncContext } from "./appSyncContext";
+import { toast } from "react-toastify";
 
 export function AppSyncProvider({ children }) {
   const location = useLocation();
@@ -48,7 +35,7 @@ export function AppSyncProvider({ children }) {
       sessionStorage.setItem("tenantId", nextTenant);
       setRole(nextRole);
       setTenantId(nextTenant);
-    } catch (_) {
+    } catch {
       // keep prior role/tenant
     }
   }, []);
@@ -57,8 +44,6 @@ export function AppSyncProvider({ children }) {
     setAppDataLoading(true);
     setAppDataError("");
     try {
-      // Request a fresh token (cached if still valid)
-      if (auth.currentUser?.getIdToken) await auth.currentUser.getIdToken();
       const { data } = await api.get("/api/lms/live");
       setAppData(data || null);
     } catch (e) {
@@ -91,13 +76,12 @@ export function AppSyncProvider({ children }) {
     } finally {
       isSyncingRef.current = false;
     }
-  }, [refreshRole, refreshAppData]);
+  }, [location.pathname, refreshAppData, refreshRole, role, tenantId]);
 
   // Sync on route change as requested
   useEffect(() => {
     syncNow();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
+  }, [syncNow]);
 
   // Also sync immediately on sign-in (axios API-first via api client with token)
   useEffect(() => {
@@ -118,6 +102,13 @@ export function AppSyncProvider({ children }) {
     () => ({ appData, appDataLoading, appDataError, role, tenantId, isAdmin, lastSyncAt, syncNow }),
     [appData, appDataLoading, appDataError, role, tenantId, isAdmin, lastSyncAt, syncNow]
   );
+
+  useEffect(() => {
+    if (!appDataError) return;
+    try {
+      toast.error(appDataError, { toastId: "app-sync" });
+    } catch {}
+  }, [appDataError]);
 
   return <AppSyncContext.Provider value={value}>{children}</AppSyncContext.Provider>;
 }

@@ -1,8 +1,10 @@
 // src/context/VendorContext.jsx
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "react-toastify";
 import { onIdTokenChanged, signOut } from "firebase/auth";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
+import { VendorContext } from "./vendorContextBase";
 
 const API_BASE = "/api/lms";
 const LS_PREFIX = "vendor_profile_v3"; // bump key to invalidate any old cache
@@ -57,7 +59,6 @@ function findVendorInLive(live, user) {
   return null;
 }
 
-const VendorContext = createContext(null);
 
 export function VendorProvider({ children }) {
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
@@ -75,22 +76,23 @@ export function VendorProvider({ children }) {
     });
   };
 
-  async function fetchLive() {
-    const res = await fetch(`${API_BASE}/live`, {
+  const fetchLive = useCallback(async () => {
+    const { data } = await api.get(`${API_BASE}/live`, {
       headers: { "x-tenant-id": tenantId, "cache-control": "no-cache" },
     });
-    return res.ok ? res.json() : {};
-  }
-  async function fetchVendorsApi() {
+    return data && typeof data === "object" ? data : {};
+  }, [tenantId]);
+
+  const fetchVendorsApi = useCallback(async () => {
     try {
       const arr = await api.get(`/api/data/vendors`).then((r) => r.data || []);
       return Array.isArray(arr) ? arr : [];
     } catch {
       return [];
     }
-  }
+  }, []);
 
-  async function hydrateForUser(user) {
+  const hydrateForUser = useCallback(async (user) => {
     setError(null);
     setLoading(true);
 
@@ -142,16 +144,21 @@ export function VendorProvider({ children }) {
     } finally {
       if (seq === loadSeq.current) setLoading(false);
     }
-  }
+  }, [fetchLive, fetchVendorsApi, tenantId]);
 
   useEffect(() => {
-    // fires on sign-in, sign-out, and token refresh
     const unsub = onIdTokenChanged(auth, (user) => {
       hydrateForUser(user);
     });
     return () => unsub();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId]);
+  }, [hydrateForUser]);
+
+  useEffect(() => {
+    if (!error) return;
+    try {
+      toast.error(error, { toastId: "vendor-profile" });
+    } catch {}
+  }, [error]);
 
   const value = useMemo(
     () => ({
@@ -185,7 +192,7 @@ export function VendorProvider({ children }) {
             categories: [],
           });
           await hydrateForUser(authUser);
-        } catch (e) {
+        } catch {
           // swallow; caller may show UI to complete profile
         }
         return vendor?.vendorId ? vendor : null;
@@ -200,14 +207,8 @@ export function VendorProvider({ children }) {
         }
       },
     }),
-    [authUser, vendor, loading, error]
+    [authUser, vendor, loading, error, hydrateForUser]
   );
 
   return <VendorContext.Provider value={value}>{children}</VendorContext.Provider>;
-}
-
-export function useVendor() {
-  const ctx = useContext(VendorContext);
-  if (!ctx) throw new Error("useVendor must be used inside <VendorProvider />");
-  return ctx;
 }

@@ -1,11 +1,11 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
 import { useState, useMemo, useEffect } from "react";
-import { useMessages } from "../context/MessagesContext.jsx";
-import { useVendor } from "../context/VendorContext.jsx";
+import { useMessages } from "../context/useMessages";
+import { useVendor } from "../context/useVendor";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
-import { useAppSync } from "../context/AppSyncContext.jsx";
+import { useAppSync } from "../context/useAppSync";
 import { auth } from "../lib/firebase";
 
 const EmailLayer = () => {

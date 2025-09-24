@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../../lib/firebase";
-import { useAppSync } from "../../context/AppSyncContext.jsx";
+import { api } from "../../lib/api";
+import { useAppSync } from "../../context/useAppSync";
 import appDataLocal from "../../data/appData.json";
 import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../../lib/subscriptions";
 
@@ -78,8 +79,7 @@ export default function Recommendations() {
     return () => {
       mountedRef.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId, appData]);
+  }, [appData]);
 
   // Fetch startup and vendor profiles for current user to build interests
   useEffect(() => {
@@ -148,9 +148,9 @@ export default function Recommendations() {
       out[sid] = (out[sid] || 0) + 1;
     });
     return out;
-  }, [tenantId, services]);
+  }, [tenantId]);
 
-  function rankTopReviews(list) {
+  const rankTopReviews = useCallback((list) => {
     const arr = list.slice();
     arr.sort((a, b) => {
       const ar = Number(a.rating || 0);
@@ -161,9 +161,9 @@ export default function Recommendations() {
       return bc - ac;
     });
     return arr;
-  }
+  }, []);
 
-  function rankTopSubscribers(list) {
+  const rankTopSubscribers = useCallback((list) => {
     const arr = list.slice();
     arr.sort((a, b) => {
       const av = Number(subsByService[String(a.id)] || 0);
@@ -175,9 +175,9 @@ export default function Recommendations() {
       return bc - ac;
     });
     return arr;
-  }
+  }, [subsByService]);
 
-  function personalizedScore(s, myEmail) {
+  const personalizedScore = useCallback((s, myEmail) => {
     let score = 0;
     const title = (s.title || "").toLowerCase();
     const desc = (s.description || "").toLowerCase();
@@ -198,7 +198,7 @@ export default function Recommendations() {
     score += Math.min(5, Math.floor((Number(s.reviewCount || 0)) / 25));
     score += Math.min(5, Math.floor((Number(subsByService[String(s.id)] || 0)) / 5));
     return score;
-  }
+  }, [interests, subsByService]);
 
   const picks = useMemo(() => {
     const list = services;
@@ -213,7 +213,7 @@ export default function Recommendations() {
       .map((x) => x.s);
     const personal = rankedPersonal.find((s) => (!byReviews || s.id !== byReviews.id) && (!bySubs || s.id !== bySubs.id)) || rankedPersonal[0] || null;
     return { byReviews, bySubs, personal };
-  }, [services, subsByService, interests]);
+  }, [services, rankTopReviews, rankTopSubscribers, personalizedScore]);
 
   async function toggleSubscribe(serviceId) {
     try {

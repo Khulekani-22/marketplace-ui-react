@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
@@ -12,16 +12,18 @@ export default function Market1() {
   const navigate = useNavigate();
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     const { data } = await api.get("/api/data/services", {
       params: { q: q || undefined, page: 1, pageSize: 40, featured: "true" }
     });
     setItems(data.items || []);
     setLoading(false);
-  }
+  }, [q]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   useEffect(() => {
     (async () => {

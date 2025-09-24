@@ -1,9 +1,9 @@
 // src/pages/VendorMyListings.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useMessages } from "../context/MessagesContext.jsx";
+import { useMessages } from "../context/useMessages";
 import MasterLayout from "../masterLayout/MasterLayout.jsx";
-import { useVendor } from "../context/VendorContext";
+import { useVendor } from "../context/useVendor";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 
@@ -50,10 +50,10 @@ export default function VendorMyListings() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/live`, {
+        const { data } = await api.get(`${API_BASE}/live`, {
           headers: { "x-tenant-id": tenantId },
         });
-        const live = res.ok ? await res.json() : appDataLocal;
+        const live = data && typeof data === "object" ? data : appDataLocal;
         const all = Array.isArray(live?.services) ? live.services : [];
         const my = all.filter(
           (s) =>

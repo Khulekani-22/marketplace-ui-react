@@ -1,9 +1,10 @@
 
 // src/pages/VendorAddListingPage.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import MasterLayout from "../MasterLayout/MasterLayout.jsx";
-import { useVendor } from "../context/VendorContext";
+import { useVendor } from "../context/useVendor";
+import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
 import appDataLocal from "../data/appData.json";
 
@@ -119,30 +120,29 @@ export default function VendorAddListingPage() {
     (async () => {
       await ensureVendorId();
       try {
-        const idToken = await auth.currentUser?.getIdToken?.();
-        const res = await fetch(`${API_BASE}/live`, {
-          headers: {
-            "x-tenant-id": tenantId,
-            "cache-control": "no-cache",
-            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-          },
-        });
         let base = appDataLocal;
-        if (res.ok) {
-          const live = await res.json();
-          base = live;
-
-          const fromId = searchParams.get("from");
-          if (fromId) {
-            const found = base?.services?.find(
-              (s) => String(s.id) === String(fromId)
-            );
-            if (found) setDupSource(found);
-          }
-        }
-        // Merge vendors from API for detection/status
         try {
-          const arr = await (await import("../lib/api")).api.get(`/api/data/vendors`).then((r) => r.data || []);
+          const { data: live } = await api.get(`${API_BASE}/live`, {
+            headers: {
+              "x-tenant-id": tenantId,
+              "cache-control": "no-cache",
+            },
+          });
+          if (live) {
+            base = live;
+            const fromId = searchParams.get("from");
+            if (fromId) {
+              const found = live?.services?.find((s) => String(s.id) === String(fromId));
+              if (found) setDupSource(found);
+            }
+          }
+        } catch {
+          // keep local fallback
+        }
+
+        try {
+          const { data: vendorList } = await api.get(`/api/data/vendors`);
+          const arr = Array.isArray(vendorList) ? vendorList : [];
           const draft = JSON.parse(JSON.stringify(base));
           draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
           arr.forEach((v) => {
@@ -150,25 +150,34 @@ export default function VendorAddListingPage() {
             const id = String(v.vendorId || v.id || email || "");
             const idx = draft.startups.findIndex((x) => String(x.vendorId || x.id) === id);
             const merged = {
-              ...draft.startups[idx] || {},
+              ...(draft.startups[idx] || {}),
               ...v,
               vendorId: id,
               id,
             };
-            if (idx >= 0) draft.startups[idx] = merged; else draft.startups.push(merged);
+            if (idx >= 0) draft.startups[idx] = merged;
+            else draft.startups.push(merged);
           });
           base = draft;
-        } catch {}
+        } catch {
+          // ignore vendor merge errors
+        }
 
         if (alive) setData(base);
-        // recent checkpoints (for reassurance on submission)
-        const hx = await fetch(`${API_BASE}/checkpoints`, {
-          headers: {
-            "x-tenant-id": tenantId,
-            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-          },
-        }).then((r) => (r.ok ? r.json() : { items: [] }));
-        alive && setHistory(hx.items || []);
+
+        let historyItems = [];
+        try {
+          const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
+            headers: {
+              "x-tenant-id": tenantId,
+              "cache-control": "no-cache",
+            },
+          });
+          historyItems = Array.isArray(hx?.items) ? hx.items : [];
+        } catch {
+          historyItems = [];
+        }
+        if (alive) setHistory(historyItems);
       } catch {
         // fall back to local
       }
@@ -286,14 +295,18 @@ export default function VendorAddListingPage() {
     }
 
     // Double-check latest vendor status on server just before submit
-    const idTokenChk = await auth.currentUser?.getIdToken?.();
-    const liveForCheck = await fetch(`${API_BASE}/live`, {
-      headers: {
-        "x-tenant-id": tenantId,
-        "cache-control": "no-cache",
-        ...(idTokenChk ? { Authorization: `Bearer ${idTokenChk}` } : {}),
-      },
-    }).then((r) => (r.ok ? r.json() : data));
+    let liveForCheck = data;
+    try {
+      const { data: liveData } = await api.get(`${API_BASE}/live`, {
+        headers: {
+          "x-tenant-id": tenantId,
+          "cache-control": "no-cache",
+        },
+      });
+      if (liveData) liveForCheck = liveData;
+    } catch {
+      liveForCheck = data;
+    }
 
     const fb = {
       uid: auth.currentUser?.uid,
@@ -331,15 +344,18 @@ export default function VendorAddListingPage() {
     setBusy(true);
     try {
       // Pull latest LIVE to avoid clobbering concurrent edits
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const liveRes = await fetch(`${API_BASE}/live`, {
-        headers: {
-          "x-tenant-id": tenantId,
-          "cache-control": "no-cache",
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-      });
-      const live = liveRes.ok ? await liveRes.json() : data;
+      let live = data;
+      try {
+        const { data: liveData } = await api.get(`${API_BASE}/live`, {
+          headers: {
+            "x-tenant-id": tenantId,
+            "cache-control": "no-cache",
+          },
+        });
+        if (liveData) live = liveData;
+      } catch {
+        live = data;
+      }
 
       const next = {
         ...live,
@@ -349,29 +365,27 @@ export default function VendorAddListingPage() {
       };
 
       // Publish (same as ListingsAdminPage)
-      const put = await fetch(`${API_BASE}/publish`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        body: JSON.stringify({ data: next }),
-      });
-      if (!put.ok) throw new Error(await put.text());
+      await api.put(
+        `${API_BASE}/publish`,
+        { data: next },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-tenant-id": tenantId,
+          },
+        }
+      );
 
       // Confirm persisted by reloading LIVE
-      const confirm = await fetch(`${API_BASE}/live`, {
-        headers: {
-          "x-tenant-id": tenantId,
-          "cache-control": "no-cache",
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-      });
-      if (confirm.ok) {
-        const fresh = await confirm.json();
-        setData(fresh);
-      } else {
+      try {
+        const { data: confirmData } = await api.get(`${API_BASE}/live`, {
+          headers: {
+            "x-tenant-id": tenantId,
+            "cache-control": "no-cache",
+          },
+        });
+        setData(confirmData || next);
+      } catch {
         setData(next);
       }
 

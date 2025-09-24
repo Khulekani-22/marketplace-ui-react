@@ -1,4 +1,4 @@
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 const ColorsLayer = () => {
   const handleColorCopy = (color) => {
@@ -16,7 +16,6 @@ const ColorsLayer = () => {
   };
   return (
     <div className='row gy-4'>
-      <ToastContainer />
       <div className='col-12'>
         <div className='card'>
           <div className='card-body p-24'>

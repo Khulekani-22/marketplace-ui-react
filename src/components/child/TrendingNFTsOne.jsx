@@ -1,12 +1,11 @@
 // src/components/TrendingNFTsOne.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { auth } from "../../lib/firebase";
-import { useAppSync } from "../../context/AppSyncContext.jsx";
+import { api } from "../../lib/api";
+import { useAppSync } from "../../context/useAppSync";
 import appDataLocal from "../../data/appData.json";
 import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../../lib/subscriptions";
-
-const API_BASE = "/api/lms";
 
 // Normalize any legacy keys so the card always has the fields your UI expects
 const normalize = (s) => ({

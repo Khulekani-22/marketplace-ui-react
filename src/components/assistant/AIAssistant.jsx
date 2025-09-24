@@ -47,7 +47,7 @@ export default function AIAssistant({ isAdmin, tenantId }) {
         const res = answerQuestion(q, ctx);
         setMessages((m) => [...m, { role: "assistant", text: res.text, type: res.type }]);
       }
-    } catch (e) {
+    } catch {
       const res = answerQuestion(q, ctx);
       setMessages((m) => [...m, { role: "assistant", text: res.text, type: res.type }]);
     } finally {

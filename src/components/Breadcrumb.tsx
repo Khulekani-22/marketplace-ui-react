@@ -1,7 +1,11 @@
 import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
-// eslint-disable-next-line react/prop-types
-const Breadcrumb = ({ title }) => {
+
+type BreadcrumbProps = {
+  title: string;
+};
+
+const Breadcrumb = ({ title }: BreadcrumbProps) => {
   return (
     <div className='d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24'>
       <h6 className='fw-semibold mb-0'>Dashboard</h6>

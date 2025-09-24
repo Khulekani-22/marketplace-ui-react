@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../lib/api";
 
 export default function AllDataTable() {
@@ -6,14 +6,16 @@ export default function AllDataTable() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     const { data } = await api.get("/api/data/services", { params: { q, page: 1, pageSize: 100 } });
     setRows(data.items || []);
     setLoading(false);
-  }
+  }, [q]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
     <div className="container py-4">

@@ -1,5 +1,6 @@
 // src/lib/api.js
-import axios from "axios";
+import axios, { isAxiosError, type AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { toast } from "react-toastify";
 import { auth } from "./firebase";
 
 // In-memory session derived from the API (authoritative)
@@ -33,7 +34,82 @@ const CANDIDATES = computeApiBases();
 let candidateIndex = 0;
 let currentBase = CANDIDATES[candidateIndex];
 
+type ApiRequestConfig = InternalAxiosRequestConfig & {
+  suppressToast?: boolean;
+  suppressErrorLog?: boolean;
+  errorMessageOverride?: string;
+  _errorNotified?: boolean;
+  _retriedAuth?: boolean;
+  _switchAttempts?: number;
+  _resetOnce?: boolean;
+};
+
 export const api = axios.create({ baseURL: currentBase });
+
+function combineUrl(base?: string, url?: string) {
+  if (!url) return base || "";
+  if (!base || url.startsWith("http")) return url;
+  const baseClean = base.replace(/\/+$/, "");
+  const urlClean = url.replace(/^\/+/, "");
+  return `${baseClean}/${urlClean}`;
+}
+
+function extractMessage(error: AxiosError, override?: string) {
+  const responseData: any = error.response?.data;
+  if (responseData) {
+    if (typeof responseData === "string" && responseData.trim()) return responseData.trim();
+    if (typeof responseData.message === "string" && responseData.message.trim()) return responseData.message.trim();
+    if (Array.isArray(responseData.errors)) {
+      const joined = responseData.errors.filter(Boolean).join(", ");
+      if (joined) return joined;
+    }
+  }
+  if (error.code === "ERR_NETWORK") return "Network error. Check your connection and try again.";
+  const status = error.response?.status;
+  if (status === 401) return "Your session has expired. Please sign in again.";
+  if (status === 403) return "You do not have permission to complete this action.";
+  if (status === 404) return "The requested resource could not be found.";
+  if (status && status >= 500) return `Server error (${status}). Please try again shortly.`;
+  return override || error.message || "Unexpected error. Please try again.";
+}
+
+function reportApiError(error: AxiosError) {
+  const config = (error.config || {}) as ApiRequestConfig;
+  if (config._errorNotified) return;
+  if (axios.isCancel(error)) return;
+  config._errorNotified = true;
+
+  const message = extractMessage(error, config.errorMessageOverride);
+  if (!error.message || error.message.startsWith("Request failed")) {
+    try {
+      (error as any).message = message;
+    } catch {
+      /* ignore assignment failures */
+    }
+  }
+  const method = (config?.method || "get").toUpperCase();
+  const fullUrl = combineUrl(config.baseURL || api.defaults.baseURL || currentBase, config.url);
+  const status = error.response?.status;
+
+  if (!config.suppressErrorLog) {
+    const context = {
+      status,
+      code: error.code,
+      method,
+      url: fullUrl,
+      response: error.response?.data,
+    };
+    console.error("[API] Request failed", context, error);
+  }
+
+  if (!config.suppressToast) {
+    try {
+      toast.error(message, { toastId: `${method}:${fullUrl}:${status || error.code || "err"}` });
+    } catch {
+      /* noop: toast unavailable (e.g., during SSR) */
+    }
+  }
+}
 
 function mapTenantOut(id: string | null | undefined): string | null | undefined {
   return id === "vendor" ? "public" : id;
@@ -111,19 +187,17 @@ api.interceptors.request.use(async (config) => {
 });
 
 api.interceptors.response.use(null, async (error) => {
-  const original = error.config || {};
+  if (!isAxiosError(error)) {
+    throw error;
+  }
+
+  const original = (error.config || {}) as ApiRequestConfig;
 
   // Handle auth refresh
   if (error.response?.status === 401 && !original._retriedAuth) {
     original._retriedAuth = true;
     await auth.currentUser?.getIdToken(true);
     return api(original);
-  }
-
-  // Normalize 403 with a helpful message
-  if (error.response?.status === 403) {
-    const msg = error?.response?.data?.message || "Forbidden";
-    return Promise.reject(Object.assign(error, { message: msg }));
   }
 
   // Fallback policy: only on network errors or 5xx (not on 4xx other than 401 handled above)
@@ -155,6 +229,7 @@ api.interceptors.response.use(null, async (error) => {
     }
   }
 
+  reportApiError(error);
   throw error;
 });
 

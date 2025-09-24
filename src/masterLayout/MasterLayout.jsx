@@ -10,7 +10,7 @@ import { writeAuditLog } from "../lib/audit";
 import HeroBanner from "../components/HeroBanner";
 import { getHeroForPath } from "../utils/heroConfig";
 import AIAssistant from "../components/assistant/AIAssistant";
-import { useMessages } from "../context/MessagesContext.jsx";
+import { useMessages } from "../context/useMessages";
 
 
 export default function MasterLayout({ children }) {
@@ -23,24 +23,12 @@ function MasterLayoutInner({ children }) {
   const [user, setUser] = useState(null);
   const [sidebarActive, setSidebarActive] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [openKeys, setOpenKeys] = useState({});
   const [isAdmin, setIsAdmin] = useState(() => (sessionStorage.getItem("role") === "admin"));
   const [tenantId, setTenantId] = useState(() => sessionStorage.getItem("tenantId") || "vendor");
   const [tenants, setTenants] = useState([]);
 
   // Auto-open dropdown containing current route + close mobile on route change
-
-
-  const toggleDropdown = (key) => {
-    setOpenKeys((prev) => {
-      const collapsed = Object.fromEntries(Object.keys({ ...prev, ...Object.fromEntries(DROPDOWNS.map(d => [d.key,false])) }).map((k) => [k, false]));
-      return { ...collapsed, [key]: !prev[key] };
-    });
-  };
-
   const navClass = ({ isActive }) => (isActive ? "active-page" : "");
-  const submenuMaxHeight = (isOpen, count) =>
-    isOpen ? { maxHeight: `${Math.max(48, count * 44)}px` } : { maxHeight: "0px" };
 
   const overlayClass = useMemo(() => (mobileMenu ? "overlay active" : "overlay"), [mobileMenu]);
   const sidebarClass = useMemo(() => {
@@ -137,6 +125,7 @@ function MasterLayoutInner({ children }) {
 
   async function handleLogout(e) {
     e?.preventDefault?.();
+    try { sessionStorage.setItem("sl_manual_logout", "1"); } catch {}
     const userEmail = auth.currentUser?.email || sessionStorage.getItem("userEmail") || null;
     const userId = auth.currentUser?.uid || sessionStorage.getItem("userId") || null;
     try {

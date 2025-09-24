@@ -60,7 +60,10 @@ export default function LmsPage() {
     [cohorts, cohortId]
   );
 
-  const courses = cohort?.courses ?? [];
+  const courses = useMemo(
+    () => (Array.isArray(cohort?.courses) ? cohort.courses : []),
+    [cohort]
+  );
 
   // ensure a valid selected course
   useEffect(() => {

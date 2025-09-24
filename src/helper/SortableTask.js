@@ -1,19 +1,10 @@
-/* eslint-disable react/prop-types */
-// src/SortableTask.js
+import PropTypes from "prop-types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Icon } from "@iconify/react";
 
-// eslint-disable-next-line react/prop-types
 function SortableTask({ id, task, onEdit, onDelete }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -21,6 +12,9 @@ function SortableTask({ id, task, onEdit, onDelete }) {
     opacity: isDragging ? 0.5 : 1,
     cursor: "grab",
   };
+
+  const handleEdit = () => onEdit?.(task);
+  const handleDelete = () => onDelete?.(task?.id || id);
 
   return (
     <div
@@ -33,11 +27,7 @@ function SortableTask({ id, task, onEdit, onDelete }) {
     >
       {task.image && (
         <div className='radius-8 mb-12 max-h-350-px overflow-hidden'>
-          <img
-            src={task.image}
-            alt='WowDash React Vite'
-            className='w-100 h-100 object-fit-cover'
-          />
+          <img src={task.image} alt='WowDash React Vite' className='w-100 h-100 object-fit-cover' />
         </div>
       )}
       <h6 className='kanban-title text-lg fw-semibold mb-8'>{task.title}</h6>
@@ -55,27 +45,35 @@ function SortableTask({ id, task, onEdit, onDelete }) {
           <span className='start-date text-secondary-light'>{task.date}</span>
         </div>
         <div className='d-flex align-items-center justify-content-between gap-10'>
-          <button
-            type='button'
-            className='card-edit-button text-success-600'
-            onClick={onEdit}
-          >
+          <button type='button' className='card-edit-button text-success-600' onClick={handleEdit}>
             <Icon icon='lucide:edit' className='icon text-lg line-height-1' />
           </button>
-          <button
-            type='button'
-            className='card-delete-button text-danger-600'
-            onClick={onDelete}
-          >
-            <Icon
-              icon='fluent:delete-24-regular'
-              className='icon text-lg line-height-1'
-            />
+          <button type='button' className='card-delete-button text-danger-600' onClick={handleDelete}>
+            <Icon icon='fluent:delete-24-regular' className='icon text-lg line-height-1' />
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+SortableTask.propTypes = {
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  task: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    description: PropTypes.string,
+    image: PropTypes.string,
+    tag: PropTypes.string,
+    date: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+  }).isRequired,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+};
+
+SortableTask.defaultProps = {
+  onEdit: undefined,
+  onDelete: undefined,
+};
 
 export default SortableTask;

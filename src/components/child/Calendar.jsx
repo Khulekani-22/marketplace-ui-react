@@ -23,9 +23,8 @@ export default function Calendar() {
   }
 
   function handleEventClick(clickInfo) {
-    // eslint-disable-next-line no-restricted-globals
     if (
-      confirm(
+      window.confirm(
         `Are you sure you want to delete the event '${clickInfo.event.title}'`
       )
     ) {

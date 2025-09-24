@@ -96,7 +96,7 @@ export default function ThemeToggleButton() {
         aria-expanded="false"
         aria-label="Theme"
         title={`Theme: ${label}`}
-        onClick={(e) => {
+        onClick={() => {
           // If user clicks the icon directly (not the caret), we quick-toggle.
           // Bootstrap will still open the dropdown; this keeps parity with your header UI.
           handleQuickToggle();

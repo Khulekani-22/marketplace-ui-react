@@ -1,7 +1,7 @@
 // src/pages/Dashboard.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 /** Small helpers */
@@ -161,7 +161,7 @@ export default function Dashboard() {
         category: newSvc.category.trim(),
         vendor: newSvc.vendor.trim(),
         isFeatured: !!newSvc.isFeatured,
-      });
+      }, { errorMessageOverride: "Failed to create service." });
       toast.success("Service created.");
       closeCreateModal();
       setNewSvc({ title: "", price: "", category: "", vendor: "", isFeatured: false });
@@ -169,15 +169,13 @@ export default function Dashboard() {
       setPage(1);
       // trigger effect by slight state change
       setQ((s) => s + "");
-    } catch (e) {
-      toast.error(e?.response?.data?.message || e.message || "Failed to create service.");
+    } catch {
+      // Error toast + log handled globally via API interceptor
     }
   }
 
   return (
     <div className="container py-4">
-      <ToastContainer position="top-right" autoClose={2500} />
-
       <header className="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
           <h1 className="h3 mb-0">Dashboard</h1>

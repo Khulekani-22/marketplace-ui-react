@@ -4,8 +4,12 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 
-// eslint-disable-next-line react/prop-types
-const DatePicker = ({ id, placeholder }) => {
+type DatePickerProps = {
+  id: string;
+  placeholder?: string;
+};
+
+const DatePicker = ({ id, placeholder = "" }: DatePickerProps) => {
   const datePickerRef = useRef(null);
 
   useEffect(() => {

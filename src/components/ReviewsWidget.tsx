@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
 import { auth } from "../lib/firebase";
-import { useAppSync } from "../context/AppSyncContext.jsx";
+import { api } from "../lib/api";
+import { useAppSync } from "../context/useAppSync";
 import { Link } from "react-router-dom";
 
 export default function ReviewsWidget() {
-  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
   const [services, setServices] = useState([]);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -23,8 +23,7 @@ export default function ReviewsWidget() {
     } catch (e) {
       setErr(e?.message || "Failed to load listings");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId, appData]);
+  }, [appData]);
 
   function setField(id, k, v) {
     setReviews((prev) => ({ ...prev, [id]: { ...(prev[id] || {}), [k]: v } }));

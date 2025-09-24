@@ -15,7 +15,9 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "outDir": "./dist",
+    "noEmit": true,
     "baseUrl": "./src",
+    "typeRoots": ["./types", "./node_modules/@types"],
     "paths": {
       "@/*": ["*"],
       "@components/*": ["components/*"],
@@ -24,6 +26,6 @@
       "@utils/*": ["utils/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx", "types/**/*.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

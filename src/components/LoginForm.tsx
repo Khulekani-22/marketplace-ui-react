@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { bootstrapSession } from "../lib/api";
-import { useVendor } from "../context/VendorContext";
+import { useVendor } from "../context/useVendor";
 import { writeAuditLog } from "../lib/audit";
 
 const google = new GoogleAuthProvider();
@@ -38,7 +38,7 @@ function mapFirebaseError(code) {
 /**
  * Props:
  * - redirectTo: default path after login (if no return URL present)
- * - afterLogin: optional callback({ uid, email, tenantId, idToken })
+ * - afterLogin: optional callback({ uid, email, tenantId })
  * - showTenant: boolean to render tenant selector (default true)
  */
 export default function LoginForm({
@@ -63,8 +63,18 @@ export default function LoginForm({
     () => sessionStorage.getItem("tenantId") || "vendor"
   );
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState(null);
-  const [err, setErr] = useState(null);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => {
+    const reason = location.state?.reason as string | undefined;
+    if (reason === "session-expired") {
+      setErr("Your session expired. Please sign in again.");
+      setMsg(null);
+    } else if (reason === "auth-required") {
+      setMsg("Please sign in to continue.");
+      setErr(null);
+    }
+  }, [location.state?.reason]);
 
   // Prevent double-redirects on token refreshes
   const navigatedRef = useRef(false);
@@ -76,8 +86,7 @@ export default function LoginForm({
         return;
       }
 
-      // Get a fresh token and force vendor re-hydration for the new user
-      const idToken = await user.getIdToken(/* forceRefresh */ true);
+      // Persist tenant choice for downstream interceptors/session helpers
       sessionStorage.setItem("tenantId", tenantId);
       try {
         // Ensure VendorContext picks up the just-logged-in user immediately
@@ -90,7 +99,7 @@ export default function LoginForm({
         navigatedRef.current = true;
         if (afterLogin) {
           try {
-            await afterLogin({ uid: user.uid, email: user.email, tenantId, idToken });
+            await afterLogin({ uid: user.uid, email: user.email, tenantId });
           } catch {
             // swallow afterLogin errors so navigation still occurs
           }
@@ -108,7 +117,6 @@ export default function LoginForm({
     });
 
     return () => unsub();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [afterLogin, nav, returnTo, tenantId, refresh]);
 
   async function doEmailLogin(e) {

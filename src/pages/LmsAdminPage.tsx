@@ -1,6 +1,6 @@
 // src/pages/LmsAdminPage.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import { auth } from "../lib/firebase";
+import { api } from "../lib/api";
 
 const LS_DRAFT_KEY = "lms_admin_draft_v1";
 const LS_UNDO_STACK = "lms_admin_undo_v1";
@@ -80,7 +80,10 @@ export default function LmsAdminPage() {
   });
 
   // selection for visual editor
-  const cohorts = data?.cohorts ?? [];
+  const cohorts = useMemo(
+    () => (Array.isArray(data?.cohorts) ? data.cohorts : []),
+    [data]
+  );
   const [cohortId, setCohortId] = useState(cohorts[0]?.id ?? "");
   const currentCohort = useMemo(
     () => cohorts.find((c) => c.id === cohortId),
@@ -128,15 +131,13 @@ export default function LmsAdminPage() {
     (async () => {
       try {
         setBusy(true);
-        const idToken = await auth.currentUser?.getIdToken?.();
-        const res = await fetch(`${API_BASE}/live`, {
+        const { data: payload } = await api.get(`${API_BASE}/live`, {
           headers: {
             "x-tenant-id": tenantId,
-            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+            "cache-control": "no-cache",
           },
         });
-        if (res.ok) {
-          const payload = await res.json();
+        if (payload) {
           setData(payload);
           setText(JSON.stringify(payload, null, 2));
           localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(payload));
@@ -154,14 +155,13 @@ export default function LmsAdminPage() {
 
   async function refreshHistory() {
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const hx = await fetch(`${API_BASE}/checkpoints`, {
+      const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
         headers: {
           "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+          "cache-control": "no-cache",
         },
-      }).then((r) => (r.ok ? r.json() : { items: [] }));
-      const items = hx.items ?? [];
+      });
+      const items = Array.isArray(hx?.items) ? hx.items : [];
       setHistory(items);
       localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
     } catch {
@@ -201,17 +201,16 @@ export default function LmsAdminPage() {
     setErr(null);
     setBusy(true);
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/publish`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        body: JSON.stringify({ data }),
-      });
-      if (!res.ok) throw new Error((await res.text()) || `Publish failed (${res.status})`);
+      await api.put(
+        `${API_BASE}/publish`,
+        { data },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-tenant-id": tenantId,
+          },
+        }
+      );
       toastOK("Published to live");
       await refreshHistory();
     } catch (e) {
@@ -225,17 +224,16 @@ export default function LmsAdminPage() {
   async function handleSaveCheckpoint(message) {
     setErr(null);
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/checkpoints`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-        body: JSON.stringify({ message: message || "", data }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await api.post(
+        `${API_BASE}/checkpoints`,
+        { message: message || "", data },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-tenant-id": tenantId,
+          },
+        }
+      );
       toastOK("Checkpoint saved");
       await refreshHistory();
     } catch (e) {
@@ -246,19 +244,26 @@ export default function LmsAdminPage() {
   async function handleRestore(id) {
     if (!window.confirm("Restore this snapshot to LIVE? This will overwrite appData.json.")) return;
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/restore/${id}`, {
-        method: "POST",
-        headers: {
-          "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-        },
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await api.post(
+        `${API_BASE}/restore/${id}`,
+        null,
+        {
+          headers: {
+            "x-tenant-id": tenantId,
+          },
+        }
+      );
       toastOK("Restored and published");
       await refreshHistory();
-      const live = await fetch(`${API_BASE}/live`).then((r) => r.json());
-      doSetData(live);
+      try {
+        const { data: live } = await api.get(`${API_BASE}/live`, {
+          headers: {
+            "x-tenant-id": tenantId,
+            "cache-control": "no-cache",
+          },
+        });
+        if (live) doSetData(live);
+      } catch {}
     } catch (e) {
       setErr(e.message || "Restore failed");
     }
@@ -267,15 +272,11 @@ export default function LmsAdminPage() {
   async function handleClearHistory() {
     if (!window.confirm("Clear ALL checkpoints on the server?")) return;
     try {
-      const idToken = await auth.currentUser?.getIdToken?.();
-      const res = await fetch(`${API_BASE}/checkpoints`, {
-        method: "DELETE",
+      await api.delete(`${API_BASE}/checkpoints`, {
         headers: {
           "x-tenant-id": tenantId,
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
         },
       });
-      if (!res.ok) throw new Error(await res.text());
       toastOK("Cleared history");
       await refreshHistory();
     } catch (e) {

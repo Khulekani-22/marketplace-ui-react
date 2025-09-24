@@ -2,7 +2,7 @@ import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
 import { useEffect, useMemo, useState } from "react";
 import { auth } from "../lib/firebase";
-import { useAppSync } from "../context/AppSyncContext.jsx";
+import { useAppSync } from "../context/useAppSync";
 import { fetchMySubscriptions, unsubscribeFromService } from "../lib/subscriptions";
 
 export default function MySubscriptionsPage() {
@@ -38,7 +38,7 @@ export default function MySubscriptionsPage() {
     }
     load();
     return () => { cancelled = true; };
-  }, [tenantId]);
+  }, [tenantId, appData]);
 
   async function handleUnsubscribe(id) {
     const key = String(id);

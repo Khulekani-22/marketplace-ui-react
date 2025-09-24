@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { api, bootstrapSession, getSession } from "../lib/api";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { api, bootstrapSession } from "../lib/api";
 import { auth } from "../lib/firebase";
 import { writeAuditLog } from "../lib/audit";
 
@@ -18,7 +18,6 @@ export default function UserRoleManagement() {
   const [trace, setTrace] = useState({}); // email -> { uid, viaEmail, viaUid, viaId }
   const [traceBusy, setTraceBusy] = useState({}); // email -> boolean
   const [syncBusy, setSyncBusy] = useState({}); // email -> boolean
-  const [alignBusy, setAlignBusy] = useState({}); // email -> boolean
   // Platform users search
   const [allQuery, setAllQuery] = useState("");
   const [allUsers, setAllUsers] = useState([]);
@@ -28,7 +27,6 @@ export default function UserRoleManagement() {
   const [allPageSize, setAllPageSize] = useState(100);
   const [tenantPick, setTenantPick] = useState({}); // email -> tenantId
   const [uidLookupAvailable, setUidLookupAvailable] = useState(true);
-  const [alignSummary, setAlignSummary] = useState(null); // { email, changes }
   const [saveBusy, setSaveBusy] = useState(false);
   const [checkpointBusy, setCheckpointBusy] = useState(false);
   const autoRetryRef = useRef(false);
@@ -216,7 +214,7 @@ export default function UserRoleManagement() {
       try {
         const { data } = await api.get("/api/users/lookup", { params: { email: u.email } });
         ownerUid = data?.uid || "";
-      } catch (_) {
+      } catch {
         ownerUid = ""; // fallback to email-only match
       }
       const name = (u.email || "").split("@")[0] || "Vendor";
@@ -248,7 +246,7 @@ export default function UserRoleManagement() {
       try {
         const { data } = await api.get("/api/users/lookup", { params: { email: key } });
         uid = data?.uid || "";
-      } catch (e) {
+      } catch {
         setError("Could not find Firebase UID for this email");
         return;
       }
@@ -307,39 +305,6 @@ export default function UserRoleManagement() {
   }
 
   // Align this user's vendorId to equal their Firebase UID (within current tenant)
-  async function alignVendorIdToUid(u) {
-    const key = (u.email || "").toLowerCase();
-    setAlignBusy((prev) => ({ ...prev, [key]: true }));
-    setError(""); setOk("");
-    try {
-      // 1) Lookup Firebase UID
-      let uid = "";
-      try {
-        const { data } = await api.get("/api/users/lookup", { params: { email: key } });
-        uid = data?.uid || "";
-      } catch (e) {
-        setError("Could not find Firebase UID for this email");
-        return;
-      }
-
-      if (!uid) {
-        setError("Missing UID for this user; cannot align vendorId");
-        return;
-      }
-
-      // 2) Rename vendor id across current tenant (provide email for fallback creation)
-      const resp = await api.post("/api/data/vendors/rename-id", { ownerUid: uid, newId: uid, email: key });
-      const changes = resp?.data?.changes || {};
-      setOk(`Aligned vendorId to UID for ${key}`);
-      setAlignSummary({ email: key, changes });
-      await refresh();
-    } catch (e) {
-      setError(e?.response?.data?.message || e?.message || "Failed to align vendorId");
-    } finally {
-      setAlignBusy((prev) => ({ ...prev, [key]: false }));
-    }
-  }
-
   // (auto-sync and auto-trace on load removed by request)
 
 
@@ -410,39 +375,42 @@ export default function UserRoleManagement() {
     }
   }
 
-  async function searchAllUsers(reset = true) {
-    setAllErr("");
-    setAllBusy(true);
-    try {
-      const params = { search: allQuery, pageSize: allPageSize };
-      if (!reset && allNext) params.pageToken = allNext;
-      const { data } = await api.get("/api/users/all", { params });
-      const items = Array.isArray(data?.items) ? data.items : [];
-      setAllUsers((prev) => (reset ? items : [...prev, ...items]));
-      setAllNext(data?.nextPageToken || "");
-    } catch (e) {
-      const status = e?.response?.status;
-      if (status === 401 || status === 403) {
-        try {
-          await bootstrapSession();
-          const params = { search: allQuery, pageSize: allPageSize };
-          if (!reset && allNext) params.pageToken = allNext;
-          const { data } = await api.get("/api/users/all", { params });
-          const items = Array.isArray(data?.items) ? data.items : [];
-          setAllUsers((prev) => (reset ? items : [...prev, ...items]));
-          setAllNext(data?.nextPageToken || "");
-          setAllErr("");
-          return;
-        } catch (e2) {
-          setAllErr(e2?.response?.data?.message || e2?.message || "Failed to search platform users");
+  const searchAllUsers = useCallback(
+    async (reset = true) => {
+      setAllErr("");
+      setAllBusy(true);
+      try {
+        const params = { search: allQuery, pageSize: allPageSize };
+        if (!reset && allNext) params.pageToken = allNext;
+        const { data } = await api.get("/api/users/all", { params });
+        const items = Array.isArray(data?.items) ? data.items : [];
+        setAllUsers((prev) => (reset ? items : [...prev, ...items]));
+        setAllNext(data?.nextPageToken || "");
+      } catch (e) {
+        const status = e?.response?.status;
+        if (status === 401 || status === 403) {
+          try {
+            await bootstrapSession();
+            const params = { search: allQuery, pageSize: allPageSize };
+            if (!reset && allNext) params.pageToken = allNext;
+            const { data } = await api.get("/api/users/all", { params });
+            const items = Array.isArray(data?.items) ? data.items : [];
+            setAllUsers((prev) => (reset ? items : [...prev, ...items]));
+            setAllNext(data?.nextPageToken || "");
+            setAllErr("");
+            return;
+          } catch (e2) {
+            setAllErr(e2?.response?.data?.message || e2?.message || "Failed to search platform users");
+          }
+        } else {
+          setAllErr(e?.response?.data?.message || e?.message || "Failed to search platform users");
         }
-      } else {
-        setAllErr(e?.response?.data?.message || e?.message || "Failed to search platform users");
+      } finally {
+        setAllBusy(false);
       }
-    } finally {
-      setAllBusy(false);
-    }
-  }
+    },
+    [allQuery, allPageSize, allNext]
+  );
 
   // Auto-load platform users on mount (same as pressing Refresh), after ensuring session
   const autoLoadedRef = useRef(false);
@@ -460,8 +428,7 @@ export default function UserRoleManagement() {
       }
     })();
     return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchAllUsers]);
 
   // Fallback: if nothing loaded shortly after mount, retry once
   useEffect(() => {
@@ -473,7 +440,7 @@ export default function UserRoleManagement() {
       }, 800);
       return () => clearTimeout(id);
     }
-  }, [allBusy, allUsers]);
+  }, [allBusy, allUsers, searchAllUsers]);
 
   async function grantAdmin(email) {
     const t = tenantPick[email] || "vendor";
@@ -864,30 +831,6 @@ export default function UserRoleManagement() {
         </div>
       </div>
     </div>
-    {alignSummary && (
-      <div className="position-fixed top-0 start-0 w-100 h-100" style={{ background: "rgba(0,0,0,0.5)", zIndex: 1070 }} onClick={(e) => e.target === e.currentTarget && setAlignSummary(null)}>
-        <div className="card" style={{ maxWidth: 520, margin: "12vh auto" }}>
-          <div className="card-header d-flex align-items-center justify-content-between">
-            <h6 className="mb-0">Vendor ID Aligned</h6>
-            <button className="btn btn-sm btn-outline-secondary" onClick={()=>setAlignSummary(null)}>Close</button>
-          </div>
-          <div className="card-body">
-            <div className="mb-2">Email: <code>{alignSummary.email}</code></div>
-            <div className="mb-2">Updated records in current tenant:</div>
-            <ul className="mb-0">
-              <li>Vendors/startups: {(Number(alignSummary.changes?.startups||0)+Number(alignSummary.changes?.vendors||0))}</li>
-              <li>Listings (services): {Number(alignSummary.changes?.services||0)}</li>
-              <li>Subscriptions: {Number(alignSummary.changes?.subscriptions||0)}</li>
-              <li>Bookings: {Number(alignSummary.changes?.bookings||0)}</li>
-              <li>Message threads: {Number(alignSummary.changes?.threads||0)}</li>
-            </ul>
-          </div>
-          <div className="card-footer d-flex justify-content-end gap-2">
-            <button className="btn btn-primary" onClick={()=>setAlignSummary(null)}>OK</button>
-          </div>
-        </div>
-      </div>
-    )}
     </>
   );
 }

@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
-import { useVendor } from "../context/VendorContext";
+import { useVendor } from "../context/useVendor";
 import { api } from "../lib/api";
-import { useAppSync } from "../context/AppSyncContext.jsx";
+import { useAppSync } from "../context/useAppSync";
 import { Link } from "react-router-dom";
 import appDataLocal from "../data/appData.json";
 import ReactApexChart from "react-apexcharts";
@@ -69,7 +69,7 @@ export default function VendorDashboardPage() {
           const s = resp.data || {};
           setSubByService(s?.subscriptionStats?.byService || {});
           setSalesTime(s?.salesTime || { monthly: {}, quarterly: {}, annual: {} });
-        } catch (e) {
+        } catch {
           // non-fatal
         }
       } catch (e) {
@@ -78,7 +78,7 @@ export default function VendorDashboardPage() {
         setLoading(false);
       }
     })();
-  }, [tenantId, vendor?.vendorId, vendor?.email, vendor?.name]);
+  }, [tenantId, vendor, appData]);
 
   const listTotals = stats?.listingStats?.byStatus || {};
   const totalListings = stats?.listingStats?.total || 0;
@@ -93,7 +93,7 @@ export default function VendorDashboardPage() {
     try {
       const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
       return v || fallback;
-    } catch (e) {
+    } catch {
       return fallback;
     }
   };
