@@ -102,5 +102,72 @@ export async function getLiveLmsData(): Promise<LmsData> {
   }
 }
 
+// ========== Additional Common Endpoints ==========
+
+// Subscription types
+export const SubscriptionSchema = z.object({
+  id: z.string(),
+  serviceId: z.string(),
+  userId: z.string().optional(),
+  userEmail: z.string().email().optional(),
+  status: z.enum(['active', 'cancelled', 'pending']).default('active'),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+});
+
+export type Subscription = z.infer<typeof SubscriptionSchema>;
+
+/**
+ * Get user's subscriptions
+ * Validates response data before returning
+ */
+export async function getMySubscriptions(): Promise<Subscription[]> {
+  try {
+    const { data } = await api.get('/api/subscriptions/my');
+    
+    // Validate the response array
+    const validatedData = z.array(SubscriptionSchema).parse(Array.isArray(data) ? data : []);
+    return validatedData;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error('Invalid subscription data received from server:', error.issues);
+      throw new Error('Server returned invalid subscription data');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Subscribe to a service
+ * Validates response data before returning  
+ */
+export async function subscribeToService(serviceId: string): Promise<Subscription> {
+  try {
+    const { data } = await api.post('/api/subscriptions/service', { serviceId });
+    
+    // Validate the response
+    const validatedData = SubscriptionSchema.parse(data);
+    return validatedData;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error('Invalid subscription response from server:', error.issues);
+      throw new Error('Server returned invalid subscription response');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Unsubscribe from a service
+ */
+export async function unsubscribeFromService(serviceId: string): Promise<boolean> {
+  try {
+    await api.put('/api/subscriptions/service/cancel', { serviceId });
+    return true;
+  } catch (error) {
+    throw error;
+  }
+}
+
 // ========== Re-export the API instance for backward compatibility ==========
 export { api } from './api';

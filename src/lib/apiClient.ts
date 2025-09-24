@@ -5,11 +5,16 @@ export { api, getSession, bootstrapSession } from './api';
 export { 
   getCurrentUser, 
   getLiveLmsData,
+  getMySubscriptions,
+  subscribeToService,
+  unsubscribeFromService,
   UserResponse,
   GetCurrentUserParams,
   LmsData,
   LmsResponse,
+  Subscription,
   UserResponseSchema,
   LmsDataSchema,
-  LmsResponseSchema
+  LmsResponseSchema,
+  SubscriptionSchema
 } from './sdk';
