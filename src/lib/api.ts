@@ -3,7 +3,14 @@ import axios from "axios";
 import { auth } from "./firebase";
 
 // In-memory session derived from the API (authoritative)
-let SESSION = {
+interface Session {
+  email: string | null;
+  uid: string | null;
+  role: string;
+  tenantId: string | null;
+  allowedTenants: string[];
+}
+let SESSION: Session = {
   email: null,
   uid: null,
   role: "member",
@@ -12,12 +19,12 @@ let SESSION = {
 };
 
 // Prefer port 5000; if unreachable, automatically fall back to 5001.
-function computeApiBases() {
-  const envUrl = import.meta.env.VITE_API_URL;
+function computeApiBases(): string[] {
+  const envUrl = (import.meta as any).env?.VITE_API_URL as string | undefined;
   if (envUrl) return [envUrl];
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
   const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
-  const make = (port) => `${protocol}//${host}:${port}`;
+  const make = (port: number) => `${protocol}//${host}:${port}`;
   // Prefer ports in this order: 5001, 5055, then 5000 (per environment requirement)
   return [make(5001), make(5055), make(5000)];
 }
@@ -28,15 +35,15 @@ let currentBase = CANDIDATES[candidateIndex];
 
 export const api = axios.create({ baseURL: currentBase });
 
-function mapTenantOut(id) {
+function mapTenantOut(id: string | null | undefined): string | null | undefined {
   return id === "vendor" ? "public" : id;
 }
 
-function shimTenantInPayload(payload) {
+function shimTenantInPayload<T extends Record<string, any>>(payload: T): T {
   if (!payload || typeof payload !== "object") return payload;
   try {
-    if (typeof payload.tenantId === "string") payload.tenantId = mapTenantOut(payload.tenantId);
-    if (typeof payload.newTenantId === "string") payload.newTenantId = mapTenantOut(payload.newTenantId);
+    if (typeof (payload as any).tenantId === "string") (payload as any).tenantId = mapTenantOut((payload as any).tenantId);
+    if (typeof (payload as any).newTenantId === "string") (payload as any).newTenantId = mapTenantOut((payload as any).newTenantId);
   } catch {}
   return payload;
 }
@@ -47,21 +54,21 @@ function requestId() {
 }
 
 // Public helpers: prefer server-derived session over client hints
-export function getSession() {
+export function getSession(): Session {
   const ssTenant = SESSION.tenantId || sessionStorage.getItem("tenantId") || "vendor";
   const role = SESSION.role || sessionStorage.getItem("role") || "member";
   return { ...SESSION, tenantId: ssTenant, role };
 }
 
-export async function bootstrapSession() {
+export async function bootstrapSession(): Promise<Session> {
   try {
     // Use either Firebase identity (via Authorization header) or fallback to email/uid in storage
-    const meHint = {};
+    const meHint: { email?: string; uid?: string } = {};
     const ssEmail = sessionStorage.getItem("userEmail");
     const ssUid = sessionStorage.getItem("userId");
     if (ssEmail) meHint.email = ssEmail;
     if (ssUid) meHint.uid = ssUid;
-    const { data } = await api.get("/api/users/me", { params: meHint });
+    const { data } = await api.get<any>("/api/users/me", { params: meHint });
     const role = data?.role || "member";
     const tenantId = data?.tenantId || "vendor";
     SESSION = {
@@ -69,7 +76,7 @@ export async function bootstrapSession() {
       uid: (auth.currentUser?.uid || sessionStorage.getItem("userId") || null),
       role,
       tenantId,
-      allowedTenants: data?.allowedTenants || [tenantId].filter(Boolean),
+      allowedTenants: (data?.allowedTenants as string[]) || [tenantId].filter(Boolean),
     };
     // Mirror to sessionStorage for UI gating only (not as an authority)
     sessionStorage.setItem("role", role);
