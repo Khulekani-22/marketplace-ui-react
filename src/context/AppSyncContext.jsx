@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { auth } from "../lib/firebase";
-import { api } from "../lib/api";
+import { getCurrentUser, getLiveLmsData } from "../lib/sdk";
 import { writeAuditLog } from "../lib/audit";
 import { onIdTokenChanged } from "firebase/auth";
 import appDataLocal from "../data/appData.json";
@@ -41,9 +41,9 @@ export function AppSyncProvider({ children }) {
       const params = {};
       if (email) params.email = email;
       if (uid) params.uid = uid;
-      const { data } = await api.get("/api/users/me", { params });
-      const nextRole = data?.role || "member";
-      const nextTenant = data?.tenantId || "vendor";
+      const userData = await getCurrentUser(params);
+      const nextRole = userData.role || "member";
+      const nextTenant = userData.tenantId || "vendor";
       sessionStorage.setItem("role", nextRole);
       sessionStorage.setItem("tenantId", nextTenant);
       setRole(nextRole);
@@ -59,8 +59,8 @@ export function AppSyncProvider({ children }) {
     try {
       // Request a fresh token (cached if still valid)
       if (auth.currentUser?.getIdToken) await auth.currentUser.getIdToken();
-      const { data } = await api.get("/api/lms/live");
-      setAppData(data || null);
+      const lmsData = await getLiveLmsData();
+      setAppData(lmsData || null);
     } catch (e) {
       // API failed: best-effort fallback to local bundled appData.json
       setAppData(appDataLocal || null);

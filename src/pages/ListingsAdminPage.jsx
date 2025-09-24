@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
 import { useMessages } from "../context/MessagesContext.jsx";
-import { api } from "../lib/api";
+import { getLiveLmsData } from "../lib/sdk";
 import { useAppSync } from "../context/AppSyncContext.jsx";
 import { auth } from "../lib/firebase";
 import { writeAuditLog } from "../lib/audit";
@@ -422,7 +422,7 @@ export default function ListingsAdminPage() {
       const idToken = await auth.currentUser?.getIdToken?.();
       let dataToPublish = data;
       try {
-        const live = await api.get(`/api/lms/live`).then((r) => r.data);
+        const live = await getLiveLmsData();
           // Merge only review-related fields from live into our working copy
           const next = deepClone(data);
           const liveMap = Object.fromEntries(
@@ -496,7 +496,7 @@ export default function ListingsAdminPage() {
       await api.post(`/api/lms/restore/${id}`);
       toastOK("Restored snapshot");
       await refreshHistory();
-      const live = await api.get(`/api/lms/live`).then((r) => r.data);
+      const live = await getLiveLmsData();
       doSetData(live);
     } catch (e) {
       setErr(e.message || "Restore failed");
@@ -757,7 +757,7 @@ function handleExport() {
             setErr(null);
             setBusy(true);
             try {
-              const live = await api.get(`/api/lms/live`).then((r) => r.data);
+              const live = await getLiveLmsData();
               const next = deepClone(data);
               const liveMap = Object.fromEntries(
                 (live?.services || []).map((s) => [String(s.id), s])

@@ -1,10 +1,10 @@
 // src/lib/subscriptions.js
-import { api } from "./api";
+// Legacy wrapper - use SDK functions instead
+import { getMySubscriptions, subscribeToService, unsubscribeFromService } from './sdk';
 
 export async function fetchMySubscriptions() {
   try {
-    const { data } = await api.get("/api/subscriptions/my");
-    return Array.isArray(data) ? data : [];
+    return await getMySubscriptions();
   } catch (e) {
     // Be forgiving if the route is unavailable or user is unauthenticated
     const status = e?.response?.status;
@@ -13,13 +13,4 @@ export async function fetchMySubscriptions() {
   }
 }
 
-export async function subscribeToService(serviceId) {
-  const { data } = await api.post("/api/subscriptions/service", { serviceId });
-  return data;
-}
-
-export async function unsubscribeFromService(serviceId) {
-  // Soft cancel to preserve history in analytics
-  await api.put("/api/subscriptions/service/cancel", { serviceId });
-  return true;
-}
+export { subscribeToService, unsubscribeFromService };

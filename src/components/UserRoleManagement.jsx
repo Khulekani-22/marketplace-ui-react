@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, bootstrapSession, getSession } from "../lib/api";
+import { getLiveLmsData } from "../lib/sdk";
 import { auth } from "../lib/firebase";
 import { writeAuditLog } from "../lib/audit";
 
@@ -515,7 +516,7 @@ export default function UserRoleManagement() {
     setSaveBusy(true);
     try {
       // 1) Load current live appData
-      const live = await api.get('/api/lms/live').then((r)=> r.data || {});
+      const live = await getLiveLmsData();
 
       // 2) Merge normalized users from current UI state
       const normUsers = buildUserPayload(users);
@@ -547,7 +548,7 @@ export default function UserRoleManagement() {
     setOk("");
     setCheckpointBusy(true);
     try {
-      const live = await api.get('/api/lms/live').then((r)=> r.data || {});
+      const live = await getLiveLmsData();
       const normUsers = buildUserPayload(users);
       const merged = { ...live, users: normUsers };
       await api.put('/api/users/bulk', { users: normUsers });
