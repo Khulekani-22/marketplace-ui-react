@@ -2,7 +2,7 @@
 // SDK-style functions for common API endpoints with TypeScript types and Zod validation
 
 import { z } from 'zod';
-import { api } from './api';
+import { api } from './api.js';
 
 // ========== Request/Response Type Definitions ==========
 

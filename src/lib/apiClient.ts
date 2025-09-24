@@ -1,7 +1,10 @@
 // src/lib/apiClient.ts
 // Consolidated API client that exports both the Axios instance and SDK-style functions
 
-export { api, getSession, bootstrapSession } from './api';
+// Import from JS files - TypeScript will accept these at runtime
+import { api } from './api.js';
+
+export { api };
 export { 
   getCurrentUser, 
   getLiveLmsData,
