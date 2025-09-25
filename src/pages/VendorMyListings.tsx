@@ -4,10 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useMessages } from "../context/useMessages";
 import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/useVendor";
-import appDataLocal from "../data/appData.json";
+import { useAppSync } from "../context/useAppSync";
 import { api } from "../lib/api";
-
-const API_BASE = "/api/lms";
+import { fetchMyVendorListings } from "../lib/listings";
+import appDataLocal from "../data/appData.json";
 
 function StatusChip({ s }) {
   const k = (s || "unknown").toLowerCase();
@@ -27,12 +27,10 @@ function StatusChip({ s }) {
 
 export default function VendorMyListings() {
   const navigate = useNavigate();
-  const { vendor, ensureVendorId } = useVendor();
+  const { vendor, ensureVendorId, loading: vendorLoading } = useVendor();
   const { refresh: refreshMessages, syncMessagesToLive } = useMessages();
-  const tenantId = useMemo(
-    () => sessionStorage.getItem("tenantId") || "vendor",
-    []
-  );
+  const { appData, appDataLoading } = useAppSync();
+  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
 
   const [items, setItems] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -50,78 +48,133 @@ export default function VendorMyListings() {
     }
   }, [vendor, navigate]);
 
+  function unwrapAppData(candidate: any) {
+    let cursor = candidate;
+    const guard = new Set();
+    while (cursor && typeof cursor === "object" && !Array.isArray(cursor?.services)) {
+      if (guard.has(cursor)) break;
+      guard.add(cursor);
+      if (Array.isArray(cursor?.data?.services)) {
+        cursor = cursor.data;
+        continue;
+      }
+      if (Array.isArray(cursor?.payload?.services)) {
+        cursor = cursor.payload;
+        continue;
+      }
+      if (Array.isArray(cursor?.appData?.services)) {
+        cursor = cursor.appData;
+        continue;
+      }
+      break;
+    }
+    return cursor && typeof cursor === "object" ? cursor : null;
+  }
+
+  const fallbackFromAppData = useCallback(
+    (activeVendor: any) => {
+      const liveDoc = unwrapAppData(appData) || unwrapAppData(appDataLocal) || appDataLocal;
+      const tenantKey = tenantId === "vendor" ? "public" : tenantId;
+      const all = Array.isArray(liveDoc?.services) ? liveDoc.services : [];
+      const allBookingsRaw = Array.isArray(liveDoc?.bookings) ? liveDoc.bookings : [];
+      const scopedBookings = allBookingsRaw.filter((b) => (b.tenantId ?? "public") === tenantKey);
+      const vendorId = String(activeVendor?.vendorId || "");
+      const email = String(activeVendor?.email || activeVendor?.contactEmail || "").toLowerCase();
+      const name = String(activeVendor?.name || activeVendor?.companyName || "").toLowerCase();
+      const mine = all.filter((s) => {
+        const sameTenant = (s.tenantId ?? "public") === tenantKey;
+        if (!sameTenant) return false;
+        const sid = String(s.vendorId || "");
+        const svcEmail = String(s.contactEmail || s.email || "").toLowerCase();
+        const svcName = String(s.vendor || "").toLowerCase();
+        return (
+          (sid && vendorId && sid === vendorId) ||
+          (!sid && ((svcName && svcName === name) || (email && svcEmail === email)))
+        );
+      });
+
+      const idSet = new Set(
+        mine
+          .flatMap((s) => [String(s.id || ""), String(s.serviceId || ""), String(s.vendorId || "")])
+          .filter(Boolean)
+      );
+      const bookingsForVendor = scopedBookings.filter((b) => {
+        const sid = String(b.serviceId || "");
+        const vendorMatch = vendorId && String(b.vendorId || "") === vendorId;
+        const emailMatch = email && String(b.vendorEmail || "").toLowerCase() === email;
+        const nameMatch = name && String(b.vendorName || "").toLowerCase() === name;
+        return idSet.has(sid) || vendorMatch || emailMatch || nameMatch;
+      });
+
+      setItems(mine);
+      setBookings(bookingsForVendor);
+    },
+    [appData, tenantId]
+  );
+
   const loadListings = useCallback(
-    async ({ silent, signal }: { silent?: boolean; signal?: AbortSignal } = {}) => {
-      if (silent) setRefreshing(true);
-      else setLoading(true);
+    async ({ signal, silent }: { signal?: AbortSignal; silent?: boolean } = {}) => {
+      const markBusy = (val: boolean) => {
+        if (silent) setRefreshing(val);
+        else setLoading(val);
+      };
+
+      markBusy(true);
       setErr("");
+
+      let activeVendorRef = vendor;
       try {
-        const ensured = ensureVendorId ? await ensureVendorId() : vendor;
-        const activeVendor = ensured || vendor;
-        if (!activeVendor) {
-          if (!signal?.aborted) setItems([]);
+        if (signal?.aborted) return;
+        if (vendorLoading && !vendor) return;
+
+        if (!vendor) {
+          setItems([]);
+          setBookings([]);
           return;
         }
 
-        const { data } = await api.get(`${API_BASE}/live`, {
-          headers: { "x-tenant-id": tenantId },
-          suppressToast: true,
-          suppressErrorLog: true,
-        } as any);
-        const livePayload = data && typeof data === "object" ? data : {};
-        const liveRaw = livePayload && typeof livePayload.data === "object" ? livePayload.data : livePayload;
-        const live = liveRaw && typeof liveRaw === "object" && Object.keys(liveRaw).length > 0 ? liveRaw : appDataLocal;
-        const tenantKey = tenantId === "vendor" ? "public" : tenantId;
-        const all = Array.isArray(live?.services) ? live.services : [];
-        const allBookingsRaw = Array.isArray(live?.bookings) ? live.bookings : [];
-        const scopedBookings = allBookingsRaw.filter((b) => (b.tenantId ?? "public") === tenantKey);
-        const vendorId = activeVendor.vendorId || "";
-        const email = (activeVendor.email || "").toLowerCase();
-        const name = (activeVendor.name || "").toLowerCase();
-        const my = all.filter((s) => {
-          const sameTenant = (s.tenantId ?? "public") === tenantKey;
-          if (!sameTenant) return false;
-          return (
-            (s.vendorId && vendorId && String(s.vendorId) === String(vendorId)) ||
-            (!s.vendorId &&
-              (String(s.vendor || "").toLowerCase() === name ||
-                String(s.contactEmail || "").toLowerCase() === email))
-          );
-        });
-        if (!signal?.aborted) {
-          setItems(my);
-          const idSet = new Set(
-            my.flatMap((s) => [String(s.id || ""), String(s.serviceId || ""), String(s.vendorId || "")]).filter(Boolean)
-          );
-          const bookingsForVendor = scopedBookings.filter((b) => {
-            const sid = String(b.serviceId || "");
-            const vendorMatch = vendorId && String(b.vendorId || "") === String(vendorId);
-            const emailMatch = email && String(b.vendorEmail || "").toLowerCase() === email;
-            const nameMatch = name && String(b.vendorName || "").toLowerCase() === name;
-            return idSet.has(sid) || vendorMatch || emailMatch || nameMatch;
-          });
-          setBookings(bookingsForVendor);
+        const ensured = ensureVendorId ? await ensureVendorId() : vendor;
+        if (signal?.aborted) return;
+        activeVendorRef = ensured || vendor;
+        if (!activeVendorRef) {
+          setItems([]);
+          setBookings([]);
+          return;
         }
+
+        const { listings, bookings } = await fetchMyVendorListings({ signal });
+        if (signal?.aborted) return;
+        setItems(Array.isArray(listings) ? listings : []);
+        setBookings(Array.isArray(bookings) ? bookings : []);
       } catch (e: any) {
-        if (!signal?.aborted) {
-          setErr(e?.message || "Failed to load listings");
+        if (signal?.aborted) return;
+        const code = e?.code;
+        if (code === "ERR_NETWORK") {
+          fallbackFromAppData(activeVendorRef);
+          setErr("Showing cached data while the network is unavailable.");
+        } else {
+          setErr(e?.response?.data?.message || e?.message || "Failed to load listings");
           setItems([]);
           setBookings([]);
         }
       } finally {
-        if (signal?.aborted) return;
-        if (silent) setRefreshing(false);
-        else setLoading(false);
+        markBusy(false);
       }
     },
-    [tenantId, vendor, ensureVendorId]
+    [ensureVendorId, fallbackFromAppData, vendor, vendorLoading]
   );
 
-  // load live listings and filter to this vendor
   useEffect(() => {
     const controller = new AbortController();
-    loadListings({ silent: false, signal: controller.signal });
-    return () => controller.abort();
+    loadListings({ signal: controller.signal });
+    return () => {
+      controller.abort();
+    };
+  }, [loadListings]);
+
+  const handleRefresh = useCallback(async () => {
+    setErr("");
+    await loadListings({ silent: true });
   }, [loadListings]);
 
   const counts = useMemo(() => {
@@ -234,7 +287,7 @@ export default function VendorMyListings() {
         content: feedback.content,
       });
       setFeedback((f) => ({ ...f, sending: false, done: true }));
-      try { await refreshMessages(); await syncMessagesToLive(); } catch {}
+      try { await refreshMessages({ force: true }); await syncMessagesToLive(); } catch {}
       setTimeout(() => closeFeedback(), 1200);
     } catch (e) {
       setFeedback((f) => ({ ...f, sending: false, err: e?.response?.data?.message || e?.message || "Failed to send" }));
@@ -250,10 +303,10 @@ export default function VendorMyListings() {
             <button
               type="button"
               className="btn btn-outline-secondary"
-              onClick={() => loadListings({ silent: true })}
-              disabled={loading || refreshing}
+              onClick={handleRefresh}
+              disabled={loading || refreshing || appDataLoading}
             >
-              {refreshing ? "Refreshing…" : "Refresh"}
+              {refreshing || appDataLoading ? "Refreshing…" : "Refresh"}
             </button>
             <Link to="/listings-vendors" className="btn btn-primary">
               + Submit new listing

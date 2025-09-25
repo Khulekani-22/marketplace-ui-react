@@ -52,7 +52,7 @@ function formatBookingDate(dateString) {
     const date = new Date(`${dateString}T00:00:00`);
     if (Number.isNaN(date.getTime())) return dateString;
     return date.toLocaleDateString();
-  } catch (e) {
+  } catch {
     return dateString;
   }
 }

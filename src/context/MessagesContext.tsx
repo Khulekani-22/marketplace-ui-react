@@ -4,6 +4,8 @@ import { api } from "../lib/api";
 import { publishWithVerifyAndFallback, getLive } from "../lib/lmsClient";
 import { MessagesContext } from "./messagesContext";
 
+const AUTO_POLL_INTERVAL_MS = 4 * 60 * 1000;
+
 export function MessagesProvider({ children }) {
   const [threads, setThreads] = useState(() => {
     try {
@@ -35,12 +37,16 @@ export function MessagesProvider({ children }) {
     [threads]
   );
 
-  const refresh = useCallback(async ({ silent }: { silent?: boolean } = {}) => {
+  const refresh = useCallback(async ({ silent, force }: { silent?: boolean; force?: boolean } = {}) => {
     setError(null);
     if (silent) setRefreshing(true);
     else setLoading(true);
     try {
-      const { data } = await api.get(`/api/messages`, { params: { t: Date.now() } });
+      const params = { t: Date.now(), ...(force ? { force: "1" } : {}) };
+      const config = force
+        ? { params, headers: { "x-message-refresh": "manual" } }
+        : { params };
+      const { data } = await api.get(`/api/messages`, config);
       const items = Array.isArray(data?.items) ? data.items : [];
       setThreads(items);
       try { localStorage.setItem("sl_messages_cache_v1", JSON.stringify(items)); } catch {}
@@ -54,10 +60,10 @@ export function MessagesProvider({ children }) {
 
   useEffect(() => {
     refresh().catch(() => void 0);
-    // soft poll every 30s
+    // soft poll every 4 minutes to respect rate limiting
     pollRef.current = setInterval(() => {
       refresh({ silent: true }).catch(() => void 0);
-    }, 30000);
+    }, AUTO_POLL_INTERVAL_MS);
     // auto-sync messages to LIVE every 5 minutes
     autosyncRef.current = setInterval(async () => {
       if (syncingRef.current) return;
@@ -92,7 +98,7 @@ export function MessagesProvider({ children }) {
   const reply = useCallback(
     async (threadId: string, content: string) => {
       await api.post(`/api/messages/reply`, { threadId, content });
-      await refresh({ silent: true });
+      await refresh({ silent: true, force: true });
       await syncMessagesToLive();
     },
     [refresh, syncMessagesToLive]

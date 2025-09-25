@@ -2264,11 +2264,11 @@
       "email": "khulekani@22onsloane.co",
       "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "website": "",
-      "phone": "0114637602",
-      "country": "South Africa",
-      "city": "Sandton",
+      "phone": "0763732884",
+      "country": "",
+      "city": "Johannesburg",
       "addressLine": "",
-      "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
+      "logoUrl": "",
       "bannerUrl": "",
       "description": "",
       "categories": [],
@@ -2291,13 +2291,13 @@
         "kycStatus": "approved",
         "contactEmail": "khulekani@22onsloane.co",
         "ownerUid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-        "phone": "0114637602",
+        "phone": "0763732884",
         "website": "",
         "description": "",
-        "logoUrl": "https://www.22onsloane.co/wp-content/uploads/2025/08/22-On-Sloane_Logo-Empowering-01.png",
+        "logoUrl": "",
         "bannerUrl": "",
-        "country": "South Africa",
-        "city": "Sandton",
+        "country": "",
+        "city": "Johannesburg",
         "addressLine": "",
         "socials": {
           "twitter": "",
@@ -2314,7 +2314,9 @@
         "registrationNo": "",
         "status": "active",
         "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-        "tenantId": "22onsloane"
+        "tenantId": "22onsloane",
+        "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co"
       },
       "tenantId": "22onsloane"
     }
@@ -2487,8 +2489,8 @@
   ],
   "_meta": {
     "lastClientWriteStamp": {
-      "at": "2025-09-24T14:49:24.558Z",
-      "nonce": "z5vgw2oz2ok"
+      "at": "2025-09-25T10:08:29.499Z",
+      "nonce": "4mdavc6jl0t"
     }
   },
   "users": [],

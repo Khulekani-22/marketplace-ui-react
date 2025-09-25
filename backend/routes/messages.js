@@ -2,6 +2,7 @@ import { Router } from "express";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 import { getData, saveData } from "../utils/dataStore.js";
 import { isAdminForTenant } from "../middleware/isAdmin.js";
+import { messageListLimiter } from "../middleware/rateLimiters.js";
 
 const router = Router();
 
@@ -160,7 +161,7 @@ function canAccessThread(t, { isAdmin, email, vendorId }) {
 }
 
 // GET /api/messages -> list threads (latest first) for current tenant
-router.get("/", firebaseAuthRequired, (req, res) => {
+router.get("/", firebaseAuthRequired, messageListLimiter, (req, res) => {
   try {
     const tenantId = req.tenant?.id || "public";
     const data = getData();

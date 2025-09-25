@@ -10,6 +10,58 @@ import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 
 const router = Router();
 
+function normalizeTenantId(id) {
+  if (!id) return "public";
+  const v = String(id).toLowerCase();
+  return v === "vendor" ? "public" : v;
+}
+
+function sameTenant(tenantValue, tenantScope) {
+  const a = normalizeTenantId(tenantValue);
+  const b = normalizeTenantId(tenantScope);
+  return a === b || (!tenantValue && b === "public");
+}
+
+function normalizeEmail(value) {
+  return (value || "").toString().trim().toLowerCase();
+}
+
+function findVendorRecord(data, tenantId, { uid, email }) {
+  const emailLc = normalizeEmail(email);
+  const pools = [
+    Array.isArray(data?.startups) ? data.startups : [],
+    Array.isArray(data?.vendors) ? data.vendors : [],
+    Array.isArray(data?.companies) ? data.companies : [],
+    Array.isArray(data?.profiles) ? data.profiles : [],
+  ];
+
+  const lookup = (arr, predicate) => arr.find((v) => sameTenant(v?.tenantId, tenantId) && predicate(v));
+
+  if (uid) {
+    for (const arr of pools) {
+      const hit = lookup(arr, (v) => String(v?.ownerUid || v?.uid || v?.id || "") === uid);
+      if (hit) return hit;
+    }
+  }
+
+  if (emailLc) {
+    for (const arr of pools) {
+      const hit = lookup(arr, (v) => normalizeEmail(v?.contactEmail || v?.email) === emailLc);
+      if (hit) return hit;
+    }
+
+    for (const arr of pools) {
+      const hit = lookup(
+        arr,
+        (v) => Array.isArray(v?.members) && v.members.some((m) => normalizeEmail(m?.email) === emailLc)
+      );
+      if (hit) return hit;
+    }
+  }
+
+  return null;
+}
+
 /**
  * GET /api/data/services
  * Query: q (search), category, vendor, featured (true), minPrice, maxPrice, page, pageSize
@@ -61,6 +113,80 @@ router.get("/", (req, res) => {
   const slice = rows.slice(start, start + ps);
 
   res.json({ page: p, pageSize: ps, total, items: slice });
+});
+
+router.get("/mine", firebaseAuthRequired, (req, res) => {
+  const tenantId = req.tenant.id;
+  const data = getData();
+  const services = Array.isArray(data?.services) ? data.services : [];
+  const bookings = Array.isArray(data?.bookings) ? data.bookings : [];
+  const vendorRecord = findVendorRecord(data, tenantId, req.user || {});
+  const userEmail = normalizeEmail(req.user?.email);
+  const vendorId = vendorRecord?.vendorId || vendorRecord?.id || "";
+  const vendorEmail = normalizeEmail(vendorRecord?.contactEmail || vendorRecord?.email) || userEmail;
+  const vendorNameRaw =
+    vendorRecord?.name || vendorRecord?.companyName || vendorRecord?.vendor || (userEmail ? userEmail.split("@")[0] : "");
+  const vendorNameLc = (vendorNameRaw || "").toString().trim().toLowerCase();
+  const uid = (req.user?.uid || "").toString();
+
+  const listings = services
+    .filter((s) => {
+      if (!sameTenant(s?.tenantId, tenantId)) return false;
+      const sid = (s?.vendorId || "").toString();
+      const ownerUid = (s?.ownerUid || s?.ownerId || "").toString();
+      const svcEmail = normalizeEmail(s?.contactEmail || s?.email);
+      const svcName = (s?.vendor || "").toString().trim().toLowerCase();
+      return (
+        (!!vendorId && !!sid && sid === vendorId) ||
+        (!!uid && !!ownerUid && ownerUid === uid) ||
+        (!!vendorEmail && !!svcEmail && svcEmail === vendorEmail) ||
+        (!sid && !!vendorNameLc && !!svcName && svcName === vendorNameLc)
+      );
+    })
+    .map((s) => ({ ...s }));
+
+  const listingIds = new Set();
+  listings.forEach((s) => {
+    [s?.id, s?.serviceId, s?.vendorId]
+      .map((v) => (v ?? "").toString())
+      .filter((v) => !!v && v !== "undefined")
+      .forEach((v) => listingIds.add(v));
+  });
+
+  const bookingsForVendor = bookings
+    .filter((b) => {
+      if (!sameTenant(b?.tenantId, tenantId)) return false;
+      const sid = (b?.serviceId || "").toString();
+      const bid = (b?.vendorId || "").toString();
+      const bEmail = normalizeEmail(b?.vendorEmail);
+      const bName = (b?.vendorName || "").toString().trim().toLowerCase();
+      return (
+        (!!sid && listingIds.has(sid)) ||
+        (!!vendorId && !!bid && bid === vendorId) ||
+        (!!vendorEmail && !!bEmail && bEmail === vendorEmail) ||
+        (!!vendorNameLc && !!bName && bName === vendorNameLc)
+      );
+    })
+    .map((b) => ({ ...b }));
+
+  res.json({
+    tenantId: normalizeTenantId(tenantId),
+    vendor: vendorRecord
+      ? {
+          id: vendorRecord.id || vendorRecord.vendorId || "",
+          vendorId: vendorId || "",
+          name: vendorNameRaw || "",
+          email: vendorEmail,
+        }
+      : {
+          id: "",
+          vendorId: vendorId || "",
+          name: vendorNameRaw || "",
+          email: vendorEmail,
+        },
+    listings,
+    bookings: bookingsForVendor,
+  });
 });
 
 /**

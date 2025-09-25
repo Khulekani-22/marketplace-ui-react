@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import appDataLocal from "../data/appData.json";
 import { useMessages } from "../context/useMessages";
+import { useAppSync } from "../context/useAppSync";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
 import { writeAuditLog } from "../lib/audit";
@@ -139,6 +140,7 @@ export default function ListingsAdminPage() {
     () => sessionStorage.getItem("tenantId") || "vendor",
     []
   );
+  const { syncNow } = useAppSync();
 
   // Working copy of FULL appData (we only edit services visually)
   const [data, setData] = useState(() => {
@@ -484,6 +486,11 @@ export default function ListingsAdminPage() {
       }
 
       await api.put(`/api/lms/publish`, { data: dataToPublish });
+      try {
+        await syncNow();
+      } catch {
+        /* best-effort */
+      }
       toastOK("Published listings to live");
       try {
         await writeAuditLog({
@@ -529,6 +536,11 @@ export default function ListingsAdminPage() {
       await refreshHistory();
       const live = await api.get(`/api/lms/live`).then((r) => r.data);
       doSetData(live);
+      try {
+        await syncNow();
+      } catch {
+        /* noop */
+      }
     } catch (e) {
       setErr(e.message || "Restore failed");
     }
@@ -1072,7 +1084,7 @@ function ServicesEditor(props) {
         content: msgModal.content,
       });
       setMsgModal((m) => ({ ...m, sending: false, done: true }));
-      try { await refreshMessages(); await syncMessagesToLive(); } catch {}
+      try { await refreshMessages({ force: true }); await syncMessagesToLive(); } catch {}
       setTimeout(() => closeMsg(), 1200);
     } catch (e) {
       setMsgModal((m) => ({ ...m, sending: false, err: e?.response?.data?.message || e?.message || "Failed to send" }));

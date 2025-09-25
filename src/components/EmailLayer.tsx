@@ -187,7 +187,7 @@ const EmailLayer = () => {
       };
       await api.post(`/api/messages/compose`, payload);
       setCompose((c) => ({ ...c, sending: false, ok: true }));
-      await refresh();
+      await refresh({ force: true });
       try { await syncMessagesToLive(); } catch {}
       setTimeout(() => closeCompose(), 1200);
     } catch (e) {
@@ -250,7 +250,7 @@ const EmailLayer = () => {
                   type='button'
                   className='btn btn-sm btn-outline-secondary'
                   onClick={() => {
-                    void refresh({ silent: true });
+                    void refresh({ silent: true, force: true });
                   }}
                   disabled={loading || refreshing}
                 >

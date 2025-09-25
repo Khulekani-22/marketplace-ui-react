@@ -37,9 +37,11 @@ export default function MySubscriptionsPage() {
       } catch (e) {
         if (!signal?.aborted) setErr(e?.message || "Failed to load subscriptions");
       } finally {
-        if (signal?.aborted) return;
-        if (silent) setRefreshing(false);
-        else setLoading(false);
+        const aborted = signal?.aborted;
+        if (!aborted) {
+          if (silent) setRefreshing(false);
+          else setLoading(false);
+        }
       }
     },
     [appData]

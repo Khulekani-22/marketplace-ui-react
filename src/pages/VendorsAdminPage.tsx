@@ -453,6 +453,24 @@ export default function VendorsAdminPage() {
     setText(JSON.stringify(prev, null, 2));
   }
 
+  const refreshHistory = useCallback(async () => {
+    try {
+      const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
+        headers: {
+          "x-tenant-id": tenantId,
+          "cache-control": "no-cache",
+        },
+        suppressToast: true,
+        suppressErrorLog: true,
+      } as any);
+      const items = Array.isArray(hx?.items) ? hx.items : [];
+      setHistory(items);
+      localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
+    } catch {
+      // ignore
+    }
+  }, [tenantId]);
+
   const loadDirectory = useCallback(
     async ({ silent }: { silent?: boolean } = {}) => {
       if (silent) setRefreshing(true);
@@ -522,24 +540,6 @@ export default function VendorsAdminPage() {
   useEffect(() => {
     loadDirectory({ silent: false }).catch(() => void 0);
   }, [loadDirectory]);
-
-  async function refreshHistory() {
-    try {
-      const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
-        headers: {
-          "x-tenant-id": tenantId,
-          "cache-control": "no-cache",
-        },
-        suppressToast: true,
-        suppressErrorLog: true,
-      } as any);
-      const items = Array.isArray(hx?.items) ? hx.items : [];
-      setHistory(items);
-      localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
-    } catch {
-      // ignore
-    }
-  }
 
   async function handlePublish() {
     setErr(null);
