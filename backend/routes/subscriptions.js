@@ -90,12 +90,25 @@ function markBookingStatus({ data, subscription, serviceId, customerEmail, statu
 
 const router = Router();
 
+function normalizeTenantId(value) {
+  const raw = (value || "public").toString().trim();
+  return raw === "vendor" ? "public" : raw;
+}
+
+function tenantMatches(entryTenant, currentTenant, { treatPublicAsWildcard = false } = {}) {
+  const entry = normalizeTenantId(entryTenant);
+  const current = normalizeTenantId(currentTenant);
+  if (treatPublicAsWildcard && current === "public") return true;
+  if (entry === current) return true;
+  if (treatPublicAsWildcard && entry === "public") return true;
+  return false;
+}
+
 // List current user's subscriptions for this tenant
 router.get("/my", firebaseAuthRequired, (req, res) => {
   const email = (req.user?.email || "").toLowerCase();
-  const tenantId = req.tenant.id;
   const { subscriptions = [] } = getData();
-  const items = subscriptions.filter((s) => (s.tenantId ?? "public") === tenantId && (s.email || "").toLowerCase() === email && !s.canceledAt);
+  const items = subscriptions.filter((s) => (s.email || "").toLowerCase() === email && !s.canceledAt);
   res.json(items);
 });
 
@@ -103,14 +116,14 @@ router.get("/my", firebaseAuthRequired, (req, res) => {
 // Returns minimal info: id, email, uid, createdAt. Requires auth.
 router.get("/service/:id", firebaseAuthRequired, (req, res) => {
   const serviceId = String(req.params.id || "");
-  const tenantId = req.tenant.id;
+  const tenantId = normalizeTenantId(req.tenant.id);
   const q = (req.query.q || "").toString().trim().toLowerCase();
   const page = Math.max(1, parseInt(req.query.page || "1", 10));
   const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize || "10", 10)));
   if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
   const { subscriptions = [] } = getData();
   let rows = subscriptions
-    .filter((s) => (s.tenantId ?? "public") === tenantId && (s.type || "service") === "service" && String(s.serviceId || "") === serviceId && !s.canceledAt)
+    .filter((s) => tenantMatches(s.tenantId, tenantId) && (s.type || "service") === "service" && String(s.serviceId || "") === serviceId && !s.canceledAt)
     .map((s) => ({ id: s.id, email: (s.email || "").toLowerCase(), uid: s.uid, createdAt: s.createdAt }));
   if (q) rows = rows.filter((r) => r.email.includes(q));
   const total = rows.length;
@@ -122,7 +135,7 @@ router.get("/service/:id", firebaseAuthRequired, (req, res) => {
 // Subscribe to a service/listing
 router.post("/service", firebaseAuthRequired, (req, res) => {
   const serviceId = String(req.body?.serviceId || "").trim();
-  const tenantId = req.tenant.id;
+  const tenantScope = normalizeTenantId(req.tenant.id);
   const email = (req.user?.email || "").toLowerCase();
   const uid = req.user?.uid || "";
   const displayName = req.user?.displayName || (email ? email.split("@")[0] : "");
@@ -133,19 +146,21 @@ router.post("/service", firebaseAuthRequired, (req, res) => {
 
   let created = null;
   let serviceIsBookable = false;
+  let targetTenantId = tenantScope;
   try {
     saveData((data) => {
       data.subscriptions = Array.isArray(data.subscriptions) ? data.subscriptions : [];
-    const services = Array.isArray(data.services) ? data.services : [];
-    const svc = services.find((s) => String(s.id) === serviceId && (s.tenantId ?? "public") === tenantId) || services.find((s) => String(s.id) === serviceId);
-    if (!svc) {
-      throw Object.assign(new Error("Service listing not found"), { statusCode: 404 });
-    }
+      const services = Array.isArray(data.services) ? data.services : [];
+      const svc = services.find((s) => String(s.id) === serviceId);
+      if (!svc) {
+        throw Object.assign(new Error("Service listing not found"), { statusCode: 404 });
+      }
+      targetTenantId = normalizeTenantId(svc.tenantId || tenantScope);
       const vendorId = svc ? String(svc.vendorId || svc.id || "") : "";
-    serviceIsBookable = isServiceListing(svc);
+      serviceIsBookable = isServiceListing(svc);
 
-    if (serviceIsBookable) {
-      if (!isValidDate(requestedDate)) {
+      if (serviceIsBookable) {
+        if (!isValidDate(requestedDate)) {
         throw Object.assign(new Error("Invalid or missing scheduledDate"), { statusCode: 400 });
       }
       if (!isValidSlot(requestedSlot)) {
@@ -154,17 +169,21 @@ router.post("/service", firebaseAuthRequired, (req, res) => {
     }
 
     // Idempotent/reactivation: unique key by (tenantId, email, type=service, serviceId)
-    const exists = data.subscriptions.find((x) => (x.tenantId ?? "public") === tenantId && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
-    const nowIso = new Date().toISOString();
-    if (exists) {
-      if (exists.canceledAt) {
-        exists.canceledAt = undefined;
-        exists.createdAt = nowIso;
-      }
-      exists.tenantId = tenantId;
-      if (serviceIsBookable) {
-        exists.scheduledDate = requestedDate;
-        exists.scheduledSlot = requestedSlot;
+      const exists = data.subscriptions.find((x) => {
+        const scope = normalizeTenantId(x.tenantId);
+        const matchTenant = scope === targetTenantId || scope === "public";
+        return matchTenant && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId;
+      });
+      const nowIso = new Date().toISOString();
+      if (exists) {
+        if (exists.canceledAt) {
+          exists.canceledAt = undefined;
+          exists.createdAt = nowIso;
+        }
+        exists.tenantId = targetTenantId;
+        if (serviceIsBookable) {
+          exists.scheduledDate = requestedDate;
+          exists.scheduledSlot = requestedSlot;
       }
       created = exists;
       if (serviceIsBookable) {
@@ -182,16 +201,16 @@ router.post("/service", firebaseAuthRequired, (req, res) => {
       return data;
     }
 
-    const obj = {
-      id: uuid(),
-      type: "service",
-      serviceId,
-      vendorId,
-      email,
-      uid,
-      tenantId,
-      createdAt: nowIso,
-    };
+      const obj = {
+        id: uuid(),
+        type: "service",
+        serviceId,
+        vendorId,
+        email,
+        uid,
+        tenantId: targetTenantId,
+        createdAt: nowIso,
+      };
     if (serviceIsBookable) {
       obj.scheduledDate = requestedDate;
       obj.scheduledSlot = requestedSlot;
@@ -229,14 +248,14 @@ router.post("/service", firebaseAuthRequired, (req, res) => {
 // Unsubscribe from a service/listing
 router.delete("/service", firebaseAuthRequired, (req, res) => {
   const serviceId = String((req.body?.serviceId || req.query?.serviceId || "")).trim();
-  const tenantId = req.tenant.id;
+  const tenantId = normalizeTenantId(req.tenant.id);
   const email = (req.user?.email || "").toLowerCase();
   if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
 
   let removed = false;
   saveData((data) => {
     const before = Array.isArray(data.subscriptions) ? data.subscriptions : [];
-    const matches = before.filter((x) => (x.tenantId ?? "public") === tenantId && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
+    const matches = before.filter((x) => tenantMatches(x.tenantId, tenantId, { treatPublicAsWildcard: true }) && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
     const after = before.filter((x) => !matches.includes(x));
     removed = after.length !== before.length;
     data.subscriptions = after;
@@ -254,13 +273,13 @@ router.delete("/service", firebaseAuthRequired, (req, res) => {
 // Cancel (soft) a subscription to preserve revenue history
 router.put("/service/cancel", firebaseAuthRequired, (req, res) => {
   const serviceId = String(req.body?.serviceId || req.query?.serviceId || "").trim();
-  const tenantId = req.tenant.id;
+  const tenantId = normalizeTenantId(req.tenant.id);
   const email = (req.user?.email || "").toLowerCase();
   if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
   let updated = null;
   saveData((data) => {
     const list = Array.isArray(data.subscriptions) ? data.subscriptions : [];
-    const idx = list.findIndex((x) => (x.tenantId ?? "public") === tenantId && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
+    const idx = list.findIndex((x) => tenantMatches(x.tenantId, tenantId, { treatPublicAsWildcard: true }) && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
     if (idx >= 0) {
       list[idx].canceledAt = new Date().toISOString();
       updated = list[idx];

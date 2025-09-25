@@ -17,6 +17,21 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function listVendors(data = {}) {
+  const startups = Array.isArray(data.startups) ? data.startups : [];
+  const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+  if (!startups.length && !vendors.length) return [];
+  const merged = [...vendors, ...startups];
+  const byKey = new Map();
+  merged.forEach((entry) => {
+    if (!entry || typeof entry !== "object") return;
+    const key = String(entry.vendorId || entry.id || entry.email || entry.contactEmail || "");
+    if (!key) return;
+    if (!byKey.has(key)) byKey.set(key, entry);
+  });
+  return Array.from(byKey.values());
+}
+
 // POST /api/messages
 // Body: { listingId, listingTitle, vendorId, vendorEmail?, subject, content }
 // Appends a message to a per-listing feedback thread (creates if missing)
@@ -54,7 +69,7 @@ router.post("/", firebaseAuthRequired, (req, res) => {
       ));
 
       // Resolve vendor info from data if not provided
-      const vendors = Array.isArray(data.startups) ? data.startups : [];
+      const vendors = listVendors(data);
       const services = Array.isArray(data.services) ? data.services : [];
       let vendorObj = vendors.find((v) => String(v.vendorId || v.id) === String(vendorId));
       if (!vendorObj) {
@@ -125,10 +140,32 @@ router.post("/", firebaseAuthRequired, (req, res) => {
   }
 });
 
+router.post("/sync", firebaseAuthRequired, (req, res) => {
+  try {
+    const email = normalizeEmail(req.user?.email);
+    if (!email) {
+      return res.status(401).json({ status: "error", message: "Unauthorized" });
+    }
+
+    const data = getData();
+    const isAdmin = isAdminRequest(req);
+    const vendor = resolveVendorByIdentity(data, email, req.user?.uid);
+
+    if (!isAdmin && !vendor) {
+      return res.status(403).json({ status: "error", message: "Forbidden: admin or vendor required" });
+    }
+
+    saveData((doc) => doc);
+    return res.json({ ok: true, role: isAdmin ? "admin" : "vendor" });
+  } catch (e) {
+    return res.status(500).json({ status: "error", message: e?.message || "Failed to sync messages" });
+  }
+});
+
 function resolveVendorByIdentity(data, email, uid) {
   const e = normalizeEmail(email);
-  const startups = Array.isArray(data.startups) ? data.startups : [];
-  return startups.find(
+  const vendors = listVendors(data);
+  return vendors.find(
     (v) => normalizeEmail(v.email || v.contactEmail) === e || (uid && (v.ownerUid === uid || v.uid === uid))
   );
 }
@@ -222,7 +259,7 @@ router.post("/reply", firebaseAuthRequired, (req, res) => {
       const vendor = resolveVendorByIdentity(data, email, req.user?.uid);
       const vendorIdFromUser = vendor?.vendorId || vendor?.id || "";
       if (!canAccessThread(t, { isAdmin, email, vendorId: vendorIdFromUser })) return data; // ignore if not allowed
-      const vendors = Array.isArray(data.startups) ? data.startups : [];
+      const vendors = listVendors(data);
       let v = vendors.find((v) => normalizeEmail(v.email || v.contactEmail) === senderEmail);
       const vendorId = v?.vendorId || v?.id || (t?.context?.vendorId || vendorIdFromUser || "vendor");
       const vendorName = v?.companyName || v?.name || vendorId;
@@ -285,7 +322,8 @@ router.post("/compose", firebaseAuthRequired, (req, res) => {
     if (!content) return res.status(400).json({ status: "error", message: "Missing content" });
 
     const tenantId = req.tenant?.id || "public";
-    const { services = [], startups = [], messageThreads = [], subscriptions = [] } = getData();
+    const { services = [], messageThreads = [], subscriptions = [], vendors: vendorsRaw = [], startups = [] } = getData();
+    const vendors = listVendors({ vendors: vendorsRaw, startups });
     const now = nowIso();
 
     if (type === "vendor_admin") {
@@ -293,7 +331,7 @@ router.post("/compose", firebaseAuthRequired, (req, res) => {
       if (!id) return res.status(400).json({ status: "error", message: "Missing listingId" });
       const svc = services.find((s) => String(s.id) === id);
       if (!svc) return res.status(404).json({ status: "error", message: "Listing not found" });
-      const vObj = startups.find((v) => String(v.vendorId || v.id) === String(svc?.vendorId || ""));
+      const vObj = vendors.find((v) => String(v.vendorId || v.id) === String(svc?.vendorId || ""));
       if (!vObj) return res.status(400).json({ status: "error", message: "Vendor not found for listing" });
       const vId = String(vObj?.vendorId || vObj?.id || "vendor");
       const vName = vObj?.companyName || vObj?.name || "Vendor";
@@ -324,7 +362,7 @@ router.post("/compose", firebaseAuthRequired, (req, res) => {
       const svc = services.find((s) => String(s.id) === sid);
       if (!svc) return res.status(404).json({ status: "error", message: "Service not found" });
       const vendorId = String(svc.vendorId || "");
-      const vendor = startups.find((v) => String(v.vendorId || v.id) === vendorId) || null;
+      const vendor = vendors.find((v) => String(v.vendorId || v.id) === vendorId) || null;
 
       // Determine sender and subscriber based on mode
       const subscriberEmail = type === 'vendor_subscriber' ? normalizeEmail(req.user?.email) : subscriberEmailParam;

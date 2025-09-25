@@ -8,9 +8,49 @@ import appDataLocal from "../data/appData.json";
 import { AppSyncContext } from "./appSyncContext";
 import { toast } from "react-toastify";
 
+const LS_APP_DATA_KEY = "sl_app_data_cache_v1";
+
+function safeParse(raw: string | null) {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed === "object" && parsed ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function readCachedAppData() {
+  if (typeof window === "undefined") return null;
+  try {
+    return safeParse(window.localStorage.getItem(LS_APP_DATA_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedAppData(payload: unknown) {
+  if (typeof window === "undefined") return;
+  try {
+    if (!payload) {
+      window.localStorage.removeItem(LS_APP_DATA_KEY);
+      return;
+    }
+    window.localStorage.setItem(LS_APP_DATA_KEY, JSON.stringify(payload));
+  } catch {
+    // Best-effort cache; ignore quota errors
+  }
+}
+
+const initialAppData = (() => {
+  const cached = readCachedAppData();
+  if (cached) return cached;
+  return appDataLocal || null;
+})();
+
 export function AppSyncProvider({ children }) {
   const location = useLocation();
-  const [appData, setAppData] = useState(null);
+  const [appData, setAppData] = useState<any>(initialAppData);
   const [appDataLoading, setAppDataLoading] = useState(false);
   const [appDataError, setAppDataError] = useState("");
   const [role, setRole] = useState(() => sessionStorage.getItem("role") || "member");
@@ -52,10 +92,15 @@ export function AppSyncProvider({ children }) {
         suppressToast: true,
         suppressErrorLog: true,
       } as any);
-      setAppData(data || null);
+      const next = data || null;
+      setAppData(next);
+      writeCachedAppData(next);
     } catch (e) {
-      // API failed: best-effort fallback to local bundled appData.json
-      setAppData(appDataLocal || null);
+      // API failed: best-effort fallback to cached data or bundled appData.json
+      const cached = readCachedAppData();
+      const fallback = cached || appDataLocal || null;
+      setAppData(fallback);
+      if (fallback) writeCachedAppData(fallback);
       const err: any = e;
       const isNetwork = err?.code === "ERR_NETWORK";
       if (isNetwork) {

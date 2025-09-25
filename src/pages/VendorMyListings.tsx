@@ -9,6 +9,21 @@ import { api } from "../lib/api";
 import { fetchMyVendorListings } from "../lib/listings";
 import appDataLocal from "../data/appData.json";
 
+function normalizeTenant(id?: string | null) {
+  if (!id) return "public";
+  const v = id.toString().toLowerCase();
+  return v === "vendor" ? "public" : v;
+}
+
+function tenantMatches(entryTenant?: string | null, currentTenant?: string | null) {
+  const entry = normalizeTenant(entryTenant);
+  const current = normalizeTenant(currentTenant);
+  if (entry === current) return true;
+  if (entry === "public") return true;
+  if (current === "public") return true;
+  return false;
+}
+
 function StatusChip({ s }) {
   const k = (s || "unknown").toLowerCase();
   const map = {
@@ -71,18 +86,19 @@ export default function VendorMyListings() {
     return cursor && typeof cursor === "object" ? cursor : null;
   }
 
-  const fallbackFromAppData = useCallback(
+  const deriveFallbackData = useCallback(
     (activeVendor: any) => {
+      if (!activeVendor) return { listings: [], bookings: [] };
       const liveDoc = unwrapAppData(appData) || unwrapAppData(appDataLocal) || appDataLocal;
-      const tenantKey = tenantId === "vendor" ? "public" : tenantId;
+      const tenantKey = normalizeTenant(tenantId);
       const all = Array.isArray(liveDoc?.services) ? liveDoc.services : [];
       const allBookingsRaw = Array.isArray(liveDoc?.bookings) ? liveDoc.bookings : [];
-      const scopedBookings = allBookingsRaw.filter((b) => (b.tenantId ?? "public") === tenantKey);
+      const scopedBookings = allBookingsRaw.filter((b) => tenantMatches(b?.tenantId, tenantKey));
       const vendorId = String(activeVendor?.vendorId || "");
       const email = String(activeVendor?.email || activeVendor?.contactEmail || "").toLowerCase();
       const name = String(activeVendor?.name || activeVendor?.companyName || "").toLowerCase();
       const mine = all.filter((s) => {
-        const sameTenant = (s.tenantId ?? "public") === tenantKey;
+        const sameTenant = tenantMatches(s?.tenantId, tenantKey);
         if (!sameTenant) return false;
         const sid = String(s.vendorId || "");
         const svcEmail = String(s.contactEmail || s.email || "").toLowerCase();
@@ -106,8 +122,7 @@ export default function VendorMyListings() {
         return idSet.has(sid) || vendorMatch || emailMatch || nameMatch;
       });
 
-      setItems(mine);
-      setBookings(bookingsForVendor);
+      return { listings: mine, bookings: bookingsForVendor };
     },
     [appData, tenantId]
   );
@@ -144,13 +159,31 @@ export default function VendorMyListings() {
 
         const { listings, bookings } = await fetchMyVendorListings({ signal });
         if (signal?.aborted) return;
-        setItems(Array.isArray(listings) ? listings : []);
-        setBookings(Array.isArray(bookings) ? bookings : []);
+        const normalizedListings = Array.isArray(listings) ? listings : [];
+        const normalizedBookings = Array.isArray(bookings) ? bookings : [];
+        if (!normalizedListings.length) {
+          const fallback = deriveFallbackData(activeVendorRef);
+          if (fallback.listings.length) {
+            setItems(fallback.listings);
+            setBookings(fallback.bookings);
+            if (!silent) {
+              setErr("Showing cached listings until the live catalog updates.");
+            }
+          } else {
+            setItems([]);
+            setBookings([]);
+          }
+        } else {
+          setItems(normalizedListings);
+          setBookings(normalizedBookings);
+        }
       } catch (e: any) {
         if (signal?.aborted) return;
         const code = e?.code;
         if (code === "ERR_NETWORK") {
-          fallbackFromAppData(activeVendorRef);
+          const fallback = deriveFallbackData(activeVendorRef);
+          setItems(fallback.listings);
+          setBookings(fallback.bookings);
           setErr("Showing cached data while the network is unavailable.");
         } else {
           setErr(e?.response?.data?.message || e?.message || "Failed to load listings");
@@ -161,7 +194,7 @@ export default function VendorMyListings() {
         markBusy(false);
       }
     },
-    [ensureVendorId, fallbackFromAppData, vendor, vendorLoading]
+    [deriveFallbackData, ensureVendorId, vendor, vendorLoading]
   );
 
   useEffect(() => {

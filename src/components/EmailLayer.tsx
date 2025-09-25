@@ -39,6 +39,8 @@ const EmailLayer = () => {
 
   const userEmail = (auth.currentUser?.email || sessionStorage.getItem('userEmail') || "").toLowerCase();
   const role = sessionRole;
+  const isAdmin = role === 'admin';
+  const canSync = isAdmin || !!vendor?.vendorId;
   const myVendorId = vendor?.vendorId || vendor?.id || '';
   const mySenderIds = useMemo(() => {
     const ids = [];
@@ -90,6 +92,11 @@ const EmailLayer = () => {
   });
 
   async function handleSyncNow() {
+    if (!canSync) {
+      setSyncErr('Vendor or admin access required to sync.');
+      setTimeout(() => setSyncErr(''), 2500);
+      return;
+    }
     setSyncBusy(true); setSyncErr(""); setSyncOk(false);
     try {
       const ok = await syncMessagesToLive();
@@ -140,8 +147,24 @@ const EmailLayer = () => {
         const subs = await api.get(`/api/subscriptions/my`).then((r) => Array.isArray(r.data) ? r.data : []);
         const withTitles = subs.map((s) => ({ ...s, title: (services.find((x) => String(x.id) === String(s.serviceId))?.title) || s.serviceId }));
         setMySubs(withTitles);
-      } catch {
-        setMySubs([]);
+      } catch (err) {
+        const code = (err as any)?.code;
+        if (code === "ERR_NETWORK") {
+          const tenantKey = (tenantId === 'vendor' ? 'public' : tenantId).toString().toLowerCase();
+          const fallbackSubs = Array.isArray(live?.subscriptions) ? live.subscriptions : [];
+          const owned = fallbackSubs.filter((s) => {
+            const sameTenant = ((s?.tenantId ?? 'public').toString().toLowerCase()) === tenantKey;
+            const email = (s?.email || '').toLowerCase();
+            return sameTenant && email === userEmail;
+          });
+          const withTitles = owned.map((s) => ({
+            ...s,
+            title: (services.find((x) => String(x.id) === String(s.serviceId))?.title) || s.serviceId,
+          }));
+          setMySubs(withTitles);
+        } else {
+          setMySubs([]);
+        }
       }
     } catch {
       setMyListings([]);
@@ -260,7 +283,13 @@ const EmailLayer = () => {
                 <button type='button' className='btn btn-sm btn-outline-secondary' onClick={handleMarkAllRead} disabled={allRead}>
                   <Icon icon='gravity-ui:envelope-open' className='me-1' /> Mark all as read
                 </button>
-                <button type='button' className='btn btn-sm btn-outline-secondary' onClick={handleSyncNow} disabled={syncBusy} title='Write messages to server appData.json'>
+                <button
+                  type='button'
+                  className='btn btn-sm btn-outline-secondary'
+                  onClick={handleSyncNow}
+                  disabled={syncBusy || !canSync}
+                  title={canSync ? 'Write messages to server appData.json' : 'Vendor or admin access required'}
+                >
                   <Icon icon='mdi:cloud-upload-outline' className='me-1' /> {syncBusy ? 'Syncing…' : 'Sync Now'}
                 </button>
                 <div className='d-flex align-items-center gap-2'>

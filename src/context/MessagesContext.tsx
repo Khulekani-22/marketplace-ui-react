@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { api } from "../lib/api";
 import { publishWithVerifyAndFallback, getLive } from "../lib/lmsClient";
 import { MessagesContext } from "./messagesContext";
+import appDataLocal from "../data/appData.json";
 
 const AUTO_POLL_INTERVAL_MS = 4 * 60 * 1000;
 
@@ -24,11 +25,18 @@ export function MessagesProvider({ children }) {
 
   const syncMessagesToLive = useCallback(
     async (latestThreads?: any[]) => {
+      const tenantId = (typeof window !== 'undefined' ? sessionStorage.getItem('tenantId') : null) || 'vendor';
+      const role = (typeof window !== 'undefined' ? sessionStorage.getItem('role') : null) || 'member';
       try {
-        const tenantId = (typeof window !== 'undefined' ? sessionStorage.getItem('tenantId') : null) || 'vendor';
-        const live = await getLive({ tenantId });
-        const next = { ...live, messageThreads: Array.isArray(latestThreads) ? latestThreads : threads };
-        await publishWithVerifyAndFallback(next, { tenantId });
+        if (role === 'admin') {
+          const live = await getLive({ tenantId });
+          const next = { ...live, messageThreads: Array.isArray(latestThreads) ? latestThreads : threads };
+          await publishWithVerifyAndFallback(next, { tenantId });
+        } else {
+          await api.post(`/api/messages/sync`, {
+            threads: Array.isArray(latestThreads) ? latestThreads : threads,
+          });
+        }
         return true;
       } catch {
         return false;
@@ -37,26 +45,55 @@ export function MessagesProvider({ children }) {
     [threads]
   );
 
-  const refresh = useCallback(async ({ silent, force }: { silent?: boolean; force?: boolean } = {}) => {
-    setError(null);
-    if (silent) setRefreshing(true);
-    else setLoading(true);
-    try {
-      const params = { t: Date.now(), ...(force ? { force: "1" } : {}) };
-      const config = force
-        ? { params, headers: { "x-message-refresh": "manual" } }
-        : { params };
-      const { data } = await api.get(`/api/messages`, config);
-      const items = Array.isArray(data?.items) ? data.items : [];
-      setThreads(items);
-      try { localStorage.setItem("sl_messages_cache_v1", JSON.stringify(items)); } catch {}
-    } catch (e) {
-      setError(e?.message || "Failed to load messages");
-    } finally {
-      if (silent) setRefreshing(false);
-      else setLoading(false);
-    }
-  }, []);
+  const resolveTenantId = () => (typeof window !== "undefined" ? sessionStorage.getItem("tenantId") : null) || "vendor";
+
+  const fallbackThreadsForTenant = (tenantId: string) => {
+    const tenantKey = (tenantId === "vendor" ? "public" : tenantId).toString().toLowerCase();
+    const raw = Array.isArray(appDataLocal?.messageThreads) ? appDataLocal.messageThreads : [];
+    return raw
+      .filter((t) => {
+        const scope = (t?.tenantId ?? "public").toString().toLowerCase();
+        return scope === tenantKey;
+      })
+      .map((t) => ({ ...t }));
+  };
+
+  const refresh = useCallback(
+    async ({ silent, force }: { silent?: boolean; force?: boolean } = {}) => {
+      setError(null);
+      if (silent) setRefreshing(true);
+      else setLoading(true);
+
+      const tenantId = resolveTenantId();
+
+      try {
+        const params = { t: Date.now(), ...(force ? { force: "1" } : {}) };
+        const config = force
+          ? { params, headers: { "x-message-refresh": "manual" } }
+          : { params };
+        const { data } = await api.get(`/api/messages`, config);
+        const items = Array.isArray(data?.items) ? data.items : [];
+        setThreads(items);
+        try { localStorage.setItem("sl_messages_cache_v1", JSON.stringify(items)); } catch {}
+      } catch (e) {
+        const code = (e as any)?.code;
+        if (code === "ERR_NETWORK") {
+          const fallback = fallbackThreadsForTenant(tenantId);
+          if (fallback.length) {
+            setThreads(fallback);
+            try { localStorage.setItem("sl_messages_cache_v1", JSON.stringify(fallback)); } catch {}
+          }
+          setError("Showing cached messages while the network is unavailable.");
+        } else {
+          setError((e as any)?.message || "Failed to load messages");
+        }
+      } finally {
+        if (silent) setRefreshing(false);
+        else setLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     refresh().catch(() => void 0);
