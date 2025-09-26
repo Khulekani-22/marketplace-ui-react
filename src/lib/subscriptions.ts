@@ -13,6 +13,38 @@ type Subscription = Record<string, any> & {
   canceledAt?: string | null;
 };
 
+function createSubscriptionKey(entry: Subscription | null | undefined) {
+  if (!entry || typeof entry !== "object") return "";
+  const type = (entry.type || "service").toString();
+  const email = (entry.email || "").toLowerCase();
+  const serviceId = entry.serviceId != null ? String(entry.serviceId) : "";
+  return `${type}::${email}::${serviceId}`;
+}
+
+function sortSubscriptions(list: Subscription[]) {
+  return [...list].sort((a, b) => {
+    const ta = Date.parse(a?.createdAt || "") || 0;
+    const tb = Date.parse(b?.createdAt || "") || 0;
+    return tb - ta;
+  });
+}
+
+function mergeSubscriptions(primary: Subscription[], secondary: Subscription[]) {
+  if (!secondary?.length) return primary;
+  const map = new Map<string, Subscription>();
+  primary.forEach((item) => {
+    const key = createSubscriptionKey(item);
+    if (!key) return;
+    map.set(key, item);
+  });
+  secondary.forEach((item) => {
+    const key = createSubscriptionKey(item);
+    if (!key || map.has(key)) return;
+    map.set(key, item);
+  });
+  return Array.from(map.values());
+}
+
 function safeParse(raw: string | null): Subscription[] {
   if (!raw) return [];
   try {
@@ -103,20 +135,22 @@ function removeFromCache(key: string | null, serviceId: string | number) {
 
 export async function fetchMySubscriptions() {
   const cacheKey = getIdentityKey();
+  const cached = readCache(cacheKey);
   try {
     const { data } = await api.get("/api/subscriptions/my");
     const rawList = Array.isArray(data) ? data : [];
     const normalized = rawList.map(normalizeSubscription).filter(Boolean) as Subscription[];
-    if (cacheKey) writeCache(cacheKey, normalized);
-    return normalized;
+    const merged = mergeSubscriptions(normalized, cached);
+    const ordered = sortSubscriptions(merged);
+    if (cacheKey) writeCache(cacheKey, ordered);
+    return ordered;
   } catch (e: any) {
     const status = e?.response?.status;
     if (status === 401 || status === 403 || status === 404) {
       clearCache(cacheKey);
       return [];
     }
-    const cached = readCache(cacheKey);
-    if (cached.length) return cached;
+    if (cached.length) return sortSubscriptions(cached);
     return [];
   }
 }
