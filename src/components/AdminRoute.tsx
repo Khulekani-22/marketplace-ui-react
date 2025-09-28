@@ -17,12 +17,22 @@ export default function AdminRoute({ children }) {
         return;
       }
       try {
-        const email = user.email;
-        const { data } = await api.get("/api/users/me", { params: { email } });
-        const ok = (data?.role || sessionStorage.getItem("role")) === "admin";
+        const { data } = await api.get("/api/me");
+        const role = data?.role || sessionStorage.getItem("role") || "member";
+        const tenant = data?.tenantId || sessionStorage.getItem("tenantId") || "vendor";
+        const email = data?.email || user.email || null;
+        const uid = data?.uid || user.uid || null;
+        sessionStorage.setItem("role", role);
+        sessionStorage.setItem("tenantId", tenant);
+        if (email) sessionStorage.setItem("userEmail", email);
+        else sessionStorage.removeItem("userEmail");
+        if (uid) sessionStorage.setItem("userId", uid);
+        else sessionStorage.removeItem("userId");
+        const ok = role === "admin";
         if (!cancelled) setState({ loading: false, ok, authed: true });
       } catch {
-        if (!cancelled) setState({ loading: false, ok: false, authed: true });
+        const authed = !!auth.currentUser;
+        if (!cancelled) setState({ loading: false, ok: false, authed });
       }
     }
     check();

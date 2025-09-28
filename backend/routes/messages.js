@@ -271,23 +271,32 @@ router.post("/reply", firebaseAuthRequired, (req, res) => {
   const { threadId = "", content: raw = "" } = req.body || {};
   const content = (raw || "").toString().trim();
   if (!threadId || !content) return res.status(400).json({ status: "error", message: "Missing threadId or content" });
+  const tenantId = req.tenant?.id || "public";
   const senderEmail = normalizeEmail(req.user?.email);
   const senderIsAdmin = isAdminRequest(req);
   try {
     saveData((data) => {
       const threads = Array.isArray(data.messageThreads) ? data.messageThreads : [];
       const idx = threads.findIndex((t) => t.id === String(threadId));
-      if (idx === -1) return data;
-      const t = threads[idx];
-      const isAdmin = isAdminRequest(req);
+      if (idx === -1) {
+        throw Object.assign(new Error("Thread not found"), { status: 404 });
+      }
+      const thread = threads[idx];
+      if ((thread?.tenantId || "public") !== tenantId) {
+        throw Object.assign(new Error("Thread not found"), { status: 404 });
+      }
       const email = normalizeEmail(req.user?.email);
       const vendor = resolveVendorByIdentity(data, email, req.user?.uid);
       const vendorIdFromUser = vendor?.vendorId || vendor?.id || "";
-      if (!canAccessThread(t, { isAdmin, email, vendorId: vendorIdFromUser })) return data; // ignore if not allowed
+      if (!canAccessThread(thread, { isAdmin: senderIsAdmin, email, vendorId: vendorIdFromUser })) {
+        throw Object.assign(new Error("Forbidden"), { status: 403 });
+      }
+
       const vendors = listVendors(data);
-      let v = vendors.find((v) => normalizeEmail(v.email || v.contactEmail) === senderEmail);
-      const vendorId = v?.vendorId || v?.id || (t?.context?.vendorId || vendorIdFromUser || "vendor");
-      const vendorName = v?.companyName || v?.name || vendorId;
+      const vendorProfile = vendors.find((v) => normalizeEmail(v.email || v.contactEmail) === senderEmail);
+      const vendorId = vendorProfile?.vendorId || vendorProfile?.id || (thread?.context?.vendorId || vendorIdFromUser || "vendor");
+      const vendorName = vendorProfile?.companyName || vendorProfile?.name || vendorId;
+      const now = nowIso();
       const message = {
         id: `m${Date.now()}`,
         senderId: senderIsAdmin ? "admin" : `vendor:${vendorId}`,
@@ -295,18 +304,21 @@ router.post("/reply", firebaseAuthRequired, (req, res) => {
         senderAvatar: "",
         senderRole: senderIsAdmin ? "Admin" : "Vendor",
         content,
-        date: nowIso(),
+        date: now,
       };
-      t.messages = Array.isArray(t.messages) ? t.messages : [];
-      t.messages.push(message);
-      t.lastMessage = { snippet: content.slice(0, 160), date: nowIso() };
-      t.read = false;
-      threads[idx] = t;
+
+      thread.messages = Array.isArray(thread.messages) ? thread.messages : [];
+      thread.messages.push(message);
+      thread.lastMessage = { snippet: content.slice(0, 160), date: now };
+      thread.read = false;
+      threads[idx] = thread;
       data.messageThreads = threads;
       return data;
     });
     res.json({ ok: true });
   } catch (e) {
+    if (e?.status === 404) return res.status(404).json({ status: "error", message: e.message || "Thread not found" });
+    if (e?.status === 403) return res.status(403).json({ status: "error", message: e.message || "Forbidden" });
     res.status(500).json({ status: "error", message: e?.message || "Failed to reply" });
   }
 });
@@ -315,22 +327,34 @@ router.post("/reply", firebaseAuthRequired, (req, res) => {
 router.post("/read", firebaseAuthRequired, (req, res) => {
   const { threadId = "", read = true } = req.body || {};
   if (!threadId) return res.status(400).json({ status: "error", message: "Missing threadId" });
+  const tenantId = req.tenant?.id || "public";
   try {
-    const updated = saveData((data) => {
+    saveData((data) => {
       const threads = Array.isArray(data.messageThreads) ? data.messageThreads : [];
       const idx = threads.findIndex((t) => t.id === String(threadId));
-      if (idx === -1) return data;
+      if (idx === -1) {
+        throw Object.assign(new Error("Thread not found"), { status: 404 });
+      }
+      const thread = threads[idx];
+      if ((thread?.tenantId || "public") !== tenantId) {
+        throw Object.assign(new Error("Thread not found"), { status: 404 });
+      }
       const isAdmin = isAdminRequest(req);
       const email = normalizeEmail(req.user?.email);
       const vendor = resolveVendorByIdentity(data, email, req.user?.uid);
       const vendorId = vendor?.vendorId || vendor?.id || "";
-      if (!canAccessThread(threads[idx], { isAdmin, email, vendorId })) return data;
-      threads[idx] = { ...threads[idx], read: !!read };
+      if (!canAccessThread(thread, { isAdmin, email, vendorId })) {
+        throw Object.assign(new Error("Forbidden"), { status: 403 });
+      }
+
+      threads[idx] = { ...thread, read: !!read };
       data.messageThreads = threads;
       return data;
     });
     res.json({ ok: true });
   } catch (e) {
+    if (e?.status === 404) return res.status(404).json({ status: "error", message: e.message || "Thread not found" });
+    if (e?.status === 403) return res.status(403).json({ status: "error", message: e.message || "Forbidden" });
     res.status(500).json({ status: "error", message: e?.message || "Failed to update read" });
   }
 });

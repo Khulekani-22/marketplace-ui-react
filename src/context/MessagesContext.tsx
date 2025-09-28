@@ -5,6 +5,7 @@ import { getLive } from "../lib/lmsClient";
 import { MessagesContext } from "./messagesContext";
 import appDataLocal from "../data/appData.json";
 import { auth } from "../lib/firebase";
+import { onIdTokenChanged } from "firebase/auth";
 
 const STORAGE_KEY = "sl_messages_cache_v1";
 
@@ -29,6 +30,8 @@ const persistCachedThreads = (items: any[]) => {
 const AUTO_POLL_INTERVAL_MS = 4 * 60 * 1000;
 const VENDOR_PROFILE_KEY = "vendor_profile_v3";
 
+const resolveTenantId = () => (typeof window !== "undefined" ? sessionStorage.getItem("tenantId") : null) || "vendor";
+
 export function MessagesProvider({ children }) {
   const [threads, setThreads] = useState(() => readCachedThreads());
   const [loading, setLoading] = useState(false);
@@ -39,6 +42,8 @@ export function MessagesProvider({ children }) {
   const syncingRef = useRef(false);
   const threadsRef = useRef(threads);
   const refreshSeq = useRef(0);
+  const authUidRef = useRef<string | null>(auth.currentUser?.uid || null);
+  const tenantWatchRef = useRef(resolveTenantId());
 
   useEffect(() => {
     threadsRef.current = threads;
@@ -167,8 +172,6 @@ export function MessagesProvider({ children }) {
     return threadsRef.current.length > 0;
   }, []);
 
-  const resolveTenantId = () => (typeof window !== "undefined" ? sessionStorage.getItem("tenantId") : null) || "vendor";
-
   const fallbackThreadsForTenant = (tenantId: string) => {
     const tenantKey = (tenantId === "vendor" ? "public" : tenantId).toString().toLowerCase();
     const raw = Array.isArray(appDataLocal?.messageThreads) ? appDataLocal.messageThreads : [];
@@ -266,6 +269,27 @@ export function MessagesProvider({ children }) {
       clearInterval(autosyncRef.current);
     };
   }, [refresh, syncMessagesToLive]);
+
+  useEffect(() => {
+    const unsub = onIdTokenChanged(auth, (user) => {
+      const uid = user?.uid || null;
+      if (authUidRef.current === uid) return;
+      authUidRef.current = uid;
+      if (!uid) return;
+      refresh({ force: true, silent: true }).catch(() => void 0);
+    });
+    return () => unsub?.();
+  }, [refresh]);
+
+  useEffect(() => {
+    const watcher = setInterval(() => {
+      const nextTenant = resolveTenantId();
+      if (tenantWatchRef.current === nextTenant) return;
+      tenantWatchRef.current = nextTenant;
+      refresh({ force: true, silent: true }).catch(() => void 0);
+    }, 1000);
+    return () => clearInterval(watcher);
+  }, [refresh]);
 
   const unreadCount = useMemo(() => threads.filter((t) => !t.read).length, [threads]);
   const latestFive = useMemo(() => threads.slice(0, 5), [threads]);

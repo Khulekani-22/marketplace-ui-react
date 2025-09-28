@@ -29,18 +29,27 @@ export default function VendorRoute({ children }) {
       }
 
       try {
-        // Best-effort authoritative check
-        const { data } = await api.get("/api/users/me", { params: { email: user.email } });
+        const { data } = await api.get("/api/me");
         const role = data?.role || ssRole || "member";
         const tenantId = data?.tenantId || ssTenant || "vendor";
+        const email = data?.email || user.email || null;
+        const uid = data?.uid || user.uid || null;
+        sessionStorage.setItem("role", role);
+        sessionStorage.setItem("tenantId", tenantId);
+        if (email) sessionStorage.setItem("userEmail", email);
+        else sessionStorage.removeItem("userEmail");
+        if (uid) sessionStorage.setItem("userId", uid);
+        else sessionStorage.removeItem("userId");
         const isAdmin = role === "admin";
         const isBasic = !isAdmin && tenantId === "basic";
         if (!cancelled) setState({ loading: false, allowed: isAdmin || !isBasic, authed: true });
       } catch {
-        // Fallback to sessionStorage
-        const isAdmin = ssRole === "admin";
-        const isBasic = !isAdmin && ssTenant === "basic";
-        if (!cancelled) setState({ loading: false, allowed: isAdmin || !isBasic, authed: true });
+        const fallbackRole = sessionStorage.getItem("role") || ssRole || "member";
+        const fallbackTenant = sessionStorage.getItem("tenantId") || ssTenant || "vendor";
+        const isAdmin = fallbackRole === "admin";
+        const isBasic = !isAdmin && fallbackTenant === "basic";
+        const authed = !!auth.currentUser;
+        if (!cancelled) setState({ loading: false, allowed: isAdmin || !isBasic, authed });
       }
     }
     check();

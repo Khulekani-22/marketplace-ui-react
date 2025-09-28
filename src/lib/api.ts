@@ -19,15 +19,14 @@ let SESSION: Session = {
   allowedTenants: [],
 };
 
-// Prefer port 5000; if unreachable, automatically fall back to 5001.
+// Prefer backend dev ports 5000 → 5001 → 5500, then fall back to 5055.
 function computeApiBases(): string[] {
   const envUrl = (import.meta as any).env?.VITE_API_URL as string | undefined;
   if (envUrl) return [envUrl];
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
   const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
   const make = (port: number) => `${protocol}//${host}:${port}`;
-  // Prefer ports in this order: 5001, 5055, then 5000 (per environment requirement)
-  return [make(5001), make(5055), make(5000)];
+  return [make(5055), make(5000), make(5001), make(5500)];
 }
 
 const CANDIDATES = computeApiBases();
@@ -155,18 +154,14 @@ export function getSession(): Session {
 
 export async function bootstrapSession(): Promise<Session> {
   try {
-    // Use either Firebase identity (via Authorization header) or fallback to email/uid in storage
-    const meHint: { email?: string; uid?: string } = {};
-    const ssEmail = sessionStorage.getItem("userEmail");
-    const ssUid = sessionStorage.getItem("userId");
-    if (ssEmail) meHint.email = ssEmail;
-    if (ssUid) meHint.uid = ssUid;
-    const { data } = await api.get<any>("/api/users/me", { params: meHint });
+    const { data } = await api.get<any>("/api/me");
     const role = data?.role || "member";
     const tenantId = data?.tenantId || "vendor";
+    const email = data?.email || auth.currentUser?.email || sessionStorage.getItem("userEmail") || null;
+    const uid = data?.uid || auth.currentUser?.uid || sessionStorage.getItem("userId") || null;
     SESSION = {
-      email: (auth.currentUser?.email || sessionStorage.getItem("userEmail") || null),
-      uid: (auth.currentUser?.uid || sessionStorage.getItem("userId") || null),
+      email,
+      uid,
       role,
       tenantId,
       allowedTenants: (data?.allowedTenants as string[]) || [tenantId].filter(Boolean),
@@ -174,9 +169,20 @@ export async function bootstrapSession(): Promise<Session> {
     // Mirror to sessionStorage for UI gating only (not as an authority)
     sessionStorage.setItem("role", role);
     sessionStorage.setItem("tenantId", tenantId);
+    if (email) sessionStorage.setItem("userEmail", email);
+    if (uid) sessionStorage.setItem("userId", uid);
     return getSession();
   } catch {
     // leave SESSION as-is; fall back to existing storage hints
+    if (!auth.currentUser) {
+      sessionStorage.removeItem("userEmail");
+      sessionStorage.removeItem("userId");
+      try {
+        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+          window.location.replace("/login");
+        }
+      } catch {}
+    }
     return getSession();
   }
 }

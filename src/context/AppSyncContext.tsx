@@ -61,26 +61,34 @@ export function AppSyncProvider({ children }) {
   const isAdmin = role === "admin";
 
   const refreshRole = useCallback(async () => {
-    const email = auth.currentUser?.email || sessionStorage.getItem("userEmail") || "";
-    const uid = auth.currentUser?.uid || sessionStorage.getItem("userId") || "";
-    if (!email && !uid) return;
+    const user = auth.currentUser;
+    if (!user) return;
     try {
-      const params = {};
-      if (email) params.email = email;
-      if (uid) params.uid = uid;
-      const { data } = await api.get("/api/users/me", {
-        params,
+      const { data } = await api.get("/api/me", {
         suppressToast: true,
         suppressErrorLog: true,
       } as any);
       const nextRole = data?.role || "member";
       const nextTenant = data?.tenantId || "vendor";
+      const email = data?.email || user.email || null;
+      const uid = data?.uid || user.uid || null;
       sessionStorage.setItem("role", nextRole);
       sessionStorage.setItem("tenantId", nextTenant);
+      if (email) sessionStorage.setItem("userEmail", email);
+      else sessionStorage.removeItem("userEmail");
+      if (uid) sessionStorage.setItem("userId", uid);
+      else sessionStorage.removeItem("userId");
       setRole(nextRole);
       setTenantId(nextTenant);
     } catch {
-      // keep prior role/tenant
+      if (!auth.currentUser) {
+        sessionStorage.removeItem("role");
+        sessionStorage.removeItem("tenantId");
+        sessionStorage.removeItem("userEmail");
+        sessionStorage.removeItem("userId");
+        setRole("member");
+        setTenantId("vendor");
+      }
     }
   }, []);
 

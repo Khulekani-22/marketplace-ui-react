@@ -140,7 +140,10 @@ export default function VendorProfilePage() {
     return draft ?? appDataLocal;
   });
 
+  const isAdmin = sessionStorage.getItem("role") === "admin";
+
   const [history, setHistory] = useState(() => {
+    if (!isAdmin) return [];
     const cache = safeParse(localStorage.getItem(LS_HISTORY_CACHE));
     return cache ?? [];
   });
@@ -212,7 +215,7 @@ export default function VendorProfilePage() {
         } catch {}
 
         doSetData(base);
-        await refreshHistory();
+        if (isAdmin) await refreshHistory();
       } catch {
         // keep local fallback
       } finally {
@@ -222,10 +225,13 @@ export default function VendorProfilePage() {
     return () => {
       alive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId]);
+  }, [tenantId, isAdmin]);
 
   async function refreshHistory() {
+    if (!isAdmin) {
+      setHistory([]);
+      return;
+    }
     try {
       const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
         headers: {
@@ -276,6 +282,10 @@ export default function VendorProfilePage() {
   }
 
   async function saveCheckpoint(messageText) {
+    if (!isAdmin) {
+      setErr("Only administrators can save checkpoints.");
+      return;
+    }
     try {
       await api.post(
         `${API_BASE}/checkpoints`,
@@ -817,60 +827,62 @@ export default function VendorProfilePage() {
               </div>
             </div>
 
-            {/* Checkpoints */}
-            <div className="card">
-              <div className="card-header fw-semibold d-flex align-items-center justify-content-between">
-                <span>Version control</span>
-              </div>
-              <div className="card-body">
-                <div className="d-flex gap-2 mb-2">
-                  <input
-                    className="form-control"
-                    placeholder="Checkpoint message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                  />
-                  <button
-                    className="btn btn-outline-primary"
-                    onClick={() => saveCheckpoint(message)}
-                    disabled={busy || showGuard}
-                  >
-                    Save checkpoint
-                  </button>
+            {/* Checkpoints - admin only */}
+            {isAdmin && (
+              <div className="card">
+                <div className="card-header fw-semibold d-flex align-items-center justify-content-between">
+                  <span>Version control</span>
                 </div>
+                <div className="card-body">
+                  <div className="d-flex gap-2 mb-2">
+                    <input
+                      className="form-control"
+                      placeholder="Checkpoint message"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                    />
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={() => saveCheckpoint(message)}
+                      disabled={busy || showGuard}
+                    >
+                      Save checkpoint
+                    </button>
+                  </div>
 
-                <div className="list-group list-group-flush">
-                  {!history?.length && (
-                    <div className="text-muted small">
-                      No checkpoints yet. Create one after saving changes.
-                    </div>
-                  )}
-                  {history?.slice(0, 6).map((ck) => (
-                    <div key={ck.id} className="list-group-item">
-                      <div className="fw-semibold">
-                        {ck.message || "(no message)"}
+                  <div className="list-group list-group-flush">
+                    {!history?.length && (
+                      <div className="text-muted small">
+                        No checkpoints yet. Create one after saving changes.
                       </div>
-                      <div className="text-muted small">{human(ck.ts)}</div>
-                      <div className="d-flex gap-2 mt-1">
-                        <a
-                          className="btn btn-sm btn-outline-secondary"
-                          href={`${API_BASE}/checkpoints/${ck.id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Download snapshot
-                        </a>
+                    )}
+                    {history?.slice(0, 6).map((ck) => (
+                      <div key={ck.id} className="list-group-item">
+                        <div className="fw-semibold">
+                          {ck.message || "(no message)"}
+                        </div>
+                        <div className="text-muted small">{human(ck.ts)}</div>
+                        <div className="d-flex gap-2 mt-1">
+                          <a
+                            className="btn btn-sm btn-outline-secondary"
+                            href={`${API_BASE}/checkpoints/${ck.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Download snapshot
+                          </a>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
 
-                <div className="form-text mt-2">
-                  Checkpoints snapshot the whole marketplace data (including
-                  your profile) on the server.
+                  <div className="form-text mt-2">
+                    Checkpoints snapshot the whole marketplace data (including
+                    your profile) on the server.
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
