@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useMessages } from "../context/useMessages";
 import { useVendor } from "../context/useVendor";
 import appDataLocal from "../data/appData.json";
@@ -36,6 +36,7 @@ const EmailLayer = () => {
   const [subsSuggest, setSubsSuggest] = useState({ q: "", page: 1, pageSize: 10, total: 0, items: [], loading: false });
   const tenantId = (typeof window !== 'undefined' ? sessionStorage.getItem('tenantId') : null) || 'vendor';
   const { appData } = useAppSync();
+  const tenantKey = useMemo(() => (tenantId === 'vendor' ? 'public' : tenantId).toString().toLowerCase(), [tenantId]);
 
   const userEmail = (auth.currentUser?.email || sessionStorage.getItem('userEmail') || "").toLowerCase();
   const role = sessionRole;
@@ -171,6 +172,36 @@ const EmailLayer = () => {
       setMySubs([]);
     }
   }
+  const fallbackSubscribersForService = useCallback(
+    (serviceId, q = '', page = 1, pageSize = 10) => {
+      if (!serviceId) return { items: [], total: 0 };
+      const live = appData || appDataLocal;
+      const raw = Array.isArray(live?.subscriptions) ? live.subscriptions : [];
+      const normalizedVendorId = vendor?.vendorId ? String(vendor.vendorId).toLowerCase() : '';
+      const search = (q || '').trim().toLowerCase();
+      const eligible = raw.filter((s) => {
+        const sameTenant = ((s?.tenantId ?? 'public').toString().toLowerCase()) === tenantKey;
+        const matchesService = String(s?.serviceId || '') === String(serviceId);
+        const matchesVendor = normalizedVendorId ? String(s?.vendorId || '').toLowerCase() === normalizedVendorId : true;
+        return sameTenant && matchesService && matchesVendor;
+      });
+      const filtered = search
+        ? eligible.filter((s) => (s?.email || '').toLowerCase().includes(search))
+        : eligible;
+      const total = filtered.length;
+      const start = Math.max(0, (Number(page) - 1) * Number(pageSize));
+      const end = start + Number(pageSize);
+      const items = filtered.slice(start, end).map((s) => ({
+        id: s.id || `${s.serviceId}-${s.email}`,
+        email: s.email,
+        tenantId: s.tenantId,
+        serviceId: s.serviceId,
+      }));
+      return { items, total };
+    },
+    [appData, tenantKey, vendor]
+  );
+
   async function loadSubscribers(serviceId, q = subsSuggest.q, page = subsSuggest.page, pageSize = subsSuggest.pageSize) {
     try {
       setSubsSuggest((s) => ({ ...s, loading: true }));
@@ -181,7 +212,12 @@ const EmailLayer = () => {
       const items = Array.isArray(data?.items) ? data.items : [];
       setSubsSuggest({ q, page: pageNum, pageSize: ps, total, items, loading: false });
     } catch {
-      setSubsSuggest((s) => ({ ...s, loading: false, items: [], total: 0 }));
+      const fallback = fallbackSubscribersForService(serviceId, q, page, pageSize);
+      setSubsSuggest((s) => (
+        fallback.total > 0
+          ? { q, page, pageSize, total: fallback.total, items: fallback.items, loading: false }
+          : { ...s, q, page, pageSize, loading: false }
+      ));
     }
   }
   useEffect(() => {

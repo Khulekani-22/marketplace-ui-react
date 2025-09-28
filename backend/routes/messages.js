@@ -83,22 +83,37 @@ router.post("/", firebaseAuthRequired, (req, res) => {
         throw Object.assign(new Error("Vendor not found for listing"), { status: 400 });
       }
       const vEmail = normalizeEmail(vendorEmail || vendorObj?.email || vendorObj?.contactEmail);
-      const vId = String(vendorId || vendorObj?.vendorId || vendorObj?.id || vEmail || "vendor");
+      const vIdRaw = vendorId || vendorObj?.vendorId || vendorObj?.id || vEmail || "vendor";
+      const vId = String(vIdRaw);
       const vName = vendorObj?.companyName || vendorObj?.name || vendorObj?.displayName || vEmail || vId || "Vendor";
 
       const participants = [
         { id: `vendor:${vId}`, name: vName, role: "Vendor" },
         adminEmail ? { id: `admin:${adminEmail}`, name: req.user?.email || "Admin", role: "Admin" } : { id: `admin`, name: "Admin", role: "Admin" },
       ];
+      const vendorEmailKey = vEmail && vEmail !== vId ? `vendor:${vEmail}` : null;
+      const participantIds = Array.from(
+        new Set([
+          ...participants.map((p) => p.id),
+          ...(vendorEmailKey ? [vendorEmailKey] : []),
+        ])
+      );
 
       const threadBase = {
         id: `t${Date.now().toString(36)}`,
         subject,
         participants,
-        participantIds: participants.map((p) => p.id),
+        participantIds,
         messages: [],
         read: false,
-        context: { type: "listing-feedback", listingId: String(listingId), listingTitle, vendorId: vId, adminEmail: adminEmail || undefined },
+        context: {
+          type: "listing-feedback",
+          listingId: String(listingId),
+          listingTitle,
+          vendorId: vId,
+          vendorEmail: vEmail || undefined,
+          adminEmail: adminEmail || undefined,
+        },
         tenantId,
       };
 
@@ -127,6 +142,13 @@ router.post("/", firebaseAuthRequired, (req, res) => {
         t.messages.push(message);
         t.lastMessage = { snippet: content.slice(0, 160), date: nowIso() };
         t.read = false;
+        const nextParticipantIds = new Set(Array.isArray(t.participantIds) ? t.participantIds : []);
+        nextParticipantIds.add(`vendor:${vId}`);
+        if (vendorEmailKey) nextParticipantIds.add(vendorEmailKey);
+        t.participantIds = Array.from(nextParticipantIds);
+        if (vEmail) {
+          t.context = { ...(t.context || {}), vendorEmail: vEmail };
+        }
         threads[idx] = t;
       }
 
@@ -177,7 +199,10 @@ function canAccessThread(t, { isAdmin, email, vendorId }) {
   const pid = Array.isArray(t.participantIds) ? t.participantIds : [];
   // Vendors may be keyed by canonical vendorId or by email (when vendorId was missing at creation time)
   const vendorKeyMatches = (id) => pid.includes(`vendor:${id}`) || ctx.vendorId === id;
-  const isVendorParticipant = (vendorId && vendorKeyMatches(String(vendorId))) || (e && vendorKeyMatches(e));
+  const vendorEmail = normalizeEmail(ctx.vendorEmail);
+  const vendorIdMatch = vendorId && vendorKeyMatches(String(vendorId));
+  const vendorEmailMatch = vendorEmail && (pid.includes(`vendor:${vendorEmail}`) || vendorEmail === e);
+  const isVendorParticipant = vendorIdMatch || vendorEmailMatch || (e && vendorKeyMatches(e));
   const isSubscriber = e && (normalizeEmail(ctx.subscriberEmail) === e || pid.includes(`user:${e}`));
   if (isAdmin) {
     // Admin can see:
@@ -191,7 +216,7 @@ function canAccessThread(t, { isAdmin, email, vendorId }) {
     return adminThread || subscriberThread || vendorOrSubscriber;
   }
   // Vendor->Admin threads are visible only to admins (senders do not see them in inbox/sent)
-  if (ctx.type === 'listing-feedback') return false;
+  if (ctx.type === 'listing-feedback') return isVendorParticipant;
   if (ctx.type === 'listing-subscriber') return isVendorParticipant || isSubscriber;
   // default: restrict to participants
   return isVendorParticipant || isSubscriber;

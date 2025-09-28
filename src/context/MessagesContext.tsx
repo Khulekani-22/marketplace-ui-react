@@ -1,49 +1,171 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { api } from "../lib/api";
-import { publishWithVerifyAndFallback, getLive } from "../lib/lmsClient";
+import { getLive } from "../lib/lmsClient";
 import { MessagesContext } from "./messagesContext";
 import appDataLocal from "../data/appData.json";
+import { auth } from "../lib/firebase";
+
+const STORAGE_KEY = "sl_messages_cache_v1";
+
+const readCachedThreads = () => {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY) || "null";
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const persistCachedThreads = (items: any[]) => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  } catch {}
+};
 
 const AUTO_POLL_INTERVAL_MS = 4 * 60 * 1000;
+const VENDOR_PROFILE_KEY = "vendor_profile_v3";
 
 export function MessagesProvider({ children }) {
-  const [threads, setThreads] = useState(() => {
-    try {
-      const cached = JSON.parse(localStorage.getItem("sl_messages_cache_v1") || "null");
-      return Array.isArray(cached) ? cached : [];
-    } catch {
-      return [];
-    }
-  });
+  const [threads, setThreads] = useState(() => readCachedThreads());
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const pollRef = useRef(null);
   const autosyncRef = useRef(null);
   const syncingRef = useRef(false);
+  const threadsRef = useRef(threads);
+  const refreshSeq = useRef(0);
 
-  const syncMessagesToLive = useCallback(
-    async (latestThreads?: any[]) => {
-      const tenantId = (typeof window !== 'undefined' ? sessionStorage.getItem('tenantId') : null) || 'vendor';
-      const role = (typeof window !== 'undefined' ? sessionStorage.getItem('role') : null) || 'member';
+  useEffect(() => {
+    threadsRef.current = threads;
+  }, [threads]);
+
+  const mapTenantOut = (id: string) => (id === "vendor" ? "public" : id);
+
+  const normalize = (value?: string | null) =>
+    typeof value === "string" ? value.trim().toLowerCase() : "";
+
+  const resolveIdentity = (tenantId: string) => {
+    const email = normalize(auth.currentUser?.email || (typeof window !== "undefined" ? sessionStorage.getItem("userEmail") : ""));
+    const uid = auth.currentUser?.uid || (typeof window !== "undefined" ? sessionStorage.getItem("userId") : "");
+    const role = (typeof window !== "undefined" ? sessionStorage.getItem("role") : null) || "member";
+    let vendorProfile: any = null;
+    if (typeof window !== "undefined" && uid) {
       try {
-        if (role === 'admin') {
-          const live = await getLive({ tenantId });
-          const next = { ...live, messageThreads: Array.isArray(latestThreads) ? latestThreads : threads };
-          await publishWithVerifyAndFallback(next, { tenantId });
-        } else {
-          await api.post(`/api/messages/sync`, {
-            threads: Array.isArray(latestThreads) ? latestThreads : threads,
-          });
-        }
-        return true;
+        const key = `${VENDOR_PROFILE_KEY}:${tenantId}:${uid}`;
+        const raw = localStorage.getItem(key);
+        if (raw) vendorProfile = JSON.parse(raw);
       } catch {
-        return false;
+        vendorProfile = null;
       }
-    },
-    [threads]
-  );
+    }
+    const vendorId = normalize(vendorProfile?.vendorId || vendorProfile?.id);
+    const vendorEmail = normalize(vendorProfile?.email || vendorProfile?.contactEmail);
+    return {
+      email,
+      uid,
+      role,
+      vendorId,
+      vendorEmail,
+    };
+  };
+
+  const canAccessThread = (thread: any, identity: ReturnType<typeof resolveIdentity>) => {
+    if (!thread) return false;
+    const { email, role, vendorId, vendorEmail } = identity;
+    const ctx = thread?.context || {};
+    const pid: string[] = Array.isArray(thread?.participantIds) ? thread.participantIds : [];
+    const vendorCtxId = normalize(ctx.vendorId);
+    const vendorCtxEmail = normalize(ctx.vendorEmail);
+    const vendorMatch = (candidate?: string | null) => {
+      const id = normalize(candidate);
+      if (!id) return false;
+      return (
+        pid.some((p) => normalize(p) === `vendor:${id}`) ||
+        vendorCtxId === id
+      );
+    };
+
+    const isVendorParticipant =
+      vendorMatch(vendorId) ||
+      vendorMatch(email) ||
+      vendorCtxEmail === email ||
+      (vendorEmail && (vendorCtxEmail === vendorEmail || vendorMatch(vendorEmail)));
+
+    const subscriberEmail = normalize(ctx.subscriberEmail);
+    const isSubscriber =
+      !!email &&
+      (subscriberEmail === email || pid.some((p) => normalize(p) === `user:${email}`));
+
+    if (role === "admin") {
+      const ctxAdminEmail = normalize(ctx.adminEmail);
+      const adminParticipant =
+        (!ctxAdminEmail && pid.some((p) => normalize(p) === "admin")) ||
+        (!!email && (ctxAdminEmail === email || pid.some((p) => normalize(p) === `admin:${email}`)));
+      const subscriberThread = ctx.type === "listing-subscriber";
+      const vendorOrSubscriber = isVendorParticipant || isSubscriber;
+      return adminParticipant || subscriberThread || vendorOrSubscriber;
+    }
+
+    if (ctx.type === "listing-feedback") return isVendorParticipant;
+    if (ctx.type === "listing-subscriber") return isVendorParticipant || isSubscriber;
+    return isVendorParticipant || isSubscriber;
+  };
+
+  const sortThreads = (items: any[]) => {
+    return [...items].sort((a, b) => {
+      const latest = (thread: any) => {
+        const last = thread?.lastMessage?.date || thread?.messages?.[thread?.messages?.length - 1]?.date;
+        return last ? new Date(last).getTime() : 0;
+      };
+      return latest(b) - latest(a);
+    });
+  };
+
+  const filterThreadsForIdentity = (doc: any, tenantId: string, identity: ReturnType<typeof resolveIdentity>) => {
+    const tenantKey = mapTenantOut(tenantId);
+    const raw = Array.isArray(doc?.messageThreads) ? doc.messageThreads : [];
+    const scoped = raw.filter((t) => (t?.tenantId || "public") === tenantKey);
+    const accessible = scoped.filter((t) => canAccessThread(t, identity));
+    return sortThreads(accessible).map((t) => ({ ...t }));
+  };
+
+  const syncMessagesToLive = useCallback(async () => {
+    const tenantId = resolveTenantId();
+    const identity = resolveIdentity(tenantId);
+
+    const applyThreads = (items: any[]) => {
+      setThreads(items);
+      threadsRef.current = items;
+      persistCachedThreads(items);
+    };
+
+    try {
+      const liveEnvelope = await getLive({ tenantId: mapTenantOut(tenantId) });
+      const liveDoc =
+        liveEnvelope && typeof liveEnvelope === "object"
+          ? (liveEnvelope.data && typeof liveEnvelope.data === "object" ? liveEnvelope.data : liveEnvelope)
+          : {};
+      const items = filterThreadsForIdentity(liveDoc, tenantId, identity);
+      applyThreads(items);
+      setError(null);
+      return true;
+    } catch {
+      // fall through to local fallback
+    }
+
+    const fallbackItems = filterThreadsForIdentity(appDataLocal, tenantId, identity);
+    if (fallbackItems.length) {
+      applyThreads(fallbackItems);
+      setError("Showing cached messages while the network is unavailable.");
+      return true;
+    }
+    return threadsRef.current.length > 0;
+  }, []);
 
   const resolveTenantId = () => (typeof window !== "undefined" ? sessionStorage.getItem("tenantId") : null) || "vendor";
 
@@ -60,6 +182,7 @@ export function MessagesProvider({ children }) {
 
   const refresh = useCallback(
     async ({ silent, force }: { silent?: boolean; force?: boolean } = {}) => {
+      const seq = ++refreshSeq.current;
       setError(null);
       if (silent) setRefreshing(true);
       else setLoading(true);
@@ -73,21 +196,45 @@ export function MessagesProvider({ children }) {
           : { params };
         const { data } = await api.get(`/api/messages`, config);
         const items = Array.isArray(data?.items) ? data.items : [];
+        if (refreshSeq.current !== seq) return;
         setThreads(items);
-        try { localStorage.setItem("sl_messages_cache_v1", JSON.stringify(items)); } catch {}
+        persistCachedThreads(items);
       } catch (e) {
+        if (refreshSeq.current !== seq) return;
         const code = (e as any)?.code;
-        if (code === "ERR_NETWORK") {
+        const restoreFallbackThreads = () => {
+          if (threadsRef.current?.length) return true;
+          const cached = readCachedThreads();
+          if (cached.length) {
+            setThreads(cached);
+            return true;
+          }
           const fallback = fallbackThreadsForTenant(tenantId);
           if (fallback.length) {
             setThreads(fallback);
-            try { localStorage.setItem("sl_messages_cache_v1", JSON.stringify(fallback)); } catch {}
+            persistCachedThreads(fallback);
+            return true;
           }
-          setError("Showing cached messages while the network is unavailable.");
+          return false;
+        };
+
+        if (code === "ERR_NETWORK") {
+          const restored = restoreFallbackThreads();
+          setError(
+            restored
+              ? "Showing cached messages while the network is unavailable."
+              : "Showing an empty inbox while the network is unavailable."
+          );
         } else {
-          setError((e as any)?.message || "Failed to load messages");
+          const restored = restoreFallbackThreads();
+          setError(
+            restored
+              ? "Showing cached messages while the messaging service responds."
+              : (e as any)?.message || "Failed to load messages"
+          );
         }
       } finally {
+        if (refreshSeq.current !== seq) return;
         if (silent) setRefreshing(false);
         else setLoading(false);
       }
