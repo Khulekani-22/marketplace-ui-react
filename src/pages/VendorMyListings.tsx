@@ -1,6 +1,6 @@
 // src/pages/VendorMyListings.jsx
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMessages } from "../context/useMessages";
 import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/useVendor";
@@ -42,6 +42,8 @@ function StatusChip({ s }) {
 
 export default function VendorMyListings() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navListingRef = useRef<any>(null);
   const { vendor, ensureVendorId, loading: vendorLoading } = useVendor();
   const { refresh: refreshMessages, syncMessagesToLive } = useMessages();
   const { appData, appDataLoading } = useAppSync();
@@ -53,6 +55,43 @@ export default function VendorMyListings() {
   const [refreshing, setRefreshing] = useState(false);
   const [err, setErr] = useState("");
   const [feedback, setFeedback] = useState({ open: false, listing: null, subject: "", content: "", sending: false, err: null, done: false });
+
+  const newListingFromNav: any = (location.state as any)?.newListing;
+
+  useEffect(() => {
+    if (!newListingFromNav) return;
+    navListingRef.current = newListingFromNav;
+    setItems((prev) => {
+      if (!prev) return [newListingFromNav];
+      const exists = prev.some((i) => String(i?.id || i?.serviceId) === String(newListingFromNav?.id || newListingFromNav?.serviceId));
+      if (exists) return prev;
+      return [newListingFromNav, ...prev];
+    });
+    setErr("");
+    navigate(
+      {
+        pathname: location.pathname,
+        search: location.search,
+      },
+      { replace: true, state: {} }
+    );
+  }, [newListingFromNav, navigate, location.pathname, location.search]);
+
+  const mergeNavListing = useCallback(
+    (listings: any[]) => {
+      const navListing = navListingRef.current;
+      if (!navListing) return listings;
+      const exists = listings.some(
+        (i) => String(i?.id || i?.serviceId) === String(navListing?.id || navListing?.serviceId)
+      );
+      if (exists) {
+        navListingRef.current = null;
+        return listings;
+      }
+      return [navListing, ...listings];
+    },
+    []
+  );
 
   // Redirect vendors who are not yet approved to their profile page
   useEffect(() => {
@@ -161,20 +200,22 @@ export default function VendorMyListings() {
         if (signal?.aborted) return;
         const normalizedListings = Array.isArray(listings) ? listings : [];
         const normalizedBookings = Array.isArray(bookings) ? bookings : [];
-        if (!normalizedListings.length) {
+        const mergedListings = mergeNavListing(normalizedListings);
+        if (!mergedListings.length) {
           const fallback = deriveFallbackData(activeVendorRef);
           if (fallback.listings.length) {
-            setItems(fallback.listings);
+            const mergedFallback = mergeNavListing(fallback.listings);
+            setItems(mergedFallback);
             setBookings(fallback.bookings);
             if (!silent) {
               setErr("Showing cached listings until the live catalog updates.");
             }
           } else {
-            setItems([]);
+            setItems(mergedListings);
             setBookings([]);
           }
         } else {
-          setItems(normalizedListings);
+          setItems(mergedListings);
           setBookings(normalizedBookings);
         }
       } catch (e: any) {
@@ -182,19 +223,20 @@ export default function VendorMyListings() {
         const code = e?.code;
         if (code === "ERR_NETWORK") {
           const fallback = deriveFallbackData(activeVendorRef);
-          setItems(fallback.listings);
+          const mergedFallback = mergeNavListing(fallback.listings);
+          setItems(mergedFallback);
           setBookings(fallback.bookings);
           setErr("Showing cached data while the network is unavailable.");
         } else {
           setErr(e?.response?.data?.message || e?.message || "Failed to load listings");
-          setItems([]);
+          setItems(mergeNavListing([]));
           setBookings([]);
         }
       } finally {
         markBusy(false);
       }
     },
-    [deriveFallbackData, ensureVendorId, vendor, vendorLoading]
+    [deriveFallbackData, ensureVendorId, mergeNavListing, vendor, vendorLoading]
   );
 
   useEffect(() => {

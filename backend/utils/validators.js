@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const ServiceSchema = z.object({
+export const ServiceSchema = z
+  .object({
   id: z.string().min(1).optional(), // auto-create if missing
   title: z.string().min(2),
   price: z.number().nonnegative(),
@@ -11,7 +12,8 @@ export const ServiceSchema = z.object({
   description: z.string().optional(),
   tenantId: z.string().optional(), // will be enforced from req.tenant
   tags: z.array(z.string()).optional().default([]),
-});
+})
+  .passthrough();
 
 export const VendorSchema = z.object({
   id: z.string().optional(),

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import MasterLayout from "../MasterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/useVendor";
+import { useAppSync } from "../context/useAppSync";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
 import appDataLocal from "../data/appData.json";
@@ -30,6 +31,8 @@ function normalizeService(s) {
     vendor: s?.vendor ?? "",
     vendorId: s?.vendorId ?? "",
     contactEmail: (s?.contactEmail || s?.email || "").toLowerCase(),
+    ownerUid: s?.ownerUid ?? s?.ownerId ?? "",
+    ownerEmail: (s?.ownerEmail || s?.contactEmail || s?.email || "").toLowerCase(),
     price: Number(s?.price || 0),
     rating: Number(s?.rating || 0),
     reviewCount:
@@ -43,6 +46,11 @@ function normalizeService(s) {
     isFeatured: !!s?.isFeatured,
     description: s?.description ?? "",
     reviews: Array.isArray(s?.reviews) ? s.reviews : [],
+    tags: Array.isArray(s?.tags) ? s.tags : [],
+    source: s?.source ?? "",
+    clonedFrom: s?.clonedFrom ?? "",
+    tenantId: s?.tenantId ?? "public",
+    createdAt: s?.createdAt ?? s?.created_at ?? new Date().toISOString(),
   };
 }
 function normalizeVendor(v, fb = {}) {
@@ -85,6 +93,7 @@ export default function VendorAddListingPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { vendor: ctxVendor, ensureVendorId, refresh } = useVendor();
+  const { syncNow: syncAppData } = useAppSync();
 
   const tenantId = useMemo(
     () => sessionStorage.getItem("tenantId") || "vendor",
@@ -329,6 +338,8 @@ export default function VendorAddListingPage() {
       vendor: latestVendor.name || latestVendor.contactEmail || "Vendor",
       vendorId: latestVendor.vendorId,
       contactEmail,
+      ownerUid: auth.currentUser?.uid || latestVendor.ownerUid || "",
+      ownerEmail: contactEmail,
       price: Number(form.price || 0),
       rating: 0,
       reviewCount: 0,
@@ -345,31 +356,15 @@ export default function VendorAddListingPage() {
 
     setBusy(true);
     try {
-      // Pull latest LIVE to avoid clobbering concurrent edits
-      let live = data;
-      try {
-        const { data: liveData } = await api.get(`${API_BASE}/live`, {
-          headers: {
-            "x-tenant-id": tenantId,
-            "cache-control": "no-cache",
-          },
-        });
-        if (liveData) live = liveData;
-      } catch {
-        live = data;
-      }
-
-      const next = {
-        ...live,
-        services: Array.isArray(live?.services)
-          ? [...live.services, newService]
-          : [newService],
+      const payload = {
+        ...newService,
+        tenantId,
+        tags: Array.isArray(newService?.tags) ? newService.tags : [],
       };
 
-      // Publish (same as ListingsAdminPage)
-      await api.put(
-        `${API_BASE}/publish`,
-        { data: next },
+      const { data: created } = await api.post(
+        `/api/data/services`,
+        payload,
         {
           headers: {
             "Content-Type": "application/json",
@@ -378,24 +373,49 @@ export default function VendorAddListingPage() {
         }
       );
 
-      // Confirm persisted by reloading LIVE
+      const saved = normalizeService(created || payload);
+
       try {
-        const { data: confirmData } = await api.get(`${API_BASE}/live`, {
+        const { data: liveData } = await api.get(`${API_BASE}/live`, {
           headers: {
             "x-tenant-id": tenantId,
             "cache-control": "no-cache",
           },
         });
-        setData(confirmData || next);
+        const liveDoc =
+          liveData && typeof liveData === "object" && (liveData as any).data
+            ? (liveData as any).data
+            : liveData;
+        if (liveDoc && typeof liveDoc === "object" && !Array.isArray(liveDoc)) {
+          setData(liveDoc);
+        } else {
+          setData((prev) => {
+            const prevDoc = prev && typeof prev === "object" ? { ...prev } : {};
+            const services = Array.isArray(prevDoc.services) ? prevDoc.services : [];
+            return { ...prevDoc, services: [...services, saved] };
+          });
+        }
       } catch {
-        setData(next);
+        setData((prev) => {
+          const prevDoc = prev && typeof prev === "object" ? { ...prev } : {};
+          const services = Array.isArray(prevDoc.services) ? prevDoc.services : [];
+          return { ...prevDoc, services: [...services, saved] };
+        });
       }
+
+      try {
+        await syncAppData?.();
+      } catch {}
 
       setOk(
         "Listing submitted! It’s now pending review by the marketplace admins."
       );
       setTimeout(
-        () => navigate("/listings-vendors-mine", { replace: true }),
+        () =>
+          navigate("/listings-vendors-mine", {
+            replace: true,
+            state: { newListing: saved },
+          }),
         850
       );
     } catch (e2) {
