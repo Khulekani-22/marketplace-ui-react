@@ -127,6 +127,11 @@ function mapTenantOut(id: string | null | undefined): string | null | undefined 
   return id === "vendor" ? "public" : id;
 }
 
+function mapTenantIn(id: string | null | undefined): string {
+  if (!id) return "vendor";
+  return id === "public" ? "vendor" : id;
+}
+
 function shimTenantInPayload<T extends Record<string, any>>(payload: T): T {
   if (!payload || typeof payload !== "object") return payload;
   try {
@@ -147,16 +152,17 @@ function delay(ms: number) {
 
 // Public helpers: prefer server-derived session over client hints
 export function getSession(): Session {
-  const ssTenant = SESSION.tenantId || sessionStorage.getItem("tenantId") || "vendor";
+  const ssTenantRaw = SESSION.tenantId || sessionStorage.getItem("tenantId") || "vendor";
+  const tenantId = mapTenantIn(ssTenantRaw);
   const role = SESSION.role || sessionStorage.getItem("role") || "member";
-  return { ...SESSION, tenantId: ssTenant, role };
+  return { ...SESSION, tenantId, role };
 }
 
 export async function bootstrapSession(): Promise<Session> {
   try {
     const { data } = await api.get<any>("/api/me");
     const role = data?.role || "member";
-    const tenantId = data?.tenantId || "vendor";
+    const tenantId = mapTenantIn(data?.tenantId);
     const email = data?.email || auth.currentUser?.email || sessionStorage.getItem("userEmail") || null;
     const uid = data?.uid || auth.currentUser?.uid || sessionStorage.getItem("userId") || null;
     SESSION = {
@@ -164,7 +170,10 @@ export async function bootstrapSession(): Promise<Session> {
       uid,
       role,
       tenantId,
-      allowedTenants: (data?.allowedTenants as string[]) || [tenantId].filter(Boolean),
+      allowedTenants:
+        Array.isArray(data?.allowedTenants)
+          ? (data.allowedTenants as string[]).map((t) => mapTenantIn(t))
+          : [tenantId].filter(Boolean),
     };
     // Mirror to sessionStorage for UI gating only (not as an authority)
     sessionStorage.setItem("role", role);
@@ -177,6 +186,8 @@ export async function bootstrapSession(): Promise<Session> {
     if (!auth.currentUser) {
       sessionStorage.removeItem("userEmail");
       sessionStorage.removeItem("userId");
+      sessionStorage.removeItem("tenantId");
+      sessionStorage.removeItem("role");
       try {
         if (typeof window !== "undefined" && window.location.pathname !== "/login") {
           window.location.replace("/login");

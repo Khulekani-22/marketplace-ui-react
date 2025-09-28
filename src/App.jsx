@@ -15,7 +15,7 @@ import VendorSignupPage from "./pages/VendorSignupPage.jsx";
 import { lazyWithRetry } from "./utils/lazyWithRetry";
 
 // --- Lazy pages ---
-const Dashboard = lazyWithRetry(() => import("./pages/Dashboard.jsx"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const LandingPage = React.lazy(() => import("./pages/LandingPage.jsx"));
 const HomePageTwo = React.lazy(() => import("./pages/HomePageTwo.jsx"));
 const HomePageThree = React.lazy(() => import("./pages/HomePageThree.jsx"));

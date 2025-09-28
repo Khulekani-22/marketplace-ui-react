@@ -90,10 +90,11 @@ export default function VendorAddListingPage() {
     () => sessionStorage.getItem("tenantId") || "vendor",
     []
   );
+  const isAdmin = sessionStorage.getItem("role") === "admin";
 
   // Full LIVE appData working copy on this page as well
   const [data, setData] = useState(appDataLocal);
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState(() => (isAdmin ? [] : []));
 
   // categories derived from working copy
   const categories = useMemo(() => {
@@ -165,19 +166,20 @@ export default function VendorAddListingPage() {
 
         if (alive) setData(base);
 
-        let historyItems = [];
-        try {
-          const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
-            headers: {
-              "x-tenant-id": tenantId,
-              "cache-control": "no-cache",
-            },
-          });
-          historyItems = Array.isArray(hx?.items) ? hx.items : [];
-        } catch {
-          historyItems = [];
+        if (isAdmin) {
+          try {
+            const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
+              headers: {
+                "x-tenant-id": tenantId,
+                "cache-control": "no-cache",
+              },
+            });
+            const items = Array.isArray(hx?.items) ? hx.items : [];
+            if (alive) setHistory(items);
+          } catch {
+            if (alive) setHistory([]);
+          }
         }
-        if (alive) setHistory(historyItems);
       } catch {
         // fall back to local
       }
@@ -186,7 +188,7 @@ export default function VendorAddListingPage() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId]);
+  }, [tenantId, isAdmin]);
 
   // Detect vendor from LIVE working copy
   const detectedVendor = useMemo(() => {
@@ -649,38 +651,39 @@ export default function VendorAddListingPage() {
           </div>
         </div>
 
-        {/* Recent checkpoints (read-only, same server list as Admin) */}
-        <div className="card mt-3">
-          <div className="card-header d-flex justify-content-between align-items-center">
-            <span>Recent checkpoints</span>
-            <span className="text-muted small">Latest snapshots</span>
-          </div>
-          <div className="list-group list-group-flush">
-            {!history?.length && (
-              <div className="list-group-item text-muted small">
-                No checkpoints yet.
-              </div>
-            )}
-            {history?.slice(0, 4).map((ck) => (
-              <div key={ck.id} className="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <div className="fw-semibold">{ck.message || "(no message)"}</div>
-                  <div className="text-muted small">
-                    {new Date(ck.ts).toLocaleString()}
-                  </div>
+        {isAdmin && (
+          <div className="card mt-3">
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <span>Recent checkpoints</span>
+              <span className="text-muted small">Latest snapshots</span>
+            </div>
+            <div className="list-group list-group-flush">
+              {!history?.length && (
+                <div className="list-group-item text-muted small">
+                  No checkpoints yet.
                 </div>
-                <a
-                  className="btn btn-sm btn-outline-secondary"
-                  href={`${API_BASE}/checkpoints/${ck.id}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Download
-                </a>
-              </div>
-            ))}
+              )}
+              {history?.slice(0, 4).map((ck) => (
+                <div key={ck.id} className="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <div className="fw-semibold">{ck.message || "(no message)"}</div>
+                    <div className="text-muted small">
+                      {new Date(ck.ts).toLocaleString()}
+                    </div>
+                  </div>
+                  <a
+                    className="btn btn-sm btn-outline-secondary"
+                    href={`${API_BASE}/checkpoints/${ck.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Download
+                  </a>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </MasterLayout>
   );

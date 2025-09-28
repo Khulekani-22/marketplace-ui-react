@@ -54,7 +54,13 @@ export function AppSyncProvider({ children }) {
   const [appDataLoading, setAppDataLoading] = useState(false);
   const [appDataError, setAppDataError] = useState("");
   const [role, setRole] = useState(() => sessionStorage.getItem("role") || "member");
-  const [tenantId, setTenantId] = useState(() => sessionStorage.getItem("tenantId") || "vendor");
+
+  const normalizeTenant = useCallback((id: string | null | undefined) => {
+    if (!id) return "vendor";
+    return id === "public" ? "vendor" : id;
+  }, []);
+
+  const [tenantId, setTenantId] = useState(() => normalizeTenant(sessionStorage.getItem("tenantId")));
   const [lastSyncAt, setLastSyncAt] = useState(0);
   const isSyncingRef = useRef(false);
 
@@ -69,7 +75,7 @@ export function AppSyncProvider({ children }) {
         suppressErrorLog: true,
       } as any);
       const nextRole = data?.role || "member";
-      const nextTenant = data?.tenantId || "vendor";
+      const nextTenant = normalizeTenant(data?.tenantId);
       const email = data?.email || user.email || null;
       const uid = data?.uid || user.uid || null;
       sessionStorage.setItem("role", nextRole);
@@ -136,13 +142,16 @@ export function AppSyncProvider({ children }) {
           userEmail: auth.currentUser?.email || sessionStorage.getItem("userEmail") || null,
           targetType: "route",
           targetId: location.pathname,
-          metadata: { role: sessionStorage.getItem("role") || role, tenantId: sessionStorage.getItem("tenantId") || tenantId },
+          metadata: {
+            role: sessionStorage.getItem("role") || role,
+            tenantId: normalizeTenant(sessionStorage.getItem("tenantId")) || tenantId,
+          },
         });
       } catch {}
     } finally {
       isSyncingRef.current = false;
     }
-  }, [location.pathname, refreshAppData, refreshRole, role, tenantId]);
+  }, [location.pathname, refreshAppData, refreshRole, role, tenantId, normalizeTenant]);
 
   // Sync on route change as requested
   useEffect(() => {
@@ -157,12 +166,12 @@ export function AppSyncProvider({ children }) {
       } else {
         // On sign-out: clear role/appData (UI may still use local fallback where needed)
         setRole(sessionStorage.getItem("role") || "member");
-        setTenantId(sessionStorage.getItem("tenantId") || "vendor");
+        setTenantId(normalizeTenant(sessionStorage.getItem("tenantId")));
         setAppData(null);
       }
     });
     return () => unsub();
-  }, [syncNow]);
+  }, [syncNow, normalizeTenant]);
 
   const value = useMemo(
     () => ({ appData, appDataLoading, appDataError, role, tenantId, isAdmin, lastSyncAt, syncNow }),

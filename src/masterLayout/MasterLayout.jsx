@@ -24,8 +24,16 @@ function MasterLayoutInner({ children }) {
   const [sidebarActive, setSidebarActive] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [isAdmin, setIsAdmin] = useState(() => (sessionStorage.getItem("role") === "admin"));
-  const [tenantId, setTenantId] = useState(() => sessionStorage.getItem("tenantId") || "vendor");
+  const [tenantId, setTenantId] = useState(() => {
+    const stored = sessionStorage.getItem("tenantId");
+    return normalizeTenant(stored);
+  });
   const [tenants, setTenants] = useState([]);
+
+  function normalizeTenant(id) {
+    if (!id) return "vendor";
+    return id === "public" ? "vendor" : id;
+  }
 
   // Auto-open dropdown containing current route + close mobile on route change
   const navClass = ({ isActive }) => (isActive ? "active-page" : "");
@@ -40,7 +48,7 @@ function MasterLayoutInner({ children }) {
   // Keep role/tenant in sync when navigating (sessionStorage as simple source of truth)
   useEffect(() => {
     const role = sessionStorage.getItem("role") || "";
-    const tenant = sessionStorage.getItem("tenantId") || "vendor";
+    const tenant = normalizeTenant(sessionStorage.getItem("tenantId"));
     setIsAdmin(role === "admin");
     setTenantId(tenant);
   }, [location.pathname]);
@@ -53,7 +61,7 @@ function MasterLayoutInner({ children }) {
       try {
         const { data } = await api.get("/api/me");
         const role = data?.role || "member";
-        const tenant = data?.tenantId || "vendor";
+        const tenant = normalizeTenant(data?.tenantId);
         const email = data?.email || user.email || null;
         const uid = data?.uid || user.uid || null;
         if (email) sessionStorage.setItem("userEmail", email);
@@ -79,6 +87,8 @@ function MasterLayoutInner({ children }) {
       // ensure session sync on first paint
       if (auth.currentUser.email) sessionStorage.setItem("userEmail", auth.currentUser.email);
       if (auth.currentUser.uid) sessionStorage.setItem("userId", auth.currentUser.uid);
+      const initialTenant = normalizeTenant(sessionStorage.getItem("tenantId"));
+      sessionStorage.setItem("tenantId", initialTenant);
       setUser(auth.currentUser);
     }
     if (auth.currentUser) refreshRole();
@@ -94,6 +104,7 @@ function MasterLayoutInner({ children }) {
         // signed out in this or another tab
         sessionStorage.removeItem("userId");
         sessionStorage.removeItem("userEmail");
+        sessionStorage.removeItem("tenantId");
       }
       const email = u?.email || null;
       const uid = u?.uid || null;
@@ -129,7 +140,7 @@ function MasterLayoutInner({ children }) {
   const handleTenantChange = (e) => {
     const next = e.target.value;
     setTenantId(next);
-    sessionStorage.setItem("tenantId", next);
+    sessionStorage.setItem("tenantId", normalizeTenant(next));
   };
 
   async function handleLogout(e) {

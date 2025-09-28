@@ -2,9 +2,6 @@ import { Router } from "express";
 import { v4 as uuid } from "uuid";
 import { getData, saveData } from "../utils/dataStore.js";
 import { ServiceSchema } from "../utils/validators.js";
-import { jwtAuthRequired } from "../middleware/authJWT.js";
-// import { requireRole } from "../policies/rbac.js";
-// replace the demo JWT middleware with Firebase:
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 
 
@@ -193,7 +190,7 @@ router.get("/mine", firebaseAuthRequired, (req, res) => {
  * POST /api/data/services
  * Body: ServiceSchema (id optional). Requires auth.
  */
-router.post("/", jwtAuthRequired, (req, res, next) => {
+router.post("/", firebaseAuthRequired, (req, res, next) => {
   try {
     const parsed = ServiceSchema.parse(req.body);
     const id = parsed.id || uuid();
@@ -215,7 +212,7 @@ router.post("/", jwtAuthRequired, (req, res, next) => {
 /**
  * PUT /api/data/services/:id
  */
-router.put("/:id", jwtAuthRequired, (req, res, next) => {
+router.put("/:id", firebaseAuthRequired, (req, res, next) => {
   try {
     const id = req.params.id;
     const tenantId = req.tenant.id;
@@ -245,7 +242,7 @@ router.put("/:id", jwtAuthRequired, (req, res, next) => {
 /**
  * DELETE /api/data/services/:id
  */
-router.delete("/:id", jwtAuthRequired, (req, res) => {
+router.delete("/:id", firebaseAuthRequired, (req, res) => {
   const id = req.params.id;
   const tenantId = req.tenant.id;
 
