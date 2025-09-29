@@ -15,6 +15,26 @@ function normalizeTenant(id?: string | null) {
   return v === "vendor" ? "public" : v;
 }
 
+function makePendingKey(tenantId?: string | null, vendorHint?: string | null) {
+  const tenant = normalizeTenant(tenantId || "public");
+  const vendor = (vendorHint || "").trim().toLowerCase();
+  if (!vendor) return null;
+  return `vendor_pending_listings:${tenant}:${vendor}`;
+}
+
+function listingId(entry) {
+  return String(entry?.id || entry?.serviceId || "");
+}
+
+function parsePending(raw) {
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function tenantMatches(entryTenant?: string | null, currentTenant?: string | null) {
   const entry = normalizeTenant(entryTenant);
   const current = normalizeTenant(currentTenant);
@@ -55,18 +75,60 @@ export default function VendorMyListings() {
   const [refreshing, setRefreshing] = useState(false);
   const [err, setErr] = useState("");
   const [feedback, setFeedback] = useState({ open: false, listing: null, subject: "", content: "", sending: false, err: null, done: false });
+  const pendingKey = useMemo(
+    () => makePendingKey(tenantId, vendor?.vendorId || vendor?.email || vendor?.id || ""),
+    [tenantId, vendor?.vendorId, vendor?.email, vendor?.id]
+  );
+  const [pendingLocal, setPendingLocal] = useState([]);
 
-  const newListingFromNav: any = (location.state as any)?.newListing;
+  const newListingFromNav = (location.state as any)?.newListing;
+
+  const persistPending = useCallback(
+    (listings) => {
+      setPendingLocal(listings);
+      if (!pendingKey) return;
+      if (!listings.length) {
+        localStorage.removeItem(pendingKey);
+        return;
+      }
+      try {
+        localStorage.setItem(pendingKey, JSON.stringify(listings));
+      } catch {
+        /* ignore quota */
+      }
+    },
+    [pendingKey]
+  );
+
+  useEffect(() => {
+    if (!pendingKey) {
+      setPendingLocal([]);
+      return;
+    }
+    try {
+      const existing = parsePending(localStorage.getItem(pendingKey));
+      setPendingLocal(existing);
+    } catch {
+      setPendingLocal([]);
+    }
+  }, [pendingKey]);
 
   useEffect(() => {
     if (!newListingFromNav) return;
     navListingRef.current = newListingFromNav;
+    const newId = String(newListingFromNav?.id || newListingFromNav?.serviceId || "");
     setItems((prev) => {
       if (!prev) return [newListingFromNav];
-      const exists = prev.some((i) => String(i?.id || i?.serviceId) === String(newListingFromNav?.id || newListingFromNav?.serviceId));
+      const exists = prev.some((i) => String(i?.id || i?.serviceId) === newId);
       if (exists) return prev;
       return [newListingFromNav, ...prev];
     });
+    persistPending([
+      newListingFromNav,
+      ...pendingLocal.filter(
+        (i) => String(i?.id || i?.serviceId || "") !== newId
+      ),
+    ]);
     setErr("");
     navigate(
       {
@@ -75,22 +137,44 @@ export default function VendorMyListings() {
       },
       { replace: true, state: {} }
     );
-  }, [newListingFromNav, navigate, location.pathname, location.search]);
+  }, [newListingFromNav, navigate, location.pathname, location.search, persistPending, pendingLocal]);
 
-  const mergeNavListing = useCallback(
-    (listings: any[]) => {
+  const mergeLocalListings = useCallback(
+    (listings) => {
+      const base = Array.isArray(listings) ? [...listings] : [];
+      const seen = new Set(base.map(listingId).filter(Boolean));
+
       const navListing = navListingRef.current;
-      if (!navListing) return listings;
-      const exists = listings.some(
-        (i) => String(i?.id || i?.serviceId) === String(navListing?.id || navListing?.serviceId)
-      );
-      if (exists) {
-        navListingRef.current = null;
-        return listings;
+      if (navListing) {
+        const navId = listingId(navListing);
+        if (navId && !seen.has(navId)) {
+          base.unshift(navListing);
+          seen.add(navId);
+        } else {
+          navListingRef.current = null;
+        }
       }
-      return [navListing, ...listings];
+
+      if (pendingLocal.length) {
+        const remaining = [];
+        pendingLocal.forEach((entry) => {
+          const pid = listingId(entry);
+          if (!pid) return;
+          if (seen.has(pid)) {
+            return;
+          }
+          seen.add(pid);
+          base.unshift(entry);
+          remaining.push(entry);
+        });
+        if (remaining.length !== pendingLocal.length) {
+          persistPending(remaining);
+        }
+      }
+
+      return base;
     },
-    []
+    [pendingLocal, persistPending]
   );
 
   // Redirect vendors who are not yet approved to their profile page
@@ -200,11 +284,11 @@ export default function VendorMyListings() {
         if (signal?.aborted) return;
         const normalizedListings = Array.isArray(listings) ? listings : [];
         const normalizedBookings = Array.isArray(bookings) ? bookings : [];
-        const mergedListings = mergeNavListing(normalizedListings);
+        const mergedListings = mergeLocalListings(normalizedListings);
         if (!mergedListings.length) {
           const fallback = deriveFallbackData(activeVendorRef);
           if (fallback.listings.length) {
-            const mergedFallback = mergeNavListing(fallback.listings);
+            const mergedFallback = mergeLocalListings(fallback.listings);
             setItems(mergedFallback);
             setBookings(fallback.bookings);
             if (!silent) {
@@ -223,20 +307,20 @@ export default function VendorMyListings() {
         const code = e?.code;
         if (code === "ERR_NETWORK") {
           const fallback = deriveFallbackData(activeVendorRef);
-          const mergedFallback = mergeNavListing(fallback.listings);
+          const mergedFallback = mergeLocalListings(fallback.listings);
           setItems(mergedFallback);
           setBookings(fallback.bookings);
           setErr("Showing cached data while the network is unavailable.");
         } else {
           setErr(e?.response?.data?.message || e?.message || "Failed to load listings");
-          setItems(mergeNavListing([]));
+          setItems(mergeLocalListings([]));
           setBookings([]);
         }
       } finally {
         markBusy(false);
       }
     },
-    [deriveFallbackData, ensureVendorId, mergeNavListing, vendor, vendorLoading]
+    [deriveFallbackData, ensureVendorId, mergeLocalListings, vendor, vendorLoading]
   );
 
   useEffect(() => {

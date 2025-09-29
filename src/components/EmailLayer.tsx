@@ -7,6 +7,33 @@ import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 import { useAppSync } from "../context/useAppSync";
 import { auth } from "../lib/firebase";
+import { fetchMyVendorListings } from "../lib/listings";
+
+function normalizeTenant(id?: string | null) {
+  if (!id) return "public";
+  const v = id.toString().toLowerCase();
+  return v === "vendor" ? "public" : v;
+}
+
+function makePendingKey(tenantId?: string | null, vendorHint?: string | null) {
+  const tenant = normalizeTenant(tenantId);
+  const vendor = (vendorHint || "").trim().toLowerCase();
+  if (!vendor) return null;
+  return `vendor_pending_listings:${tenant}:${vendor}`;
+}
+
+function listingId(entry: any) {
+  return String(entry?.id || entry?.serviceId || entry?.listingId || "");
+}
+
+function parsePending(raw: unknown) {
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 const EmailLayer = () => {
   const {
@@ -37,6 +64,43 @@ const EmailLayer = () => {
   const tenantId = (typeof window !== 'undefined' ? sessionStorage.getItem('tenantId') : null) || 'vendor';
   const { appData } = useAppSync();
   const tenantKey = useMemo(() => (tenantId === 'vendor' ? 'public' : tenantId).toString().toLowerCase(), [tenantId]);
+  const pendingKey = useMemo(
+    () => makePendingKey(tenantId, vendor?.vendorId || vendor?.email || vendor?.id || ''),
+    [tenantId, vendor?.vendorId, vendor?.email, vendor?.id]
+  );
+  const [pendingLocal, setPendingLocal] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!pendingKey) {
+      setPendingLocal([]);
+      return;
+    }
+    if (typeof window === 'undefined') {
+      setPendingLocal([]);
+      return;
+    }
+    try {
+      const stored = window.localStorage.getItem(pendingKey);
+      setPendingLocal(parsePending(stored));
+    } catch {
+      setPendingLocal([]);
+    }
+  }, [pendingKey]);
+
+  const mergePendingListings = useCallback(
+    (listings: any[]) => {
+      const base = Array.isArray(listings) ? [...listings] : [];
+      const seen = new Set(base.map((item) => listingId(item)).filter(Boolean) as string[]);
+      pendingLocal.forEach((entry) => {
+        const id = listingId(entry);
+        if (!id || seen.has(id)) return;
+        seen.add(id);
+        base.unshift(entry);
+      });
+      return base;
+    },
+    [pendingLocal]
+  );
 
   const userEmail = (auth.currentUser?.email || sessionStorage.getItem('userEmail') || "").toLowerCase();
   const role = sessionRole;
@@ -136,31 +200,77 @@ const EmailLayer = () => {
     try {
       const live = appData || appDataLocal;
       const services = Array.isArray(live?.services) ? live.services : [];
-      // Vendor listings
-      if (vendor?.vendorId) {
-        const mine = services.filter((s) => String(s.vendorId || "") === String(vendor.vendorId));
-        setMyListings(mine.map((s) => ({ id: s.id, title: s.title })));
-      } else {
-        setMyListings([]);
-      }
-      // Subscriptions for current user -> resolve titles
+
+      let apiListings: any[] = [];
       try {
-        const subs = await api.get(`/api/subscriptions/my`).then((r) => Array.isArray(r.data) ? r.data : []);
-        const withTitles = subs.map((s) => ({ ...s, title: (services.find((x) => String(x.id) === String(s.serviceId))?.title) || s.serviceId }));
+        const { listings } = await fetchMyVendorListings();
+        apiListings = Array.isArray(listings) ? listings : [];
+      } catch {
+        apiListings = [];
+      }
+
+      const vendorIdCanonical = vendor?.vendorId ? String(vendor.vendorId) : (vendor?.id ? String(vendor.id) : "");
+      const vendorEmailLower = (vendor?.email || vendor?.contactEmail || "").toLowerCase();
+
+      const fallbackListings = services.filter((s) => {
+        const serviceVendorId = String(s.vendorId || "");
+        const serviceEmail = (s.contactEmail || s.email || "").toLowerCase();
+        return (
+          (vendorIdCanonical && serviceVendorId === vendorIdCanonical) ||
+          (vendorEmailLower && serviceEmail === vendorEmailLower)
+        );
+      });
+
+      const mergedMap = new Map<string, any>();
+      [...apiListings, ...fallbackListings].forEach((item) => {
+        const id = listingId(item);
+        if (!id) return;
+        if (mergedMap.has(id)) {
+          mergedMap.set(id, { ...mergedMap.get(id), ...item });
+        } else {
+          mergedMap.set(id, item);
+        }
+      });
+
+      const mergedListings = mergePendingListings(Array.from(mergedMap.values()));
+      const listingOptions = mergedListings.reduce(
+        (acc, item) => {
+          const id = listingId(item);
+          if (!id) return acc;
+          const title = item?.title || item?.name || item?.listingTitle || "Untitled listing";
+          acc.push({ id, title });
+          return acc;
+        },
+        [] as Array<{ id: string; title: string }>
+      );
+      setMyListings(listingOptions);
+
+      try {
+        const subs = await api.get(`/api/subscriptions/my`).then((r) => (Array.isArray(r.data) ? r.data : []));
+        const withTitles = subs.map((s) => ({
+          ...s,
+          title:
+            listingOptions.find((x) => String(x.id) === String(s.serviceId))?.title ||
+            (services.find((x) => String(x.id) === String(s.serviceId))?.title) ||
+            s.serviceId,
+        }));
         setMySubs(withTitles);
       } catch (err) {
         const code = (err as any)?.code;
         if (code === "ERR_NETWORK") {
-          const tenantKey = (tenantId === 'vendor' ? 'public' : tenantId).toString().toLowerCase();
+          const tenantKeyLocal = (tenantId === 'vendor' ? 'public' : tenantId).toString().toLowerCase();
           const fallbackSubs = Array.isArray(live?.subscriptions) ? live.subscriptions : [];
           const owned = fallbackSubs.filter((s) => {
-            const sameTenant = ((s?.tenantId ?? 'public').toString().toLowerCase()) === tenantKey;
+            const sameTenant = ((s?.tenantId ?? 'public').toString().toLowerCase()) === tenantKeyLocal;
             const email = (s?.email || '').toLowerCase();
             return sameTenant && email === userEmail;
           });
           const withTitles = owned.map((s) => ({
             ...s,
-            title: (services.find((x) => String(x.id) === String(s.serviceId))?.title) || s.serviceId,
+            title:
+              listingOptions.find((x) => String(x.id) === String(s.serviceId))?.title ||
+              (services.find((x) => String(x.id) === String(s.serviceId))?.title) ||
+              s.serviceId,
           }));
           setMySubs(withTitles);
         } else {
@@ -223,7 +333,7 @@ const EmailLayer = () => {
   useEffect(() => {
     if (compose.open) loadLists();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [compose.open, vendor?.vendorId, tenantId]);
+  }, [compose.open, vendor?.vendorId, vendor?.email, vendor?.id, tenantId, mergePendingListings, appData, userEmail]);
   useEffect(() => {
     if (compose.open && compose.mode === 'vendor_to_subscriber' && compose.serviceId) loadSubscribers(compose.serviceId, subsSuggest.q, 1, subsSuggest.pageSize);
     else setSubsSuggest({ q: "", page: 1, pageSize: 10, total: 0, items: [], loading: false });

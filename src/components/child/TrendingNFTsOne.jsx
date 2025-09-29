@@ -410,12 +410,14 @@ const TrendingNFTsOne = ({
               </button>
             )}
           </div>
-          <ul className="nav button-tab nav-pills mb-0 gap-12" role="tablist">
+          <ul className="nav button-tab nav-pills mb-0 gap-12 text-neutral-500" role="tablist">
           {categories.map((category) => (
-            <li className="nav-item" key={category} role="presentation">
+            <li className="nav-item text-neutral-500" key={category} role="presentation">
               <button
-                className={`nav-link btn btn-sm rounded-pill text-neutral-500 hover-text-white bg-neutral-300 bg-hover-primary-800 rounded-pill px-20 py-6 border border-neutral-300 ${
-                  activeTab === category ? "active" : ""
+                className={`nav-link btn btn-sm rounded-pill text-neutral-500 hover-text-white bg-hover-primary-800 px-20 py-6 border border-neutral-300 ${
+                  activeTab === category
+                    ? "active bg-primary-500 text-white border-primary-400"
+                    : "bg-neutral-50"
                 }`}
                 onClick={() => setActiveTab(category)}
               >
@@ -474,14 +476,14 @@ const TrendingNFTsOne = ({
                             <div>
                               <button
                                 type="button"
-                                className="btn btn-link p-0 fw-medium text-start"
+                                className="btn btn-link text-neutral-800  hover-text-primary-200 p-0 fw-medium text-start"
                                 style={{ fontSize: '1.1rem', lineHeight: 1.2, textDecoration: 'none' }}
                                 onClick={() => openDetails(service.id)}
                                 aria-label={`Open details for ${service.title || 'listing'}`}
                               >
                                 {service.title}
                               </button>
-                              <div className="text-muted small" style={{ fontSize: '0.74rem' }}>
+                              <div className="text-muted small " style={{ fontSize: '0.74rem' }}>
                                 {service.vendor || 'Unknown'}
                                 {service.category ? <span><span className="mx-1">|</span>{service.category}</span> : null}
                               </div>

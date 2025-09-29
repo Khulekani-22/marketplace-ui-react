@@ -23,6 +23,12 @@ function safeParse(x) {
     return null;
   }
 }
+function pendingKey(tenantId, vendorHint) {
+  const tenant = (tenantId || "public").toLowerCase();
+  const vendor = (vendorHint || "").trim().toLowerCase();
+  if (!vendor) return null;
+  return `vendor_pending_listings:${tenant}:${vendor}`;
+}
 function normalizeService(s) {
   return {
     id: s?.id ?? uid(),
@@ -405,6 +411,23 @@ export default function VendorAddListingPage() {
 
       try {
         await syncAppData?.();
+      } catch {}
+
+      try {
+        const key = pendingKey(
+          tenantId,
+          saved.vendorId || saved.contactEmail || saved.ownerEmail || auth.currentUser?.uid || ""
+        );
+        if (key) {
+          const existing = safeParse(localStorage.getItem(key));
+          const list = Array.isArray(existing) ? existing : [];
+          const id = String(saved.id || saved.serviceId || "");
+          const next = [
+            saved,
+            ...list.filter((item) => String(item?.id || item?.serviceId || "") !== id),
+          ];
+          localStorage.setItem(key, JSON.stringify(next));
+        }
       } catch {}
 
       setOk(
