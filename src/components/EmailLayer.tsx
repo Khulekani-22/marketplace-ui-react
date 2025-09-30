@@ -8,6 +8,7 @@ import { api } from "../lib/api";
 import { useAppSync } from "../context/useAppSync";
 import { auth } from "../lib/firebase";
 import { fetchMyVendorListings } from "../lib/listings";
+import { hasFullAccess, normalizeRole } from "../utils/roles";
 
 function normalizeTenant(id?: string | null) {
   if (!id) return "public";
@@ -50,11 +51,11 @@ const EmailLayer = () => {
   const [search, setSearch] = useState("");
   const [folder, setFolder] = useState("inbox"); // inbox | sent
   // Role selection for viewing/sending context
-  const sessionRole = (typeof window !== 'undefined' ? sessionStorage.getItem('role') : null) || '';
+  const sessionRole = normalizeRole((typeof window !== 'undefined' ? sessionStorage.getItem('role') : null) || 'member');
   const [viewAs, setViewAs] = useState(() => {
     const saved = (typeof window !== 'undefined' ? sessionStorage.getItem('messageViewAs') : null) || '';
     if (saved) return saved;
-    if (sessionRole === 'admin') return vendor?.vendorId ? 'vendor' : 'admin';
+    if (hasFullAccess(sessionRole)) return vendor?.vendorId ? 'vendor' : 'admin';
     return vendor?.vendorId ? 'vendor' : 'user';
   });
   const [compose, setCompose] = useState({ open: false, mode: vendor?.vendorId ? "vendor_admin" : "vendor_subscriber", serviceId: "", subject: "", content: "", sending: false, err: null, ok: false, subscriberEmail: "" });
@@ -104,7 +105,7 @@ const EmailLayer = () => {
 
   const userEmail = (auth.currentUser?.email || sessionStorage.getItem('userEmail') || "").toLowerCase();
   const role = sessionRole;
-  const isAdmin = role === 'admin';
+  const isAdmin = hasFullAccess(role);
   const canSync = isAdmin || !!vendor?.vendorId;
   const myVendorId = vendor?.vendorId || vendor?.id || '';
   const mySenderIds = useMemo(() => {
@@ -443,7 +444,7 @@ const EmailLayer = () => {
                   <select className='form-select form-select-sm' value={viewAs} onChange={(e)=>setViewAs(e.target.value)}>
                     <option value='user'>Startup</option>
                     {vendor?.vendorId && (<option value='vendor'>Vendor</option>)}
-                    {role === 'admin' && (<option value='admin'>Admin</option>)}
+                    {hasFullAccess(role) && (<option value='admin'>Admin</option>)}
                   </select>
                 </div>
               </div>

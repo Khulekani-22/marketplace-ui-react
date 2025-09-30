@@ -7,6 +7,7 @@ import { onIdTokenChanged } from "firebase/auth";
 import appDataLocal from "../data/appData.json";
 import { AppSyncContext } from "./appSyncContext";
 import { toast } from "react-toastify";
+import { hasFullAccess, normalizeRole } from "../utils/roles";
 
 const LS_APP_DATA_KEY = "sl_app_data_cache_v1";
 
@@ -53,7 +54,7 @@ export function AppSyncProvider({ children }) {
   const [appData, setAppData] = useState<any>(initialAppData);
   const [appDataLoading, setAppDataLoading] = useState(false);
   const [appDataError, setAppDataError] = useState("");
-  const [role, setRole] = useState(() => sessionStorage.getItem("role") || "member");
+  const [role, setRole] = useState(() => normalizeRole(sessionStorage.getItem("role")));
 
   const normalizeTenant = useCallback((id: string | null | undefined) => {
     if (!id) return "vendor";
@@ -64,7 +65,7 @@ export function AppSyncProvider({ children }) {
   const [lastSyncAt, setLastSyncAt] = useState(0);
   const isSyncingRef = useRef(false);
 
-  const isAdmin = role === "admin";
+  const isAdmin = hasFullAccess(role);
 
   const refreshRole = useCallback(async () => {
     const user = auth.currentUser;
@@ -74,7 +75,7 @@ export function AppSyncProvider({ children }) {
         suppressToast: true,
         suppressErrorLog: true,
       } as any);
-      const nextRole = data?.role || "member";
+      const nextRole = normalizeRole(data?.role);
       const nextTenant = normalizeTenant(data?.tenantId);
       const email = data?.email || user.email || null;
       const uid = data?.uid || user.uid || null;
@@ -96,7 +97,7 @@ export function AppSyncProvider({ children }) {
         setTenantId("vendor");
       }
     }
-  }, []);
+  }, [normalizeTenant]);
 
   const refreshAppData = useCallback(async () => {
     setAppDataLoading(true);

@@ -170,6 +170,13 @@ const SideNavAdmin = ({ children }) => {
     </NavLink>
   </li>
 
+  <li>
+    <NavLink to='/sloane-academy-admin' className={(navData) => (navData.isActive ? "active-page" : "")}>
+      <Icon icon='mdi:teach' className='menu-icon' />
+      <span>Academy Admin</span>
+    </NavLink>
+  </li>
+
   {/* Business Maturity Dropdown */}
   <li className='dropdown'>
     <Link to='#'>

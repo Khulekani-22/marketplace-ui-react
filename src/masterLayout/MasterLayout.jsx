@@ -11,6 +11,7 @@ import HeroBanner from "../components/HeroBanner";
 import { getHeroForPath } from "../utils/heroConfig";
 import AIAssistant from "../components/assistant/AIAssistant";
 import { useMessages } from "../context/useMessages";
+import { hasFullAccess, normalizeRole, isPartner } from "../utils/roles";
 
 
 export default function MasterLayout({ children }) {
@@ -23,7 +24,8 @@ function MasterLayoutInner({ children }) {
   const [user, setUser] = useState(null);
   const [sidebarActive, setSidebarActive] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(() => (sessionStorage.getItem("role") === "admin"));
+  const [isAdmin, setIsAdmin] = useState(() => hasFullAccess(sessionStorage.getItem("role")));
+  const [isPartnerRole, setIsPartnerRole] = useState(() => isPartner(sessionStorage.getItem("role")));
   const [tenantId, setTenantId] = useState(() => {
     const stored = sessionStorage.getItem("tenantId");
     return normalizeTenant(stored);
@@ -47,9 +49,10 @@ function MasterLayoutInner({ children }) {
 
   // Keep role/tenant in sync when navigating (sessionStorage as simple source of truth)
   useEffect(() => {
-    const role = sessionStorage.getItem("role") || "";
+    const role = normalizeRole(sessionStorage.getItem("role"));
     const tenant = normalizeTenant(sessionStorage.getItem("tenantId"));
-    setIsAdmin(role === "admin");
+    setIsAdmin(hasFullAccess(role));
+    setIsPartnerRole(isPartner(role));
     setTenantId(tenant);
   }, [location.pathname]);
 
@@ -60,7 +63,7 @@ function MasterLayoutInner({ children }) {
       if (!user) return;
       try {
         const { data } = await api.get("/api/me");
-        const role = data?.role || "member";
+        const role = normalizeRole(data?.role);
         const tenant = normalizeTenant(data?.tenantId);
         const email = data?.email || user.email || null;
         const uid = data?.uid || user.uid || null;
@@ -70,13 +73,15 @@ function MasterLayoutInner({ children }) {
         else sessionStorage.removeItem("userId");
         sessionStorage.setItem("role", role);
         sessionStorage.setItem("tenantId", tenant);
-        setIsAdmin(role === "admin");
+        setIsAdmin(hasFullAccess(role));
+        setIsPartnerRole(isPartner(role));
         setTenantId(tenant);
       } catch {
         if (!auth.currentUser) {
           sessionStorage.removeItem("role");
           sessionStorage.removeItem("tenantId");
           setIsAdmin(false);
+          setIsPartnerRole(false);
           setTenantId("vendor");
         }
       }
@@ -115,6 +120,7 @@ function MasterLayoutInner({ children }) {
       if (u) refreshRole();
       else {
         setIsAdmin(false);
+        setIsPartnerRole(false);
         setTenantId("vendor");
       }
     });
@@ -191,6 +197,20 @@ function MasterLayoutInner({ children }) {
               <NavLink to="/dashboard" className={navClass}>
                 <Icon icon="material-symbols:map-outline" className="menu-icon" />
                 <span>All Listings</span>
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/market1" className={navClass}>
+                <Icon icon="mdi:storefront-outline" className="menu-icon" />
+                <span>Access to Market</span>
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/access-capital" className={navClass}>
+                <Icon icon="mdi:cash-multiple" className="menu-icon" />
+                <span>Access to Capital</span>
               </NavLink>
             </li>
 
@@ -271,6 +291,13 @@ function MasterLayoutInner({ children }) {
                   <NavLink to="/admin/users" className={navClass}>
                     <Icon icon="mdi:account-cog-outline" className="menu-icon" />
                     <span>User Roles</span>
+                  </NavLink>
+                </li>
+
+                <li>
+                  <NavLink to="/sloane-academy-admin" className={navClass}>
+                    <Icon icon="mdi:teach" className="menu-icon" />
+                    <span>Academy Admin</span>
                   </NavLink>
                 </li>
               </>
@@ -360,6 +387,9 @@ function MasterLayoutInner({ children }) {
 
                 {/* Tenant badge (visible to all) */}
                 <span className="badge text-bg-secondary d-none d-sm-inline">Tenant: {tenantId}</span>
+                {isPartnerRole && (
+                  <span className="badge text-bg-primary-subtle text-primary d-none d-sm-inline">Partner</span>
+                )}
 
                 {/* Quick portal/actions from Navbar.jsx */}
                 {user ? (

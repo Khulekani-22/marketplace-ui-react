@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import { api } from "../lib/api";
+import { hasFullAccess, normalizeRole } from "../utils/roles";
 
 export default function AdminRoute({ children }) {
   const [state, setState] = useState({ loading: true, ok: false, authed: false });
@@ -18,7 +19,7 @@ export default function AdminRoute({ children }) {
       }
       try {
         const { data } = await api.get("/api/me");
-        const role = data?.role || sessionStorage.getItem("role") || "member";
+        const role = normalizeRole(data?.role || sessionStorage.getItem("role"));
         const tenant = data?.tenantId || sessionStorage.getItem("tenantId") || "vendor";
         const email = data?.email || user.email || null;
         const uid = data?.uid || user.uid || null;
@@ -28,7 +29,7 @@ export default function AdminRoute({ children }) {
         else sessionStorage.removeItem("userEmail");
         if (uid) sessionStorage.setItem("userId", uid);
         else sessionStorage.removeItem("userId");
-        const ok = role === "admin";
+        const ok = hasFullAccess(role);
         if (!cancelled) setState({ loading: false, ok, authed: true });
       } catch {
         const authed = !!auth.currentUser;

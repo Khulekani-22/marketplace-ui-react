@@ -6,6 +6,7 @@ import { MessagesContext } from "./messagesContext";
 import appDataLocal from "../data/appData.json";
 import { auth } from "../lib/firebase";
 import { onIdTokenChanged } from "firebase/auth";
+import { hasFullAccess } from "../utils/roles";
 
 const STORAGE_KEY = "sl_messages_cache_v1";
 
@@ -30,7 +31,118 @@ const persistCachedThreads = (items: any[]) => {
 const AUTO_POLL_INTERVAL_MS = 4 * 60 * 1000;
 const VENDOR_PROFILE_KEY = "vendor_profile_v3";
 
+const normalize = (value?: string | null) =>
+  typeof value === "string" ? value.trim().toLowerCase() : "";
+
+const mapTenantOut = (id: string) => (id === "vendor" ? "public" : id);
+
 const resolveTenantId = () => (typeof window !== "undefined" ? sessionStorage.getItem("tenantId") : null) || "vendor";
+
+type Identity = {
+  email: string;
+  uid: string;
+  role: string;
+  vendorId: string;
+  vendorEmail: string;
+};
+
+const canAccessThread = (thread: any, identity: Identity) => {
+  if (!thread) return false;
+  const { email, role, vendorId, vendorEmail } = identity;
+  const ctx = thread?.context || {};
+  const pid: string[] = Array.isArray(thread?.participantIds) ? thread.participantIds : [];
+  const vendorCtxId = normalize(ctx.vendorId);
+  const vendorCtxEmail = normalize(ctx.vendorEmail);
+
+  const vendorMatch = (candidate?: string | null) => {
+    const id = normalize(candidate);
+    if (!id) return false;
+    return (
+      pid.some((p) => normalize(p) === `vendor:${id}`) ||
+      vendorCtxId === id
+    );
+  };
+
+  const isVendorParticipant =
+    vendorMatch(vendorId) ||
+    vendorMatch(email) ||
+    vendorCtxEmail === email ||
+    (vendorEmail && (vendorCtxEmail === vendorEmail || vendorMatch(vendorEmail)));
+
+  const subscriberEmail = normalize(ctx.subscriberEmail);
+  const isSubscriber =
+    !!email &&
+    (subscriberEmail === email || pid.some((p) => normalize(p) === `user:${email}`));
+
+  if (hasFullAccess(role)) {
+    const ctxAdminEmail = normalize(ctx.adminEmail);
+    const adminParticipant =
+      (!ctxAdminEmail && pid.some((p) => normalize(p) === "admin")) ||
+      (!!email && (ctxAdminEmail === email || pid.some((p) => normalize(p) === `admin:${email}`)));
+    const subscriberThread = ctx.type === "listing-subscriber";
+    const vendorOrSubscriber = isVendorParticipant || isSubscriber;
+    return adminParticipant || subscriberThread || vendorOrSubscriber;
+  }
+
+  if (ctx.type === "listing-feedback") return isVendorParticipant;
+  if (ctx.type === "listing-subscriber") return isVendorParticipant || isSubscriber;
+  return isVendorParticipant || isSubscriber;
+};
+
+const sortThreads = (items: any[]) => {
+  return [...items].sort((a, b) => {
+    const latest = (thread: any) => {
+      const last = thread?.lastMessage?.date || thread?.messages?.[thread?.messages?.length - 1]?.date;
+      return last ? new Date(last).getTime() : 0;
+    };
+    return latest(b) - latest(a);
+  });
+};
+
+const filterThreadsForIdentity = (doc: any, tenantId: string, identity: Identity) => {
+  const tenantKey = mapTenantOut(tenantId);
+  const raw = Array.isArray(doc?.messageThreads) ? doc.messageThreads : [];
+  const scoped = raw.filter((t) => (t?.tenantId || "public") === tenantKey);
+  const accessible = scoped.filter((t) => canAccessThread(t, identity));
+  return sortThreads(accessible).map((t) => ({ ...t }));
+};
+
+const fallbackThreadsForTenant = (tenantId: string) => {
+  const tenantKey = (tenantId === "vendor" ? "public" : tenantId).toString().toLowerCase();
+  const raw = Array.isArray(appDataLocal?.messageThreads) ? appDataLocal.messageThreads : [];
+  return raw
+    .filter((t) => {
+      const scope = (t?.tenantId ?? "public").toString().toLowerCase();
+      return scope === tenantKey;
+    })
+    .map((t) => ({ ...t }));
+};
+
+const resolveIdentity = (tenantId: string): Identity => {
+  const email = normalize(auth.currentUser?.email || (typeof window !== "undefined" ? sessionStorage.getItem("userEmail") : ""));
+  const uid = auth.currentUser?.uid || (typeof window !== "undefined" ? sessionStorage.getItem("userId") : "");
+  const rawRole = (typeof window !== "undefined" ? sessionStorage.getItem("role") : null) || "member";
+  const role = normalize(rawRole) || "member";
+  let vendorProfile: any = null;
+  if (typeof window !== "undefined" && uid) {
+    try {
+      const key = `${VENDOR_PROFILE_KEY}:${tenantId}:${uid}`;
+      const raw = localStorage.getItem(key);
+      if (raw) vendorProfile = JSON.parse(raw);
+    } catch {
+      vendorProfile = null;
+    }
+  }
+  const vendorId = normalize(vendorProfile?.vendorId || vendorProfile?.id);
+  const vendorEmail = normalize(vendorProfile?.email || vendorProfile?.contactEmail);
+  return {
+    email,
+    uid,
+    role,
+    vendorId,
+    vendorEmail,
+  };
+};
 
 export function MessagesProvider({ children }) {
   const [threads, setThreads] = useState(() => readCachedThreads());
@@ -48,96 +160,6 @@ export function MessagesProvider({ children }) {
   useEffect(() => {
     threadsRef.current = threads;
   }, [threads]);
-
-  const mapTenantOut = (id: string) => (id === "vendor" ? "public" : id);
-
-  const normalize = (value?: string | null) =>
-    typeof value === "string" ? value.trim().toLowerCase() : "";
-
-  const resolveIdentity = (tenantId: string) => {
-    const email = normalize(auth.currentUser?.email || (typeof window !== "undefined" ? sessionStorage.getItem("userEmail") : ""));
-    const uid = auth.currentUser?.uid || (typeof window !== "undefined" ? sessionStorage.getItem("userId") : "");
-    const role = (typeof window !== "undefined" ? sessionStorage.getItem("role") : null) || "member";
-    let vendorProfile: any = null;
-    if (typeof window !== "undefined" && uid) {
-      try {
-        const key = `${VENDOR_PROFILE_KEY}:${tenantId}:${uid}`;
-        const raw = localStorage.getItem(key);
-        if (raw) vendorProfile = JSON.parse(raw);
-      } catch {
-        vendorProfile = null;
-      }
-    }
-    const vendorId = normalize(vendorProfile?.vendorId || vendorProfile?.id);
-    const vendorEmail = normalize(vendorProfile?.email || vendorProfile?.contactEmail);
-    return {
-      email,
-      uid,
-      role,
-      vendorId,
-      vendorEmail,
-    };
-  };
-
-  const canAccessThread = (thread: any, identity: ReturnType<typeof resolveIdentity>) => {
-    if (!thread) return false;
-    const { email, role, vendorId, vendorEmail } = identity;
-    const ctx = thread?.context || {};
-    const pid: string[] = Array.isArray(thread?.participantIds) ? thread.participantIds : [];
-    const vendorCtxId = normalize(ctx.vendorId);
-    const vendorCtxEmail = normalize(ctx.vendorEmail);
-    const vendorMatch = (candidate?: string | null) => {
-      const id = normalize(candidate);
-      if (!id) return false;
-      return (
-        pid.some((p) => normalize(p) === `vendor:${id}`) ||
-        vendorCtxId === id
-      );
-    };
-
-    const isVendorParticipant =
-      vendorMatch(vendorId) ||
-      vendorMatch(email) ||
-      vendorCtxEmail === email ||
-      (vendorEmail && (vendorCtxEmail === vendorEmail || vendorMatch(vendorEmail)));
-
-    const subscriberEmail = normalize(ctx.subscriberEmail);
-    const isSubscriber =
-      !!email &&
-      (subscriberEmail === email || pid.some((p) => normalize(p) === `user:${email}`));
-
-    if (role === "admin") {
-      const ctxAdminEmail = normalize(ctx.adminEmail);
-      const adminParticipant =
-        (!ctxAdminEmail && pid.some((p) => normalize(p) === "admin")) ||
-        (!!email && (ctxAdminEmail === email || pid.some((p) => normalize(p) === `admin:${email}`)));
-      const subscriberThread = ctx.type === "listing-subscriber";
-      const vendorOrSubscriber = isVendorParticipant || isSubscriber;
-      return adminParticipant || subscriberThread || vendorOrSubscriber;
-    }
-
-    if (ctx.type === "listing-feedback") return isVendorParticipant;
-    if (ctx.type === "listing-subscriber") return isVendorParticipant || isSubscriber;
-    return isVendorParticipant || isSubscriber;
-  };
-
-  const sortThreads = (items: any[]) => {
-    return [...items].sort((a, b) => {
-      const latest = (thread: any) => {
-        const last = thread?.lastMessage?.date || thread?.messages?.[thread?.messages?.length - 1]?.date;
-        return last ? new Date(last).getTime() : 0;
-      };
-      return latest(b) - latest(a);
-    });
-  };
-
-  const filterThreadsForIdentity = (doc: any, tenantId: string, identity: ReturnType<typeof resolveIdentity>) => {
-    const tenantKey = mapTenantOut(tenantId);
-    const raw = Array.isArray(doc?.messageThreads) ? doc.messageThreads : [];
-    const scoped = raw.filter((t) => (t?.tenantId || "public") === tenantKey);
-    const accessible = scoped.filter((t) => canAccessThread(t, identity));
-    return sortThreads(accessible).map((t) => ({ ...t }));
-  };
 
   const syncMessagesToLive = useCallback(async () => {
     const tenantId = resolveTenantId();
@@ -171,17 +193,6 @@ export function MessagesProvider({ children }) {
     }
     return threadsRef.current.length > 0;
   }, []);
-
-  const fallbackThreadsForTenant = (tenantId: string) => {
-    const tenantKey = (tenantId === "vendor" ? "public" : tenantId).toString().toLowerCase();
-    const raw = Array.isArray(appDataLocal?.messageThreads) ? appDataLocal.messageThreads : [];
-    return raw
-      .filter((t) => {
-        const scope = (t?.tenantId ?? "public").toString().toLowerCase();
-        return scope === tenantKey;
-      })
-      .map((t) => ({ ...t }));
-  };
 
   const refresh = useCallback(
     async ({ silent, force }: { silent?: boolean; force?: boolean } = {}) => {
@@ -237,9 +248,10 @@ export function MessagesProvider({ children }) {
           );
         }
       } finally {
-        if (refreshSeq.current !== seq) return;
-        if (silent) setRefreshing(false);
-        else setLoading(false);
+        if (refreshSeq.current === seq) {
+          if (silent) setRefreshing(false);
+          else setLoading(false);
+        }
       }
     },
     []

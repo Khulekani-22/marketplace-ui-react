@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, bootstrapSession } from "../lib/api";
 import { auth } from "../lib/firebase";
 import { writeAuditLog } from "../lib/audit";
+import { hasFullAccess, normalizeRole } from "../utils/roles";
 
 export default function UserRoleManagement() {
   const [users, setUsers] = useState([]);
@@ -37,11 +38,13 @@ export default function UserRoleManagement() {
 
   // Search + filter
   const [query, setQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("All"); // All | admin | member
+  const [roleFilter, setRoleFilter] = useState("All"); // All | admin | partner | member
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const filterRole = roleFilter === "All" ? null : normalizeRole(roleFilter);
     return sorted.filter((u) => {
-      if (roleFilter !== "All" && (u.role || "member") !== roleFilter) return false;
+      const roleName = normalizeRole(u.role);
+      if (filterRole && roleName !== filterRole) return false;
       if (!q) return true;
       const blob = `${u.email} ${u.tenantId} ${u.role}`.toLowerCase();
       return blob.includes(q);
@@ -53,7 +56,7 @@ export default function UserRoleManagement() {
     return safe.map((u) => ({
       email: (u.email || "").toLowerCase(),
       tenantId: (u.tenantId === "vendor" ? "public" : (u.tenantId || "public")),
-      role: u.role || "member",
+      role: normalizeRole(u.role),
     }));
   }
 
@@ -161,17 +164,32 @@ export default function UserRoleManagement() {
 
   async function saveUser({ email, tenantId, role }) {
     const payloadTenant = tenantId === 'vendor' ? 'public' : tenantId;
-    await api.post("/api/users", { email, tenantId: payloadTenant, role });
+    const normalizedRole = normalizeRole(role);
+    await api.post("/api/users", { email, tenantId: payloadTenant, role: normalizedRole });
     // If the current signed-in user was updated, sync session hints
     if (email.toLowerCase() === meEmail) {
       sessionStorage.setItem("tenantId", tenantId);
-      sessionStorage.setItem("role", role);
+      sessionStorage.setItem("role", normalizedRole);
     }
   }
 
   async function toggleAdmin(u) {
     setError(""); setOk("");
-    const nextRole = (u.role === "admin" ? "member" : "admin");
+    const current = normalizeRole(u.role);
+    const nextRole = current === "admin" ? "member" : "admin";
+    try {
+      await saveUser({ email: u.email, tenantId: u.tenantId || "vendor", role: nextRole });
+      setUsers((prev) => prev.map((x) => (x.email === u.email ? { ...x, role: nextRole } : x)));
+      setOk(`${u.email} is now ${nextRole}`);
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message || "Failed to update role");
+    }
+  }
+
+  async function togglePartner(u) {
+    setError(""); setOk("");
+    const current = normalizeRole(u.role);
+    const nextRole = current === "partner" ? "member" : "partner";
     try {
       await saveUser({ email: u.email, tenantId: u.tenantId || "vendor", role: nextRole });
       setUsers((prev) => prev.map((x) => (x.email === u.email ? { ...x, role: nextRole } : x)));
@@ -442,34 +460,48 @@ export default function UserRoleManagement() {
     }
   }, [allBusy, allUsers, searchAllUsers]);
 
-  async function grantAdmin(email) {
+  async function grantRole(email, role) {
     const t = tenantPick[email] || "vendor";
+    const nextRole = normalizeRole(role);
     try {
-      await saveUser({ email, tenantId: t, role: "admin" });
-      // reflect in main users table
+      await saveUser({ email, tenantId: t, role: nextRole });
       setUsers((prev) => {
         const hit = prev.find((x) => x.email === email);
-        if (hit) return prev.map((x) => (x.email === email ? { ...x, role: "admin", tenantId: t } : x));
-        return [...prev, { email, role: "admin", tenantId: t }];
+        if (hit) return prev.map((x) => (x.email === email ? { ...x, role: nextRole, tenantId: t } : x));
+        return [...prev, { email, role: nextRole, tenantId: t }];
       });
-      setOk(`${email} granted admin (${t})`);
+      setOk(`${email} granted ${nextRole} (${t})`);
     } catch (e) {
-      setError(e?.response?.data?.message || e?.message || "Failed to grant admin");
+      setError(e?.response?.data?.message || e?.message || `Failed to grant ${nextRole}`);
     }
   }
 
-  function isAdminEmail(email) {
-    const e = (email || '').toLowerCase();
-    return users.some((u) => u.email === e && (u.role || 'member') === 'admin');
+  async function grantAdmin(email) {
+    await grantRole(email, "admin");
   }
 
-  async function revokeAdmin(email) {
+  async function grantPartner(email) {
+    await grantRole(email, "partner");
+  }
+
+  function hasFullAccessEmail(email) {
+    const e = (email || '').toLowerCase();
+    return users.some((u) => u.email === e && hasFullAccess(u.role));
+  }
+
+  function getUserRole(email) {
+    const e = (email || '').toLowerCase();
+    const hit = users.find((u) => u.email === e);
+    return normalizeRole(hit?.role);
+  }
+
+  async function revokeFullAccess(email) {
     const existing = users.find((u) => u.email === (email || '').toLowerCase());
     const t = existing?.tenantId || tenantPick[email] || 'vendor';
     try {
       await saveUser({ email, tenantId: t, role: 'member' });
       setUsers((prev) => prev.map((x) => (x.email === email ? { ...x, role: 'member' } : x)));
-      setOk(`${email} admin revoked`);
+      setOk(`${email} access revoked`);
     } catch (e) {
       setError(e?.response?.data?.message || e?.message || 'Failed to revoke admin');
     }
@@ -580,6 +612,7 @@ export default function UserRoleManagement() {
               >
                 <option>All</option>
                 <option>admin</option>
+                <option>partner</option>
                 <option>member</option>
               </select>
             </div>
@@ -622,7 +655,16 @@ export default function UserRoleManagement() {
               {!loading && visible.length === 0 && (
                 <tr><td colSpan={4}>No users match your filters.</td></tr>
               )}
-              {!loading && visible.map((u) => (
+              {!loading && visible.map((u) => {
+                const roleName = normalizeRole(u.role);
+                const isAdminRole = roleName === "admin";
+                const isPartnerRole = roleName === "partner";
+                const roleBadgeClass = isAdminRole
+                  ? "badge bg-success-focus text-success-700"
+                  : isPartnerRole
+                  ? "badge bg-primary-subtle text-primary-700"
+                  : "badge bg-neutral-200 text-neutral-900";
+                return (
                 <tr key={u.email}>
                   <td>{u.email}</td>
                   <td>
@@ -638,7 +680,7 @@ export default function UserRoleManagement() {
                     </select>
                   </td>
                   <td>
-                    <span className={u.role === 'admin' ? 'badge bg-success-focus text-success-700' : 'badge bg-neutral-200 text-neutral-900'}>{u.role || 'member'}</span>
+                    <span className={roleBadgeClass}>{roleName}</span>
                   </td>
                   <td>
                     {vendorByEmail[u.email] ? (
@@ -704,11 +746,19 @@ export default function UserRoleManagement() {
                     <div className="d-flex gap-2">
                       <button
                         type="button"
-                        className={u.role === 'admin' ? 'btn btn-outline-danger btn-sm' : 'btn btn-outline-success btn-sm'}
+                        className={isAdminRole ? 'btn btn-outline-danger btn-sm' : 'btn btn-outline-success btn-sm'}
                         onClick={()=>toggleAdmin(u)}
-                        title={u.role === 'admin' ? 'Revoke admin' : 'Grant admin'}
+                        title={isAdminRole ? 'Revoke admin' : 'Grant admin'}
                       >
-                        {u.role === 'admin' ? 'Revoke Admin' : 'Make Admin'}
+                        {isAdminRole ? 'Revoke Admin' : 'Make Admin'}
+                      </button>
+                      <button
+                        type="button"
+                        className={isPartnerRole ? 'btn btn-outline-danger btn-sm' : 'btn btn-outline-primary btn-sm'}
+                        onClick={()=>togglePartner(u)}
+                        title={isPartnerRole ? 'Revoke partner' : 'Grant partner'}
+                      >
+                        {isPartnerRole ? 'Revoke Partner' : 'Make Partner'}
                       </button>
                       {!vendorByEmail[u.email] && (
                         <button
@@ -751,7 +801,8 @@ export default function UserRoleManagement() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         </div>
@@ -791,26 +842,47 @@ export default function UserRoleManagement() {
                     <td>{r.displayName || '—'}</td>
                     <td><code>{r.uid}</code></td>
                     <td>
+                      {(() => {
+                        const key = (r.email || '').toLowerCase();
+                        const currentTenant = tenantPick[key] || 'vendor';
+                        return (
                       <select
                         className="form-select form-select-sm w-auto bg-base border text-secondary-light rounded-pill"
-                        value={tenantPick[r.email] || 'vendor'}
-                        onChange={(e)=>setTenantPick((prev)=>({ ...prev, [r.email]: e.target.value }))}
+                        value={currentTenant}
+                        onChange={(e)=>setTenantPick((prev)=>({ ...prev, [key]: e.target.value }))}
                       >
                         {tenants.map((t)=> (
                           <option key={t.id} value={t.id}>{t.name || t.id}</option>
                         ))}
                       </select>
+                        );
+                      })()}
                     </td>
                     <td>
-                      {isAdminEmail(r.email) ? (
-                        <button className="btn btn-sm btn-outline-danger" onClick={()=>revokeAdmin((r.email || '').toLowerCase())}>
-                          Revoke Admin
-                        </button>
-                      ) : (
-                        <button className="btn btn-sm btn-outline-success" onClick={()=>grantAdmin((r.email || '').toLowerCase())}>
+                      <div className="d-flex flex-wrap gap-2">
+                        <button
+                          className="btn btn-sm btn-outline-success"
+                          onClick={()=>grantAdmin((r.email || '').toLowerCase())}
+                          disabled={getUserRole(r.email) === 'admin'}
+                        >
                           Grant Admin
                         </button>
-                      )}
+                        <button
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={()=>grantPartner((r.email || '').toLowerCase())}
+                          disabled={getUserRole(r.email) === 'partner'}
+                        >
+                          Grant Partner
+                        </button>
+                        {hasFullAccessEmail(r.email) && (
+                          <button
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={()=>revokeFullAccess((r.email || '').toLowerCase())}
+                          >
+                            Revoke Access
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

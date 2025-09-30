@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MasterLayout from "../MasterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/useVendor";
 import { auth } from "../lib/firebase";
 import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
+import { hasFullAccess } from "../utils/roles";
 
 const API_BASE = "/api/lms";
 
@@ -140,7 +141,7 @@ export default function VendorProfilePage() {
     return draft ?? appDataLocal;
   });
 
-  const isAdmin = sessionStorage.getItem("role") === "admin";
+  const isAdmin = hasFullAccess(sessionStorage.getItem("role"));
 
   const [history, setHistory] = useState(() => {
     if (!isAdmin) return [];
@@ -157,12 +158,13 @@ export default function VendorProfilePage() {
   // Simple undo for whole appData working copy
   const undoRef = useRef([]);
 
-  function pushUndo(snapshot) {
+  const pushUndo = useCallback((snapshot) => {
     const stack = [snapshot, ...(undoRef.current || [])].slice(0, 10);
     undoRef.current = stack;
     localStorage.setItem(LS_UNDO_KEY, JSON.stringify(stack));
-  }
-  function undo() {
+  }, []);
+
+  const undo = useCallback(() => {
     const stack =
       undoRef.current?.length
         ? undoRef.current
@@ -173,13 +175,18 @@ export default function VendorProfilePage() {
     localStorage.setItem(LS_UNDO_KEY, JSON.stringify(stack));
     setData(prev);
     localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(prev));
-  }
+  }, []);
 
-  function doSetData(next) {
-    pushUndo(data);
-    setData(next);
-    localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(next));
-  }
+  const doSetData = useCallback(
+    (next) => {
+      setData((prev) => {
+        pushUndo(prev);
+        localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(next));
+        return next;
+      });
+    },
+    [pushUndo]
+  );
 
   // Load LIVE + recent checkpoints on mount (same headers/flow as ListingsAdminPage)
   useEffect(() => {
@@ -225,9 +232,9 @@ export default function VendorProfilePage() {
     return () => {
       alive = false;
     };
-  }, [tenantId, isAdmin]);
+  }, [tenantId, isAdmin, ensureVendorId, doSetData, refreshHistory]);
 
-  async function refreshHistory() {
+  const refreshHistory = useCallback(async () => {
     if (!isAdmin) {
       setHistory([]);
       return;
@@ -245,7 +252,7 @@ export default function VendorProfilePage() {
     } catch {
       // ignore
     }
-  }
+  }, [isAdmin, tenantId]);
 
   // Detect the current signed-in vendor from LIVE appData
   const detectedVendor = useMemo(() => {

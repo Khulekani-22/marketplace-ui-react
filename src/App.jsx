@@ -110,10 +110,13 @@ const MySubscriptionsPage = React.lazy(() => import("./pages/MySubscriptionsPage
 const AllDataTable = React.lazy(() => import("./pages/AllDataTable.tsx"));
 const DataOverview = React.lazy(() => import("./pages/DataOverview.tsx"));
 const Market1 = React.lazy(() => import("./pages/Market1.tsx"));
+const AccessToCapitalPage = React.lazy(() => import("./pages/AccessToCapitalPage.tsx"));
 
 // features
 const LmsPage = React.lazy(() => import("./pages/LmsPage.tsx"));
 const LmsAdminPage = React.lazy(() => import("./pages/LmsAdminPage.tsx"));
+const SloaneAcademyPage = React.lazy(() => import("./pages/SloaneAcademyPage.tsx"));
+const SloaneAcademyAdminPage = React.lazy(() => import("./pages/SloaneAcademyAdminPage.tsx"));
 const ListingsAdminPage = React.lazy(() => import("./pages/ListingsAdminPage.tsx"));
 const VendorAddListingPage = React.lazy(() => import("./pages/VendorAddListingPage.tsx"));
 const VendorMyListings = React.lazy(() => import("./pages/VendorMyListings.tsx"));
@@ -291,8 +294,18 @@ export default function App() {
             {/* data + features */}
             <Route path="/overview" element={<DataOverview />} />
             <Route path="/data" element={<AllDataTable />} />
+            <Route path="/access-capital" element={<AccessToCapitalPage />} />
             <Route path="/market1" element={<Market1 />} />
             <Route path="/lms" element={<LmsPage />} />
+            <Route path="/sloane-academy" element={<SloaneAcademyPage />} />
+            <Route
+              path="/sloane-academy-admin"
+              element={
+                <AdminRoute>
+                  <SloaneAcademyAdminPage />
+                </AdminRoute>
+              }
+            />
             <Route
               path="/listings-admin"
               element={

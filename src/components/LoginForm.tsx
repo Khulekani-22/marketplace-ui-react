@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { bootstrapSession } from "../lib/api";
+import { hasFullAccess } from "../utils/roles";
 import { useVendor } from "../context/useVendor";
 import { writeAuditLog } from "../lib/audit";
 
@@ -108,7 +109,7 @@ export default function LoginForm({
         let nextPath = returnTo;
         try {
           const sess = await bootstrapSession();
-          if ((sess?.role || "member") === "admin") {
+          if (hasFullAccess(sess?.role)) {
             nextPath = "/listings-admin"; // default admin landing
           }
         } catch { /* ignore and use returnTo */ }

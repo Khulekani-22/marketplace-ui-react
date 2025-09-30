@@ -1,0 +1,261 @@
+/* src/styles/access-to-capital.css */
+
+.access-capital {
+  --ac-surface: #fff;
+  --ac-surface-subtle: var(--bs-body-bg);
+  --ac-border: color-mix(in srgb, var(--bs-body-color) 15%, transparent);
+  --ac-border-strong: color-mix(in srgb, var(--bs-body-color) 24%, transparent);
+  --ac-primary: var(--bs-primary);
+  --ac-primary-soft: color-mix(in srgb, var(--bs-primary) 14%, #ffffff 86%);
+  --ac-primary-strong: color-mix(in srgb, var(--bs-primary) 82%, #0f172a 18%);
+  --ac-success: var(--bs-success);
+  --ac-radius-lg: 16px;
+  --ac-radius-xl: 22px;
+  --ac-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.08);
+  --ac-shadow-md: 0 12px 24px rgba(15, 23, 42, 0.08), 0 6px 18px rgba(15, 23, 42, 0.08);
+  --ac-hero-gradient: linear-gradient(120deg, color-mix(in srgb, var(--ac-primary) 88%, #111827 12%), color-mix(in srgb, var(--ac-primary) 68%, #0f172a 32%) 55%, rgba(255, 255, 255, 0.08));
+  --ac-outline-color: color-mix(in srgb, var(--ac-primary) 60%, #ffffff 40%);
+}
+
+.access-capital__hero {
+  position: relative;
+  border-radius: var(--ac-radius-xl);
+  background: var(--ac-hero-gradient);
+  color: #fff;
+  box-shadow: var(--ac-shadow-md);
+  overflow: hidden;
+}
+
+.access-capital__hero-title {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ac-primary) 62%, #fff6e8 38%), color-mix(in srgb, var(--ac-primary) 22%, #ffffff 78%) 70%, #ffffff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.access-capital__hero-visual {
+  min-height: 260px;
+  border-radius: var(--ac-radius-lg);
+  background:
+    radial-gradient(60% 50% at 30% 40%, color-mix(in srgb, var(--ac-primary) 35%, transparent), transparent 70%),
+    radial-gradient(60% 50% at 70% 60%, color-mix(in srgb, var(--ac-primary) 25%, #f97316 75%), transparent 70%),
+    radial-gradient(70% 60% at 50% 100%, color-mix(in srgb, var(--bs-info) 30%, transparent), transparent 70%);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.access-capital__kpi {
+  border-radius: var(--ac-radius-lg);
+  background: var(--ac-surface);
+  border: 1px solid var(--ac-border);
+  box-shadow: var(--ac-shadow-sm);
+  height: 100%;
+}
+
+.access-capital__kpi-value {
+  font-weight: 800;
+  font-size: clamp(1.1rem, 1.2rem + 1vw, 1.8rem);
+  color: color-mix(in srgb, var(--ac-primary) 28%, var(--bs-body-color));
+}
+
+.access-capital__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--ac-success);
+  background: color-mix(in srgb, var(--ac-success) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ac-success) 24%, transparent);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.access-capital__search {
+  background: var(--ac-surface);
+  border: 1px solid var(--ac-border);
+  border-radius: 999px;
+  box-shadow: var(--ac-shadow-sm);
+  min-height: 54px;
+}
+
+.access-capital__search input {
+  color: var(--bs-body-color);
+}
+
+.access-capital__search input:focus {
+  box-shadow: none;
+}
+
+.access-capital__segmented .btn {
+  border-radius: 999px;
+}
+
+.access-capital__segmented .btn.active {
+  background: var(--ac-primary);
+  color: #fff;
+  border-color: var(--ac-primary);
+}
+
+.access-capital__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--ac-border);
+  background: var(--ac-surface);
+  color: color-mix(in srgb, var(--bs-body-color) 92%, #0f172a 8%);
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  box-shadow: var(--ac-shadow-sm);
+  transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.access-capital__chip:hover,
+.access-capital__chip:focus-visible {
+  border-color: var(--ac-primary);
+  color: var(--ac-primary);
+  outline: none;
+}
+
+.access-capital__chip.active {
+  border-color: var(--ac-primary);
+  background: var(--ac-primary);
+  color: #fff;
+  box-shadow: none;
+}
+
+.access-capital__chip.active .text-secondary {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.access-capital__card {
+  border-radius: var(--ac-radius-lg);
+  border: 1px solid var(--ac-border);
+  box-shadow: var(--ac-shadow-sm);
+}
+
+.access-capital__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary-text-emphasis);
+  border: 1px solid var(--bs-primary-border-subtle);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.access-capital__match {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ac-success);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.access-capital__meta li + li {
+  margin-top: 0.35rem;
+}
+
+.access-capital__meta li {
+  display: flex;
+  align-items: center;
+}
+
+.access-capital__coming {
+  border: 2px dashed var(--ac-border-strong);
+  border-radius: var(--ac-radius-xl);
+  background: var(--ac-surface);
+}
+
+.access-capital__coming .btn.btn-outline-secondary {
+  border-radius: 999px;
+}
+
+.access-capital__filters .offcanvas-header {
+  border-bottom: 1px solid var(--ac-border);
+}
+
+.access-capital__filters .offcanvas-body {
+  background: var(--ac-surface);
+}
+
+.access-capital__filters .form-check-input:focus {
+  box-shadow: none;
+}
+
+.access-capital__filters .btn-primary {
+  border-radius: 999px;
+}
+
+.access-capital__filters .btn-outline-secondary {
+  border-radius: 999px;
+}
+
+.access-capital :focus-visible {
+  outline: 3px solid var(--ac-outline-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .access-capital__hero,
+  .access-capital__card,
+  .access-capital__kpi {
+    animation: access-capital-fade-up 0.5s ease-out both;
+  }
+}
+
+@keyframes access-capital-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-bs-theme="dark"] .access-capital {
+  --ac-surface: rgba(18, 24, 35, 0.8);
+  --ac-surface-subtle: rgba(15, 23, 42, 0.6);
+  --ac-border: rgba(148, 163, 184, 0.28);
+  --ac-border-strong: rgba(148, 163, 184, 0.4);
+  --ac-primary-soft: color-mix(in srgb, var(--ac-primary) 24%, transparent);
+  --ac-outline-color: color-mix(in srgb, var(--ac-primary) 45%, transparent);
+}
+
+[data-bs-theme="dark"] .access-capital__hero-visual {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-bs-theme="dark"] .access-capital__kpi,
+[data-bs-theme="dark"] .access-capital__card,
+[data-bs-theme="dark"] .access-capital__search,
+[data-bs-theme="dark"] .access-capital__coming,
+[data-bs-theme="dark"] .access-capital__filters .offcanvas-body {
+  background: var(--ac-surface) !important;
+  border-color: var(--ac-border) !important;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .access-capital__chip,
+[data-bs-theme="dark"] .access-capital__badge {
+  background: var(--ac-surface-subtle);
+  border-color: var(--ac-border);
+}
+
+[data-bs-theme="dark"] .access-capital__chip.active {
+  background: color-mix(in srgb, var(--ac-primary) 45%, transparent);
+  border-color: var(--ac-primary);
+}
+
+[data-bs-theme="dark"] .access-capital__delta {
+  background: color-mix(in srgb, var(--ac-success) 24%, transparent);
+  border-color: color-mix(in srgb, var(--ac-success) 32%, transparent);
+}
+
+[data-bs-theme="dark"] .access-capital__segmented .btn.active {
+  background: linear-gradient(120deg, color-mix(in srgb, var(--ac-primary) 74%, transparent), color-mix(in srgb, var(--ac-primary) 46%, #0f172a 54%));
+}

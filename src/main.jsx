@@ -20,6 +20,7 @@ import "./styles/dark-patch.css";
 import "./styles/theme-patch.css";
 import "./styles/theme-fixes.css";
 import "./styles/extra.css";  
+import "./styles/access-to-capital.css";
 
 
 // Optional JS bundles that enhance UI components

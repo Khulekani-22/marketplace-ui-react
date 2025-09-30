@@ -416,7 +416,7 @@ const TrendingNFTsOne = ({
               <button
                 className={`nav-link btn btn-sm rounded-pill text-neutral-500 hover-text-white bg-hover-primary-800 px-20 py-6 border border-neutral-300 ${
                   activeTab === category
-                    ? "active bg-primary-500 text-white border-primary-400"
+                    ? "active bg-primary-400 text-white border-primary-400"
                     : "bg-neutral-50"
                 }`}
                 onClick={() => setActiveTab(category)}

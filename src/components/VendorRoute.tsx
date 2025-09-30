@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import { api } from "../lib/api";
+import { hasFullAccess, normalizeRole } from "../utils/roles";
 
 // Allows access only if the user is authenticated AND not a "basic" tenant
 // Admins are always allowed.
@@ -23,14 +24,14 @@ export default function VendorRoute({ children }) {
       const ssTenant = sessionStorage.getItem("tenantId");
 
       // If we already know admin from sessionStorage, allow immediately
-      if (ssRole === "admin") {
+      if (hasFullAccess(ssRole)) {
         if (!cancelled) setState({ loading: false, allowed: true, authed: true });
         return;
       }
 
       try {
         const { data } = await api.get("/api/me");
-        const role = data?.role || ssRole || "member";
+        const role = normalizeRole(data?.role || ssRole);
         const tenantId = data?.tenantId || ssTenant || "vendor";
         const email = data?.email || user.email || null;
         const uid = data?.uid || user.uid || null;
@@ -40,13 +41,13 @@ export default function VendorRoute({ children }) {
         else sessionStorage.removeItem("userEmail");
         if (uid) sessionStorage.setItem("userId", uid);
         else sessionStorage.removeItem("userId");
-        const isAdmin = role === "admin";
+        const isAdmin = hasFullAccess(role);
         const isBasic = !isAdmin && tenantId === "basic";
         if (!cancelled) setState({ loading: false, allowed: isAdmin || !isBasic, authed: true });
       } catch {
-        const fallbackRole = sessionStorage.getItem("role") || ssRole || "member";
+        const fallbackRole = normalizeRole(sessionStorage.getItem("role") || ssRole);
         const fallbackTenant = sessionStorage.getItem("tenantId") || ssTenant || "vendor";
-        const isAdmin = fallbackRole === "admin";
+        const isAdmin = hasFullAccess(fallbackRole);
         const isBasic = !isAdmin && fallbackTenant === "basic";
         const authed = !!auth.currentUser;
         if (!cancelled) setState({ loading: false, allowed: isAdmin || !isBasic, authed });

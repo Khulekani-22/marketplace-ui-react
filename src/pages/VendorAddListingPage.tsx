@@ -8,6 +8,7 @@ import { useAppSync } from "../context/useAppSync";
 import { api } from "../lib/api";
 import { auth } from "../lib/firebase";
 import appDataLocal from "../data/appData.json";
+import { hasFullAccess } from "../utils/roles";
 
 const API_BASE = "/api/lms";
 const OTHER = "__OTHER__";
@@ -105,7 +106,7 @@ export default function VendorAddListingPage() {
     () => sessionStorage.getItem("tenantId") || "vendor",
     []
   );
-  const isAdmin = sessionStorage.getItem("role") === "admin";
+  const isAdmin = hasFullAccess(sessionStorage.getItem("role"));
 
   // Full LIVE appData working copy on this page as well
   const [data, setData] = useState(appDataLocal);
