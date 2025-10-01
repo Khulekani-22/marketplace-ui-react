@@ -22,11 +22,11 @@ const HERO_IMAGES = {
     alt: "Startup team strategising next steps",
   },
   vendor: {
-    src: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80",
+    src: "https://www.22onsloane.co/wp-content/uploads/2025/10/meeting-proposal-and-tablet-with-business-women-i-2025-04-05-12-14-26-utc-scaled.jpg",
     alt: "Vendor team collaborating in a shared workspace",
   },
   listing: {
-    src: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80",
+    src: "https://www.22onsloane.co/wp-content/uploads/2025/10/pleased-dark-skinned-male-person-demonstrating-pap-2025-03-09-02-46-42-utc-scaled.jpg",
     alt: "Product managers planning a new listing",
   },
   profileVendor: {
@@ -301,11 +301,11 @@ const RULES = [
     test: /^\/?vendor-home$/,
     hero: make(
       "Vendor Portal",
-      "Manage your store, listings, and engagement with startups.",
+      "Manage your learning, listings, engagement with clients and more.",
       { to: "/listings-vendors", label: "Submit Listings" },
       { to: "/listings-vendors-mine", label: "My Listings" },
       {
-        kicker: heroKicker("mdi:home-city-outline", "Vendor HQ", "Monitor pipeline, leads, and conversions."),
+        kicker: heroKicker("mdi:home-city-outline", "Vendor HQ", "| Monitor learning, performance, and reviews."),
         image: heroImage("vendor"),
       }
     ),
@@ -313,12 +313,12 @@ const RULES = [
   {
     test: /^\/?listings-vendors$/,
     hero: make(
-      "Vendor: Submit Listings",
-      "Draft locally, save checkpoints to the server, and publish when ready.",
+      "Vendor New Listing",
+      "Draft locally, submit to our review team, and check your catalogue.",
       { to: "/listings-vendors-mine", label: "My Listings" },
       { to: "/vendor-home", label: "Vendor Home" },
       {
-        kicker: heroKicker("mdi:cloud-upload-outline", "Upload", "Add rich detail to stand out in search."),
+        kicker: heroKicker("mdi:cloud-upload-outline", "Upload Your Listings", "| Add rich detail to stand out in search."),
         image: heroImage("listing"),
       }
     ),
@@ -326,12 +326,12 @@ const RULES = [
   {
     test: /^\/?listings-vendors-mine$/,
     hero: make(
-      "Vendor: My Listings",
+      "Vendor Listings",
       "Track status, edit content, and highlight featured services.",
       { to: "/listings-vendors", label: "Add New Listing" },
       { to: "/vendor-home", label: "Vendor Home" },
       {
-        kicker: heroKicker("mdi:briefcase-variant-outline", "Portfolio", "Keep pricing and availability current."),
+        kicker: heroKicker("mdi:briefcase-variant-outline", "Your Catalogue", " | Manage your listings and get support."),
         image: heroImage("listing"),
       }
     ),
