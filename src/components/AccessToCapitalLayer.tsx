@@ -535,7 +535,7 @@ export default function AccessToCapitalLayer() {
   return (
     <section className="access-capital py-4 py-lg-5">
       <div className="container-xxl">
-        <div className="access-capital__hero card border-0 mb-4 mb-lg-5">
+        <div className="d-none access-capital__hero card border-0 mb-4 mb-lg-5">
           <div className="card-body p-4 p-lg-5">
             <div className="row g-4 align-items-center">
               <div className="col-lg-7">
@@ -561,7 +561,7 @@ export default function AccessToCapitalLayer() {
               <div className="col-lg-5 d-none d-lg-block">
                 <div className="access-capital__hero-visual" aria-hidden="true">
                   <img
-                    src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=900&auto=format&fit=crop"
+                    src="https://www.22onsloane.co/wp-content/uploads/2025/09/business-people-laptop-or-discussion-in-meeting-i-2025-04-06-10-32-37-utc-scaled.jpg"
                     alt=""
                     loading="lazy"
                     className="img-fluid rounded-4 shadow-lg w-100 h-100 object-fit-cover"

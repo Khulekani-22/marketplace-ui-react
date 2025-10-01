@@ -555,6 +555,8 @@ function MasterLayoutInner({ children }) {
                     subtitle={hero.subtitle}
                     primary={hero.primary}
                     secondary={hero.secondary}
+                    kicker={hero.kicker}
+                    image={hero.image}
                   />
                 </div>
               </div>

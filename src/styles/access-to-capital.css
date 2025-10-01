@@ -1,5 +1,6 @@
 /* src/styles/access-to-capital.css */
 
+:root,
 .access-capital {
   --ac-surface: #fff;
   --ac-surface-subtle: var(--bs-body-bg);
@@ -13,13 +14,15 @@
   --ac-radius-xl: 22px;
   --ac-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.08);
   --ac-shadow-md: 0 12px 24px rgba(15, 23, 42, 0.08), 0 6px 18px rgba(15, 23, 42, 0.08);
-  --ac-hero-gradient: linear-gradient(120deg, color-mix(in srgb, var(--ac-primary) 88%, #111827 12%), color-mix(in srgb, var(--ac-primary) 68%, #0f172a 32%) 55%, rgba(255, 255, 255, 0.08));
+  --ac-hero-fallback: #c2410c;
+  --ac-hero-gradient: linear-gradient(132deg, #ff8a4c 0%, #f97316 28%, #ea580c 62%, #b93815 100%);
   --ac-outline-color: color-mix(in srgb, var(--ac-primary) 60%, #ffffff 40%);
 }
 
 .access-capital__hero {
   position: relative;
   border-radius: var(--ac-radius-xl);
+  background-color: var(--ac-hero-fallback);
   background: var(--ac-hero-gradient);
   color: #fff;
   box-shadow: var(--ac-shadow-md);

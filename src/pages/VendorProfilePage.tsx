@@ -188,6 +188,26 @@ export default function VendorProfilePage() {
     [pushUndo]
   );
 
+  const refreshHistory = useCallback(async () => {
+    if (!isAdmin) {
+      setHistory([]);
+      return;
+    }
+    try {
+      const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
+        headers: {
+          "x-tenant-id": tenantId,
+          "cache-control": "no-cache",
+        },
+      });
+      const items = Array.isArray(hx?.items) ? hx.items : [];
+      setHistory(items);
+      localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
+    } catch {
+      // ignore
+    }
+  }, [isAdmin, tenantId]);
+
   // Load LIVE + recent checkpoints on mount (same headers/flow as ListingsAdminPage)
   useEffect(() => {
     let alive = true;
@@ -233,26 +253,6 @@ export default function VendorProfilePage() {
       alive = false;
     };
   }, [tenantId, isAdmin, ensureVendorId, doSetData, refreshHistory]);
-
-  const refreshHistory = useCallback(async () => {
-    if (!isAdmin) {
-      setHistory([]);
-      return;
-    }
-    try {
-      const { data: hx } = await api.get(`${API_BASE}/checkpoints`, {
-        headers: {
-          "x-tenant-id": tenantId,
-          "cache-control": "no-cache",
-        },
-      });
-      const items = Array.isArray(hx?.items) ? hx.items : [];
-      setHistory(items);
-      localStorage.setItem(LS_HISTORY_CACHE, JSON.stringify(items.slice(0, 2)));
-    } catch {
-      // ignore
-    }
-  }, [isAdmin, tenantId]);
 
   // Detect the current signed-in vendor from LIVE appData
   const detectedVendor = useMemo(() => {
