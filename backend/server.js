@@ -21,6 +21,7 @@ import usersRouter from "./routes/users.js";
 import auditLogsRouter from "./routes/auditLogs.js";
 import assistantRouter from "./routes/assistant.js";
 import messagesRouter from "./routes/messages.js";
+import walletsRouter from "./routes/wallets.js";
 import { tenantContext } from "./middleware/tenantContext.js";
 import { jwtAuthOptional } from "./middleware/authJWT.js";
 import { firebaseAuthRequired } from "./middleware/authFirebase.js";
@@ -192,7 +193,19 @@ async function initLmsStorage() {
   try {
     await fsp.access(APP_DATA);
   } catch {
-    const empty = { cohorts: [], bookings: [], events: [], forumThreads: [], jobs: [], mentorshipSessions: [], messageThreads: [], services: [], leads: [], startups: [] };
+    const empty = {
+      cohorts: [],
+      bookings: [],
+      events: [],
+      forumThreads: [],
+      jobs: [],
+      mentorshipSessions: [],
+      messageThreads: [],
+      services: [],
+      leads: [],
+      startups: [],
+      wallets: [],
+    };
     await writeJson(APP_DATA, empty);
   }
 
@@ -415,6 +428,7 @@ app.use("/api/audit-logs", auditLogsRouter);
 app.use("/api/subscriptions", subscriptionsRouter);
 app.use("/api/assistant", assistantRouter);
 app.use("/api/messages", messagesRouter);
+app.use("/api/wallets", walletsRouter);
 
 /* --------------------------------- 404 ----------------------------------- */
 app.use((req, res) => {

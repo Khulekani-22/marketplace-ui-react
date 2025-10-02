@@ -8,7 +8,7 @@ const WalletPage = () => {
       {/* MasterLayout */}
       <MasterLayout>
         {/* Breadcrumb */}
-        <Breadcrumb title='Wallet' />
+        <Breadcrumb title='My Wallet' />
 
         {/* WalletLayer */}
         <WalletLayer />

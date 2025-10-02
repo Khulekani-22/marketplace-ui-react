@@ -1,9 +1,10 @@
 // src/components/TrendingNFTsOne.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../../lib/firebase";
 import { api } from "../../lib/api";
 import { useAppSync } from "../../context/useAppSync";
+import { useWallet } from "../../context/useWallet";
 import appDataLocal from "../../data/appData.json";
 import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../../lib/subscriptions";
 
@@ -57,6 +58,12 @@ function formatBookingDate(dateString) {
   }
 }
 
+const creditsFormatter = new Intl.NumberFormat("en-ZA");
+function formatCredits(amount) {
+  const value = Number(amount) || 0;
+  return creditsFormatter.format(Math.round(value));
+}
+
 const TrendingNFTsOne = ({
   query: controlledQuery,
   onQueryChange,
@@ -98,6 +105,7 @@ const TrendingNFTsOne = ({
   const [bookingBusy, setBookingBusy] = useState(false);
   const navigate = useNavigate();
   const { appData } = useAppSync();
+  const { wallet, eligible: walletEligible, redeemCredits, loading: walletLoading, refresh } = useWallet();
   const bookingSlots = useMemo(() => createHourlySlots(), []);
   const slotLabelMap = useMemo(() => {
     const map = {};
@@ -188,27 +196,93 @@ const TrendingNFTsOne = ({
         navigate('/login', { replace: true, state: { from: window.location?.pathname || '/' } });
         return;
       }
+
       const id = String(serviceId);
       const isSub = subs.has(id);
       if (isSub) {
         await unsubscribeFromService(id);
         setSubs((prev) => {
-          const n = new Set(Array.from(prev)); n.delete(id); return n;
+          const n = new Set(Array.from(prev));
+          n.delete(id);
+          return n;
         });
         setBookings((prev) => {
           const next = { ...prev };
           delete next[id];
           return next;
         });
-        setToastType('success'); setToast(bookable ? 'Booking cancelled' : 'Unsubscribed'); setTimeout(()=>setToast(''), 2000);
-      } else {
-        await subscribeToService(id);
-        setSubs((prev) => new Set([...Array.from(prev), id]));
-        setToastType('success'); setToast('Subscribed'); setTimeout(()=>setToast(''), 2000);
+        setToastType('success');
+        setToast(bookable ? 'Booking cancelled' : 'Unsubscribed');
+        setTimeout(() => setToast(''), 2000);
+        return;
       }
+
+      const list = servicesRef.current || services;
+      const service = (list || []).find((entry) => String(entry.id) === id) || null;
+      const price = Number(service?.price || 0) || 0;
+
+      if (!bookable && price > 0) {
+        if (walletLoading) {
+          setToastType('danger');
+          setToast('Checking wallet, please try again in a moment.');
+          setTimeout(() => setToast(''), 2500);
+          return;
+        }
+        if (!walletEligible) {
+          setToastType('danger');
+          setToast('My Wallet is only available to startup and vendor accounts.');
+          setTimeout(() => setToast(''), 2500);
+          return;
+        }
+        if (!wallet) {
+          setToastType('danger');
+          setToast('We could not load your wallet. Please try again.');
+          setTimeout(() => setToast(''), 2500);
+          return;
+        }
+        if (wallet.balance < price) {
+          const shortfall = price - wallet.balance;
+          setToastType('danger');
+          setToast(`You need ${formatCredits(shortfall)} more credits to subscribe to this listing.`);
+          setTimeout(() => setToast(''), 3000);
+          return;
+        }
+      }
+
+      await subscribeToService(id, service ? { price: service.price } : {});
+
+      if (!bookable && price > 0) {
+        const result = await redeemCredits(price, {
+          description: `Listing subscription: ${service?.title || 'Marketplace service'}`,
+          reference: `listing-${service?.id || 'unknown'}`,
+          metadata: {
+            serviceId: service?.id || null,
+            vendor: service?.vendor || null,
+            category: service?.category || null,
+            source: 'dashboard-trending',
+          },
+        });
+        if (!result.ok) {
+          await unsubscribeFromService(id);
+          setToastType('danger');
+          setToast(result.error || 'Unable to redeem wallet credits; subscription canceled.');
+          setTimeout(() => setToast(''), 3000);
+          return;
+        }
+        setToastType('success');
+        setToast(`Voucher applied! Remaining balance: ${formatCredits(result.wallet?.balance || 0)} credits.`);
+      } else {
+        setToastType('success');
+        setToast(bookable ? 'Booking confirmed' : 'Subscribed');
+      }
+
+      setSubs((prev) => new Set([...Array.from(prev), id]));
+      setTimeout(() => setToast(''), 2500);
     } catch (e) {
       const msg = e?.response?.data?.message || e?.message || 'Failed to update subscription';
-      setToastType('danger'); setToast(msg); setTimeout(()=>setToast(''), 2500);
+      setToastType('danger');
+      setToast(msg);
+      setTimeout(() => setToast(''), 2500);
     }
   }
 
@@ -300,14 +374,61 @@ const TrendingNFTsOne = ({
       setBookingModal((prev) => ({ ...prev, error: 'Please choose a time slot.' }));
       return;
     }
+
+    const list = servicesRef.current || services;
+    const service = (list || []).find((entry) => String(entry.id) === String(id)) || null;
+    const price = Number(service?.price || 0) || 0;
+
+    if (price > 0) {
+      if (walletLoading) {
+        setBookingModal((prev) => ({ ...prev, error: 'Checking wallet, please try again in a moment.' }));
+        return;
+      }
+      if (!walletEligible) {
+        setBookingModal((prev) => ({ ...prev, error: 'My Wallet is only available to startup and vendor accounts.' }));
+        return;
+      }
+      if (!wallet) {
+        setBookingModal((prev) => ({ ...prev, error: 'We could not load your wallet. Please try again.' }));
+        return;
+      }
+      if (wallet.balance < price) {
+        const shortfall = price - wallet.balance;
+        setBookingModal((prev) => ({ ...prev, error: `You need ${formatCredits(shortfall)} more credits to book this session.` }));
+        return;
+      }
+    }
+
     setBookingBusy(true);
     try {
       const payload = { scheduledDate: date, scheduledSlot: slot };
       await subscribeToService(String(id), payload);
+      if (price > 0) {
+        const result = await redeemCredits(price, {
+          description: `Listing booking: ${service?.title || 'Marketplace service'}`,
+          reference: `listing-${service?.id || 'unknown'}`,
+          metadata: {
+            serviceId: service?.id || null,
+            vendor: service?.vendor || null,
+            category: service?.category || null,
+            scheduledDate: date,
+            scheduledSlot: slot,
+            source: 'dashboard-trending-booking',
+          },
+        });
+        if (!result.ok) {
+          await unsubscribeFromService(String(id));
+          setBookingModal((prev) => ({ ...prev, error: result.error || 'Unable to redeem wallet credits; booking canceled.' }));
+          return;
+        }
+        setToastType('success');
+        setToast(`Voucher applied! Remaining balance: ${formatCredits(result.wallet?.balance || 0)} credits.`);
+      } else {
+        setToastType('success');
+        setToast(`Session booked for ${formatBookingDate(date)} at ${slotLabelMap[slot] || slot}.`);
+      }
       setSubs((prev) => new Set([...Array.from(prev), String(id)]));
       setBookings((prev) => ({ ...prev, [String(id)]: { date, slot } }));
-      setToastType('success');
-      setToast(`Session booked for ${formatBookingDate(date)} at ${slotLabelMap[slot] || slot}.`);
       setTimeout(() => setToast(''), 2500);
       closeBooking();
     } catch (e) {
@@ -429,6 +550,38 @@ const TrendingNFTsOne = ({
         </div>
       </div>
 
+      {walletLoading && (
+        <div className="alert alert-secondary mb-3" role="status">
+          Loading wallet balance…
+        </div>
+      )}
+
+      {walletEligible && wallet && !walletLoading && (
+        <div className="alert alert-primary d-flex flex-wrap align-items-center justify-content-between mb-3" role="status">
+          <div className="d-flex flex-column">
+            <strong>Wallet balance:</strong>
+            <span className="fs-6">R {formatCredits(wallet.balance)} credits available</span>
+            <small className="text-secondary">Marketplace subscriptions automatically draw from your credits.</small>
+          </div>
+          <div className="d-flex gap-2 mt-2 mt-md-0">
+            <Link to="/wallet" className="btn btn-sm btn-outline-secondary">View wallet</Link>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => refresh().catch(() => void 0)}
+              disabled={walletLoading}
+            >
+              Refresh balance
+            </button>
+          </div>
+        </div>
+      )}
+      {!walletEligible && auth.currentUser && (
+        <div className="alert alert-warning mb-3" role="alert">
+          My Wallet credits are reserved for startup and vendor profiles. Contact your programme manager if you need access.
+        </div>
+      )}
+
       <div className="tab-content">
         <div className="tab-pane fade show active">
           <div className="row g-3">
@@ -446,6 +599,12 @@ const TrendingNFTsOne = ({
                 const isSub = subs.has(id);
                 const bookable = isServiceListing(service);
                 const bookingInfo = bookings[id];
+                const price = Number(service.price || 0) || 0;
+                const walletBalance = wallet?.balance ?? 0;
+                const hasWallet = walletEligible && wallet;
+                const shortfall = hasWallet ? Math.max(0, price - walletBalance) : 0;
+                const disableSubscription =
+                  !bookable && !isSub && price > 0 && (!walletEligible || !wallet || wallet.balance < price);
                 return (
                   <div className="col-12 col-md-6 col-lg-4" key={service.id}>
                     <article
@@ -487,6 +646,20 @@ const TrendingNFTsOne = ({
                                 {service.vendor || 'Unknown'}
                                 {service.category ? <span><span className="mx-1">|</span>{service.category}</span> : null}
                               </div>
+                              {price > 0 && (
+                                <div className="d-flex align-items-center justify-content-between text-xs mt-1" style={{ fontSize: '0.72rem' }}>
+                                  <span className="fw-semibold text-neutral-800">R {formatCredits(price)}</span>
+                                  {hasWallet ? (
+                                    <span className={shortfall > 0 ? 'text-danger' : 'text-success'}>
+                                      {shortfall > 0
+                                        ? `Short by ${formatCredits(shortfall)} credits`
+                                        : 'Covered by wallet'}
+                                    </span>
+                                  ) : (
+                                    <span className="text-secondary">Wallet required</span>
+                                  )}
+                                </div>
+                              )}
                               {bookable && bookingInfo && (
                                 <div className="text-success small mt-1" style={{ fontSize: '0.7rem' }}>
                                   Next session: {formatBookingDate(bookingInfo.date)}
@@ -506,6 +679,7 @@ const TrendingNFTsOne = ({
                                     toggleSubscribe(service.id);
                                   }
                                 }}
+                                disabled={disableSubscription}
                               >
                                 {bookable ? (isSub ? 'Reschedule' : 'Book session') : (isSub ? 'Subscribed' : 'Subscribe')}
                               </button>

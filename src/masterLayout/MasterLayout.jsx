@@ -169,6 +169,7 @@ function MasterLayoutInner({ children }) {
 
   // Access flags
   const isBasic = !isAdmin && tenantId === "basic";
+  const showWalletLink = !isAdmin || tenantId === "vendor" || tenantId === "basic";
 
   return (
     <section className={overlayClass} onClick={(e) => e.target.classList?.contains("overlay") && setMobileMenu(false)}>
@@ -313,6 +314,15 @@ function MasterLayoutInner({ children }) {
                 <span>Message Center</span>
               </NavLink>
             </li>
+
+            {showWalletLink && (
+              <li>
+                <NavLink to="/wallet" className={navClass}>
+                  <Icon icon="mdi:wallet-giftcard" className="menu-icon" />
+                  <span>My Wallet</span>
+                </NavLink>
+              </li>
+            )}
 
             {/* My Subscriptions (available to all signed-in users; useful for basic) */}
             <li>

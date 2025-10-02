@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../../lib/firebase";
 import { api } from "../../lib/api";
 import { useAppSync } from "../../context/useAppSync";
+import { useWallet } from "../../context/useWallet";
 import appDataLocal from "../../data/appData.json";
 import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../../lib/subscriptions";
 
@@ -27,16 +28,24 @@ function normalizeService(s) {
 }
 const isApproved = (s) => s.status === "approved";
 
+const creditsFormatter = new Intl.NumberFormat("en-ZA");
+function formatCredits(amount) {
+  const value = Number(amount) || 0;
+  return creditsFormatter.format(Math.round(value));
+}
+
 export default function Recommendations() {
   const [services, setServices] = useState(() => (appDataLocal.services || []).map(normalizeService).filter(isApproved));
   const [loading, setLoading] = useState(true);
   const [subs, setSubs] = useState(() => new Set()); // my subscriptions (service ids)
   const [err, setErr] = useState("");
+  const [success, setSuccess] = useState("");
   const [profiles, setProfiles] = useState({ startup: null, vendor: null });
   const navigate = useNavigate();
   const mountedRef = useRef(true);
   const liveDataRef = useRef(null); // latest appData snapshot
   const { appData } = useAppSync();
+  const { wallet, eligible: walletEligible, redeemCredits, loading: walletLoading } = useWallet();
 
   const tenantHeader = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
   const tenantId = tenantHeader === "vendor" ? "public" : tenantHeader;
@@ -221,16 +230,67 @@ export default function Recommendations() {
         navigate('/login', { replace: true, state: { from: window.location?.pathname || '/' } });
         return;
       }
+      setErr("");
+      setSuccess("");
       const id = String(serviceId);
       const isSub = subs.has(id);
       if (isSub) {
         await unsubscribeFromService(id);
         setSubs((prev) => { const n = new Set(prev); n.delete(id); return n; });
-      } else {
-        await subscribeToService(id);
-        setSubs((prev) => new Set([...prev, id]));
+        setSuccess("Subscription canceled.");
+        return;
       }
-    } catch {}
+
+      const service = services.find((item) => String(item.id) === id) || null;
+      const price = Number(service?.price || 0) || 0;
+
+      if (price > 0) {
+        if (walletLoading) {
+          setErr("Checking wallet, please try again in a moment.");
+          return;
+        }
+        if (!walletEligible) {
+          setErr("My Wallet is only available to startup and vendor accounts.");
+          return;
+        }
+        if (!wallet) {
+          setErr("We could not load your wallet. Please try again.");
+          return;
+        }
+        if (wallet.balance < price) {
+          const shortfall = price - wallet.balance;
+          setErr(`You need ${formatCredits(shortfall)} more credits to subscribe to this listing.`);
+          return;
+        }
+      }
+
+      await subscribeToService(id, service ? { price: service.price } : {});
+
+      if (price > 0) {
+        const result = await redeemCredits(price, {
+          description: `Listing subscription: ${service?.title || "Marketplace service"}`,
+          reference: `listing-${service?.id || "unknown"}`,
+          metadata: {
+            serviceId: service?.id || null,
+            vendor: service?.vendor || null,
+            category: service?.category || null,
+            source: "dashboard-recommendations",
+          },
+        });
+        if (!result.ok) {
+          await unsubscribeFromService(id);
+          setErr(result.error || "Unable to redeem wallet credits; subscription canceled.");
+          return;
+        }
+        setSuccess(`Voucher applied! Remaining balance: ${formatCredits(result.wallet?.balance || 0)} credits.`);
+      } else {
+        setSuccess("Subscription added.");
+      }
+
+      setSubs((prev) => new Set([...prev, id]));
+    } catch (error) {
+      setErr("Unable to update subscription right now. Please try again.");
+    }
   }
 
   function renderCard(s, label, badgeClass = "bg-primary-600") {
@@ -285,6 +345,7 @@ export default function Recommendations() {
           <h6 className="mb-0">Recommended for You</h6>
           {loading && <span className="text-secondary small">Loading…</span>}
         </div>
+        {success && <div className="alert alert-success py-2 mb-2">{success}</div>}
         {err && <div className="alert alert-warning py-2 mb-2">{err}</div>}
         <div className="row g-3">
           {renderCard(picks.byReviews, "Top Reviews", "bg-success-600")}

@@ -11,6 +11,7 @@ import AdminRoute from "./components/AdminRoute.tsx";
 import VendorRoute from "./components/VendorRoute.tsx";
 import LoginForm from "./components/LoginForm.tsx";
 import VendorSignupPage from "./pages/VendorSignupPage.tsx";
+import { WalletProvider } from "./context/WalletContext.tsx";
 
 import { lazyWithRetry } from "./utils/lazyWithRetry";
 
@@ -142,231 +143,233 @@ export default function App() {
       <ErrorBoundary>
         <Suspense fallback={<Fallback />}>
           <AppSyncProvider>
-          <Routes>
-            {/* auth */}
-            <Route path="/login" element={<LoginForm />} />
+            <WalletProvider>
+              <Routes>
+              {/* auth */}
+              <Route path="/login" element={<LoginForm />} />
 
-            {/* protected */}
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/lms-admin"
-              element={
-                <PrivateRoute>
-                  <LmsAdminPage />
-                </PrivateRoute>
-              }
-            />
+              {/* protected */}
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/lms-admin"
+                element={
+                  <PrivateRoute>
+                    <LmsAdminPage />
+                  </PrivateRoute>
+                }
+              />
 
-            {/* public homes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/index-2" element={<HomePageTwo />} />
-            <Route path="/index-3" element={<HomePageThree />} />
-            <Route path="/index-4" element={<HomePageFour />} />
-            <Route path="/index-5" element={<HomePageFive />} />
-            <Route path="/index-6" element={<HomePageSix />} />
-            {/* /index-7 redirects */}
-            <Route path="/index-8" element={<HomePageEight />} />
-            <Route path="/index-9" element={<HomePageNine />} />
-            <Route path="/index-10" element={<HomePageTen />} />
-            <Route path="/index-11" element={<HomePageEleven />} />
+              {/* public homes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/index-2" element={<HomePageTwo />} />
+              <Route path="/index-3" element={<HomePageThree />} />
+              <Route path="/index-4" element={<HomePageFour />} />
+              <Route path="/index-5" element={<HomePageFive />} />
+              <Route path="/index-6" element={<HomePageSix />} />
+              {/* /index-7 redirects */}
+              <Route path="/index-8" element={<HomePageEight />} />
+              <Route path="/index-9" element={<HomePageNine />} />
+              <Route path="/index-10" element={<HomePageTen />} />
+              <Route path="/index-11" element={<HomePageEleven />} />
 
-            {/* SL samples */}
-            <Route path="/add-user" element={<AddUserPage />} />
-            <Route path="/alert" element={<AlertPage />} />
-            <Route path="/assign-role" element={<AssignRolePage />} />
-            <Route path="/avatar" element={<AvatarPage />} />
-            <Route path="/badges" element={<BadgesPage />} />
-            <Route path="/button" element={<ButtonPage />} />
-            <Route path="/calendar-main" element={<CalendarMainPage />} />
-            <Route path="/calendar" element={<CalendarMainPage />} />
-            <Route path="/card" element={<CardPage />} />
-            <Route path="/carousel" element={<CarouselPage />} />
-            <Route path="/chat-message" element={<ChatMessagePage />} />
-            <Route path="/chat-profile" element={<ChatProfilePage />} />
-            <Route path="/code-generator" element={<CodeGeneratorPage />} />
-            <Route path="/code-generator-new" element={<CodeGeneratorNewPage />} />
-            <Route path="/colors" element={<ColorsPage />} />
-            <Route path="/column-chart" element={<ColumnChartPage />} />
-            <Route path="/company" element={<CompanyPage />} />
-            <Route path="/currencies" element={<CurrenciesPage />} />
-            <Route path="/dropdown" element={<DropdownPage />} />
-            <Route
-              path="/email"
-              element={
-                <PrivateRoute>
-                  <EmailPage />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/faq" element={<FaqPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/form-layout" element={<FormLayoutPage />} />
-            <Route path="/form-validation" element={<FormValidationPage />} />
-            <Route path="/form" element={<FormPage />} />
-            <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/image-generator" element={<ImageGeneratorPage />} />
-            <Route path="/image-upload" element={<ImageUploadPage />} />
-            <Route path="/invoice-add" element={<InvoiceAddPage />} />
-            <Route path="/invoice-edit" element={<InvoiceEditPage />} />
-            <Route path="/invoice-list" element={<InvoiceListPage />} />
-            <Route path="/invoice-preview" element={<InvoicePreviewPage />} />
-            <Route path="/kanban" element={<KanbanPage />} />
-            <Route path="/language" element={<LanguagePage />} />
-            <Route path="/line-chart" element={<LineChartPage />} />
-            <Route path="/list" element={<ListPage />} />
-            <Route path="/marketplace-details" element={<MarketplaceDetailsPage />} />
-            <Route path="/marketplace" element={<MarketplacePage />} />
-            <Route
-              path="/subscriptions"
-              element={
-                <PrivateRoute>
-                  <MySubscriptionsPage />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/notification-alert" element={<NotificationAlertPage />} />
-            <Route path="/notification" element={<NotificationPage />} />
-            <Route path="/pagination" element={<PaginationPage />} />
-            <Route path="/payment-gateway" element={<PaymentGatewayPage />} />
-            <Route path="/pie-chart" element={<PieChartPage />} />
-            <Route path="/portfolio" element={<PortfolioPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/progress" element={<ProgressPage />} />
-            <Route path="/radio" element={<RadioPage />} />
-            <Route path="/role-access" element={<RoleAccessPage />} />
-            <Route path="/sign-in" element={<SignInPage />} />
-            <Route path="/sign-up" element={<SignUpPage />} />
-            <Route path="/signup/startup" element={<StartupSignupPage />} />
-            <Route path="/star-rating" element={<StarRatingPage />} />
-            <Route path="/starred" element={<StarredPage />} />
-            <Route path="/switch" element={<SwitchPage />} />
-            <Route path="/table-basic" element={<TableBasicPage />} />
-            <Route path="/table-data" element={<TableDataPage />} />
-            <Route path="/tabs" element={<TabsPage />} />
-            <Route path="/tags" element={<TagsPage />} />
-            <Route path="/terms-condition" element={<TermsConditionPage />} />
-            <Route path="/text-generator-new" element={<TextGeneratorNewPage />} />
-            <Route path="/text-generator" element={<TextGeneratorPage />} />
-            <Route path="/theme" element={<ThemePage />} />
-            <Route path="/tooltip" element={<TooltipPage />} />
-            <Route path="/typography" element={<TypographyPage />} />
-            <Route path="/users-grid" element={<UsersGridPage />} />
-            <Route path="/users-list" element={<UsersListPage />} />
-            <Route
-              path="/view-details"
-              element={
-                <PrivateRoute>
-                  <ViewDetailsPage />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/video-generator" element={<VideoGeneratorPage />} />
-            <Route path="/videos" element={<VideosPage />} />
-            <Route path="/view-profile" element={<ViewProfilePage />} />
-            <Route path="/voice-generator" element={<VoiceGeneratorPage />} />
-            <Route path="/wallet" element={<WalletPage />} />
-            <Route path="/widgets" element={<WidgetsPage />} />
-            <Route path="/wizard" element={<WizardPage />} />
-            <Route
-              path="/audit-logs"
-              element={
-                <AdminRoute>
-                  <AuditLogsPage />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/users"
-              element={
-                <AdminRoute>
-                  <UserRoleManagementPage />
-                </AdminRoute>
-              }
-            />
+              {/* SL samples */}
+              <Route path="/add-user" element={<AddUserPage />} />
+              <Route path="/alert" element={<AlertPage />} />
+              <Route path="/assign-role" element={<AssignRolePage />} />
+              <Route path="/avatar" element={<AvatarPage />} />
+              <Route path="/badges" element={<BadgesPage />} />
+              <Route path="/button" element={<ButtonPage />} />
+              <Route path="/calendar-main" element={<CalendarMainPage />} />
+              <Route path="/calendar" element={<CalendarMainPage />} />
+              <Route path="/card" element={<CardPage />} />
+              <Route path="/carousel" element={<CarouselPage />} />
+              <Route path="/chat-message" element={<ChatMessagePage />} />
+              <Route path="/chat-profile" element={<ChatProfilePage />} />
+              <Route path="/code-generator" element={<CodeGeneratorPage />} />
+              <Route path="/code-generator-new" element={<CodeGeneratorNewPage />} />
+              <Route path="/colors" element={<ColorsPage />} />
+              <Route path="/column-chart" element={<ColumnChartPage />} />
+              <Route path="/company" element={<CompanyPage />} />
+              <Route path="/currencies" element={<CurrenciesPage />} />
+              <Route path="/dropdown" element={<DropdownPage />} />
+              <Route
+                path="/email"
+                element={
+                  <PrivateRoute>
+                    <EmailPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/faq" element={<FaqPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/form-layout" element={<FormLayoutPage />} />
+              <Route path="/form-validation" element={<FormValidationPage />} />
+              <Route path="/form" element={<FormPage />} />
+              <Route path="/gallery" element={<GalleryPage />} />
+              <Route path="/image-generator" element={<ImageGeneratorPage />} />
+              <Route path="/image-upload" element={<ImageUploadPage />} />
+              <Route path="/invoice-add" element={<InvoiceAddPage />} />
+              <Route path="/invoice-edit" element={<InvoiceEditPage />} />
+              <Route path="/invoice-list" element={<InvoiceListPage />} />
+              <Route path="/invoice-preview" element={<InvoicePreviewPage />} />
+              <Route path="/kanban" element={<KanbanPage />} />
+              <Route path="/language" element={<LanguagePage />} />
+              <Route path="/line-chart" element={<LineChartPage />} />
+              <Route path="/list" element={<ListPage />} />
+              <Route path="/marketplace-details" element={<MarketplaceDetailsPage />} />
+              <Route path="/marketplace" element={<MarketplacePage />} />
+              <Route
+                path="/subscriptions"
+                element={
+                  <PrivateRoute>
+                    <MySubscriptionsPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/notification-alert" element={<NotificationAlertPage />} />
+              <Route path="/notification" element={<NotificationPage />} />
+              <Route path="/pagination" element={<PaginationPage />} />
+              <Route path="/payment-gateway" element={<PaymentGatewayPage />} />
+              <Route path="/pie-chart" element={<PieChartPage />} />
+              <Route path="/portfolio" element={<PortfolioPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/progress" element={<ProgressPage />} />
+              <Route path="/radio" element={<RadioPage />} />
+              <Route path="/role-access" element={<RoleAccessPage />} />
+              <Route path="/sign-in" element={<SignInPage />} />
+              <Route path="/sign-up" element={<SignUpPage />} />
+              <Route path="/signup/startup" element={<StartupSignupPage />} />
+              <Route path="/star-rating" element={<StarRatingPage />} />
+              <Route path="/starred" element={<StarredPage />} />
+              <Route path="/switch" element={<SwitchPage />} />
+              <Route path="/table-basic" element={<TableBasicPage />} />
+              <Route path="/table-data" element={<TableDataPage />} />
+              <Route path="/tabs" element={<TabsPage />} />
+              <Route path="/tags" element={<TagsPage />} />
+              <Route path="/terms-condition" element={<TermsConditionPage />} />
+              <Route path="/text-generator-new" element={<TextGeneratorNewPage />} />
+              <Route path="/text-generator" element={<TextGeneratorPage />} />
+              <Route path="/theme" element={<ThemePage />} />
+              <Route path="/tooltip" element={<TooltipPage />} />
+              <Route path="/typography" element={<TypographyPage />} />
+              <Route path="/users-grid" element={<UsersGridPage />} />
+              <Route path="/users-list" element={<UsersListPage />} />
+              <Route
+                path="/view-details"
+                element={
+                  <PrivateRoute>
+                    <ViewDetailsPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/video-generator" element={<VideoGeneratorPage />} />
+              <Route path="/videos" element={<VideosPage />} />
+              <Route path="/view-profile" element={<ViewProfilePage />} />
+              <Route path="/voice-generator" element={<VoiceGeneratorPage />} />
+              <Route path="/wallet" element={<WalletPage />} />
+              <Route path="/widgets" element={<WidgetsPage />} />
+              <Route path="/wizard" element={<WizardPage />} />
+              <Route
+                path="/audit-logs"
+                element={
+                  <AdminRoute>
+                    <AuditLogsPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <AdminRoute>
+                    <UserRoleManagementPage />
+                  </AdminRoute>
+                }
+              />
 
-            {/* data + features */}
-            <Route path="/overview" element={<DataOverview />} />
-            <Route path="/data" element={<AllDataTable />} />
-            <Route path="/access-capital" element={<AccessToCapitalPage />} />
-            <Route path="/market1" element={<Market1 />} />
-            <Route path="/lms" element={<LmsPage />} />
-            <Route path="/sloane-academy" element={<SloaneAcademyPage />} />
-            <Route
-              path="/sloane-academy-admin"
-              element={
-                <AdminRoute>
-                  <SloaneAcademyAdminPage />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/listings-admin"
-              element={
-                <AdminRoute>
-                  <ListingsAdminPage />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/listings-vendors"
-              element={
-                <VendorRoute>
-                  <VendorAddListingPage />
-                </VendorRoute>
-              }
-            />
-            <Route path="/signup/vendor" element={<VendorSignupPage />} />
-            <Route path="/profile-startup" element={<StartupProfilePage />} />
-            <Route
-              path="/vendor-home"
-              element={
-                <VendorRoute>
-                  <VendorDashboardPage />
-                </VendorRoute>
-              }
-            />
-            <Route
-              path="/listings-vendors-mine"
-              element={
-                <VendorRoute>
-                  <VendorMyListings />
-                </VendorRoute>
-              }
-            />
-            <Route
-              path="/profile-vendor"
-              element={
-                <VendorRoute>
-                  <VendorProfilePage />
-                </VendorRoute>
-              }
-            />
-            <Route
-              path="/profile-vendor-admin"
-              element={
-                <AdminRoute>
-                  <VendorsAdminPage />
-                </AdminRoute>
-              }
-            />
+              {/* data + features */}
+              <Route path="/overview" element={<DataOverview />} />
+              <Route path="/data" element={<AllDataTable />} />
+              <Route path="/access-capital" element={<AccessToCapitalPage />} />
+              <Route path="/market1" element={<Market1 />} />
+              <Route path="/lms" element={<LmsPage />} />
+              <Route path="/sloane-academy" element={<SloaneAcademyPage />} />
+              <Route
+                path="/sloane-academy-admin"
+                element={
+                  <AdminRoute>
+                    <SloaneAcademyAdminPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/listings-admin"
+                element={
+                  <AdminRoute>
+                    <ListingsAdminPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/listings-vendors"
+                element={
+                  <VendorRoute>
+                    <VendorAddListingPage />
+                  </VendorRoute>
+                }
+              />
+              <Route path="/signup/vendor" element={<VendorSignupPage />} />
+              <Route path="/profile-startup" element={<StartupProfilePage />} />
+              <Route
+                path="/vendor-home"
+                element={
+                  <VendorRoute>
+                    <VendorDashboardPage />
+                  </VendorRoute>
+                }
+              />
+              <Route
+                path="/listings-vendors-mine"
+                element={
+                  <VendorRoute>
+                    <VendorMyListings />
+                  </VendorRoute>
+                }
+              />
+              <Route
+                path="/profile-vendor"
+                element={
+                  <VendorRoute>
+                    <VendorProfilePage />
+                  </VendorRoute>
+                }
+              />
+              <Route
+                path="/profile-vendor-admin"
+                element={
+                  <AdminRoute>
+                    <VendorsAdminPage />
+                  </AdminRoute>
+                }
+              />
 
 
 
-            {/* legacy -> dashboard */}
-            <Route path="/index-7" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/profile" element={<Navigate to="/profile-vendor" replace />} />
+              {/* legacy -> dashboard */}
+              <Route path="/index-7" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/profile" element={<Navigate to="/profile-vendor" replace />} />
             
 
-            {/* 404 */}
-            <Route path="*" element={<ErrorPage />} />
-          </Routes>
+              {/* 404 */}
+              <Route path="*" element={<ErrorPage />} />
+              </Routes>
+            </WalletProvider>
           </AppSyncProvider>
         </Suspense>
       </ErrorBoundary>
