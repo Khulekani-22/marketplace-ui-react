@@ -37,6 +37,14 @@ function ensureWalletArray(data) {
   return data.wallets;
 }
 
+function matchWalletIdentity(candidate, { uid, email }) {
+  if (!candidate) return false;
+  const emailNorm = normalizeEmail(email);
+  if (uid && candidate.uid && String(candidate.uid) === String(uid)) return true;
+  if (emailNorm && normalizeEmail(candidate.email) === emailNorm) return true;
+  return false;
+}
+
 function walletId({ tenantId, uid, email }) {
   const tenant = normalizeTenant(tenantId || "public");
   const key = uid || email || `${tenant}-anonymous`;
@@ -195,6 +203,23 @@ function ensureWallet(data, { uid, email, role, tenantId }, { initialize = true 
   const wallets = ensureWalletArray(data);
   const id = walletId({ tenantId, uid, email });
   let idx = wallets.findIndex((w) => w && w.id === id);
+
+  if (idx === -1) {
+    const identityIdx = wallets.findIndex((w) => matchWalletIdentity(w, { uid, email }));
+    if (identityIdx !== -1) {
+      const migrated = sanitizeWallet({
+        ...wallets[identityIdx],
+        id,
+        uid: uid || wallets[identityIdx]?.uid || null,
+        email: email || wallets[identityIdx]?.email || null,
+        tenantId: normalizeTenant(tenantId),
+        role: normalizeRole(role || wallets[identityIdx]?.role),
+      });
+      wallets[identityIdx] = migrated;
+      idx = identityIdx;
+    }
+  }
+
   if (idx === -1) {
     const created = initialize
       ? createInitialWallet({ uid, email, role, tenantId })
@@ -202,7 +227,14 @@ function ensureWallet(data, { uid, email, role, tenantId }, { initialize = true 
     wallets.push(created);
     idx = wallets.length - 1;
   }
-  const existing = sanitizeWallet(wallets[idx]);
+  const existing = sanitizeWallet({
+    ...wallets[idx],
+    id,
+    uid: uid || wallets[idx]?.uid || null,
+    email: email || wallets[idx]?.email || null,
+    tenantId: normalizeTenant(tenantId),
+    role: normalizeRole(role || wallets[idx]?.role),
+  });
   wallets[idx] = existing;
   return { wallet: existing, index: idx, list: wallets };
 }

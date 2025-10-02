@@ -104,6 +104,50 @@ function tenantMatches(entryTenant, currentTenant, { treatPublicAsWildcard = fal
   return false;
 }
 
+function normalizeEmail(value) {
+  return (value || "").toString().trim().toLowerCase();
+}
+
+function findSubscriptionIndex(list, { serviceId, tenantId, email, uid }) {
+  const targetServiceId = String(serviceId || "");
+  const normalizedEmail = normalizeEmail(email);
+  const normalizedTenant = normalizeTenantId(tenantId);
+  if (!targetServiceId || (!normalizedEmail && !uid)) return -1;
+
+  const primaryIdx = list.findIndex((entry) => {
+    if (!entry || (entry.type || "service") !== "service") return false;
+    const entryServiceId = String(entry.serviceId || "");
+    if (entryServiceId !== targetServiceId) return false;
+    const emailMatches = normalizedEmail && normalizeEmail(entry.email) === normalizedEmail;
+    const uidMatches = uid && String(entry.uid || "") === String(uid);
+    if (!emailMatches && !uidMatches) return false;
+    return tenantMatches(entry.tenantId, normalizedTenant, { treatPublicAsWildcard: true });
+  });
+  if (primaryIdx >= 0) return primaryIdx;
+
+  if (uid) {
+    const uidFallback = list.findIndex((entry) => {
+      if (!entry || (entry.type || "service") !== "service") return false;
+      const entryServiceId = String(entry.serviceId || "");
+      if (entryServiceId !== targetServiceId) return false;
+      return String(entry.uid || "") === String(uid);
+    });
+    if (uidFallback >= 0) return uidFallback;
+  }
+
+  if (normalizedEmail) {
+    const emailFallback = list.findIndex((entry) => {
+      if (!entry || (entry.type || "service") !== "service") return false;
+      const entryServiceId = String(entry.serviceId || "");
+      if (entryServiceId !== targetServiceId) return false;
+      return normalizeEmail(entry.email) === normalizedEmail;
+    });
+    if (emailFallback >= 0) return emailFallback;
+  }
+
+  return -1;
+}
+
 // List current user's subscriptions for this tenant
 router.get("/my", firebaseAuthRequired, (req, res) => {
   const email = (req.user?.email || "").toLowerCase();
@@ -249,19 +293,31 @@ router.post("/service", firebaseAuthRequired, (req, res) => {
 router.delete("/service", firebaseAuthRequired, (req, res) => {
   const serviceId = String((req.body?.serviceId || req.query?.serviceId || "")).trim();
   const tenantId = normalizeTenantId(req.tenant.id);
-  const email = (req.user?.email || "").toLowerCase();
+  const email = normalizeEmail(req.user?.email || "");
+  const uid = req.user?.uid || "";
   if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
 
   let removed = false;
   saveData((data) => {
     const before = Array.isArray(data.subscriptions) ? data.subscriptions : [];
-    const matches = before.filter((x) => tenantMatches(x.tenantId, tenantId, { treatPublicAsWildcard: true }) && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
+    let matches = before.filter((entry) => {
+      if (!entry || (entry.type || "service") !== "service") return false;
+      const entryService = String(entry.serviceId || "");
+      if (entryService !== serviceId) return false;
+      const emailMatches = email && normalizeEmail(entry.email) === email;
+      const uidMatches = uid && String(entry.uid || "") === String(uid);
+      if (!emailMatches && !uidMatches) return false;
+      return tenantMatches(entry.tenantId, tenantId, { treatPublicAsWildcard: true });
+    });
+    if (!matches.length) {
+      matches = before.filter((entry) => (entry?.type || "service") === "service" && String(entry?.serviceId || "") === serviceId);
+    }
     const after = before.filter((x) => !matches.includes(x));
     removed = after.length !== before.length;
     data.subscriptions = after;
     if (removed) {
       matches.forEach((sub) => {
-        markBookingStatus({ data, subscription: sub, serviceId, customerEmail: email, status: "canceled" });
+        markBookingStatus({ data, subscription: sub, serviceId, customerEmail: sub?.email || email, status: "canceled" });
       });
     }
     return data;
@@ -274,16 +330,21 @@ router.delete("/service", firebaseAuthRequired, (req, res) => {
 router.put("/service/cancel", firebaseAuthRequired, (req, res) => {
   const serviceId = String(req.body?.serviceId || req.query?.serviceId || "").trim();
   const tenantId = normalizeTenantId(req.tenant.id);
-  const email = (req.user?.email || "").toLowerCase();
+  const email = normalizeEmail(req.user?.email || "");
+  const uid = req.user?.uid || "";
   if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
   let updated = null;
   saveData((data) => {
     const list = Array.isArray(data.subscriptions) ? data.subscriptions : [];
-    const idx = list.findIndex((x) => tenantMatches(x.tenantId, tenantId, { treatPublicAsWildcard: true }) && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId);
+    let idx = findSubscriptionIndex(list, { serviceId, tenantId, email, uid });
+    if (idx < 0) {
+      idx = list.findIndex((entry) => (entry?.type || "service") === "service" && String(entry?.serviceId || "") === serviceId);
+    }
     if (idx >= 0) {
-      list[idx].canceledAt = new Date().toISOString();
-      updated = list[idx];
-      markBookingStatus({ data, subscription: list[idx], serviceId, customerEmail: email, status: "canceled" });
+      const record = list[idx];
+      record.canceledAt = new Date().toISOString();
+      updated = record;
+      markBookingStatus({ data, subscription: record, serviceId, customerEmail: record?.email || email, status: "canceled" });
     }
     data.subscriptions = list;
     return data;

@@ -54,7 +54,7 @@ const HERO_IMAGES = {
     alt: "Founder celebrating a funding milestone",
   },
   emailCenter: {
-    src: "https://www.22onsloane.co/wp-content/uploads/2025/09/business-people-mentor-and-applause-for-presentat-2025-04-06-05-18-45-utc-scaled.jpg",
+    src: "https://www.22onsloane.co/wp-content/uploads/2025/10/tablet-digital-marketing-or-woman-networking-for-2025-04-06-10-16-53-utc-scaled.jpg",
     alt: "Team coordinating messages inside Sloane Hub",
   },
   subscriptions: {
