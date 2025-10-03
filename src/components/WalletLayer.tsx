@@ -158,7 +158,18 @@ export default function WalletLayer() {
         <div className='card h-100 p-24 radius-12 d-flex flex-column gap-3'>
           <div className='d-flex align-items-center justify-content-between'>
             <h5 className='mb-0'>Voucher Summary</h5>
-            <Icon icon='mdi:wallet-giftcard' className='text-2xl text-primary-600' />
+            <div className='d-flex align-items-center gap-2'>
+              <button
+                type='button'
+                className='btn btn-outline-secondary btn-sm p-1'
+                onClick={refresh}
+                title='Refresh wallet data'
+                disabled={loading}
+              >
+                <Icon icon='mdi:refresh' className='text-lg' />
+              </button>
+              <Icon icon='mdi:wallet-giftcard' className='text-2xl text-primary-600' />
+            </div>
           </div>
           <div className='bg-primary-50 p-16 radius-12'>
             <span className='text-sm text-secondary-light d-block mb-2'>Available credits</span>
@@ -242,9 +253,14 @@ export default function WalletLayer() {
       </div>
 
       {isAdmin && (
-        <div className='col-12'>
-          <AdminWalletManager grantCredits={grantCredits} refresh={refresh} />
-        </div>
+        <>
+          <div className='col-12'>
+            <AdminWalletManager grantCredits={grantCredits} refresh={refresh} />
+          </div>
+          <div className='col-12'>
+            <WalletDebugPanel />
+          </div>
+        </>
       )}
     </div>
   );
@@ -416,6 +432,77 @@ function AdminWalletManager({ grantCredits, refresh }: { grantCredits: WalletCon
               <strong>Transactions:</strong> {preview.transactions?.length || 0}
             </span>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WalletDebugPanel() {
+  const [debugOutput, setDebugOutput] = useState<any>(null);
+  const [working, setWorking] = useState(false);
+
+  const testWalletPersistence = async () => {
+    setWorking(true);
+    try {
+      // Test wallet creation and transaction
+      const createResponse = await api.post("/api/wallets/admin/debug/test-create", {
+        email: "test@example.com",
+        role: "member",
+        tenantId: "public"
+      });
+      
+      const transactionResponse = await api.post("/api/wallets/admin/debug/test-transaction", {
+        email: "test@example.com",
+        amount: 100,
+        description: "Debug test transaction"
+      });
+
+      const walletsResponse = await api.get("/api/wallets/admin/debug/wallets");
+
+      setDebugOutput({
+        createResult: createResponse.data,
+        transactionResult: transactionResponse.data,
+        allWallets: walletsResponse.data
+      });
+    } catch (error) {
+      setDebugOutput({ error: resolveErrorMessage(error, "Debug test failed") });
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  return (
+    <div className='card p-24 radius-12'>
+      <div className='d-flex align-items-center justify-content-between mb-3'>
+        <h5 className='mb-0'>Wallet Persistence Debug</h5>
+        <span className='badge text-bg-danger text-white'>Debug Only</span>
+      </div>
+      <p className='text-secondary-light mb-3'>Test wallet creation and persistence to help debug why transactions aren't being saved.</p>
+      
+      <div className='d-flex gap-2 mb-3'>
+        <button 
+          className='btn btn-outline-primary btn-sm' 
+          onClick={testWalletPersistence}
+          disabled={working}
+        >
+          {working ? "Testing..." : "Test Wallet Persistence"}
+        </button>
+        <button 
+          className='btn btn-outline-secondary btn-sm' 
+          onClick={() => setDebugOutput(null)}
+          disabled={working}
+        >
+          Clear
+        </button>
+      </div>
+
+      {debugOutput && (
+        <div className='bg-neutral-50 p-16 rounded-3'>
+          <h6>Debug Results:</h6>
+          <pre className='text-sm overflow-auto' style={{ maxHeight: '400px' }}>
+            {JSON.stringify(debugOutput, null, 2)}
+          </pre>
         </div>
       )}
     </div>

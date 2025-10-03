@@ -348,29 +348,44 @@ router.get("/me", firebaseAuthRequired, (req, res) => {
 router.post("/me/redeem", firebaseAuthRequired, (req, res) => {
   try {
     const { email, uid, role, tenantId } = resolveUserContext(req);
+    console.log("[WALLET] Redeem request - User context:", { email, uid, role, tenantId });
+    
     if (!eligibleForWallet(role, tenantId)) {
+      console.log("[WALLET] User not eligible for wallet:", { role, tenantId });
       return res.status(403).json({ status: "error", message: "You are not eligible to use voucher credits." });
     }
+    
     const amount = req.body?.amount;
     const options = {
       description: req.body?.description,
       reference: req.body?.reference,
       metadata: req.body?.metadata,
     };
+    console.log("[WALLET] Redeem amount:", amount, "options:", options);
 
     let resultWallet = null;
     let transaction = null;
+    
     saveData((draft) => {
+      console.log("[WALLET] Before ensureWallet - wallets count:", draft.wallets?.length || 0);
       const { wallet, index } = ensureWallet(draft, { uid, email, role, tenantId });
+      console.log("[WALLET] After ensureWallet - wallet index:", index, "wallet id:", wallet.id);
+      
       const nextWallet = applyDebit(wallet, amount, options);
       transaction = nextWallet.transactions[0];
+      console.log("[WALLET] After applyDebit - new balance:", nextWallet.balance, "transaction:", transaction?.id);
+      
       persistWallet(draft, index, nextWallet);
+      console.log("[WALLET] After persistWallet - wallets count:", draft.wallets?.length || 0);
+      
       resultWallet = nextWallet;
       return draft;
     });
 
+    console.log("[WALLET] Final result wallet balance:", resultWallet?.balance);
     return res.json({ ok: true, wallet: sanitizeWallet(resultWallet), transaction });
   } catch (e) {
+    console.error("[WALLET] Redeem error:", e);
     const status = e?.statusCode || 500;
     return res.status(status).json({ status: "error", message: e?.message || "Failed to redeem credits" });
   }
@@ -447,6 +462,97 @@ router.get("/admin/lookup", firebaseAuthRequired, requireAdmin, (req, res) => {
   } catch (e) {
     const status = e?.statusCode || 500;
     return res.status(status).json({ status: "error", message: e?.message || "Failed to lookup wallet" });
+  }
+});
+
+// Debug endpoint to check wallet persistence (admin only)
+router.get("/admin/debug/wallets", firebaseAuthRequired, requireAdmin, (req, res) => {
+  try {
+    const data = getData();
+    const wallets = ensureWalletArray(data);
+    return res.json({
+      ok: true,
+      walletsCount: wallets.length,
+      wallets: wallets.map(sanitizeWallet).filter(Boolean),
+    });
+  } catch (e) {
+    const status = e?.statusCode || 500;
+    return res.status(status).json({ status: "error", message: e?.message || "Failed to debug wallets" });
+  }
+});
+
+// Debug endpoint to manually test wallet creation (admin only)
+router.post("/admin/debug/test-create", firebaseAuthRequired, requireAdmin, (req, res) => {
+  try {
+    const { email, uid, role, tenantId } = req.body;
+    if (!email && !uid) {
+      return res.status(400).json({ status: "error", message: "Provide email or uid" });
+    }
+
+    let createdWallet = null;
+    saveData((draft) => {
+      const { wallet, index } = ensureWallet(draft, {
+        uid: uid || email,
+        email: normalizeEmail(email),
+        role: normalizeRole(role || "member"),
+        tenantId: normalizeTenant(tenantId || "public")
+      }, { initialize: true });
+      persistWallet(draft, index, wallet);
+      createdWallet = wallet;
+      return draft;
+    });
+
+    return res.json({
+      ok: true,
+      wallet: sanitizeWallet(createdWallet),
+      message: "Test wallet created successfully"
+    });
+  } catch (e) {
+    const status = e?.statusCode || 500;
+    return res.status(status).json({ status: "error", message: e?.message || "Failed to create test wallet" });
+  }
+});
+
+// Debug endpoint to manually test wallet transaction (admin only)
+router.post("/admin/debug/test-transaction", firebaseAuthRequired, requireAdmin, (req, res) => {
+  try {
+    const { email, uid, amount, description } = req.body;
+    if (!email && !uid) {
+      return res.status(400).json({ status: "error", message: "Provide email or uid" });
+    }
+
+    const transactionAmount = Number(amount) || 100;
+    let resultWallet = null;
+    let transaction = null;
+
+    saveData((draft) => {
+      const { wallet, index } = ensureWallet(draft, {
+        uid: uid || email,
+        email: normalizeEmail(email),
+        role: normalizeRole("member"),
+        tenantId: normalizeTenant("public")
+      }, { initialize: true });
+
+      const nextWallet = applyDebit(wallet, transactionAmount, {
+        description: description || "Test wallet debit transaction",
+        reference: "debug-test"
+      });
+      
+      transaction = nextWallet.transactions[0];
+      persistWallet(draft, index, nextWallet);
+      resultWallet = nextWallet;
+      return draft;
+    });
+
+    return res.json({
+      ok: true,
+      wallet: sanitizeWallet(resultWallet),
+      transaction,
+      message: `Test transaction of ${transactionAmount} credits successfully processed`
+    });
+  } catch (e) {
+    const status = e?.statusCode || 500;
+    return res.status(status).json({ status: "error", message: e?.message || "Failed to process test transaction" });
   }
 });
 

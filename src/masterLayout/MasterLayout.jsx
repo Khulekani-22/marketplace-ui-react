@@ -51,8 +51,21 @@ function MasterLayoutInner({ children }) {
   useEffect(() => {
     const role = normalizeRole(sessionStorage.getItem("role"));
     const tenant = normalizeTenant(sessionStorage.getItem("tenantId"));
-    setIsAdmin(hasFullAccess(role));
-    setIsPartnerRole(isPartner(role));
+    const adminAccess = hasFullAccess(role);
+    const partnerAccess = isPartner(role);
+    
+    // Debug logging for admin access
+    console.log("🔐 Admin Access Debug:", {
+      rawRole: sessionStorage.getItem("role"),
+      normalizedRole: role,
+      hasFullAccess: adminAccess,
+      isPartner: partnerAccess,
+      tenant: tenant,
+      pathname: location.pathname
+    });
+    
+    setIsAdmin(adminAccess);
+    setIsPartnerRole(partnerAccess);
     setTenantId(tenant);
   }, [location.pathname]);
 
@@ -73,6 +86,16 @@ function MasterLayoutInner({ children }) {
         else sessionStorage.removeItem("userId");
         sessionStorage.setItem("role", role);
         sessionStorage.setItem("tenantId", tenant);
+        
+        // Debug logging for role refresh
+        console.log("🔄 Role Refresh Debug:", {
+          apiResponse: data,
+          normalizedRole: role,
+          normalizedTenant: tenant,
+          hasFullAccessResult: hasFullAccess(role),
+          isPartnerResult: isPartner(role)
+        });
+        
         setIsAdmin(hasFullAccess(role));
         setIsPartnerRole(isPartner(role));
         setTenantId(tenant);
@@ -266,7 +289,15 @@ function MasterLayoutInner({ children }) {
             {isAdmin && (
               <>
                 <hr></hr>
-                {/* Admin */}
+                {/* Admin Section */}
+                <li className="sidebar-section-header">
+                  <span className="text-primary fw-semibold text-sm">
+                    Admin Panel {process.env.NODE_ENV === 'development' && 
+                      <small className="text-muted">({sessionStorage.getItem("role")})</small>
+                    }
+                  </span>
+                </li>
+                
                 <li>
                   <NavLink to="/profile-vendor-admin" className={navClass}>
                     <Icon icon="ri-user-settings-line" className="menu-icon" />
@@ -299,6 +330,13 @@ function MasterLayoutInner({ children }) {
                   <NavLink to="/sloane-academy-admin" className={navClass}>
                     <Icon icon="mdi:teach" className="menu-icon" />
                     <span>Academy Admin</span>
+                  </NavLink>
+                </li>
+
+                <li>
+                  <NavLink to="/admin/dashboard" className={navClass}>
+                    <Icon icon="mdi:view-dashboard" className="menu-icon" />
+                    <span>Admin Dashboard</span>
                   </NavLink>
                 </li>
               </>

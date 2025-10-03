@@ -18,6 +18,7 @@ import startupsRouter from "./routes/startups.js";
 import tenantsRouter from "./routes/tenants.js";
 import subscriptionsRouter from "./routes/subscriptions.js";
 import usersRouter from "./routes/users.js";
+import { getData } from "./utils/dataStore.js";
 import auditLogsRouter from "./routes/auditLogs.js";
 import assistantRouter from "./routes/assistant.js";
 import messagesRouter from "./routes/messages.js";
@@ -72,7 +73,47 @@ app.use(jwtAuthOptional);
 app.use(auditMutations);
 
 /* -------------------------- Authenticated identity ---------------------- */
-app.get("/api/me", firebaseAuthRequired, (req, res) => res.json(req.user));
+app.get("/api/me", firebaseAuthRequired, (req, res) => {
+  try {
+    // Look up user role from appData.json
+    const data = getData();
+    const users = Array.isArray(data?.users) ? data.users : [];
+    const userEmail = req.user.email?.toLowerCase();
+    
+    // Find user in the database
+    let userRole = "member"; // default
+    let userTenantId = "vendor"; // default
+    
+    const foundUser = users.find(u => u?.email?.toLowerCase() === userEmail);
+    if (foundUser) {
+      userRole = foundUser.role || "member";
+      userTenantId = foundUser.tenantId || "vendor";
+    }
+    
+    // Normalize tenant (convert "public" to "vendor")
+    if (userTenantId === "public") userTenantId = "vendor";
+    
+    console.log("📋 /api/me - User lookup:", {
+      email: userEmail,
+      foundInDB: !!foundUser,
+      role: userRole,
+      tenantId: userTenantId
+    });
+    
+    res.json({
+      uid: req.user.uid,
+      email: req.user.email,
+      role: userRole,
+      tenantId: userTenantId
+    });
+  } catch (error) {
+    console.error("❌ /api/me error:", error);
+    res.status(500).json({ 
+      status: "error", 
+      message: "Failed to get user info" 
+    });
+  }
+});
 
 /* ============================ LMS storage =============================== */
 

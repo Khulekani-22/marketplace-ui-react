@@ -269,6 +269,8 @@ const TrendingNFTsOne = ({
           setTimeout(() => setToast(''), 3000);
           return;
         }
+        // Refresh wallet to ensure UI shows updated balance
+        setTimeout(() => refresh().catch(() => void 0), 100);
         setToastType('success');
         setToast(`Voucher applied! Remaining balance: ${formatCredits(result.wallet?.balance || 0)} credits.`);
       } else {
@@ -421,6 +423,8 @@ const TrendingNFTsOne = ({
           setBookingModal((prev) => ({ ...prev, error: result.error || 'Unable to redeem wallet credits; booking canceled.' }));
           return;
         }
+        // Refresh wallet to ensure UI shows updated balance
+        setTimeout(() => refresh().catch(() => void 0), 100);
         setToastType('success');
         setToast(`Voucher applied! Remaining balance: ${formatCredits(result.wallet?.balance || 0)} credits.`);
       } else {
@@ -670,7 +674,7 @@ const TrendingNFTsOne = ({
                             <div className="d-flex flex-column gap-1 pt-1">
                               <button
                                 type="button"
-                                className={isSub ? "btn btn-sm rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6" : "btn btn-sm  rounded-pill text-primary-50 hover-text-primary-200 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"}
+                                className={isSub ? "btn btn-sm rounded-pill text-primary-50 hover-text-primary-400 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6" : "btn btn-sm  rounded-pill text-primary-50 hover-text-primary-400 bg-primary-500 bg-hover-primary-800 radius-8 px-12 py-6"}
                                 style={{ fontSize: '0.74rem', padding: '0.2rem 0.45rem' }}
                                 onClick={() => {
                                   if (bookable) {

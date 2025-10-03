@@ -114,8 +114,10 @@ function findSubscriptionIndex(list, { serviceId, tenantId, email, uid }) {
   const normalizedTenant = normalizeTenantId(tenantId);
   if (!targetServiceId || (!normalizedEmail && !uid)) return -1;
 
+  // Strategy 1: Strict matching (tenant + user + service + not canceled)
   const primaryIdx = list.findIndex((entry) => {
     if (!entry || (entry.type || "service") !== "service") return false;
+    if (entry.canceledAt) return false; // Skip already canceled subscriptions
     const entryServiceId = String(entry.serviceId || "");
     if (entryServiceId !== targetServiceId) return false;
     const emailMatches = normalizedEmail && normalizeEmail(entry.email) === normalizedEmail;
@@ -125,9 +127,11 @@ function findSubscriptionIndex(list, { serviceId, tenantId, email, uid }) {
   });
   if (primaryIdx >= 0) return primaryIdx;
 
+  // Strategy 2: UID-based fallback (any tenant, not canceled)
   if (uid) {
     const uidFallback = list.findIndex((entry) => {
       if (!entry || (entry.type || "service") !== "service") return false;
+      if (entry.canceledAt) return false; // Skip already canceled subscriptions
       const entryServiceId = String(entry.serviceId || "");
       if (entryServiceId !== targetServiceId) return false;
       return String(entry.uid || "") === String(uid);
@@ -135,9 +139,11 @@ function findSubscriptionIndex(list, { serviceId, tenantId, email, uid }) {
     if (uidFallback >= 0) return uidFallback;
   }
 
+  // Strategy 3: Email-based fallback (any tenant, not canceled)
   if (normalizedEmail) {
     const emailFallback = list.findIndex((entry) => {
       if (!entry || (entry.type || "service") !== "service") return false;
+      if (entry.canceledAt) return false; // Skip already canceled subscriptions
       const entryServiceId = String(entry.serviceId || "");
       if (entryServiceId !== targetServiceId) return false;
       return normalizeEmail(entry.email) === normalizedEmail;
@@ -336,10 +342,45 @@ router.put("/service/cancel", firebaseAuthRequired, (req, res) => {
   let updated = null;
   saveData((data) => {
     const list = Array.isArray(data.subscriptions) ? data.subscriptions : [];
-    let idx = findSubscriptionIndex(list, { serviceId, tenantId, email, uid });
+    
+    // Find subscription with multiple fallback strategies
+    let idx = -1;
+    
+    // Strategy 1: Use the existing findSubscriptionIndex function
+    idx = findSubscriptionIndex(list, { serviceId, tenantId, email, uid });
+    
+    // Strategy 2: Find by serviceId and user (email or uid) regardless of tenant, excluding already canceled
     if (idx < 0) {
-      idx = list.findIndex((entry) => (entry?.type || "service") === "service" && String(entry?.serviceId || "") === serviceId);
+      idx = list.findIndex((entry) => {
+        if (!entry || (entry.type || "service") !== "service") return false;
+        if (String(entry.serviceId || "") !== serviceId) return false;
+        if (entry.canceledAt) return false; // Skip already canceled subscriptions
+        const emailMatches = email && normalizeEmail(entry.email) === email;
+        const uidMatches = uid && String(entry.uid || "") === String(uid);
+        return emailMatches || uidMatches;
+      });
     }
+    
+    // Strategy 3: Find by serviceId and email only (most permissive)
+    if (idx < 0 && email) {
+      idx = list.findIndex((entry) => {
+        if (!entry || (entry.type || "service") !== "service") return false;
+        if (String(entry.serviceId || "") !== serviceId) return false;
+        if (entry.canceledAt) return false; // Skip already canceled subscriptions
+        return normalizeEmail(entry.email) === email;
+      });
+    }
+    
+    // Strategy 4: Find by serviceId and uid only
+    if (idx < 0 && uid) {
+      idx = list.findIndex((entry) => {
+        if (!entry || (entry.type || "service") !== "service") return false;
+        if (String(entry.serviceId || "") !== serviceId) return false;
+        if (entry.canceledAt) return false; // Skip already canceled subscriptions
+        return String(entry.uid || "") === String(uid);
+      });
+    }
+    
     if (idx >= 0) {
       const record = list[idx];
       record.canceledAt = new Date().toISOString();

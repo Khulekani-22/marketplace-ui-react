@@ -828,7 +828,7 @@
       "time": "17:30  - 19:00 SAST",
       "location": "Cnr Winnie Mandela Drive and Sloane Street, Bryanston, 2191, Johannesburg, South Africa",
       "locationUrl": "",
-      "description": "Startup Huddle: From Start to Scale \u2013 Building a Strong Foundation, is a bold and new monthly series hosted at 22 On Sloane, where alumni and resident founders come together to share what they\u2019re building, the challenges they\u2019re facing, and get real-time feedback from their peers and ecosystem mentors.\n\n \n\nEach session features two entrepreneurs who take us behind the scenes of their startup journey \u2014 offering an unfiltered look into the ups and downs of building a business. Through live input and community discussion, the goal is to learn together, grow together, and build stronger foundations for our ventures.\n\nEach edition of Startup Huddle will feature a different theme \u2014 keeping the format fresh, relevant, and driven by the needs of our founder community.",
+      "description": "Startup Huddle: From Start to Scale – Building a Strong Foundation, is a bold and new monthly series hosted at 22 On Sloane, where alumni and resident founders come together to share what they’re building, the challenges they’re facing, and get real-time feedback from their peers and ecosystem mentors.\n\n \n\nEach session features two entrepreneurs who take us behind the scenes of their startup journey — offering an unfiltered look into the ups and downs of building a business. Through live input and community discussion, the goal is to learn together, grow together, and build stronger foundations for our ventures.\n\nEach edition of Startup Huddle will feature a different theme — keeping the format fresh, relevant, and driven by the needs of our founder community.",
       "aiHint": "Business Networking Event",
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/07/Website-Banner-StartUp-Huddles-01.png",
       "id": "7D2QetgCDGTUefaouDag"
@@ -868,7 +868,7 @@
       "time": "18:00 onwards",
       "location": "Workshop17, V&A Waterfront, Cape Town",
       "locationUrl": "https://maps.google.com/?q=Workshop17+V%26A+Waterfront",
-      "description": "An exclusive, in-person networking event for startup founders and investors in the Cape Town ecosystem. Build connections, share ideas, and discover collaboration opportunities over drinks and canap\u00e9s.",
+      "description": "An exclusive, in-person networking event for startup founders and investors in the Cape Town ecosystem. Build connections, share ideas, and discover collaboration opportunities over drinks and canapés.",
       "imageUrl": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=600&h=400&fit=crop",
       "aiHint": "networking event people"
     },
@@ -1125,7 +1125,53 @@
       "id": "S7fXbqndXNTAMRHzKuPw"
     }
   ],
-  "messageThreads": [],
+  "messageThreads": [
+    {
+      "id": "tmg9rtqu6",
+      "subject": "Feedback request: Financial analysis consultation",
+      "participants": [
+        {
+          "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+          "name": "22OnSloane Digital Team",
+          "role": "Vendor"
+        },
+        {
+          "id": "admin",
+          "name": "Admin",
+          "role": "Admin"
+        }
+      ],
+      "participantIds": [
+        "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+        "admin",
+        "vendor:22onsloanedigitalteam@gmail.com"
+      ],
+      "messages": [
+        {
+          "id": "m1759431060510",
+          "senderId": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+          "senderName": "22OnSloane Digital Team",
+          "senderAvatar": "",
+          "senderRole": "Vendor",
+          "content": "Hello Admin\n\nMy listing \"Financial analysis consultation\" (ID: mf6s58mu-616wi6) was rejected. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!",
+          "date": "2025-10-02T18:51:00.510Z"
+        }
+      ],
+      "read": false,
+      "context": {
+        "type": "listing-feedback",
+        "listingId": "mf6s58mu-616wi6",
+        "listingTitle": "Financial analysis consultation",
+        "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "vendorEmail": "22onsloanedigitalteam@gmail.com"
+      },
+      "tenantId": "public",
+      "lastMessage": {
+        "snippet": "Hello Admin\n\nMy listing \"Financial analysis consultation\" (ID: mf6s58mu-616wi6) was rejected. Could you please share more details on what needs to be corrected ",
+        "date": "2025-10-02T18:51:00.510Z"
+      }
+    }
+  ],
   "services": [
     {
       "id": "1",
@@ -2498,6 +2544,11 @@
       "email": "khulekani@22onsloane.co",
       "tenantId": "22onsloane",
       "role": "admin"
+    },
+    {
+      "email": "khulekani@gecafrica.co",
+      "tenantId": "public",
+      "role": "admin"
     }
   ],
   "tenants": [
@@ -2631,5 +2682,32 @@
       "createdAt": "2025-09-17T11:51:09.146Z"
     }
   ],
-  "wallets": []
+  "wallets": [
+    {
+      "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+      "version": 1,
+      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "email": "22onsloanedigitalteam@gmail.com",
+      "tenantId": "vendor",
+      "role": "member",
+      "balance": 200000,
+      "startingBalance": 200000,
+      "transactions": [
+        {
+          "id": "5fb73897-bda9-4ff3-8fbc-781b502a8428",
+          "type": "credit",
+          "amount": 200000,
+          "description": "Initial voucher allocation",
+          "balanceAfter": 200000,
+          "createdAt": "2025-10-02T18:27:33.953Z",
+          "reference": "initial-credit",
+          "metadata": {
+            "reason": "auto-allocation",
+            "role": "member"
+          }
+        }
+      ],
+      "lastUpdated": "2025-10-02T18:27:33.953Z"
+    }
+  ]
 }
