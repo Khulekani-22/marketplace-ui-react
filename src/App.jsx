@@ -123,6 +123,8 @@ const VendorAddListingPage = React.lazy(() => import("./pages/VendorAddListingPa
 const VendorMyListings = React.lazy(() => import("./pages/VendorMyListings.tsx"));
 const VendorProfilePage = React.lazy(() => import("./pages/VendorProfilePage.tsx"));
 const VendorsAdminPage = React.lazy(() => import("./pages/VendorsAdminPage.tsx"));
+const AdminWalletCreditsPage = React.lazy(() => import("./pages/AdminWalletCreditsPage.tsx"));
+
 const StartupProfilePage = React.lazy(() => import("./pages/StartupProfilePage.tsx"));
 const VendorDashboardPage = React.lazy(() => import("./pages/VendorDashboardPage.tsx"));
 
@@ -136,7 +138,7 @@ function Fallback() {
   );
 }
 
-export default function App() {
+function App() {
   return (
     <>
       <RouteScrollToTop />
@@ -317,6 +319,14 @@ export default function App() {
                 }
               />
               <Route
+                path="/admin/wallet-credits"
+                element={
+                  <AdminRoute>
+                    <AdminWalletCreditsPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
                 path="/listings-vendors"
                 element={
                   <VendorRoute>
@@ -359,20 +369,19 @@ export default function App() {
                 }
               />
 
-
-
               {/* legacy -> dashboard */}
               <Route path="/index-7" element={<Navigate to="/dashboard" replace />} />
               <Route path="/profile" element={<Navigate to="/profile-vendor" replace />} />
-            
 
               {/* 404 */}
               <Route path="*" element={<ErrorPage />} />
-              </Routes>
-            </WalletProvider>
-          </AppSyncProvider>
-        </Suspense>
-      </ErrorBoundary>
+            </Routes>
+          </WalletProvider>
+        </AppSyncProvider>
+      </Suspense>
+    </ErrorBoundary>
     </>
   );
 }
+
+export default App;

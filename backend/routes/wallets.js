@@ -6,6 +6,32 @@ import { requireAdmin, normalizeEmail, collectUsers } from "../middleware/isAdmi
 
 const router = Router();
 
+// Apply Firebase authentication to all routes
+router.use(firebaseAuthRequired);
+
+// GET /api/wallets - Get all wallets (admin only)
+router.get("/", requireAdmin, (req, res) => {
+  try {
+    const data = getData();
+    const wallets = ensureWalletArray(data);
+    
+    res.json(wallets.map(wallet => ({
+      userId: wallet.uid || wallet.email,
+      userEmail: wallet.email,
+      balance: wallet.balance || 0,
+      tenantId: wallet.tenantId,
+      createdAt: wallet.createdAt,
+      updatedAt: wallet.updatedAt
+    })));
+  } catch (error) {
+    console.error("Error fetching wallets:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch wallets"
+    });
+  }
+});
+
 const STARTING_BALANCE = 200_000;
 const MAX_TRANSACTIONS = 150;
 const WALLET_VERSION = 1;

@@ -4,7 +4,6 @@ import { useWallet } from "../context/useWallet";
 import { useAppSync } from "../context/useAppSync";
 import { WalletSummaryCard, TransactionTable, formatCredits } from "./shared/WalletComponents";
 import AdminWalletManager from "./shared/AdminWalletManager";
-import WalletNavigation from "./shared/WalletNavigation";
 
 export default function WalletLayer() {
   const { loading, eligible, wallet, redeemCredits, grantCredits, refresh } = useWallet();
@@ -54,10 +53,6 @@ export default function WalletLayer() {
 
   return (
     <div className='row gy-4'>
-      {/* Navigation */}
-      <div className='col-12'>
-        <WalletNavigation />
-      </div>
       {/* Wallet Summary */}
       <div className='col-12 col-lg-8'>
         <WalletSummaryCard

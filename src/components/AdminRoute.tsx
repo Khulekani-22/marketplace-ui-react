@@ -23,6 +23,18 @@ export default function AdminRoute({ children }) {
         const tenant = data?.tenantId || sessionStorage.getItem("tenantId") || "vendor";
         const email = data?.email || user.email || null;
         const uid = data?.uid || user.uid || null;
+        
+        // Debug logging for admin access
+        console.log("🔒 AdminRoute Debug:", {
+          email,
+          roleFromAPI: data?.role,
+          roleFromStorage: sessionStorage.getItem("role"),
+          normalizedRole: role,
+          tenant,
+          hasFullAccessResult: hasFullAccess(role),
+          pathname: location.pathname
+        });
+        
         sessionStorage.setItem("role", role);
         sessionStorage.setItem("tenantId", tenant);
         if (email) sessionStorage.setItem("userEmail", email);
@@ -43,8 +55,17 @@ export default function AdminRoute({ children }) {
   }, [location.pathname]);
 
   if (state.loading) return null; // or spinner
-  if (!state.authed) return (
-    <Navigate to="/login" replace state={{ from: location.pathname }} />
-  );
+  if (!state.authed) {
+    console.log("🔒 AdminRoute: User not authenticated, redirecting to login");
+    return (
+      <Navigate to="/login" replace state={{ from: location.pathname }} />
+    );
+  }
+  
+  if (!state.ok) {
+    console.log("🔒 AdminRoute: User authenticated but not admin, redirecting to dashboard");
+  }
+  
+  console.log("🔒 AdminRoute: Access granted =", state.ok);
   return state.ok ? children : <Navigate to="/dashboard" replace />;
 }

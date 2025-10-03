@@ -47,12 +47,20 @@ if (!admin.apps.length) {
 export async function firebaseAuthRequired(req, res, next) {
   const h = req.header("Authorization") || "";
   const m = h.match(/^Bearer (.+)$/);
+  console.log('🔑 Firebase Auth Check:', { 
+    path: req.path, 
+    method: req.method, 
+    hasAuth: !!h, 
+    tokenLength: m ? m[1].length : 0 
+  });
   if (!m) return res.status(401).json({ status: "error", message: "Missing bearer token" });
   try {
     const decoded = await admin.auth().verifyIdToken(m[1]);
     req.user = { uid: decoded.uid, email: decoded.email, roles: decoded.roles || [] };
+    console.log('🔑 Firebase Auth Success:', { uid: decoded.uid, email: decoded.email });
     next();
   } catch (e) {
+    console.log('🔑 Firebase Auth Failed:', e.message);
     return res.status(401).json({ status: "error", message: "Invalid or expired token" });
   }
 }

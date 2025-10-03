@@ -23,6 +23,25 @@
       "bookedAt": "2024-07-28T10:00:00Z",
       "status": "pending",
       "id": "iqEZWAsptu7ygSTQOAij"
+    },
+    {
+      "id": "cbb78e9d-6349-46c3-aa18-b1f03b452f4c",
+      "subscriptionId": "20c66dd3-69e2-4a6a-ab16-ac34fa08d7ef",
+      "serviceId": "memubqft-fcmcw1",
+      "serviceTitle": "Scalable Web App Development",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "vendorName": "22 On Sloane",
+      "vendorEmail": "khulekani@22onsloane.co",
+      "customerId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "customerName": "22onsloanedigitalteam",
+      "customerEmail": "22onsloanedigitalteam@gmail.com",
+      "tenantId": "public",
+      "price": 42000,
+      "scheduledDate": "2025-10-25",
+      "scheduledSlot": "11:00",
+      "bookedAt": "2025-10-03T13:03:04.976Z",
+      "status": "scheduled",
+      "updatedAt": "2025-10-03T13:03:04.976Z"
     }
   ],
   "cohorts": [
@@ -1125,62 +1144,7 @@
       "id": "S7fXbqndXNTAMRHzKuPw"
     }
   ],
-  "messageThreads": [
-    {
-      "id": "tmg9rtqu6",
-      "subject": "Feedback request: Financial analysis consultation",
-      "participants": [
-        {
-          "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
-          "name": "22OnSloane Digital Team",
-          "role": "Vendor"
-        },
-        {
-          "id": "admin",
-          "name": "Admin",
-          "role": "Admin"
-        }
-      ],
-      "participantIds": [
-        "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
-        "admin",
-        "vendor:22onsloanedigitalteam@gmail.com"
-      ],
-      "messages": [
-        {
-          "id": "m1759431060510",
-          "senderId": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
-          "senderName": "22OnSloane Digital Team",
-          "senderAvatar": "",
-          "senderRole": "Vendor",
-          "content": "Hello Admin\n\nMy listing \"Financial analysis consultation\" (ID: mf6s58mu-616wi6) was rejected. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!",
-          "date": "2025-10-02T18:51:00.510Z"
-        },
-        {
-          "id": "m1759475076126",
-          "senderId": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
-          "senderName": "22OnSloane Digital Team",
-          "senderAvatar": "",
-          "senderRole": "Vendor",
-          "content": "Hello Admin\n\nMy listing \"Financial analysis consultation\" (ID: mf6s58mu-616wi6) was rejected. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!",
-          "date": "2025-10-03T07:04:36.126Z"
-        }
-      ],
-      "read": true,
-      "context": {
-        "type": "listing-feedback",
-        "listingId": "mf6s58mu-616wi6",
-        "listingTitle": "Financial analysis consultation",
-        "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
-        "vendorEmail": "22onsloanedigitalteam@gmail.com"
-      },
-      "tenantId": "public",
-      "lastMessage": {
-        "snippet": "Hello Admin\n\nMy listing \"Financial analysis consultation\" (ID: mf6s58mu-616wi6) was rejected. Could you please share more details on what needs to be corrected ",
-        "date": "2025-10-03T07:04:36.127Z"
-      }
-    }
-  ],
+  "messageThreads": [],
   "services": [
     {
       "id": "1",
@@ -2550,14 +2514,64 @@
   },
   "users": [
     {
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "email": "khulekani@22onsloane.co",
+      "displayName": "Khulekani Magubane",
       "tenantId": "22onsloane",
-      "role": "admin"
+      "role": "admin",
+      "photoURL": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "lastLoginAt": "2025-01-28T08:30:00Z"
     },
     {
-      "email": "khulekani@gecafrica.co",
-      "tenantId": "public",
-      "role": "admin"
+      "uid": "user2_startup_founder",
+      "email": "sarah.johnson@afritech.co.za",
+      "displayName": "Sarah Johnson",
+      "tenantId": "22onsloane",
+      "role": "member",
+      "photoURL": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff",
+      "createdAt": "2024-03-20T14:30:00Z",
+      "lastLoginAt": "2025-01-27T16:45:00Z"
+    },
+    {
+      "uid": "user3_tech_entrepreneur",
+      "email": "david.chen@finconnect.africa",
+      "displayName": "David Chen",
+      "tenantId": "22onsloane",
+      "role": "member",
+      "photoURL": "https://ui-avatars.com/api/?name=David+Chen&background=dc2626&color=fff",
+      "createdAt": "2024-05-10T09:15:00Z",
+      "lastLoginAt": "2025-01-28T12:20:00Z"
+    },
+    {
+      "uid": "user4_social_entrepreneur",
+      "email": "maria.santos@impactventures.co.za",
+      "displayName": "Maria Santos",
+      "tenantId": "22onsloane",
+      "role": "member",
+      "photoURL": "https://ui-avatars.com/api/?name=Maria+Santos&background=7c2d12&color=fff",
+      "createdAt": "2024-07-08T11:00:00Z",
+      "lastLoginAt": "2025-01-26T19:30:00Z"
+    },
+    {
+      "uid": "user5_partner_mentor",
+      "email": "james.williams@mentornetwork.co.za",
+      "displayName": "James Williams",
+      "tenantId": "22onsloane",
+      "role": "partner",
+      "photoURL": "https://ui-avatars.com/api/?name=James+Williams&background=1e40af&color=fff",
+      "createdAt": "2024-02-28T13:45:00Z",
+      "lastLoginAt": "2025-01-28T07:15:00Z"
+    },
+    {
+      "uid": "user6_startup_cto",
+      "email": "emily.brown@blockchainsa.co.za",
+      "displayName": "Emily Brown",
+      "tenantId": "22onsloane",
+      "role": "member",
+      "photoURL": "https://ui-avatars.com/api/?name=Emily+Brown&background=7c3aed&color=fff",
+      "createdAt": "2024-06-15T16:20:00Z",
+      "lastLoginAt": "2025-01-27T22:10:00Z"
     }
   ],
   "tenants": [
@@ -2689,6 +2703,18 @@
       "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "tenantId": "public",
       "createdAt": "2025-09-17T11:51:09.146Z"
+    },
+    {
+      "id": "20c66dd3-69e2-4a6a-ab16-ac34fa08d7ef",
+      "type": "service",
+      "serviceId": "memubqft-fcmcw1",
+      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "email": "22onsloanedigitalteam@gmail.com",
+      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "tenantId": "public",
+      "createdAt": "2025-10-03T13:03:04.976Z",
+      "scheduledDate": "2025-10-25",
+      "scheduledSlot": "11:00"
     }
   ],
   "wallets": [
@@ -2699,16 +2725,33 @@
       "email": "22onsloanedigitalteam@gmail.com",
       "tenantId": "vendor",
       "role": "member",
-      "balance": 200000,
+      "balance": 158000,
       "startingBalance": 200000,
       "transactions": [
         {
-          "id": "5fb73897-bda9-4ff3-8fbc-781b502a8428",
+          "id": "348bac7c-7d85-479d-bffa-ecc16a1941b3",
+          "type": "debit",
+          "amount": 42000,
+          "description": "Listing booking: Scalable Web App Development",
+          "reference": "listing-memubqft-fcmcw1",
+          "metadata": {
+            "serviceId": "memubqft-fcmcw1",
+            "vendor": "22 On Sloane",
+            "category": "Tech & Programming",
+            "scheduledDate": "2025-10-25",
+            "scheduledSlot": "11:00",
+            "source": "dashboard-trending-booking"
+          },
+          "createdAt": "2025-10-03T13:03:04.996Z",
+          "balanceAfter": 158000
+        },
+        {
+          "id": "94e5ee73-266f-42be-85a4-ff0d2a2a63bd",
           "type": "credit",
           "amount": 200000,
           "description": "Initial voucher allocation",
           "balanceAfter": 200000,
-          "createdAt": "2025-10-02T18:27:33.953Z",
+          "createdAt": "2025-10-03T12:55:54.968Z",
           "reference": "initial-credit",
           "metadata": {
             "reason": "auto-allocation",
@@ -2716,7 +2759,7 @@
           }
         }
       ],
-      "lastUpdated": "2025-10-02T18:27:33.953Z"
+      "lastUpdated": "2025-10-03T13:03:04.996Z"
     }
   ]
 }

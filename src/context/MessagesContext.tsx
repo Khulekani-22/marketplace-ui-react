@@ -146,7 +146,7 @@ const resolveIdentity = (tenantId: string): Identity => {
 
 export function MessagesProvider({ children }) {
   const [threads, setThreads] = useState(() => readCachedThreads());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);  // Start with loading=true until first fetch completes
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const pollRef = useRef(null);
@@ -258,7 +258,11 @@ export function MessagesProvider({ children }) {
   );
 
   useEffect(() => {
-    refresh().catch(() => void 0);
+    refresh().then(() => {
+      setLoading(false);  // Mark initial loading as complete
+    }).catch(() => {
+      setLoading(false);  // Still mark as complete even on error
+    });
     // soft poll every 4 minutes to respect rate limiting
     pollRef.current = setInterval(() => {
       refresh({ silent: true }).catch(() => void 0);

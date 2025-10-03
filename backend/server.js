@@ -18,6 +18,7 @@ import startupsRouter from "./routes/startups.js";
 import tenantsRouter from "./routes/tenants.js";
 import subscriptionsRouter from "./routes/subscriptions.js";
 import usersRouter from "./routes/users.js";
+import adminRouter from "./routes/admin.js";
 import { getData } from "./utils/dataStore.js";
 import auditLogsRouter from "./routes/auditLogs.js";
 import assistantRouter from "./routes/assistant.js";
@@ -35,7 +36,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const DEFAULT_PORT = 5000;
+const DEFAULT_PORT = 5055;
 const PORT = Number(process.env.PORT || DEFAULT_PORT);
 
 /* ------------------------ Core security & parsing ------------------------ */
@@ -97,7 +98,9 @@ app.get("/api/me", firebaseAuthRequired, (req, res) => {
       email: userEmail,
       foundInDB: !!foundUser,
       role: userRole,
-      tenantId: userTenantId
+      tenantId: userTenantId,
+      foundUserData: foundUser,
+      requestTenant: req.tenant?.id
     });
     
     res.json({
@@ -465,6 +468,7 @@ app.use("/api/data/vendors", vendorsRouter);
 app.use("/api/data/startups", startupsRouter);
 app.use("/api/tenants", tenantsRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/audit-logs", auditLogsRouter);
 app.use("/api/subscriptions", subscriptionsRouter);
 app.use("/api/assistant", assistantRouter);
@@ -535,7 +539,7 @@ async function listenWithPort(port) {
       tick();
       setInterval(tick, 60 * 1000);
     })();
-    // Try ports in order: requested/5000, then 5001, then 5500
+    // Try ports in order: requested/5055, then 5001, then 5500
     const tried = new Set();
     const ports = [PORT, 5001, 5500].filter((p, i, arr) => arr.indexOf(p) === i);
     let started = false;
@@ -554,7 +558,7 @@ async function listenWithPort(port) {
         throw err;
       }
     }
-    if (!started) throw new Error("No available port among [5000, 5001, 5500]");
+    if (!started) throw new Error("No available port among [5055, 5001, 5500]");
   } catch (e) {
     console.error("Failed to start backend:", e);
     process.exit(1);

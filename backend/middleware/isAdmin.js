@@ -38,15 +38,24 @@ export function collectUsers(data) {
 export function isAdminForTenant(req, { email, tenantId } = {}) {
   try {
     const em = normalizeEmail(email || req.user?.email);
+    console.log('🔐 isAdminForTenant check:', {
+      email: em,
+      requestTenant: mapTenant(tenantId || req.tenant?.id),
+      userFromReq: req.user,
+      tenantFromReq: req.tenant
+    });
     if (!em) return false;
     const target = mapTenant(tenantId || req.tenant?.id);
     const users = collectUsers(getData());
     const found = users.find((u) => normalizeEmail(u.email) === em);
+    console.log('🔐 Found user:', found);
     if (!found) return false;
     const role = (found.role || "member");
     const uTenant = mapTenant(found.tenantId);
+    console.log('🔐 Admin check:', { role, userTenant: uTenant, targetTenant: target, isAdmin: role === "admin", tenantMatch: uTenant === target });
     return role === "admin" && uTenant === target;
-  } catch {
+  } catch (error) {
+    console.error('🔐 isAdminForTenant error:', error);
     return false;
   }
 }

@@ -160,6 +160,17 @@ const EmailLayer = () => {
     try { return localStorage.getItem('sl_messages_last_sync') || ""; } catch { return ""; }
   });
 
+  // Debug logging to see button state
+  console.log('EmailLayer Button Debug:', { 
+    loading, 
+    refreshing, 
+    syncBusy, 
+    'full-refresh-disabled': loading || refreshing || syncBusy,
+    'quick-refresh-disabled': loading || refreshing,
+    messagesContext: !!messagesContext,
+    contextValues: messagesContext
+  });
+
   async function handleSyncNow() {
     if (!canSync) {
       setSyncErr('Vendor or admin access required to sync.');

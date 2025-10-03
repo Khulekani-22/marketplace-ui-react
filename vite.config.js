@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
       // Bind to the requested host (defaults to localhost for dev convenience)
       host,
       port,
-      strictPort: false,
+      strictPort: true,
       hmr: {
         host,
         clientPort: port,

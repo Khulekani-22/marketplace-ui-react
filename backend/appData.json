@@ -2495,9 +2495,64 @@
   },
   "users": [
     {
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "email": "khulekani@22onsloane.co",
+      "displayName": "Khulekani Magubane",
       "tenantId": "22onsloane",
-      "role": "admin"
+      "role": "admin",
+      "photoURL": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "lastLoginAt": "2025-01-28T08:30:00Z"
+    },
+    {
+      "uid": "user2_startup_founder",
+      "email": "sarah.johnson@afritech.co.za",
+      "displayName": "Sarah Johnson",
+      "tenantId": "22onsloane",
+      "role": "member",
+      "photoURL": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff",
+      "createdAt": "2024-03-20T14:30:00Z",
+      "lastLoginAt": "2025-01-27T16:45:00Z"
+    },
+    {
+      "uid": "user3_tech_entrepreneur",
+      "email": "david.chen@finconnect.africa",
+      "displayName": "David Chen",
+      "tenantId": "22onsloane",
+      "role": "member",
+      "photoURL": "https://ui-avatars.com/api/?name=David+Chen&background=dc2626&color=fff",
+      "createdAt": "2024-05-10T09:15:00Z",
+      "lastLoginAt": "2025-01-28T12:20:00Z"
+    },
+    {
+      "uid": "user4_social_entrepreneur",
+      "email": "maria.santos@impactventures.co.za",
+      "displayName": "Maria Santos",
+      "tenantId": "22onsloane",
+      "role": "member",
+      "photoURL": "https://ui-avatars.com/api/?name=Maria+Santos&background=7c2d12&color=fff",
+      "createdAt": "2024-07-08T11:00:00Z",
+      "lastLoginAt": "2025-01-26T19:30:00Z"
+    },
+    {
+      "uid": "user5_partner_mentor",
+      "email": "james.williams@mentornetwork.co.za",
+      "displayName": "James Williams",
+      "tenantId": "22onsloane",
+      "role": "partner",
+      "photoURL": "https://ui-avatars.com/api/?name=James+Williams&background=1e40af&color=fff",
+      "createdAt": "2024-02-28T13:45:00Z",
+      "lastLoginAt": "2025-01-28T07:15:00Z"
+    },
+    {
+      "uid": "user6_startup_cto",
+      "email": "emily.brown@blockchainsa.co.za",
+      "displayName": "Emily Brown",
+      "tenantId": "22onsloane",
+      "role": "member",
+      "photoURL": "https://ui-avatars.com/api/?name=Emily+Brown&background=7c3aed&color=fff",
+      "createdAt": "2024-06-15T16:20:00Z",
+      "lastLoginAt": "2025-01-27T22:10:00Z"
     }
   ],
   "tenants": [

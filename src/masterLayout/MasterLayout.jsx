@@ -1,5 +1,5 @@
 // src/MasterLayout/MasterLayout.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
@@ -24,8 +24,8 @@ function MasterLayoutInner({ children }) {
   const [user, setUser] = useState(null);
   const [sidebarActive, setSidebarActive] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(() => hasFullAccess(sessionStorage.getItem("role")));
-  const [isPartnerRole, setIsPartnerRole] = useState(() => isPartner(sessionStorage.getItem("role")));
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isPartnerRole, setIsPartnerRole] = useState(false);
   const [tenantId, setTenantId] = useState(() => {
     const stored = sessionStorage.getItem("tenantId");
     return normalizeTenant(stored);
@@ -36,6 +36,57 @@ function MasterLayoutInner({ children }) {
     if (!id) return "vendor";
     return id === "public" ? "vendor" : id;
   }
+
+  // Define refreshRole function that can be used in multiple effects
+  const refreshRole = useCallback(async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      console.log("🔄 No user for role refresh");
+      return;
+    }
+    try {
+      console.log("🔄 Calling /api/me for user:", user.email);
+      const { data } = await api.get("/api/me");
+      const role = normalizeRole(data?.role);
+      const tenant = normalizeTenant(data?.tenantId);
+      const email = data?.email || user.email || null;
+      const uid = data?.uid || user.uid || null;
+      if (email) sessionStorage.setItem("userEmail", email);
+      else sessionStorage.removeItem("userEmail");
+      if (uid) sessionStorage.setItem("userId", uid);
+      else sessionStorage.removeItem("userId");
+      sessionStorage.setItem("role", role);
+      sessionStorage.setItem("tenantId", tenant);
+      
+      console.log("🔄 Role Refresh Debug:", {
+        apiResponse: data,
+        normalizedRole: role,
+        normalizedTenant: tenant,
+        hasFullAccessResult: hasFullAccess(role),
+        isPartnerResult: isPartner(role),
+        currentAdminState: isAdmin,
+        currentPartnerState: isPartnerRole
+      });
+      
+      const newAdminState = hasFullAccess(role);
+      const newPartnerState = isPartner(role);
+      
+      console.log("🔄 Setting new admin state:", newAdminState, "was:", isAdmin);
+      
+      setIsAdmin(newAdminState);
+      setIsPartnerRole(newPartnerState);
+      setTenantId(tenant);
+    } catch (error) {
+      console.error("🔄 Role refresh error:", error);
+      if (!auth.currentUser) {
+        sessionStorage.removeItem("role");
+        sessionStorage.removeItem("tenantId");
+        setIsAdmin(false);
+        setIsPartnerRole(false);
+        setTenantId("vendor");
+      }
+    }
+  }, [isAdmin, isPartnerRole]);
 
   // Auto-open dropdown containing current route + close mobile on route change
   const navClass = ({ isActive }) => (isActive ? "active-page" : "");
@@ -55,100 +106,65 @@ function MasterLayoutInner({ children }) {
     const partnerAccess = isPartner(role);
     
     // Debug logging for admin access
-    console.log("🔐 Admin Access Debug:", {
+    console.log("🔐 Navigation Admin Access Debug:", {
       rawRole: sessionStorage.getItem("role"),
       normalizedRole: role,
       hasFullAccess: adminAccess,
       isPartner: partnerAccess,
       tenant: tenant,
-      pathname: location.pathname
+      pathname: location.pathname,
+      currentAdminState: isAdmin
     });
     
     setIsAdmin(adminAccess);
     setIsPartnerRole(partnerAccess);
     setTenantId(tenant);
-  }, [location.pathname]);
+
+    // Also refresh role from API if user is logged in
+    if (auth.currentUser) {
+      console.log("🔄 Refreshing role on navigation...");
+      refreshRole();
+    }
+  }, [location.pathname, refreshRole]);
 
   // Resolve role/tenant for current user (on mount and on auth changes)
   useEffect(() => {
-    async function refreshRole() {
-      const user = auth.currentUser;
-      if (!user) return;
-      try {
-        const { data } = await api.get("/api/me");
-        const role = normalizeRole(data?.role);
-        const tenant = normalizeTenant(data?.tenantId);
-        const email = data?.email || user.email || null;
-        const uid = data?.uid || user.uid || null;
-        if (email) sessionStorage.setItem("userEmail", email);
-        else sessionStorage.removeItem("userEmail");
-        if (uid) sessionStorage.setItem("userId", uid);
-        else sessionStorage.removeItem("userId");
-        sessionStorage.setItem("role", role);
-        sessionStorage.setItem("tenantId", tenant);
-        
-        // Debug logging for role refresh
-        console.log("🔄 Role Refresh Debug:", {
-          apiResponse: data,
-          normalizedRole: role,
-          normalizedTenant: tenant,
-          hasFullAccessResult: hasFullAccess(role),
-          isPartnerResult: isPartner(role)
-        });
-        
-        setIsAdmin(hasFullAccess(role));
-        setIsPartnerRole(isPartner(role));
-        setTenantId(tenant);
-      } catch {
-        if (!auth.currentUser) {
-          sessionStorage.removeItem("role");
-          sessionStorage.removeItem("tenantId");
-          setIsAdmin(false);
-          setIsPartnerRole(false);
-          setTenantId("vendor");
-        }
-      }
-    }
-
-    // initial
+    // initial setup
     if (auth.currentUser) {
+      console.log("🔐 Initial user found:", auth.currentUser.email);
       // ensure session sync on first paint
       if (auth.currentUser.email) sessionStorage.setItem("userEmail", auth.currentUser.email);
       if (auth.currentUser.uid) sessionStorage.setItem("userId", auth.currentUser.uid);
       const initialTenant = normalizeTenant(sessionStorage.getItem("tenantId"));
       sessionStorage.setItem("tenantId", initialTenant);
       setUser(auth.currentUser);
+      refreshRole(); // Ensure role is refreshed on mount
+    } else {
+      console.log("🔐 No user found on mount");
     }
-    if (auth.currentUser) refreshRole();
 
     // subscribe to auth state changes
     const unsub = onAuthStateChanged(auth, (u) => {
+      console.log("🔐 Auth state changed:", { user: u?.email, uid: u?.uid });
       setUser(u || null);
       if (u) {
         // keep UID + email in session for cross-app usage
         if (u.email) sessionStorage.setItem("userEmail", u.email);
         if (u.uid) sessionStorage.setItem("userId", u.uid);
+        refreshRole(); // Refresh role when user signs in
       } else {
         // signed out in this or another tab
         sessionStorage.removeItem("userId");
         sessionStorage.removeItem("userEmail");
         sessionStorage.removeItem("tenantId");
-      }
-      const email = u?.email || null;
-      const uid = u?.uid || null;
-      if (email) sessionStorage.setItem("userEmail", email);
-      else sessionStorage.removeItem("userEmail");
-      if (uid) sessionStorage.setItem("userId", uid);
-      else sessionStorage.removeItem("userId");
-      if (u) refreshRole();
-      else {
+        sessionStorage.removeItem("role");
         setIsAdmin(false);
         setIsPartnerRole(false);
         setTenantId("vendor");
       }
     });
     return () => unsub?.();
-  }, []);
+  }, [refreshRole]);
 
   // Load tenants list for switcher (best-effort)
   useEffect(() => {
@@ -194,6 +210,16 @@ function MasterLayoutInner({ children }) {
   const isBasic = !isAdmin && tenantId === "basic";
   const showWalletLink = !isAdmin || tenantId === "vendor" || tenantId === "basic";
 
+  // Debug current state in render
+  console.log("🏗️ MasterLayout Render State:", {
+    isAdmin,
+    isPartnerRole,
+    tenantId,
+    user: user?.email,
+    roleFromStorage: sessionStorage.getItem("role"),
+    tenantFromStorage: sessionStorage.getItem("tenantId")
+  });
+
   return (
     <section className={overlayClass} onClick={(e) => e.target.classList?.contains("overlay") && setMobileMenu(false)}>
       {/* Sidebar */}
@@ -219,15 +245,15 @@ function MasterLayoutInner({ children }) {
           <ul className="sidebar-menu" id="sidebar-menu">
             <li>
               <NavLink to="/dashboard" className={navClass}>
-                <Icon icon="material-symbols:map-outline" className="menu-icon" />
-                <span>All Listings</span>
+                <Icon icon="mdi:storefront-outline" className="menu-icon" />
+                <span>Access To Market</span>
               </NavLink>
             </li>
 
             <li>
               <NavLink to="/market1" className={navClass}>
-                <Icon icon="mdi:storefront-outline" className="menu-icon" />
-                <span>Access to Market</span>
+                <Icon icon="material-symbols:map-outline" className="menu-icon" />
+                <span>Full Marketplace</span>
               </NavLink>
             </li>
 
@@ -288,6 +314,7 @@ function MasterLayoutInner({ children }) {
 
             {isAdmin && (
               <>
+                {console.log("🔐 Rendering admin section - isAdmin:", isAdmin, "role:", sessionStorage.getItem("role"))}
                 <hr></hr>
                 {/* Admin Section */}
                 <li className="sidebar-section-header">
@@ -337,6 +364,13 @@ function MasterLayoutInner({ children }) {
                   <NavLink to="/admin/dashboard" className={navClass}>
                     <Icon icon="mdi:view-dashboard" className="menu-icon" />
                     <span>Admin Dashboard</span>
+                  </NavLink>
+                </li>
+
+                <li>
+                  <NavLink to="/admin/wallet-credits" className={navClass}>
+                    <Icon icon="mdi:wallet-plus" className="menu-icon" />
+                    <span>Manage Wallet Credits</span>
                   </NavLink>
                 </li>
               </>

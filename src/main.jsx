@@ -21,6 +21,7 @@ import "./styles/theme-patch.css";
 import "./styles/theme-fixes.css";
 import "./styles/extra.css";  
 import "./styles/access-to-capital.css";
+import "./styles/wallet-credits.css";
 
 
 // Optional JS bundles that enhance UI components

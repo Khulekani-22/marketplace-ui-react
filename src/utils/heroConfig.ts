@@ -54,7 +54,7 @@ const HERO_IMAGES = {
     alt: "Founder celebrating a funding milestone",
   },
   emailCenter: {
-    src: "https://www.22onsloane.co/wp-content/uploads/2025/10/woman-thinking-or-business-tablet-in-coworking-sp-2025-04-05-16-37-53-utc-scaled.jpg",
+    src: "https://www.22onsloane.co/wp-content/uploads/2025/10/smile-laptop-and-remote-work-with-man-in-kitchen-2025-04-06-13-11-12-utc-scaled.jpg",
     alt: "Team coordinating messages inside Sloane Hub",
   },
   subscriptions: {
@@ -129,24 +129,24 @@ const RULES = [
       }
       if (state.isVendor) {
         return make(
-          "Unlocking Growth",
-          "Find the right software or services for your business, all in one place.",
+          "Access To Market",
+          "Showcase your services and connect with potential customers across Africa.",
           { to: "/listings-vendors", label: "Add Listings", icon: "mdi:store-outline" },
           { to: "/listings-vendors-mine", label: "My Listings", icon: "mdi:view-list-outline" },
           {
-            kicker: heroKicker("mdi:chart-line", "Access To Market", "| Logged in as: Vendor"),
+            kicker: heroKicker("mdi:storefront-outline", "Vendor Portal", "| Expand your market reach"),
             image: heroImage("dashboard"),
           }
         );
       }
       if (state.isBasic) {
         return make(
-          "Startup Dashboard",
-          "Review recommendations, manage subscriptions, and prep investor outreach.",
-          { to: "/marketplace", label: "Discover Vendors", icon: "mdi:rocket-launch-outline" },
-          { to: "/access-capital", label: "Access Capital", icon: "mdi:finance" },
+          "Access To Market",
+          "Discover tailored services and solutions to accelerate your startup's growth.",
+          { to: "/marketplace", label: "Browse All Services", icon: "mdi:compass-outline" },
+          { to: "/profile-startup", label: "Complete Profile", icon: "mdi:account-edit-outline" },
           {
-            kicker: heroKicker("mdi:view-dashboard-outline", "Startup", "Curated actions for your growth."),
+            kicker: heroKicker("mdi:target-account", "Personalized", "Recommendations based on your startup profile."),
             image: heroImage("dashboard"),
           }
         );
@@ -158,12 +158,12 @@ const RULES = [
         ? { to: "/subscriptions", label: "Manage Subscriptions", icon: "mdi:bell-ring-outline" }
         : { to: "/signup/startup", label: "Create Account", icon: "mdi:account-plus-outline" };
       return make(
-        "Sloane Hub Dashboard",
-        "Monitor marketplace activity and learning progress across the platform.",
+        "Access To Market",
+        "Your gateway to discovering and connecting with trusted African SMME services.",
         primary,
         secondary,
         {
-          kicker: heroKicker("mdi:view-dashboard-outline", "Workspace", "Always-on insights for your team."),
+          kicker: heroKicker("mdi:compass-outline", "Marketplace", "Curated services for your business needs."),
           image: heroImage("dashboard"),
         }
       );
