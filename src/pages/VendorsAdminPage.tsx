@@ -711,11 +711,7 @@ export default function VendorsAdminPage() {
   return (
     <MasterLayout>
       <div className="container py-4">
-      <React.Suspense fallback={null}>
-        <div className="row mb-3">
-          <BannerInnerTwo />
-        </div>
-      </React.Suspense>
+     
 
       {/* Top stats */}
       <div className="row g-3 mb-3">

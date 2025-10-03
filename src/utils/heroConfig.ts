@@ -54,7 +54,7 @@ const HERO_IMAGES = {
     alt: "Founder celebrating a funding milestone",
   },
   emailCenter: {
-    src: "https://www.22onsloane.co/wp-content/uploads/2025/09/business-people-mentor-and-applause-for-presentat-2025-04-06-05-18-45-utc-scaled.jpg",
+    src: "https://www.22onsloane.co/wp-content/uploads/2025/10/woman-thinking-or-business-tablet-in-coworking-sp-2025-04-05-16-37-53-utc-scaled.jpg",
     alt: "Team coordinating messages inside Sloane Hub",
   },
   subscriptions: {
@@ -64,6 +64,26 @@ const HERO_IMAGES = {
   dashboard: {
     src: "https://www.22onsloane.co/wp-content/uploads/2025/10/envato-labs-image-edit-13.png",
     alt: "Marketplace team reviewing performance metrics",
+  },
+  wallet: {
+    src: "https://www.22onsloane.co/wp-content/uploads/2025/10/reading-phone-and-business-with-black-woman-in-ci-2025-04-05-12-15-22-utc-scaled.jpg",
+    alt: "Entrepreneur managing financial transactions and payments",
+  },
+  support: {
+    src: "https://www.22onsloane.co/wp-content/uploads/2025/10/business-people-tablet-and-men-in-city-smile-or-2025-04-05-12-14-19-utc-scaled.jpg",
+    alt: "Support team helping customers with their questions",
+  },
+  adminListings: {
+    src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80",
+    alt: "Administrator reviewing and moderating marketplace listings",
+  },
+  adminAcademy: {
+    src: "https://www.22onsloane.co/wp-content/uploads/2025/09/business-people-mentor-and-applause-for-presentat-2025-04-06-05-18-45-utc-scaled.jpg",
+    alt: "Administrator managing Sloane Academy programs and content",
+  },
+  adminVendorProfile: {
+    src: "https://www.22onsloane.co/wp-content/uploads/2025/10/collaboration-colleagues-and-people-with-tablet-2025-04-06-12-20-05-utc-scaled.jpg",
+    alt: "Administrator reviewing vendor profile applications",
   },
   auth: {
     src: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1600&q=80",
@@ -149,8 +169,58 @@ const RULES = [
       );
     },
   },
-  { test: /^\/?listings-admin$/, hero: null },
-  { test: /^\/?profile-vendor-admin$/, hero: null },
+  { test: /^\/?listings-admin$/, hero: (ctx) => {
+      const state = classify(ctx);
+      if (state.isAdmin) {
+        return make(
+          "Admin: Listings Management",
+          "Review, approve, and moderate marketplace listings for quality and compliance.",
+          { to: "/listings-admin", label: "Review Listings", icon: "mdi:clipboard-check-outline" },
+          { to: "/admin/users", label: "Manage Users", icon: "mdi:account-cog-outline" },
+          {
+            kicker: heroKicker("mdi:shield-check-outline", "Moderation", "Ensure marketplace quality and safety."),
+            image: heroImage("adminListings"),
+          }
+        );
+      }
+      return make(
+        "Access Restricted",
+        "This area is restricted to platform administrators.",
+        { to: "/dashboard", label: "Back to Dashboard", icon: "mdi:home-outline" },
+        { to: "/login", label: "Sign In", icon: "mdi:login" },
+        {
+          kicker: heroKicker("mdi:lock-outline", "Admin Only", "Contact support for access requests."),
+          image: heroImage("admin"),
+        }
+      );
+    }
+  },
+  { test: /^\/?profile-vendor-admin$/, hero: (ctx) => {
+      const state = classify(ctx);
+      if (state.isAdmin) {
+        return make(
+          "Admin: Vendor Profile Management",
+          "Review vendor applications, verify credentials, and manage vendor status.",
+          { to: "/profile-vendor-admin", label: "Review Profiles", icon: "mdi:account-check-outline" },
+          { to: "/listings-admin", label: "Listings Admin", icon: "mdi:clipboard-list-outline" },
+          {
+            kicker: heroKicker("mdi:shield-account-outline", "Verification", "Maintain vendor quality standards."),
+            image: heroImage("adminVendorProfile"),
+          }
+        );
+      }
+      return make(
+        "Access Restricted",
+        "This area is restricted to platform administrators.",
+        { to: "/dashboard", label: "Back to Dashboard", icon: "mdi:home-outline" },
+        { to: "/login", label: "Sign In", icon: "mdi:login" },
+        {
+          kicker: heroKicker("mdi:lock-outline", "Admin Only", "Contact support for access requests."),
+          image: heroImage("admin"),
+        }
+      );
+    }
+  },
   {
     test: /^\/?access-capital$/,
     hero: (ctx) => {
@@ -187,6 +257,76 @@ const RULES = [
         {
           kicker: heroKicker("mdi:email-outline", "Inbox", "Stay on top of partner communication."),
           image: heroImage("emailCenter"),
+        }
+      );
+    },
+  },
+  {
+    test: /^\/?wallet$/,
+    hero: (ctx) => {
+      const { authed, isAdmin, isVendor, isBasic } = classify(ctx);
+      if (!authed) {
+        return make(
+          "Digital Wallet",
+          "Sign in to manage your payments, transactions, and financial activity.",
+          { to: "/login", label: "Sign In", icon: "mdi:login" },
+          { to: "/signup/startup", label: "Create Account", icon: "mdi:account-plus-outline" },
+          {
+            kicker: heroKicker("mdi:wallet-outline", "Secure", "Encrypted payments backed by industry standards."),
+            image: heroImage("wallet"),
+          }
+        );
+      }
+      if (isAdmin) {
+        return make(
+          "Admin: Financial Overview",
+          "Monitor platform transactions, fees, and vendor payouts.",
+          { to: "/wallet#transactions", label: "View Transactions", icon: "mdi:bank-transfer-outline" },
+          { to: "/wallet#analytics", label: "Financial Analytics", icon: "mdi:chart-line" },
+          {
+            kicker: heroKicker("mdi:finance", "Admin", "Platform financial health and compliance."),
+            image: heroImage("wallet"),
+          }
+        );
+      }
+      if (isVendor) {
+        return make(
+          "Vendor Wallet",
+          "Track earnings, manage payouts, and monitor transaction history.",
+          { to: "/wallet#earnings", label: "View Earnings", icon: "mdi:cash-fast" },
+          { to: "/wallet#payouts", label: "Request Payout", icon: "mdi:bank-transfer-out" },
+          {
+            kicker: heroKicker("mdi:trending-up", "Revenue", "Track your marketplace performance."),
+            image: heroImage("wallet"),
+          }
+        );
+      }
+      return make(
+        "Startup Wallet",
+        "Manage payments to vendors, track spending, and review transaction history.",
+        { to: "/wallet#payments", label: "Payment History", icon: "mdi:credit-card-outline" },
+        { to: "/wallet#subscriptions", label: "Manage Subscriptions", icon: "mdi:bell-ring-outline" },
+        {
+          kicker: heroKicker("mdi:account-cash-outline", "Payments", "Streamlined vendor payments and tracking."),
+          image: heroImage("wallet"),
+        }
+      );
+    },
+  },
+  {
+    test: /^\/?support$/,
+    hero: (ctx) => {
+      const { authed } = classify(ctx);
+      return make(
+        "Support Center",
+        "Get help with your account, troubleshoot issues, and access documentation.",
+        { to: "/support#faq", label: "Browse FAQ", icon: "mdi:help-circle-outline" },
+        authed
+          ? { to: "/support#tickets", label: "My Support Tickets", icon: "mdi:ticket-outline" }
+          : { to: "/login", label: "Sign In for Support", icon: "mdi:login" },
+        {
+          kicker: heroKicker("mdi:lifebuoy", "Help", "Expert support when you need it most."),
+          image: heroImage("support"),
         }
       );
     },
@@ -383,8 +523,8 @@ const RULES = [
     hero: make(
       "Admin: User Roles",
       "Manage access across vendors, startups, and administrators.",
-      { to: "/admin/users", label: "Manage Users" },
-      { to: "/listings-admin", label: "Listings Admin" },
+      { to: "/admin/users", label: "Manage Users", icon: "mdi:account-cog-outline" },
+      { to: "/listings-admin", label: "Listings Admin", icon: "mdi:clipboard-list-outline" },
       {
         kicker: heroKicker("mdi:shield-account-outline", "Governance", "Keep roles, access, and safety compliant."),
         image: heroImage("admin"),
@@ -447,6 +587,34 @@ const RULES = [
   },
 
   // Learning
+  {
+    test: /^\/?sloane-academy-admin$/,
+    hero: (ctx) => {
+      const state = classify(ctx);
+      if (state.isAdmin) {
+        return make(
+          "Admin: Sloane Academy Management",
+          "Manage courses, track learner progress, and curate educational content.",
+          { to: "/sloane-academy-admin#courses", label: "Manage Courses", icon: "mdi:school-outline" },
+          { to: "/sloane-academy-admin#analytics", label: "Learning Analytics", icon: "mdi:chart-box-outline" },
+          {
+            kicker: heroKicker("mdi:book-education-outline", "Education", "Empower African entrepreneurs through learning."),
+            image: heroImage("adminAcademy"),
+          }
+        );
+      }
+      return make(
+        "Access Restricted",
+        "This area is restricted to platform administrators.",
+        { to: "/sloane-academy", label: "Browse Courses", icon: "mdi:school-outline" },
+        { to: "/login", label: "Sign In", icon: "mdi:login" },
+        {
+          kicker: heroKicker("mdi:lock-outline", "Admin Only", "Contact support for access requests."),
+          image: heroImage("admin"),
+        }
+      );
+    },
+  },
   {
     test: /^\/?sloane-academy(?:$|\/.+)?$/,
     hero: () =>

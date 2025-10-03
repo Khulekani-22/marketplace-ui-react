@@ -37,17 +37,20 @@ function parsePending(raw: unknown) {
 }
 
 const EmailLayer = () => {
+  const messagesContext = useMessages() as any;
   const {
-    threads,
-    unreadCount,
-    markRead,
-    refresh,
-    loading,
-    refreshing,
-    error,
-    syncMessagesToLive,
-  } = useMessages();
-  const { vendor } = useVendor();
+    threads = [],
+    unreadCount = 0,
+    markRead = () => {},
+    refresh = () => Promise.resolve(),
+    loading = false,
+    refreshing = false,
+    error = null,
+    syncMessagesToLive = () => Promise.resolve(false),
+  } = messagesContext || {};
+  
+  const vendorContext = useVendor() as any;
+  const { vendor = null } = vendorContext || {};
   const [search, setSearch] = useState("");
   const [folder, setFolder] = useState("inbox"); // inbox | sent
   // Role selection for viewing/sending context
@@ -172,11 +175,35 @@ const EmailLayer = () => {
       setLastSync(ts);
       setSyncOk(true);
       setTimeout(() => setSyncOk(false), 1500);
-    } catch (e) {
+    } catch (e: any) {
       setSyncErr(e?.message || "Sync failed");
       setTimeout(() => setSyncErr(""), 2500);
     } finally {
       setSyncBusy(false);
+    }
+  }
+
+  // Enhanced full refresh that clears cache and forces reload from backend
+  async function handleFullRefresh() {
+    try {
+      // Clear message cache first
+      try {
+        localStorage.removeItem('sl_messages_cache_v1');
+      } catch {}
+      
+      // Force refresh with cache bypass
+      await refresh({ silent: false, force: true });
+      
+      // Also trigger a sync to ensure we have latest data
+      if (canSync) {
+        try {
+          await syncMessagesToLive();
+        } catch (e) {
+          console.warn('Sync during full refresh failed:', e);
+        }
+      }
+    } catch (e: any) {
+      console.error('Full refresh failed:', e);
     }
   }
 
@@ -414,8 +441,48 @@ const EmailLayer = () => {
       <div className='col-xxl-9'>
         <div className='card h-100 p-0 email-card'>
           <div className='card-header border-bottom bg-base py-16 px-24'>
+            {/* Sync Status Banner */}
+            {(syncOk || syncErr || lastSync) && (
+              <div className={`alert ${syncOk ? 'alert-success' : syncErr ? 'alert-danger' : 'alert-info'} py-2 mb-3`}>
+                <div className="d-flex align-items-center justify-content-between">
+                  <div className="d-flex align-items-center gap-2">
+                    <Icon icon={syncOk ? 'mdi:check-circle' : syncErr ? 'mdi:alert-circle' : 'mdi:information'} />
+                    <span>
+                      {syncOk && 'Messages synced successfully'}
+                      {syncErr && `Sync error: ${syncErr}`}
+                      {!syncOk && !syncErr && lastSync && `Last sync: ${new Date(lastSync).toLocaleString()}`}
+                    </span>
+                  </div>
+                  {lastSync && (
+                    <small className="text-muted">
+                      {new Date(lastSync).toLocaleString()}
+                    </small>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {error && (
+              <div className="alert alert-warning py-2 mb-3">
+                <div className="d-flex align-items-center gap-2">
+                  <Icon icon="mdi:alert" />
+                  <span>{error}</span>
+                </div>
+              </div>
+            )}
+            
             <div className='d-flex flex-wrap align-items-center justify-content-between gap-4'>
               <div className='d-flex align-items-center gap-3'>
+                <button
+                  type='button'
+                  className='btn btn-sm btn-outline-primary'
+                  onClick={handleFullRefresh}
+                  disabled={loading || refreshing || syncBusy}
+                  title='Clear cache and reload all messages from backend appData.json'
+                >
+                  <Icon icon='tabler:reload' className='me-1' />
+                  {refreshing ? 'Refreshing…' : 'Full Refresh'}
+                </button>
                 <button
                   type='button'
                   className='btn btn-sm btn-outline-secondary'
@@ -424,8 +491,8 @@ const EmailLayer = () => {
                   }}
                   disabled={loading || refreshing}
                 >
-                  <Icon icon='tabler:reload' className='me-1' />
-                  {refreshing ? 'Refreshing…' : 'Refresh'}
+                  <Icon icon='mdi:refresh' className='me-1' />
+                  {refreshing ? 'Refreshing…' : 'Quick Refresh'}
                 </button>
                 <button type='button' className='btn btn-sm btn-outline-secondary' onClick={handleMarkAllRead} disabled={allRead}>
                   <Icon icon='gravity-ui:envelope-open' className='me-1' /> Mark all as read
@@ -439,6 +506,11 @@ const EmailLayer = () => {
                 >
                   <Icon icon='mdi:cloud-upload-outline' className='me-1' /> {syncBusy ? 'Syncing…' : 'Sync Now'}
                 </button>
+                {lastSync && !syncOk && !syncErr && (
+                  <small className="text-muted">
+                    Last: {new Date(lastSync).toLocaleString()}
+                  </small>
+                )}
                 <div className='d-flex align-items-center gap-2'>
                   <label className='form-label mb-0 small text-muted'>View as</label>
                   <select className='form-select form-select-sm' value={viewAs} onChange={(e)=>setViewAs(e.target.value)}>

@@ -90,7 +90,11 @@ function persist(data) {
   lastLoaded = Date.now();
 }
 
-export function getData() {
+export function getData(forceReload = false) {
+  if (forceReload) {
+    cache = null;
+    lastLoaded = 0;
+  }
   return load(); // { services:[], vendors:[], tenants:[], ... }
 }
 

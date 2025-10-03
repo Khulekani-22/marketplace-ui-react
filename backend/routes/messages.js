@@ -226,12 +226,21 @@ function canAccessThread(t, { isAdmin, email, vendorId }) {
 router.get("/", firebaseAuthRequired, messageListLimiter, (req, res) => {
   try {
     const tenantId = req.tenant?.id || "public";
-    const data = getData();
+    
+    // Force reload from disk if this is a manual refresh
+    const isManualRefresh = req.headers["x-message-refresh"] === "manual";
+    const data = getData(isManualRefresh);
+    
+    if (isManualRefresh) {
+      console.log('[Messages] Manual refresh requested, reloaded from disk');
+    }
+    
     const { messageThreads = [] } = data;
     const isAdmin = isAdminRequest(req);
     const email = normalizeEmail(req.user?.email);
     const vendor = resolveVendorByIdentity(data, email, req.user?.uid);
     const vendorId = vendor?.vendorId || vendor?.id || "";
+    
     const arr = messageThreads
       .filter((t) => (t?.tenantId || "public") === tenantId)
       .filter((t) => canAccessThread(t, { isAdmin, email, vendorId }))
@@ -240,7 +249,16 @@ router.get("/", firebaseAuthRequired, messageListLimiter, (req, res) => {
         const db = new Date(b?.lastMessage?.date || b?.messages?.[b.messages.length - 1]?.date || 0).getTime();
         return db - da;
       });
-    res.json({ items: arr });
+      
+    res.json({ 
+      items: arr,
+      meta: {
+        total: arr.length,
+        tenant: tenantId,
+        refreshedAt: new Date().toISOString(),
+        isManualRefresh
+      }
+    });
   } catch (e) {
     res.status(500).json({ status: "error", message: e?.message || "Failed to list messages" });
   }

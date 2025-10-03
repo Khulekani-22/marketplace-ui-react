@@ -1155,9 +1155,18 @@
           "senderRole": "Vendor",
           "content": "Hello Admin\n\nMy listing \"Financial analysis consultation\" (ID: mf6s58mu-616wi6) was rejected. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!",
           "date": "2025-10-02T18:51:00.510Z"
+        },
+        {
+          "id": "m1759475076126",
+          "senderId": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+          "senderName": "22OnSloane Digital Team",
+          "senderAvatar": "",
+          "senderRole": "Vendor",
+          "content": "Hello Admin\n\nMy listing \"Financial analysis consultation\" (ID: mf6s58mu-616wi6) was rejected. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!",
+          "date": "2025-10-03T07:04:36.126Z"
         }
       ],
-      "read": false,
+      "read": true,
       "context": {
         "type": "listing-feedback",
         "listingId": "mf6s58mu-616wi6",
@@ -1168,7 +1177,7 @@
       "tenantId": "public",
       "lastMessage": {
         "snippet": "Hello Admin\n\nMy listing \"Financial analysis consultation\" (ID: mf6s58mu-616wi6) was rejected. Could you please share more details on what needs to be corrected ",
-        "date": "2025-10-02T18:51:00.510Z"
+        "date": "2025-10-03T07:04:36.127Z"
       }
     }
   ],
