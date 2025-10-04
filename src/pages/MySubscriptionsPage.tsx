@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { auth } from "../lib/firebase";
 import { useAppSync } from "../context/useAppSync";
 import { fetchMySubscriptions, unsubscribeFromService } from "../lib/subscriptions";
+import { api } from "../lib/api";
 
 export default function MySubscriptionsPage() {
   const [loading, setLoading] = useState(true);
@@ -14,6 +15,31 @@ export default function MySubscriptionsPage() {
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
   const { appData } = useAppSync();
 
+  // Debug function to test API connection
+  const testApiConnection = useCallback(async () => {
+    try {
+      console.log('🔗 Testing API connection...');
+      console.log('🔗 Current API base URL:', api.defaults.baseURL);
+      
+      const response = await api.get('/api/health');
+      console.log('✅ API health check passed:', response.data);
+      
+      if (auth.currentUser) {
+        console.log('🔐 Testing authenticated endpoint...');
+        const subsResponse = await api.get('/api/subscriptions/my');
+        console.log('✅ Subscriptions endpoint test:', subsResponse.data);
+      }
+    } catch (e) {
+      console.error('❌ API connection test failed:', e);
+      console.error('❌ Error details:', e?.response?.data);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Test API connection on component mount
+    testApiConnection();
+  }, [testApiConnection]);
+
   const loadSubscriptions = useCallback(
     async ({ silent, signal } = {}) => {
       if (silent) setRefreshing(true);
@@ -21,20 +47,31 @@ export default function MySubscriptionsPage() {
       setErr("");
       try {
         if (!auth.currentUser) {
+          console.log('🔐 No authenticated user found');
           if (!signal?.aborted) setItems([]);
           return;
         }
+        
+        console.log('📡 Fetching subscriptions for user:', auth.currentUser.email);
         const subs = await fetchMySubscriptions();
+        console.log('📋 Raw subscriptions from API:', subs);
+        
         const ids = new Set(
           subs
             .filter((x) => (x.type || "service") === "service")
             .map((x) => String(x.serviceId))
         );
+        console.log('🔍 Service IDs from subscriptions:', Array.from(ids));
 
         const services = Array.isArray(appData?.services) ? appData.services : [];
+        console.log('📦 Available services in appData:', services.length);
+        
         const selected = services.filter((s) => ids.has(String(s.id)));
+        console.log('✅ Matched services:', selected.length, selected.map(s => ({ id: s.id, title: s.title })));
+        
         if (!signal?.aborted) setItems(selected);
       } catch (e) {
+        console.error('❌ Failed to load subscriptions:', e);
         if (!signal?.aborted) setErr(e?.message || "Failed to load subscriptions");
       } finally {
         const aborted = signal?.aborted;
@@ -57,14 +94,83 @@ export default function MySubscriptionsPage() {
 
   async function handleUnsubscribe(id) {
     const key = String(id);
+    console.log('🔄 Starting unsubscribe process for service:', key);
+    console.log('🔄 Current user:', auth.currentUser?.email);
+    console.log('🔄 Current tenant:', tenantId);
+    
     setBusyMap((m) => ({ ...m, [key]: true }));
     try {
-      await unsubscribeFromService(key);
-      setItems((prev) => prev.filter((s) => String(s.id) !== key));
+      // First, let's fetch current subscriptions to see what we have
+      console.log('🔍 Fetching current subscriptions before unsubscribe...');
+      const currentSubs = await fetchMySubscriptions();
+      console.log('📋 Current subscriptions:', currentSubs);
+      
+      const targetSub = currentSubs.find(sub => String(sub.serviceId) === key);
+      console.log('🎯 Target subscription to cancel:', targetSub);
+      
+      if (!targetSub) {
+        console.log('⚠️ No subscription found in cache for service:', key);
+        // If no subscription in cache, just remove from UI - it's likely already cancelled
+        setItems((prev) => prev.filter((s) => String(s.id) !== key));
+        alert(`✅ Service ${key} removed from your subscriptions (was already cancelled)`);
+        return;
+      }
+      
+      console.log('📡 Calling unsubscribeFromService API...');
+      try {
+        const result = await unsubscribeFromService(key);
+        console.log('✅ Unsubscribe API success:', result);
+        alert(`✅ Successfully unsubscribed from service ${key}`);
+      } catch (apiError) {
+        // If we get 404, it means the subscription doesn't exist in backend
+        // but exists in frontend cache - this is a sync issue
+        if (apiError?.response?.status === 404) {
+          console.log('⚠️ Backend says subscription not found (404) - treating as already cancelled');
+          alert(`✅ Service ${key} removed from your subscriptions (was already cancelled on server)`);
+        } else {
+          // Re-throw for other errors
+          throw apiError;
+        }
+      }
+      
+      // Remove from UI state after successful API call OR 404 (already cancelled)
+      setItems((prev) => {
+        const filtered = prev.filter((s) => String(s.id) !== key);
+        console.log('📝 Updated items count:', filtered.length);
+        return filtered;
+      });
+      
+      // Also force remove from local cache to prevent reappearing
+      // This ensures the subscription won't come back during refresh
+      console.log('�️ Clearing subscription from local cache...');
+      try {
+        // Clear the specific subscription from localStorage cache
+        const cacheKey = `sl_subscriptions_cache_v1:${auth.currentUser?.uid || auth.currentUser?.email}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const subscriptions = JSON.parse(cached);
+          const filteredSubs = subscriptions.filter(sub => String(sub.serviceId) !== key);
+          localStorage.setItem(cacheKey, JSON.stringify(filteredSubs));
+          console.log('🗑️ Removed subscription from cache, remaining:', filteredSubs.length);
+        }
+      } catch (e) {
+        console.log('⚠️ Failed to update cache:', e);
+      }
+      
+      // Skip the automatic refresh since we already cleaned up locally
+      console.log('✅ Unsubscribe completed - skipping refresh to prevent reappearing');
+      
     } catch (e) {
-      alert(e?.response?.data?.message || e?.message || "Failed to unsubscribe");
+      console.error('❌ Failed to unsubscribe:', e);
+      console.error('❌ Error response:', e?.response);
+      console.error('❌ Error data:', e?.response?.data);
+      console.error('❌ Error status:', e?.response?.status);
+      
+      const errorMessage = e?.response?.data?.message || e?.message || "Failed to unsubscribe";
+      alert(`❌ Unsubscribe failed for service ${key}: ${errorMessage}`);
     } finally {
       setBusyMap((m) => ({ ...m, [key]: false }));
+      console.log('🏁 Unsubscribe process completed for service:', key);
     }
   }
 

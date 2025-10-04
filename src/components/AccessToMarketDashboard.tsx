@@ -75,7 +75,7 @@ const AccessToMarketDashboard = () => {
     <>
       <div className='row gy-4'>
         {/* Header Section */}
-        <div className='col-12'>
+        <div className='col-12 d-none'>
           <div className="d-flex align-items-center justify-content-between mb-4">
             <div>
               <h2 className="h4 mb-1">Access To Market</h2>

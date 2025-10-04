@@ -19,14 +19,14 @@ let SESSION: Session = {
   allowedTenants: [],
 };
 
-// Prefer backend dev ports 5500 first (current backend), then others
+// Prefer backend dev ports 5055 first (current backend), then others
 function computeApiBases(): string[] {
   const envUrl = (import.meta as any).env?.VITE_API_URL as string | undefined;
   if (envUrl) return [envUrl];
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
   const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
   const make = (port: number) => `${protocol}//${host}:${port}`;
-  return [make(5500), make(5055), make(5000), make(5001)];
+  return [make(5055), make(5500), make(5000), make(5001)];
 }
 
 const CANDIDATES = computeApiBases();

@@ -491,6 +491,157 @@ router.get("/admin/lookup", firebaseAuthRequired, requireAdmin, (req, res) => {
   }
 });
 
+// GET /api/wallets/admin/transactions - Get all transactions across all wallets (admin only)
+router.get("/admin/transactions", firebaseAuthRequired, requireAdmin, (req, res) => {
+  try {
+    const data = getData();
+    const wallets = ensureWalletArray(data);
+    const users = data.users || [];
+    
+    // Extract query parameters for filtering
+    const {
+      userEmail,
+      type,
+      dateFrom,
+      dateTo,
+      minAmount,
+      maxAmount,
+      page = 1,
+      limit = 100
+    } = req.query;
+
+    // Collect all transactions from all wallets
+    let allTransactions = [];
+    
+    wallets.forEach(wallet => {
+      if (wallet && wallet.transactions && Array.isArray(wallet.transactions)) {
+        wallet.transactions.forEach(transaction => {
+          // Find user info
+          const user = users.find(u => 
+            u.email === wallet.email || 
+            u.uid === wallet.uid ||
+            normalizeEmail(u.email) === normalizeEmail(wallet.email)
+          );
+          
+          allTransactions.push({
+            ...transaction,
+            userEmail: wallet.email || wallet.uid,
+            userName: user?.name || user?.displayName,
+            userRole: wallet.role,
+            userTenant: wallet.tenantId,
+            walletBalance: wallet.balance
+          });
+        });
+      }
+    });
+
+    // Apply filters
+    let filteredTransactions = allTransactions;
+
+    if (userEmail) {
+      const normalizedEmail = normalizeEmail(userEmail);
+      filteredTransactions = filteredTransactions.filter(t => 
+        normalizeEmail(t.userEmail).includes(normalizedEmail)
+      );
+    }
+
+    if (type) {
+      filteredTransactions = filteredTransactions.filter(t => t.type === type);
+    }
+
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      filteredTransactions = filteredTransactions.filter(t => 
+        new Date(t.createdAt) >= fromDate
+      );
+    }
+
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999); // End of day
+      filteredTransactions = filteredTransactions.filter(t => 
+        new Date(t.createdAt) <= toDate
+      );
+    }
+
+    if (minAmount) {
+      const min = Number(minAmount);
+      if (Number.isFinite(min)) {
+        filteredTransactions = filteredTransactions.filter(t => t.amount >= min);
+      }
+    }
+
+    if (maxAmount) {
+      const max = Number(maxAmount);
+      if (Number.isFinite(max)) {
+        filteredTransactions = filteredTransactions.filter(t => t.amount <= max);
+      }
+    }
+
+    // Sort by creation date (newest first)
+    filteredTransactions.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(1000, Math.max(1, parseInt(limit) || 100));
+    const startIndex = (pageNum - 1) * limitNum;
+    const endIndex = startIndex + limitNum;
+    
+    const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
+
+    // Calculate summary stats
+    const summary = {
+      total: filteredTransactions.length,
+      totalCredits: filteredTransactions
+        .filter(t => t.type === 'credit')
+        .reduce((sum, t) => sum + (t.amount || 0), 0),
+      totalDebits: filteredTransactions
+        .filter(t => t.type === 'debit')
+        .reduce((sum, t) => sum + (t.amount || 0), 0),
+      totalAdjustments: filteredTransactions
+        .filter(t => t.type === 'adjustment')
+        .reduce((sum, t) => sum + (t.amount || 0), 0),
+      uniqueUsers: new Set(filteredTransactions.map(t => t.userEmail)).size,
+      dateRange: {
+        earliest: filteredTransactions.length > 0 ? 
+          filteredTransactions[filteredTransactions.length - 1].createdAt : null,
+        latest: filteredTransactions.length > 0 ? 
+          filteredTransactions[0].createdAt : null
+      }
+    };
+
+    res.json({
+      ok: true,
+      transactions: paginatedTransactions,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: filteredTransactions.length,
+        pages: Math.ceil(filteredTransactions.length / limitNum),
+        hasNext: endIndex < filteredTransactions.length,
+        hasPrev: pageNum > 1
+      },
+      summary,
+      filters: {
+        userEmail: userEmail || null,
+        type: type || null,
+        dateFrom: dateFrom || null,
+        dateTo: dateTo || null,
+        minAmount: minAmount ? Number(minAmount) : null,
+        maxAmount: maxAmount ? Number(maxAmount) : null
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch transaction history"
+    });
+  }
+});
+
 // Debug endpoint to check wallet persistence (admin only)
 router.get("/admin/debug/wallets", firebaseAuthRequired, requireAdmin, (req, res) => {
   try {
@@ -499,11 +650,42 @@ router.get("/admin/debug/wallets", firebaseAuthRequired, requireAdmin, (req, res
     return res.json({
       ok: true,
       walletsCount: wallets.length,
-      wallets: wallets.map(sanitizeWallet).filter(Boolean),
+      firstWallet: wallets[0] || null,
+      sampleWallets: wallets.slice(0, 3).map(w => ({
+        email: w.email,
+        balance: w.balance,
+        transactionCount: w.transactions?.length || 0
+      }))
     });
   } catch (e) {
     const status = e?.statusCode || 500;
     return res.status(status).json({ status: "error", message: e?.message || "Failed to debug wallets" });
+  }
+});
+
+// Debug endpoint to list available routes
+router.get("/admin/debug/routes", (req, res) => {
+  try {
+    const routes = [
+      'GET /api/wallets',
+      'GET /api/wallets/me',
+      'POST /api/wallets/me/redeem',
+      'POST /api/wallets/grant',
+      'GET /api/wallets/admin/lookup',
+      'GET /api/wallets/admin/transactions',
+      'GET /api/wallets/admin/debug/wallets',
+      'POST /api/wallets/admin/debug/test-create',
+      'POST /api/wallets/admin/debug/test-transaction'
+    ];
+    
+    return res.json({
+      ok: true,
+      availableRoutes: routes,
+      serverTime: new Date().toISOString(),
+      nodeEnv: process.env.NODE_ENV || 'development'
+    });
+  } catch (e) {
+    return res.status(500).json({ status: "error", message: e?.message || "Failed to list routes" });
   }
 });
 

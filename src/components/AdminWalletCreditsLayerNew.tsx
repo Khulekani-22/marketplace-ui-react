@@ -45,11 +45,41 @@ export default function AdminWalletCreditsLayer() {
   const [allErr, setAllErr] = useState("");
   const [allNext, setAllNext] = useState("");
   const [allPageSize, setAllPageSize] = useState(100);
+  const [userWallets, setUserWallets] = useState<Record<string, number>>({});
   const autoLoadedRef = useRef(false);
   
   // Wallet context for admin tools
   const { wallet: currentUserWallet, loading: walletLoading, eligible: walletEligible, refresh: refreshWallet, grantCredits } = useWallet();
   const { isAdmin } = useAppSync();
+
+  // Fetch wallet balances for platform users
+  const fetchWalletBalances = useCallback(async (users: any[]) => {
+    try {
+      const userEmails = users.map(user => user.email).filter(Boolean);
+      if (userEmails.length === 0) return;
+      
+      // Fetch wallet data for each user
+      const walletPromises = userEmails.map(async (email) => {
+        try {
+          const response = await api.get(`/api/wallet/${encodeURIComponent(email)}`);
+          return { email, balance: response.data?.balance || 0 };
+        } catch (error) {
+          // If wallet doesn't exist or error, default to 0
+          return { email, balance: 0 };
+        }
+      });
+      
+      const walletResults = await Promise.all(walletPromises);
+      const walletMap: Record<string, number> = {};
+      walletResults.forEach(({ email, balance }) => {
+        walletMap[email] = balance;
+      });
+      
+      setUserWallets(prev => ({ ...prev, ...walletMap }));
+    } catch (error) {
+      console.error("Error fetching wallet balances:", error);
+    }
+  }, []);
 
   // Search real Firebase users (like UserRoleManagement does)
   const searchAllUsers = useCallback(
@@ -63,6 +93,11 @@ export default function AdminWalletCreditsLayer() {
         const items = Array.isArray(data?.items) ? data.items : [];
         setAllUsers((prev) => (reset ? items : [...prev, ...items]));
         setAllNext(data?.nextPageToken || "");
+        
+        // Fetch wallet balances for the users
+        if (items.length > 0) {
+          await fetchWalletBalances(items);
+        }
       } catch (e: any) {
         const status = e?.response?.status;
         if (status === 401 || status === 403) {
@@ -75,6 +110,11 @@ export default function AdminWalletCreditsLayer() {
             setAllUsers((prev) => (reset ? items : [...prev, ...items]));
             setAllNext(data?.nextPageToken || "");
             setAllErr("");
+            
+            // Fetch wallet balances for the users
+            if (items.length > 0) {
+              await fetchWalletBalances(items);
+            }
             return;
           } catch (e2: any) {
             setAllErr(e2?.response?.data?.message || e2?.message || "Failed to search platform users");
@@ -314,7 +354,13 @@ export default function AdminWalletCreditsLayer() {
               <div className="d-flex gap-2">
                 <button
                   className="btn btn-outline-secondary btn-sm"
-                  onClick={() => searchAllUsers(true)}
+                  onClick={async () => {
+                    await searchAllUsers(true);
+                    // Refresh wallet balances for current users
+                    if (allUsers.length > 0) {
+                      await fetchWalletBalances(allUsers);
+                    }
+                  }}
                   disabled={allBusy}
                 >
                   {allBusy ? (
@@ -338,7 +384,19 @@ export default function AdminWalletCreditsLayer() {
                     placeholder="Search platform users..."
                     value={allQuery}
                     onChange={(e) => setAllQuery(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        searchAllUsers(true);
+                      }
+                    }}
                   />
+                  <button
+                    className="btn btn-outline-primary"
+                    onClick={() => searchAllUsers(true)}
+                    disabled={allBusy}
+                  >
+                    Search
+                  </button>
                 </div>
               </div>
             </div>
@@ -366,6 +424,7 @@ export default function AdminWalletCreditsLayer() {
                     <tr>
                       <th>User</th>
                       <th>Email</th>
+                      <th>Wallet Balance</th>
                       <th>Last Sign In</th>
                       <th>Provider</th>
                       <th>Actions</th>
@@ -390,6 +449,14 @@ export default function AdminWalletCreditsLayer() {
                           </div>
                         </td>
                         <td>{user.email}</td>
+                        <td>
+                          <span className="fw-medium">
+                            R {formatCredits(userWallets[user.email] || 0)}
+                          </span>
+                          {userWallets[user.email] === undefined && (
+                            <span className="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                          )}
+                        </td>
                         <td>
                           <span className="text-sm">
                             {user.metadata?.lastSignInTime ? 

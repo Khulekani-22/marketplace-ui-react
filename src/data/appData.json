@@ -40,8 +40,9 @@
       "scheduledDate": "2025-10-25",
       "scheduledSlot": "11:00",
       "bookedAt": "2025-10-03T13:03:04.976Z",
-      "status": "scheduled",
-      "updatedAt": "2025-10-03T13:03:04.976Z"
+      "status": "canceled",
+      "updatedAt": "2025-10-04T04:34:48.310Z",
+      "canceledAt": "2025-10-04T04:34:48.310Z"
     }
   ],
   "cohorts": [
@@ -2714,7 +2715,8 @@
       "tenantId": "public",
       "createdAt": "2025-10-03T13:03:04.976Z",
       "scheduledDate": "2025-10-25",
-      "scheduledSlot": "11:00"
+      "scheduledSlot": "11:00",
+      "canceledAt": "2025-10-04T04:34:48.310Z"
     }
   ],
   "wallets": [

@@ -20,18 +20,18 @@ export default function WalletNavigation({ compact = false }: WalletNavigationPr
     },
     {
       path: "/wallet",
-      label: "My Wallet",
+      label: "Unified Wallet",
       icon: "mdi:wallet",
-      description: "Detailed wallet view and transactions"
+      description: "Complete wallet management with transaction tracking"
     }
   ];
 
   if (isAdmin) {
     navItems.push({
       path: "/admin/wallet-credits",
-      label: "Admin Credits",
-      icon: "mdi:wallet-plus",
-      description: "Manage user credits and wallets"
+      label: "Legacy Admin",
+      icon: "mdi:wallet-plus-outline",
+      description: "Original admin credits interface"
     });
   }
 
@@ -61,8 +61,12 @@ export default function WalletNavigation({ compact = false }: WalletNavigationPr
     <div className="card p-16 radius-12 mb-4">
       <h6 className="mb-3">
         <Icon icon="mdi:navigation" className="me-2" />
-        Wallet Navigation
+        Wallet Management Center
       </h6>
+      <div className="alert alert-info py-2 px-3 mb-3">
+        <Icon icon="mdi:information" className="me-2" />
+        <strong>Enhanced Integration:</strong> This unified wallet interface now includes complete admin functionality for tracking all platform user transactions.
+      </div>
       <div className="d-flex flex-wrap gap-2">
         {navItems.map((item) => (
           <Link

@@ -200,6 +200,22 @@ export default function AdminWalletCreditsLayer() {
 
   return (
     <div className="container-fluid">
+      {/* Integration Notice */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="alert alert-info">
+            <div className="d-flex align-items-center">
+              <Icon icon="mdi:information" className="me-2 text-xl" />
+              <div>
+                <strong>Enhanced Integration Available:</strong> 
+                <p className="mb-1">The main <Link to="/wallet" className="alert-link">Wallet interface</Link> now includes all admin functionality with improved user transaction tracking capabilities.</p>
+                <small className="text-muted">This legacy interface remains available for compatibility, but we recommend using the unified wallet for better user experience.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="row gy-4">
         {/* Navigation */}
         <div className="col-12">
@@ -262,7 +278,7 @@ export default function AdminWalletCreditsLayer() {
                     </button>
                     <Link to="/wallet" className="btn btn-outline-success btn-sm">
                       <Icon icon="mdi:wallet" className="me-2" />
-                      My Wallet
+                      Unified Wallet Interface
                     </Link>
                     <Link to="/dashboard" className="btn btn-outline-info btn-sm">
                       <Icon icon="mdi:view-dashboard" className="me-2" />
