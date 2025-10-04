@@ -11,7 +11,6 @@ import MasterLayout from "../masterLayout/MasterLayout";
 const API_BASE = "/api/lms";
 
 // Lazy-load the banner component
-const BannerInnerTwo = React.lazy(() => import("../components/child/BannerInnerTwo"));
 
 // Local storage keys (scoped for listings)
 const LS_DRAFT_KEY = "listings_admin_draft_v1";
@@ -646,11 +645,7 @@ function handleExport() {
     <MasterLayout>
       <div className="container py-4">
       {/* Lazy banner (keeps admin bundle lean) */}
-      <React.Suspense fallback={null}>
-        <div className="row mb-3">
-          <BannerInnerTwo />
-        </div>
-      </React.Suspense>
+
 
       <div className="row g-3 mb-3">
         <div className="col-md-3 col-sm-6">

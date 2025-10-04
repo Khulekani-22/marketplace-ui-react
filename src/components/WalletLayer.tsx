@@ -38,6 +38,7 @@ export default function WalletLayer() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUserWallet, setSelectedUserWallet] = useState<any>(null);
   const [selectedUserEmail, setSelectedUserEmail] = useState("");
+  const [grantCreditsUserEmail, setGrantCreditsUserEmail] = useState("");
   const [syncing, setSyncing] = useState(false);
   
   // Platform users search (real Firebase users)
@@ -50,7 +51,7 @@ export default function WalletLayer() {
   const autoLoadedRef = useRef(false);
 
   // Platform transaction history
-  const [allTransactions, setAllTransactions] = useState([]);
+  const [allTransactions, setAllTransactions] = useState<any[]>([]);
   const [transactionFilters, setTransactionFilters] = useState({
     userEmail: "",
     type: "",
@@ -154,26 +155,116 @@ export default function WalletLayer() {
       // First ensure we have a valid session
       await bootstrapSession();
       
-      const { data } = await api.get("/api/wallets/admin/transactions", {
-        params: {
-          userEmail: transactionFilters.userEmail || undefined,
-          type: transactionFilters.type || undefined,
-          dateFrom: transactionFilters.dateFrom || undefined,
-          dateTo: transactionFilters.dateTo || undefined,
-          minAmount: transactionFilters.minAmount || undefined,
-          maxAmount: transactionFilters.maxAmount || undefined,
-          page: transactionsPage,
-          limit: transactionsPerPage
+      try {
+        // Try the dedicated transactions endpoint first
+        const { data } = await api.get("/api/wallets/admin/transactions", {
+          params: {
+            userEmail: transactionFilters.userEmail || undefined,
+            type: transactionFilters.type || undefined,
+            dateFrom: transactionFilters.dateFrom || undefined,
+            dateTo: transactionFilters.dateTo || undefined,
+            minAmount: transactionFilters.minAmount || undefined,
+            maxAmount: transactionFilters.maxAmount || undefined,
+            page: transactionsPage,
+            limit: transactionsPerPage
+          }
+        });
+        
+        console.log("Received transaction data from dedicated endpoint:", data);
+        setAllTransactions(data?.transactions || []);
+        
+        if (data?.transactions?.length > 0) {
+          toast.success(`Loaded ${data.transactions.length} transactions`);
+        } else {
+          toast.info("No transactions found");
         }
-      });
-      
-      console.log("Received transaction data:", data);
-      setAllTransactions(data?.transactions || []);
-      
-      if (data?.transactions?.length > 0) {
-        toast.success(`Loaded ${data.transactions.length} transactions`);
-      } else {
-        toast.info("No transactions found");
+      } catch (endpointError: any) {
+        console.warn("Dedicated transactions endpoint failed, trying fallback approach:", endpointError);
+        
+        // Fallback: Get all wallets and extract transactions manually
+        const { data: walletsData } = await api.get("/api/wallets", {
+          suppressToast: true,
+          suppressErrorLog: true
+        } as any);
+        
+        console.log("Received wallets data for transaction extraction:", walletsData);
+        
+        // Extract transactions from all wallets
+        let allTransactions: any[] = [];
+        
+        if (Array.isArray(walletsData)) {
+          walletsData.forEach((wallet: any) => {
+            if (wallet && wallet.transactions && Array.isArray(wallet.transactions)) {
+              wallet.transactions.forEach((transaction: any) => {
+                allTransactions.push({
+                  ...transaction,
+                  userEmail: wallet.userEmail || wallet.email || 'Unknown',
+                  userName: wallet.userName || wallet.name,
+                  userRole: wallet.role,
+                  userTenant: wallet.tenantId,
+                  walletBalance: wallet.balance
+                });
+              });
+            }
+          });
+        }
+        
+        // Apply client-side filtering
+        let filteredTransactions = allTransactions;
+        
+        if (transactionFilters.userEmail) {
+          const normalizedEmail = transactionFilters.userEmail.toLowerCase();
+          filteredTransactions = filteredTransactions.filter(t => 
+            t.userEmail.toLowerCase().includes(normalizedEmail)
+          );
+        }
+        
+        if (transactionFilters.type) {
+          filteredTransactions = filteredTransactions.filter(t => t.type === transactionFilters.type);
+        }
+        
+        if (transactionFilters.dateFrom) {
+          const fromDate = new Date(transactionFilters.dateFrom);
+          filteredTransactions = filteredTransactions.filter(t => 
+            new Date(t.createdAt) >= fromDate
+          );
+        }
+        
+        if (transactionFilters.dateTo) {
+          const toDate = new Date(transactionFilters.dateTo);
+          toDate.setHours(23, 59, 59, 999);
+          filteredTransactions = filteredTransactions.filter(t => 
+            new Date(t.createdAt) <= toDate
+          );
+        }
+        
+        if (transactionFilters.minAmount) {
+          const min = Number(transactionFilters.minAmount);
+          if (Number.isFinite(min)) {
+            filteredTransactions = filteredTransactions.filter(t => t.amount >= min);
+          }
+        }
+        
+        if (transactionFilters.maxAmount) {
+          const max = Number(transactionFilters.maxAmount);
+          if (Number.isFinite(max)) {
+            filteredTransactions = filteredTransactions.filter(t => t.amount <= max);
+          }
+        }
+        
+        // Sort by creation date (newest first)
+        filteredTransactions.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        
+        console.log("Extracted and filtered transactions:", filteredTransactions);
+        setAllTransactions(filteredTransactions);
+        
+        if (filteredTransactions.length > 0) {
+          toast.success(`Loaded ${filteredTransactions.length} transactions (fallback method)`);
+        } else {
+          toast.info("No transactions found in any wallets");
+        }
       }
     } catch (error: any) {
       console.error("Error loading transactions:", error);
@@ -560,6 +651,8 @@ export default function WalletLayer() {
             }}
             compact={false}
             showUserLookup={true}
+            selectedUserEmail={grantCreditsUserEmail}
+            onEmailChange={setGrantCreditsUserEmail}
           />
         </div>
       )}
@@ -695,11 +788,7 @@ export default function WalletLayer() {
                               className="btn btn-outline-primary"
                               onClick={() => {
                                 // Auto-fill grant credits form
-                                const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
-                                if (emailInput) {
-                                  emailInput.value = user.email;
-                                  emailInput.dispatchEvent(new Event('input', { bubbles: true }));
-                                }
+                                setGrantCreditsUserEmail(user.email);
                               }}
                               title="Grant credits to this user"
                             >
@@ -1095,11 +1184,7 @@ export default function WalletLayer() {
                               <button
                                 className="btn btn-outline-primary"
                                 onClick={() => {
-                                  const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
-                                  if (emailInput) {
-                                    emailInput.value = transaction.userEmail;
-                                    emailInput.dispatchEvent(new Event('input', { bubbles: true }));
-                                  }
+                                  setGrantCreditsUserEmail(transaction.userEmail);
                                 }}
                                 title="Grant credits to this user"
                               >
@@ -1273,11 +1358,7 @@ export default function WalletLayer() {
                               className="btn btn-outline-primary"
                               onClick={() => {
                                 // Auto-fill grant credits form
-                                const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
-                                if (emailInput) {
-                                  emailInput.value = user.email;
-                                  emailInput.dispatchEvent(new Event('input', { bubbles: true }));
-                                }
+                                setGrantCreditsUserEmail(user.email);
                               }}
                               title="Grant credits to this user"
                             >

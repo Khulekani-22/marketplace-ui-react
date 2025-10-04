@@ -2727,14 +2727,28 @@
       "email": "22onsloanedigitalteam@gmail.com",
       "tenantId": "vendor",
       "role": "member",
-      "balance": 158000,
+      "balance": 208000,
       "startingBalance": 200000,
       "transactions": [
+        {
+          "id": "c949df9b-8e39-48d6-b024-fa6435ede87f",
+          "type": "credit",
+          "amount": 50000,
+          "description": "Admin credit",
+          "balanceAfter": 208000,
+          "createdAt": "2025-10-04T11:43:09.355Z",
+          "reference": null,
+          "metadata": {
+            "source": "admin-grant"
+          }
+        },
         {
           "id": "348bac7c-7d85-479d-bffa-ecc16a1941b3",
           "type": "debit",
           "amount": 42000,
           "description": "Listing booking: Scalable Web App Development",
+          "balanceAfter": 158000,
+          "createdAt": "2025-10-03T13:03:04.996Z",
           "reference": "listing-memubqft-fcmcw1",
           "metadata": {
             "serviceId": "memubqft-fcmcw1",
@@ -2743,9 +2757,7 @@
             "scheduledDate": "2025-10-25",
             "scheduledSlot": "11:00",
             "source": "dashboard-trending-booking"
-          },
-          "createdAt": "2025-10-03T13:03:04.996Z",
-          "balanceAfter": 158000
+          }
         },
         {
           "id": "94e5ee73-266f-42be-85a4-ff0d2a2a63bd",
@@ -2761,7 +2773,119 @@
           }
         }
       ],
-      "lastUpdated": "2025-10-03T13:03:04.996Z"
+      "lastUpdated": "2025-10-04T11:43:09.355Z"
+    },
+    {
+      "id": "vendor:mncubekhulekani@gmail.com",
+      "version": 1,
+      "uid": "mncubekhulekani@gmail.com",
+      "email": "mncubekhulekani@gmail.com",
+      "tenantId": "vendor",
+      "role": "member",
+      "balance": 50000,
+      "startingBalance": 5000,
+      "transactions": [
+        {
+          "id": "9e2671af-aa0d-4984-a5e5-54ea350aa3d4",
+          "type": "credit",
+          "amount": 45000,
+          "description": "Admin credit",
+          "reference": null,
+          "metadata": {
+            "source": "admin-grant"
+          },
+          "createdAt": "2025-10-04T11:50:42.745Z",
+          "balanceAfter": 50000
+        },
+        {
+          "id": "81dc7240-095f-424b-aac2-e8da8acd7bc7",
+          "type": "credit",
+          "amount": 5000,
+          "description": "Admin credit",
+          "balanceAfter": 5000,
+          "createdAt": "2025-10-04T11:41:54.469Z",
+          "reference": null,
+          "metadata": {
+            "source": "admin-grant"
+          }
+        }
+      ],
+      "lastUpdated": "2025-10-04T11:50:42.745Z"
+    },
+    {
+      "id": "vendor:ruthmaphosa2024@gmail.com",
+      "version": 1,
+      "uid": "ruthmaphosa2024@gmail.com",
+      "email": "ruthmaphosa2024@gmail.com",
+      "tenantId": "vendor",
+      "role": "member",
+      "balance": 50000,
+      "startingBalance": 50000,
+      "transactions": [
+        {
+          "id": "da2a2ad1-4b8a-46fe-93a9-5825af3dd2cd",
+          "type": "credit",
+          "amount": 50000,
+          "description": "Admin credit",
+          "reference": null,
+          "metadata": {
+            "source": "admin-grant"
+          },
+          "createdAt": "2025-10-04T11:42:23.386Z",
+          "balanceAfter": 50000
+        }
+      ],
+      "lastUpdated": "2025-10-04T11:42:23.386Z"
+    },
+    {
+      "id": "vendor:zinhlesloane@gmail.com",
+      "version": 1,
+      "uid": "zinhlesloane@gmail.com",
+      "email": "zinhlesloane@gmail.com",
+      "tenantId": "vendor",
+      "role": "member",
+      "balance": 50000,
+      "startingBalance": 50000,
+      "transactions": [
+        {
+          "id": "abc14105-fb92-4fe2-a92d-cacc88a1dbcc",
+          "type": "credit",
+          "amount": 50000,
+          "description": "Admin credit",
+          "reference": null,
+          "metadata": {
+            "source": "admin-grant"
+          },
+          "createdAt": "2025-10-04T11:46:29.605Z",
+          "balanceAfter": 50000
+        }
+      ],
+      "lastUpdated": "2025-10-04T11:46:29.605Z"
+    },
+    {
+      "id": "vendor:khulekani@gecafrica.co",
+      "version": 1,
+      "uid": "khulekani@gecafrica.co",
+      "email": "khulekani@gecafrica.co",
+      "tenantId": "vendor",
+      "role": "member",
+      "balance": 50000,
+      "startingBalance": 50000,
+      "transactions": [
+        {
+          "id": "953132e0-368f-4261-bb42-d76ed9049916",
+          "type": "credit",
+          "amount": 50000,
+          "description": "Admin credit",
+          "reference": null,
+          "metadata": {
+            "source": "admin-grant"
+          },
+          "createdAt": "2025-10-04T11:46:50.134Z",
+          "balanceAfter": 50000
+        }
+      ],
+      "lastUpdated": "2025-10-04T11:46:50.134Z"
     }
   ]
 }

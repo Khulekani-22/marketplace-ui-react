@@ -1,5 +1,5 @@
 // src/components/shared/AdminWalletManager.tsx
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { api } from "../../lib/api";
 import { formatCredits } from "./WalletComponents";
@@ -19,6 +19,8 @@ interface AdminWalletManagerProps {
   onRefresh?: () => Promise<void>;
   compact?: boolean;
   showUserLookup?: boolean;
+  selectedUserEmail?: string;
+  onEmailChange?: (email: string) => void;
 }
 
 function resolveErrorMessage(error: unknown, fallback: string) {
@@ -36,9 +38,11 @@ export default function AdminWalletManager({
   grantCredits, 
   onRefresh, 
   compact = false,
-  showUserLookup = true 
+  showUserLookup = true,
+  selectedUserEmail = "",
+  onEmailChange
 }: AdminWalletManagerProps) {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(selectedUserEmail);
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [working, setWorking] = useState(false);
@@ -47,6 +51,23 @@ export default function AdminWalletManager({
   const [lookupState, setLookupState] = useState<{ loading: boolean; error: string }>({ loading: false, error: "" });
 
   const normalizedEmail = email.trim().toLowerCase();
+
+  // Update email when selectedUserEmail prop changes
+  useEffect(() => {
+    if (selectedUserEmail && selectedUserEmail !== email) {
+      setEmail(selectedUserEmail);
+      setFeedback({ type: "", message: "" });
+      setPreview(null);
+      setLookupState({ loading: false, error: "" });
+    }
+  }, [selectedUserEmail, email]);
+
+  const handleEmailChange = (newEmail: string) => {
+    setEmail(newEmail);
+    if (onEmailChange) {
+      onEmailChange(newEmail);
+    }
+  };
 
   const handleLookup = async () => {
     if (!normalizedEmail || !showUserLookup) {
@@ -146,7 +167,7 @@ export default function AdminWalletManager({
             type="email"
             className="form-control"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => handleEmailChange(e.target.value)}
             placeholder="user@example.com"
             autoComplete="off"
             required
