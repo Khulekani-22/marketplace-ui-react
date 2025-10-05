@@ -1,8 +1,41 @@
-# React + Vite
+# Marketplace UI (Vite + React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Local Development
 
-Currently, two official plugins are available:
+```bash
+npm install
+npm run dev
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The dev server runs with HMR enabled. Update the values in a local `.env` file if you need to override the defaults from `vite.config.js` (for example `VITE_PROXY_TARGET` for API requests).
+
+## Building Locally
+
+```bash
+npm run build
+npm run preview
+```
+
+The production bundle is emitted to `dist/`.
+
+## Deploying to Vercel
+
+1. Commit and push the latest changes, including the provided `vercel.json` file.
+2. In the Vercel dashboard, import the repository (or use `vercel` CLI) and pick the project root at `firebase sloane hub/ui/marketplace-ui-react`.
+3. When prompted, keep the default build settings:
+   - Install Command: `npm install`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+4. If you rely on runtime configuration, add the required environment variables under **Project Settings → Environment Variables**. Remember that Vite only exposes variables that start with the `VITE_` prefix (for example `VITE_PROXY_TARGET`).
+5. Trigger a deployment. The `vercel.json` rewrite rule ensures that client-side routing falls back to `index.html`, so deep links will work without additional configuration.
+
+### Deploying With the Vercel CLI
+
+```bash
+npm i -g vercel
+vercel login
+vercel
+vercel --prod
+```
+
+The first `vercel` call creates a preview deployment; `vercel --prod` promotes the latest build to production.
