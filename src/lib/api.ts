@@ -23,10 +23,12 @@ let SESSION: Session = {
 function computeApiBases(): string[] {
   const envUrl = (import.meta as any).env?.VITE_API_URL as string | undefined;
   if (envUrl) return [envUrl];
-  const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
-  const make = (port: number) => `${protocol}//${host}:${port}`;
-  return [make(5055), make(5500), make(5000), make(5001)];
+  if (typeof window !== "undefined") {
+    const { origin, protocol, hostname } = window.location;
+    const make = (port: number) => `${protocol}//${hostname}:${port}`;
+    return [origin, make(5055), make(5500), make(5000), make(5001)];
+  }
+  return ["http://localhost:5055", "http://localhost:5500", "http://localhost:5000", "http://localhost:5001"]; 
 }
 
 const CANDIDATES = computeApiBases();
