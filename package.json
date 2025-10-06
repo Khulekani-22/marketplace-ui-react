@@ -10,7 +10,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postinstall": "node ./scripts/ensure-vite-chunk.mjs"
+    "postinstall": "node ./scripts/ensure-vite-dist.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.1.0",
