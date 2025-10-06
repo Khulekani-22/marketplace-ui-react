@@ -31,6 +31,11 @@ app.use(
         return callback(null, true);
       }
       
+      // Specific domain check for your latest deployment
+      if (origin === 'https://marketplace-ui-react-vcl-main-oct.vercel.app') {
+        return callback(null, true);
+      }
+      
       return callback(null, true); // Temporarily allow all for testing
     },
     credentials: true,
