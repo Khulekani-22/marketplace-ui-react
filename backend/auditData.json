@@ -36205,5 +36205,34 @@
       "status": 201,
       "durationMs": 13
     }
+  },
+  {
+    "id": "mgestfc6-pb9l39",
+    "timestamp": "2025-10-06T07:17:36.098Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "22onsloanedigitalteam@gmail.com",
+    "targetType": "route",
+    "targetId": "/wallet",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "member",
+      "tenantId": "vendor"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "24b543d2-139b-4db1-88ca-bd5b824c5201",
+    "timestamp": "2025-10-06T07:17:36.118Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "public",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 16
+    }
   }
 ]
