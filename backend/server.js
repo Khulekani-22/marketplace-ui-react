@@ -46,6 +46,7 @@ app.use(express.json({ limit: "20mb" })); // checkpoints can be large
 const DEFAULT_ORIGINS = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  "https://marketplace-ui-react-vcl-6oct2025-4.vercel.app",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
 ];
