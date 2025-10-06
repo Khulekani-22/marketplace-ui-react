@@ -9,7 +9,8 @@
     "dev": "vite --host localhost",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "node ./scripts/ensure-vite-chunk.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.1.0",
