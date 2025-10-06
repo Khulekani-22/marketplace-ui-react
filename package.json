@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "packageManager": "npm@10.9.0",
+  "packageManager": "npm@10.7.0",
   "scripts": {
     "prebuild": "node -e \"require('fs').accessSync('node_modules/vite/dist/node/cli.js')\"",
     "dev": "vite --host localhost",
@@ -93,6 +93,6 @@
   },
   "engines": {
     "node": "20.x",
-    "npm": "10.x"
+    "npm": "10.7.x"
   }
 }
