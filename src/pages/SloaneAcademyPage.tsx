@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import MasterLayout from "../MasterLayout/MasterLayout.jsx";
+import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import appData from "../../backend/appData.json";
 
 const PROGRESS_KEY = "sloane_academy_progress_v2";

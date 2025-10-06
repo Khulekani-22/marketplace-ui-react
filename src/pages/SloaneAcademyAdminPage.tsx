@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import MasterLayout from "../MasterLayout/MasterLayout.jsx";
+import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import appData from "../../backend/appData.json";
 
 const RESOURCE_KEY = "sloane_academy_admin_resources_v1";
@@ -780,4 +780,3 @@ export default function SloaneAcademyAdminPage() {
     </MasterLayout>
   );
 }
-

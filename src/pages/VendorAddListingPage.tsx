@@ -2,7 +2,7 @@
 // src/pages/VendorAddListingPage.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import MasterLayout from "../MasterLayout/MasterLayout.jsx";
+import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/useVendor";
 import { useAppSync } from "../context/useAppSync";
 import { api } from "../lib/api";
