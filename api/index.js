@@ -3,9 +3,72 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const fs = require("fs");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
+
+/* ------------------------ Data Loading ------------------------ */
+let appData = null;
+
+function loadAppData() {
+  try {
+    // Try to load from backend/appData.json
+    const backendPath = path.join(process.cwd(), 'backend', 'appData.json');
+    if (fs.existsSync(backendPath)) {
+      const rawData = fs.readFileSync(backendPath, 'utf8');
+      appData = JSON.parse(rawData);
+      console.log('✅ Loaded appData from backend/appData.json');
+      return appData;
+    }
+    
+    // Fallback to src/data/appData.json
+    const srcPath = path.join(process.cwd(), 'src', 'data', 'appData.json');
+    if (fs.existsSync(srcPath)) {
+      const rawData = fs.readFileSync(srcPath, 'utf8');
+      appData = JSON.parse(rawData);
+      console.log('✅ Loaded appData from src/data/appData.json (fallback)');
+      return appData;
+    }
+    
+    console.warn('⚠️ No appData.json found, using mock data');
+    return getMockData();
+  } catch (error) {
+    console.error('❌ Error loading appData:', error.message);
+    return getMockData();
+  }
+}
+
+function getMockData() {
+  return {
+    cohorts: [],
+    bookings: [],
+    events: [],
+    forumThreads: [],
+    jobs: [],
+    mentorshipSessions: [],
+    messageThreads: [],
+    services: [],
+    leads: [],
+    startups: [],
+    vendors: [],
+    wallets: [],
+    users: [{
+      uid: "test-user-id",
+      email: "22onsloanedigitalteam@gmail.com",
+      role: "member",
+      tenantId: "vendor"
+    }]
+  };
+}
+
+function getAppData() {
+  if (!appData) {
+    appData = loadAppData();
+  }
+  return appData;
+}
 
 /* ------------------------ Core security & parsing ------------------------ */
 app.use(helmet());
@@ -37,7 +100,7 @@ app.use(
 
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-/* ------------------------ Mock Data for Testing ------------------------ */
+/* ------------------------ Mock Data for Compatibility ------------------------ */
 const mockUser = {
   uid: "test-user-id",
   email: "22onsloanedigitalteam@gmail.com",
@@ -53,32 +116,11 @@ const mockWallet = {
   transactions: []
 };
 
-const mockMessages = {
-  messages: [],
-  unreadCount: 0,
-  lastUpdated: new Date().toISOString()
-};
-
 const mockTenants = [
   { id: "vendor", name: "Vendor", type: "vendor" },
   { id: "startup", name: "Startup", type: "startup" },
   { id: "admin", name: "Admin", type: "admin" }
 ];
-
-const mockLmsData = {
-  cohorts: [],
-  bookings: [],
-  events: [],
-  forumThreads: [],
-  jobs: [],
-  mentorshipSessions: [],
-  messageThreads: [],
-  services: [],
-  leads: [],
-  startups: [],
-  wallets: [mockWallet],
-  users: [mockUser]
-};
 
 /* ------------------------ API Routes ------------------------ */
 
@@ -94,8 +136,13 @@ app.get("/api/health", (req, res) => {
 
 // User authentication endpoint
 app.get("/api/me", (req, res) => {
-  // In a real app, this would verify the Firebase token
-  res.json(mockUser);
+  const data = getAppData();
+  const users = data.users || [];
+  
+  // In a real app, this would verify the Firebase token and find the user
+  // For now, return the first admin user or mock user
+  const adminUser = users.find(u => u.role === 'admin') || users[0] || mockUser;
+  res.json(adminUser);
 });
 
 // Messages endpoints
@@ -109,7 +156,8 @@ app.post("/api/messages", (req, res) => {
 
 // LMS endpoints
 app.get("/api/lms/live", (req, res) => {
-  res.json(mockLmsData);
+  const data = getAppData();
+  res.json(data);
 });
 
 app.put("/api/lms/publish", (req, res) => {
@@ -127,12 +175,17 @@ app.post("/api/lms/checkpoints", (req, res) => {
 
 // Tenants endpoint
 app.get("/api/tenants", (req, res) => {
-  res.json(mockTenants);
+  const data = getAppData();
+  const tenants = data.tenants || mockTenants;
+  res.json(tenants);
 });
 
 // Wallet endpoints
 app.get("/api/wallets/me", (req, res) => {
-  res.json(mockWallet);
+  const data = getAppData();
+  const wallets = data.wallets || [];
+  const userWallet = wallets.find(w => w.userId === mockUser.uid) || mockWallet;
+  res.json(userWallet);
 });
 
 app.post("/api/wallets/transaction", (req, res) => {
@@ -151,45 +204,100 @@ app.get("/api/audit-logs", (req, res) => {
 
 // Data services endpoints
 app.get("/api/data/services", (req, res) => {
-  res.json({ services: [], total: 0 });
+  const data = getAppData();
+  const services = data.services || [];
+  res.json({ services, total: services.length });
 });
 
 app.get("/api/data/vendors", (req, res) => {
-  res.json({ vendors: [], total: 0 });
+  const data = getAppData();
+  const vendors = data.vendors || [];
+  res.json({ vendors, total: vendors.length });
 });
 
 app.get("/api/data/vendors/:id/stats", (req, res) => {
+  const data = getAppData();
+  const vendors = data.vendors || [];
+  const services = data.services || [];
+  const bookings = data.bookings || [];
+  
+  const vendorId = req.params.id;
+  const vendor = vendors.find(v => v.id === vendorId || v.vendorId === vendorId);
+  
+  // Calculate stats from real data
+  const vendorServices = services.filter(s => s.vendorId === vendorId || s.vendor === vendorId);
+  const vendorBookings = bookings.filter(b => b.vendorId === vendorId);
+  
+  const listingStats = {
+    total: vendorServices.length,
+    byStatus: vendorServices.reduce((acc, service) => {
+      const status = service.status || 'active';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {})
+  };
+  
+  const reviewStats = {
+    totalReviews: vendorServices.reduce((total, service) => {
+      return total + (service.reviewCount || (service.reviews ? service.reviews.length : 0));
+    }, 0),
+    avgRating: vendorServices.length > 0 ? 
+      vendorServices.reduce((sum, service) => sum + (service.rating || 0), 0) / vendorServices.length : 0
+  };
+  
+  const subscriptionStats = {
+    byService: vendorServices.reduce((acc, service) => {
+      acc[service.id] = vendorBookings.filter(b => b.serviceId === service.id).length;
+      return acc;
+    }, {})
+  };
+  
   res.json({
-    listingStats: { total: 0, byStatus: {} },
-    reviewStats: { totalReviews: 0, avgRating: 0 },
-    subscription: { plan: "Free", status: "active" },
-    subscriptionStats: { byService: {} },
+    listingStats,
+    reviewStats,
+    subscription: { plan: vendor?.subscriptionPlan || "Free", status: vendor?.status || "active" },
+    subscriptionStats,
     salesTime: { monthly: {}, quarterly: {}, annual: {} }
   });
 });
 
 app.get("/api/data/startups", (req, res) => {
-  res.json({ startups: [], total: 0 });
+  const data = getAppData();
+  const startups = data.startups || [];
+  res.json({ startups, total: startups.length });
 });
 
 // Users endpoint
 app.get("/api/users", (req, res) => {
-  res.json({ users: [mockUser], total: 1 });
+  const data = getAppData();
+  const users = data.users || [mockUser];
+  res.json({ users, total: users.length });
 });
 
 // Admin endpoints
 app.get("/api/admin/stats", (req, res) => {
+  const data = getAppData();
+  const users = data.users || [];
+  const services = data.services || [];
+  const startups = data.startups || [];
+  const bookings = data.bookings || [];
+  
+  const totalRevenue = bookings.reduce((sum, booking) => sum + (booking.price || 0), 0);
+  
   res.json({ 
-    totalUsers: 1, 
-    totalServices: 0, 
-    totalRevenue: 0,
-    activeUsers: 1 
+    totalUsers: users.length, 
+    totalServices: services.length, 
+    totalRevenue,
+    activeUsers: users.filter(u => u.active !== false).length,
+    totalStartups: startups.length
   });
 });
 
 // Subscriptions endpoint
 app.get("/api/subscriptions", (req, res) => {
-  res.json({ subscriptions: [], total: 0 });
+  const data = getAppData();
+  const bookings = data.bookings || [];
+  res.json({ subscriptions: bookings, total: bookings.length });
 });
 
 // Assistant endpoint
@@ -200,20 +308,43 @@ app.post("/api/assistant/chat", (req, res) => {
   });
 });
 
+// Messages endpoints
+app.get("/api/messages", (req, res) => {
+  const data = getAppData();
+  const messages = data.messageThreads || [];
+  res.json({
+    messages,
+    unreadCount: 0,
+    lastUpdated: new Date().toISOString()
+  });
+});
+
+app.post("/api/messages", (req, res) => {
+  res.json({ success: true, message: "Message sent" });
+});
+
 // Test endpoint
 app.get("/api/test", (req, res) => {
+  const data = getAppData();
   res.json({ 
     message: "Hello from Vercel API",
     env: process.env.NODE_ENV || "development",
     origin: req.get("origin") || "no origin",
     userAgent: req.get("user-agent") || "no user agent",
     timestamp: new Date().toISOString(),
+    dataStatus: data ? 'loaded' : 'mock',
+    dataStats: {
+      services: (data.services || []).length,
+      vendors: (data.vendors || []).length,
+      startups: (data.startups || []).length,
+      users: (data.users || []).length
+    },
     availableEndpoints: [
       "/api/health", "/api/me", "/api/messages", "/api/lms/live",
       "/api/tenants", "/api/wallets/me", "/api/audit-logs",
       "/api/data/services", "/api/data/vendors", "/api/data/startups",
-      "/api/users", "/api/admin/stats", "/api/subscriptions",
-      "/api/assistant/chat"
+      "/api/data/vendors/:id/stats", "/api/users", "/api/admin/stats", 
+      "/api/subscriptions", "/api/assistant/chat"
     ]
   });
 });
