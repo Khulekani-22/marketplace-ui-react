@@ -269,7 +269,7 @@ app.get("/wallets", (req, res) => {
   });
 });
 
-// Root backend route
+// Root backend route - only for /backend/ not all routes
 app.get("/", (req, res) => {
   res.json({ 
     message: "Sloane Hub Backend API (Serverless)",
@@ -286,17 +286,7 @@ app.get("/", (req, res) => {
   });
 });
 
-// Catch unhandled routes
-app.use("*", (req, res) => {
-  res.status(404).json({ 
-    error: "Endpoint not found in backend",
-    path: req.originalUrl,
-    method: req.method,
-    availableEndpoints: [
-      "/health", "/lms/live", "/data/services", "/users", "/admin/stats"
-    ]
-  });
-});
+// Don't use catch-all that could interfere with frontend routing
 
 // Error handler
 app.use((err, req, res, next) => {

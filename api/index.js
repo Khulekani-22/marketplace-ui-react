@@ -222,8 +222,8 @@ app.use("/api/*", (req, res) => {
   });
 });
 
-// Root route for debugging
-app.get("/", (req, res) => {
+// Only handle root API requests, not all root requests
+app.get("/api", (req, res) => {
   res.json({ 
     message: "Sloane Hub API Root",
     version: "1.0.0",
