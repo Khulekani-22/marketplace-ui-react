@@ -300,6 +300,78 @@ app.get("/api/subscriptions", (req, res) => {
   res.json({ subscriptions: bookings, total: bookings.length });
 });
 
+// My subscriptions endpoint
+app.get("/api/subscriptions/my", (req, res) => {
+  const data = getAppData();
+  const bookings = data.bookings || [];
+  
+  // In a real app, this would filter by authenticated user
+  // For now, return all bookings as user's subscriptions
+  const userSubscriptions = bookings.map(booking => ({
+    ...booking,
+    subscriptionId: booking.id,
+    status: booking.status || 'active',
+    startDate: booking.bookedAt,
+    nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+  }));
+  
+  res.json(userSubscriptions);
+});
+
+// Subscribe to service endpoint
+app.post("/api/subscriptions/service", (req, res) => {
+  const { serviceId, planId, billingFrequency } = req.body;
+  
+  // Mock subscription creation
+  const subscription = {
+    id: Date.now().toString(),
+    serviceId,
+    planId: planId || 'basic',
+    billingFrequency: billingFrequency || 'monthly',
+    status: 'active',
+    startDate: new Date().toISOString(),
+    nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date().toISOString()
+  };
+  
+  res.json({ success: true, subscription });
+});
+
+// Cancel subscription endpoint
+app.put("/api/subscriptions/service/cancel", (req, res) => {
+  const { serviceId } = req.body;
+  
+  // Mock subscription cancellation
+  res.json({ 
+    success: true, 
+    message: "Subscription cancelled successfully",
+    serviceId,
+    cancelledAt: new Date().toISOString()
+  });
+});
+
+// Get service subscription details
+app.get("/api/subscriptions/service/:serviceId", (req, res) => {
+  const { serviceId } = req.params;
+  const data = getAppData();
+  const services = data.services || [];
+  const bookings = data.bookings || [];
+  
+  const service = services.find(s => s.id === serviceId);
+  const serviceBookings = bookings.filter(b => b.serviceId === serviceId);
+  
+  if (!service) {
+    return res.status(404).json({ error: "Service not found" });
+  }
+  
+  res.json({
+    service,
+    subscriptions: serviceBookings,
+    totalSubscribers: serviceBookings.length,
+    activeSubscriptions: serviceBookings.filter(b => b.status === 'completed' || b.status === 'active').length
+  });
+});
+
 // Assistant endpoint
 app.post("/api/assistant/chat", (req, res) => {
   res.json({ 
@@ -344,7 +416,9 @@ app.get("/api/test", (req, res) => {
       "/api/tenants", "/api/wallets/me", "/api/audit-logs",
       "/api/data/services", "/api/data/vendors", "/api/data/startups",
       "/api/data/vendors/:id/stats", "/api/users", "/api/admin/stats", 
-      "/api/subscriptions", "/api/assistant/chat"
+      "/api/subscriptions", "/api/subscriptions/my", "/api/subscriptions/service",
+      "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
+      "/api/assistant/chat"
     ]
   });
 });
@@ -372,7 +446,9 @@ app.use((req, res, next) => {
         "/api/tenants", "/api/wallets/me", "/api/audit-logs",
         "/api/data/services", "/api/data/vendors", "/api/data/startups",
         "/api/data/vendors/:id/stats", "/api/users", "/api/admin/stats",
-        "/api/subscriptions", "/api/assistant/chat"
+        "/api/subscriptions", "/api/subscriptions/my", "/api/subscriptions/service",
+        "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
+        "/api/assistant/chat"
       ]
     });
   } else {
