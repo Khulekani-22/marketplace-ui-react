@@ -158,6 +158,16 @@ app.get("/api/data/vendors", (req, res) => {
   res.json({ vendors: [], total: 0 });
 });
 
+app.get("/api/data/vendors/:id/stats", (req, res) => {
+  res.json({
+    listingStats: { total: 0, byStatus: {} },
+    reviewStats: { totalReviews: 0, avgRating: 0 },
+    subscription: { plan: "Free", status: "active" },
+    subscriptionStats: { byService: {} },
+    salesTime: { monthly: {}, quarterly: {}, annual: {} }
+  });
+});
+
 app.get("/api/data/startups", (req, res) => {
   res.json({ startups: [], total: 0 });
 });
@@ -228,7 +238,10 @@ app.use((req, res, next) => {
       message: "This endpoint is not implemented yet",
       availableEndpoints: [
         "/api/health", "/api/me", "/api/messages", "/api/lms/live",
-        "/api/tenants", "/api/wallets/me", "/api/audit-logs"
+        "/api/tenants", "/api/wallets/me", "/api/audit-logs",
+        "/api/data/services", "/api/data/vendors", "/api/data/startups",
+        "/api/data/vendors/:id/stats", "/api/users", "/api/admin/stats",
+        "/api/subscriptions", "/api/assistant/chat"
       ]
     });
   } else {
