@@ -1,12 +1,9 @@
 // api/index.js - Vercel serverless function for Sloane Hub
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import dotenv from "dotenv";
-
-// Load environment variables
-dotenv.config();
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+require("dotenv").config();
 
 const app = express();
 
@@ -248,9 +245,9 @@ app.use((err, req, res, next) => {
 });
 
 // Export for Vercel serverless functions
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   return app(req, res);
-}
+};
 
 // Also export the app for local testing
-export { app };
+module.exports.app = app;
