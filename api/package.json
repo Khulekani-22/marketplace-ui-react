@@ -1,6 +1,7 @@
 {
   "name": "sloane-hub-api",
   "version": "1.0.0",
+  "description": "Serverless functions for both frontend and backend APIs",
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
