@@ -1,0 +1,12 @@
+# Vercel ignore file - prevents unnecessary files from being deployed
+node_modules/
+*.log
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/
+scripts/
+tools/
+secrets/
+*.pid

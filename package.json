@@ -10,6 +10,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "vercel-build": "npm run build",
     "postinstall": "node ./scripts/ensure-vite-dist.mjs && node ./scripts/ensure-service-account.mjs"
   },
   "dependencies": {
