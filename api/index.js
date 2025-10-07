@@ -209,6 +209,40 @@ app.get("/api/data/services", (req, res) => {
   res.json({ services, total: services.length });
 });
 
+// My vendor services endpoint
+app.get("/api/data/services/mine", (req, res) => {
+  const data = getAppData();
+  const services = data.services || [];
+  const vendors = data.vendors || [];
+  const bookings = data.bookings || [];
+  
+  // In a real app, this would filter by authenticated user's vendor ID
+  // For now, find services from the first vendor or filter by a common vendor ID
+  const firstVendor = vendors[0];
+  const vendorId = firstVendor?.id || firstVendor?.vendorId || "tAsFySNxnsW4a7L43wMRVLkJAqE3";
+  
+  // Filter services by this vendor
+  const myServices = services.filter(service => 
+    service.vendorId === vendorId || 
+    service.vendor === firstVendor?.name ||
+    service.contactEmail === firstVendor?.contactEmail
+  );
+  
+  // Get bookings for these services
+  const myServiceIds = myServices.map(s => s.id);
+  const myBookings = bookings.filter(booking => 
+    myServiceIds.includes(booking.serviceId)
+  );
+  
+  res.json({
+    listings: myServices,
+    bookings: myBookings,
+    vendor: firstVendor,
+    tenantId: firstVendor?.tenantId || "public",
+    total: myServices.length
+  });
+});
+
 app.get("/api/data/vendors", (req, res) => {
   const data = getAppData();
   const vendors = data.vendors || [];
@@ -414,7 +448,7 @@ app.get("/api/test", (req, res) => {
     availableEndpoints: [
       "/api/health", "/api/me", "/api/messages", "/api/lms/live",
       "/api/tenants", "/api/wallets/me", "/api/audit-logs",
-      "/api/data/services", "/api/data/vendors", "/api/data/startups",
+      "/api/data/services", "/api/data/services/mine", "/api/data/vendors", "/api/data/startups",
       "/api/data/vendors/:id/stats", "/api/users", "/api/admin/stats", 
       "/api/subscriptions", "/api/subscriptions/my", "/api/subscriptions/service",
       "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
@@ -444,7 +478,7 @@ app.use((req, res, next) => {
       availableEndpoints: [
         "/api/health", "/api/me", "/api/messages", "/api/lms/live",
         "/api/tenants", "/api/wallets/me", "/api/audit-logs",
-        "/api/data/services", "/api/data/vendors", "/api/data/startups",
+        "/api/data/services", "/api/data/services/mine", "/api/data/vendors", "/api/data/startups",
         "/api/data/vendors/:id/stats", "/api/users", "/api/admin/stats",
         "/api/subscriptions", "/api/subscriptions/my", "/api/subscriptions/service",
         "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
