@@ -414,6 +414,260 @@ app.post("/api/assistant/chat", (req, res) => {
   });
 });
 
+// Admin wallet endpoints
+app.get("/api/admin/wallet/users", (req, res) => {
+  const data = getAppData();
+  const users = data.users || [];
+  const vendors = data.vendors || [];
+  const startups = data.startups || [];
+  
+  // Build composite eligible user list (matching backend logic)
+  const baseUsers = [];
+  
+  // Add existing users
+  users.forEach(user => {
+    if (user.uid || user.email) {
+      baseUsers.push({
+        id: user.uid || user.id,
+        uid: user.uid || user.id,
+        name: user.name || user.displayName || "Unnamed User",
+        email: user.email,
+        role: user.role || "member",
+        tenantId: user.tenantId || "public",
+        createdAt: user.createdAt || new Date().toISOString(),
+        lastActivity: user.lastActivity || user.lastLoginAt || user.updatedAt || new Date().toISOString()
+      });
+    }
+  });
+  
+  // Add vendor owners as users
+  vendors.forEach(vendor => {
+    if (vendor.ownerUid && !baseUsers.find(u => u.uid === vendor.ownerUid)) {
+      baseUsers.push({
+        id: vendor.ownerUid,
+        uid: vendor.ownerUid,
+        name: vendor.name || vendor.companyName || "Vendor Owner",
+        email: vendor.email || vendor.contactEmail,
+        role: "vendor",
+        tenantId: vendor.tenantId || "public",
+        createdAt: vendor.createdAt || new Date().toISOString(),
+        lastActivity: vendor.lastUpdated || new Date().toISOString()
+      });
+    }
+  });
+  
+  // Add startup owners as users
+  startups.forEach(startup => {
+    if (startup.ownerUid && !baseUsers.find(u => u.uid === startup.ownerUid)) {
+      baseUsers.push({
+        id: startup.ownerUid,
+        uid: startup.ownerUid,
+        name: startup.name || startup.title || "Startup Owner", 
+        email: startup.email || startup.contactEmail,
+        role: "startup",
+        tenantId: startup.tenantId || "public",
+        createdAt: startup.createdAt || new Date().toISOString(),
+        lastActivity: startup.lastUpdated || new Date().toISOString()
+      });
+    }
+  });
+  
+  const usersWithWallets = baseUsers.map(user => ({
+    ...user,
+    walletBalance: 0, // Mock wallet balance - in real implementation would query wallets
+    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=7c3aed&color=fff`
+  }));
+  
+  // Sort by wallet balance then name
+  usersWithWallets.sort((a, b) => 
+    b.walletBalance !== a.walletBalance ? 
+    b.walletBalance - a.walletBalance : 
+    a.name.localeCompare(b.name)
+  );
+  
+  res.json({
+    status: "success",
+    users: usersWithWallets,
+    summary: {
+      totalUsers: usersWithWallets.length,
+      usersWithCredits: usersWithWallets.filter(u => u.walletBalance > 0).length,
+      totalCreditsAllocated: usersWithWallets.reduce((sum, u) => sum + (u.walletBalance || 0), 0)
+    }
+  });
+});
+
+app.post("/api/admin/wallet/add-credits", (req, res) => {
+  const { userId, userEmail, amount, description } = req.body;
+  
+  if (!userId || !userEmail || !amount || !description) {
+    return res.status(400).json({
+      status: "error",
+      message: "Missing required fields: userId, userEmail, amount, description"
+    });
+  }
+  
+  const creditAmount = parseFloat(amount);
+  if (isNaN(creditAmount) || creditAmount <= 0) {
+    return res.status(400).json({
+      status: "error", 
+      message: "Amount must be a positive number"
+    });
+  }
+  
+  // Mock transaction creation
+  const transaction = {
+    id: Date.now().toString(),
+    userId,
+    userEmail,
+    type: "credit",
+    amount: creditAmount,
+    description,
+    adminEmail: "admin@example.com",
+    createdAt: new Date().toISOString()
+  };
+  
+  res.status(201).json({
+    status: "success",
+    message: `Successfully added ${creditAmount} credits to ${userEmail}`,
+    transaction
+  });
+});
+
+app.post("/api/admin/wallet/bulk-credits", (req, res) => {
+  const { userIds, amount, description } = req.body;
+  
+  if (!Array.isArray(userIds) || userIds.length === 0) {
+    return res.status(400).json({
+      status: "error",
+      message: "userIds must be a non-empty array"
+    });
+  }
+  
+  if (!amount || !description) {
+    return res.status(400).json({
+      status: "error",
+      message: "Missing required fields: amount, description"
+    });
+  }
+  
+  const creditAmount = parseFloat(amount);
+  if (isNaN(creditAmount) || creditAmount <= 0) {
+    return res.status(400).json({
+      status: "error",
+      message: "Amount must be a positive number"
+    });
+  }
+  
+  // Mock bulk transaction creation
+  const transactions = userIds.map(userId => ({
+    id: `${Date.now()}-${userId}`,
+    userId,
+    type: "credit",
+    amount: creditAmount,
+    description: `${description} (Bulk allocation)`,
+    adminEmail: "admin@example.com",
+    createdAt: new Date().toISOString()
+  }));
+  
+  res.status(201).json({
+    status: "success",
+    message: `Successfully added ${creditAmount} credits to ${userIds.length} users`,
+    transactions,
+    processedCount: userIds.length
+  });
+});
+
+app.post("/api/admin/wallet/normalize-appdata", (req, res) => {
+  // Mock data normalization
+  res.json({
+    status: "success",
+    message: "App data normalized successfully"
+  });
+});
+
+app.post("/api/admin/wallet/sync-firebase-users", (req, res) => {
+  // Mock Firebase user sync
+  res.json({
+    status: "success", 
+    message: "Firebase users synced successfully",
+    syncedCount: 0
+  });
+});
+
+app.get("/api/admin/wallet/summary", (req, res) => {
+  const data = getAppData();
+  const users = data.users || [];
+  
+  res.json({
+    status: "success",
+    summary: {
+      totalUsers: users.length,
+      totalCreditsAllocated: 0,
+      usersWithCredits: 0,
+      usersWithoutCredits: users.length,
+      totalTransactions: 0,
+      creditsAllocatedToday: 0,
+      recentTransactions: []
+    }
+  });
+});
+
+app.get("/api/admin/wallet/transactions", (req, res) => {
+  const { limit = 100, offset = 0 } = req.query;
+  
+  res.json({
+    status: "success",
+    transactions: [],
+    total: 0,
+    limit: parseInt(limit),
+    offset: parseInt(offset)
+  });
+});
+
+// Users/all endpoint for Firebase user search
+app.get("/api/users/all", (req, res) => {
+  const { search = "", pageSize = 100 } = req.query;
+  const data = getAppData();
+  const users = data.users || [];
+  
+  // Filter users based on search term
+  let filteredUsers = users;
+  if (search) {
+    const searchLower = search.toLowerCase();
+    filteredUsers = users.filter(user => 
+      (user.email && user.email.toLowerCase().includes(searchLower)) ||
+      (user.name && user.name.toLowerCase().includes(searchLower)) ||
+      (user.displayName && user.displayName.toLowerCase().includes(searchLower))
+    );
+  }
+  
+  // Apply pagination
+  const limit = parseInt(pageSize);
+  const paginatedUsers = filteredUsers.slice(0, limit);
+  
+  res.json({
+    items: paginatedUsers.map(user => ({
+      uid: user.uid || user.id,
+      email: user.email,
+      displayName: user.name || user.displayName || null,
+      photoURL: user.avatar || user.photoURL || null,
+      emailVerified: true,
+      disabled: false,
+      metadata: {
+        creationTime: user.createdAt || new Date().toISOString(),
+        lastSignInTime: user.lastActivity || user.lastLoginAt || new Date().toISOString()
+      },
+      providerData: [{
+        providerId: "password",
+        uid: user.email,
+        email: user.email,
+        displayName: user.name || user.displayName || null
+      }]
+    })),
+    nextPageToken: filteredUsers.length > limit ? "has-more" : null
+  });
+});
+
 // Messages endpoints
 app.get("/api/messages", (req, res) => {
   const data = getAppData();
@@ -449,10 +703,13 @@ app.get("/api/test", (req, res) => {
       "/api/health", "/api/me", "/api/messages", "/api/lms/live",
       "/api/tenants", "/api/wallets/me", "/api/audit-logs",
       "/api/data/services", "/api/data/services/mine", "/api/data/vendors", "/api/data/startups",
-      "/api/data/vendors/:id/stats", "/api/users", "/api/admin/stats", 
+      "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", "/api/admin/stats", 
       "/api/subscriptions", "/api/subscriptions/my", "/api/subscriptions/service",
       "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
-      "/api/assistant/chat"
+      "/api/assistant/chat", "/api/admin/wallet/users", "/api/admin/wallet/add-credits",
+      "/api/admin/wallet/bulk-credits", "/api/admin/wallet/normalize-appdata",
+      "/api/admin/wallet/sync-firebase-users", "/api/admin/wallet/summary",
+      "/api/admin/wallet/transactions"
     ]
   });
 });
@@ -479,10 +736,13 @@ app.use((req, res, next) => {
         "/api/health", "/api/me", "/api/messages", "/api/lms/live",
         "/api/tenants", "/api/wallets/me", "/api/audit-logs",
         "/api/data/services", "/api/data/services/mine", "/api/data/vendors", "/api/data/startups",
-        "/api/data/vendors/:id/stats", "/api/users", "/api/admin/stats",
+        "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", "/api/admin/stats",
         "/api/subscriptions", "/api/subscriptions/my", "/api/subscriptions/service",
         "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
-        "/api/assistant/chat"
+        "/api/assistant/chat", "/api/admin/wallet/users", "/api/admin/wallet/add-credits",
+        "/api/admin/wallet/bulk-credits", "/api/admin/wallet/normalize-appdata",
+        "/api/admin/wallet/sync-firebase-users", "/api/admin/wallet/summary",
+        "/api/admin/wallet/transactions"
       ]
     });
   } else {
