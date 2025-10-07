@@ -6,11 +6,32 @@ import { useAppSync } from "../context/useAppSync";
 import { fetchMySubscriptions, unsubscribeFromService } from "../lib/subscriptions";
 import { api } from "../lib/api";
 
+// Type definitions
+interface Service {
+  id: string | number;
+  title?: string;
+  description?: string;
+  price?: number;
+  rating?: number;
+  category?: string;
+  vendor?: string;
+  imageUrl?: string;
+}
+
+interface LoadOptions {
+  silent?: boolean;
+  signal?: AbortSignal;
+}
+
+interface BusyMap {
+  [key: string]: boolean;
+}
+
 export default function MySubscriptionsPage() {
   const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState([]); // services enriched
+  const [items, setItems] = useState<Service[]>([]); // services enriched
   const [err, setErr] = useState("");
-  const [busyMap, setBusyMap] = useState({}); // serviceId -> boolean
+  const [busyMap, setBusyMap] = useState<BusyMap>({}); // serviceId -> boolean
   const [refreshing, setRefreshing] = useState(false);
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
   const { appData } = useAppSync();
@@ -29,7 +50,7 @@ export default function MySubscriptionsPage() {
         const subsResponse = await api.get('/api/subscriptions/my');
         console.log('✅ Subscriptions endpoint test:', subsResponse.data);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('❌ API connection test failed:', e);
       console.error('❌ Error details:', e?.response?.data);
     }
@@ -41,7 +62,8 @@ export default function MySubscriptionsPage() {
   }, [testApiConnection]);
 
   const loadSubscriptions = useCallback(
-    async ({ silent, signal } = {}) => {
+    async (options: LoadOptions = {}) => {
+      const { silent, signal } = options;
       if (silent) setRefreshing(true);
       else setLoading(true);
       setErr("");
@@ -58,19 +80,19 @@ export default function MySubscriptionsPage() {
         
         const ids = new Set(
           subs
-            .filter((x) => (x.type || "service") === "service")
-            .map((x) => String(x.serviceId))
+            .filter((x: any) => (x.type || "service") === "service")
+            .map((x: any) => String(x.serviceId))
         );
         console.log('🔍 Service IDs from subscriptions:', Array.from(ids));
 
-        const services = Array.isArray(appData?.services) ? appData.services : [];
+        const services = Array.isArray((appData as any)?.services) ? (appData as any).services : [];
         console.log('📦 Available services in appData:', services.length);
         
-        const selected = services.filter((s) => ids.has(String(s.id)));
-        console.log('✅ Matched services:', selected.length, selected.map(s => ({ id: s.id, title: s.title })));
+        const selected = services.filter((s: any) => ids.has(String(s.id)));
+        console.log('✅ Matched services:', selected.length, selected.map((s: any) => ({ id: s.id, title: s.title })));
         
         if (!signal?.aborted) setItems(selected);
-      } catch (e) {
+      } catch (e: any) {
         console.error('❌ Failed to load subscriptions:', e);
         if (!signal?.aborted) setErr(e?.message || "Failed to load subscriptions");
       } finally {
@@ -92,7 +114,7 @@ export default function MySubscriptionsPage() {
     };
   }, [loadSubscriptions, tenantId]);
 
-  async function handleUnsubscribe(id) {
+  async function handleUnsubscribe(id: string | number) {
     const key = String(id);
     console.log('🔄 Starting unsubscribe process for service:', key);
     console.log('🔄 Current user:', auth.currentUser?.email);
@@ -105,7 +127,7 @@ export default function MySubscriptionsPage() {
       const currentSubs = await fetchMySubscriptions();
       console.log('📋 Current subscriptions:', currentSubs);
       
-      const targetSub = currentSubs.find(sub => String(sub.serviceId) === key);
+      const targetSub = currentSubs.find((sub: any) => String(sub.serviceId) === key);
       console.log('🎯 Target subscription to cancel:', targetSub);
       
       if (!targetSub) {
@@ -121,7 +143,7 @@ export default function MySubscriptionsPage() {
         const result = await unsubscribeFromService(key);
         console.log('✅ Unsubscribe API success:', result);
         alert(`✅ Successfully unsubscribed from service ${key}`);
-      } catch (apiError) {
+      } catch (apiError: any) {
         // If we get 404, it means the subscription doesn't exist in backend
         // but exists in frontend cache - this is a sync issue
         if (apiError?.response?.status === 404) {
@@ -149,7 +171,7 @@ export default function MySubscriptionsPage() {
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           const subscriptions = JSON.parse(cached);
-          const filteredSubs = subscriptions.filter(sub => String(sub.serviceId) !== key);
+          const filteredSubs = subscriptions.filter((sub: any) => String(sub.serviceId) !== key);
           localStorage.setItem(cacheKey, JSON.stringify(filteredSubs));
           console.log('🗑️ Removed subscription from cache, remaining:', filteredSubs.length);
         }
@@ -160,7 +182,7 @@ export default function MySubscriptionsPage() {
       // Skip the automatic refresh since we already cleaned up locally
       console.log('✅ Unsubscribe completed - skipping refresh to prevent reappearing');
       
-    } catch (e) {
+    } catch (e: any) {
       console.error('❌ Failed to unsubscribe:', e);
       console.error('❌ Error response:', e?.response);
       console.error('❌ Error data:', e?.response?.data);
