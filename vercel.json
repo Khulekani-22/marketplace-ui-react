@@ -1,8 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "out    }
-  ]
-}irectory": "dist",
+  "outputDirectory": "dist",
   "functions": {
     "api/index.js": {
       "maxDuration": 30
