@@ -19,7 +19,7 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/((?!api|backend|_next|assets|favicon).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],

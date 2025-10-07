@@ -208,20 +208,6 @@ app.get("/api/test", (req, res) => {
   });
 });
 
-// Catch all API routes that don't match
-app.use("/api/*", (req, res) => {
-  res.status(404).json({ 
-    error: "API endpoint not found",
-    path: req.path,
-    method: req.method,
-    message: "This endpoint is not implemented yet",
-    availableEndpoints: [
-      "/api/health", "/api/me", "/api/messages", "/api/lms/live",
-      "/api/tenants", "/api/wallets/me", "/api/audit-logs"
-    ]
-  });
-});
-
 // Only handle root API requests, not all root requests
 app.get("/api", (req, res) => {
   res.json({ 
@@ -230,6 +216,24 @@ app.get("/api", (req, res) => {
     status: "running",
     timestamp: new Date().toISOString()
   });
+});
+
+// Catch-all for unmatched API routes
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({ 
+      error: "API endpoint not found",
+      path: req.path,
+      method: req.method,
+      message: "This endpoint is not implemented yet",
+      availableEndpoints: [
+        "/api/health", "/api/me", "/api/messages", "/api/lms/live",
+        "/api/tenants", "/api/wallets/me", "/api/audit-logs"
+      ]
+    });
+  } else {
+    next();
+  }
 });
 
 // Error handler
