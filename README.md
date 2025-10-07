@@ -39,3 +39,5 @@ vercel --prod
 ```
 
 The first `vercel` call creates a preview deployment; `vercel --prod` promotes the latest build to production.
+
+<--help Force deployment: Tue Oct  7 16:05:12 SAST 2025 -->
