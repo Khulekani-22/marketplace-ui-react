@@ -1325,8 +1325,8 @@
       }
     },
     {
-      "id": "msg-1759906843717-wl1p5qqlq",
-      "subject": "Test Message - Data Persistence",
+      "id": "msg-1759909153613-4cmi3hz7m",
+      "subject": "Message to 22 On Sloane",
       "from": {
         "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
         "email": "khulekani@22onsloane.co",
@@ -1335,24 +1335,56 @@
         "type": "admin"
       },
       "to": {
-        "uid": "user2_startup_founder",
-        "email": "sarah.johnson@afritech.co.za",
-        "name": "Sarah Johnson",
-        "avatar": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff",
+        "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "email": "22onsloanedigitalteam@gmail.com",
+        "name": "22 On Sloane",
+        "avatar": "https://ui-avatars.com/api/?name=22%20On%20Sloane&background=059669&color=fff",
+        "type": "vendor"
+      },
+      "cc": [],
+      "bcc": [],
+      "content": "Testing",
+      "timestamp": "2025-10-08T07:39:13.613Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [],
+      "threadId": "thread-1759909153613",
+      "attachments": [],
+      "metadata": {
+        "ipAddress": "::1",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "sentVia": "web"
+      }
+    },
+    {
+      "id": "msg-1759909130447-o4tr18bmb",
+      "subject": "Message to 22 On Sloane",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
         "type": "user"
       },
       "cc": [],
       "bcc": [],
-      "content": "This is a test message to verify that data persistence is working correctly with the real backend/appData.json file.",
-      "timestamp": "2025-10-08T07:00:43.717Z",
+      "content": "Received",
+      "timestamp": "2025-10-08T07:38:50.447Z",
       "status": "sent",
       "priority": "normal",
       "labels": [],
-      "threadId": "thread-1759906843717",
+      "threadId": "thread-1759909130447",
       "attachments": [],
       "metadata": {
         "ipAddress": "::1",
-        "userAgent": "curl/8.7.1",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
         "sentVia": "web"
       }
     },
@@ -1385,6 +1417,70 @@
       "metadata": {
         "ipAddress": "::1",
         "userAgent": "curl/8.7.1",
+        "sentVia": "web"
+      }
+    },
+    {
+      "id": "msg-1759906843717-wl1p5qqlq",
+      "subject": "Test Message - Data Persistence",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "user2_startup_founder",
+        "email": "sarah.johnson@afritech.co.za",
+        "name": "Sarah Johnson",
+        "avatar": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff",
+        "type": "user"
+      },
+      "cc": [],
+      "bcc": [],
+      "content": "This is a test message to verify that data persistence is working correctly with the real backend/appData.json file.",
+      "timestamp": "2025-10-08T07:00:43.717Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [],
+      "threadId": "thread-1759906843717",
+      "attachments": [],
+      "metadata": {
+        "ipAddress": "::1",
+        "userAgent": "curl/8.7.1",
+        "sentVia": "web"
+      }
+    },
+    {
+      "id": "msg-1759909172035-gma6x82q5",
+      "subject": "Message to Khulekani Mncube",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+        "email": "mncubekhulekani@gmail.com",
+        "name": "Khulekani Mncube",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani%20Mncube&background=059669&color=fff",
+        "type": "startup"
+      },
+      "cc": [],
+      "bcc": [],
+      "content": "Testing",
+      "timestamp": "2025-10-08T07:39:32.035Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [],
+      "threadId": "thread-1759909172035",
+      "attachments": [],
+      "metadata": {
+        "ipAddress": "::1",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
         "sentVia": "web"
       }
     }

@@ -1,4 +1,4 @@
-// src/pages/VendorMyListings.jsx
+// src/pages/VendorMyListings.tsx
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMessages } from "../context/useMessages";
@@ -8,6 +8,57 @@ import { useAppSync } from "../context/useAppSync";
 import { api } from "../lib/api";
 import { fetchMyVendorListings } from "../lib/listings";
 import appDataLocal from "../data/appData.json";
+
+// Type definitions
+interface Listing {
+  id?: string;
+  serviceId?: string;
+  vendorId?: string;
+  title: string;
+  category?: string;
+  price?: number;
+  imageUrl?: string;
+  description?: string;
+  status?: string;
+  listingType?: string;
+}
+
+interface Booking {
+  id?: string;
+  serviceId?: string;
+  vendorId?: string;
+  customerId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  serviceTitle?: string;
+  price?: number;
+  status?: string;
+  scheduledDate?: string;
+  scheduledSlot?: string;
+  bookedAt?: string;
+}
+
+interface Vendor {
+  vendorId?: string;
+  id?: string;
+  name?: string;
+  companyName?: string;
+  email?: string;
+  contactEmail?: string;
+  isApproved?: boolean;
+  photoURL?: string;
+  avatar?: string;
+}
+
+interface FeedbackState {
+  open: boolean;
+  listing: Listing | null;
+  subject: string;
+  content: string;
+  sending: boolean;
+  err: string | null;
+  done: boolean;
+}
 
 function normalizeTenant(id?: string | null) {
   if (!id) return "public";
@@ -22,11 +73,11 @@ function makePendingKey(tenantId?: string | null, vendorHint?: string | null) {
   return `vendor_pending_listings:${tenant}:${vendor}`;
 }
 
-function listingId(entry) {
+function listingId(entry: any): string {
   return String(entry?.id || entry?.serviceId || "");
 }
 
-function parsePending(raw) {
+function parsePending(raw: any): any[] {
   try {
     const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
     return Array.isArray(parsed) ? parsed : [];
@@ -35,7 +86,7 @@ function parsePending(raw) {
   }
 }
 
-function tenantMatches(entryTenant?: string | null, currentTenant?: string | null) {
+function tenantMatches(entryTenant?: string | null, currentTenant?: string | null): boolean {
   const entry = normalizeTenant(entryTenant);
   const current = normalizeTenant(currentTenant);
   if (entry === current) return true;
@@ -44,9 +95,9 @@ function tenantMatches(entryTenant?: string | null, currentTenant?: string | nul
   return false;
 }
 
-function StatusChip({ s }) {
+function StatusChip({ s }: { s?: string }) {
   const k = (s || "unknown").toLowerCase();
-  const map = {
+  const map: Record<string, string> = {
     approved: "success",
     pending: "warning",
     rejected: "danger",
@@ -69,22 +120,30 @@ export default function VendorMyListings() {
   const { appData, appDataLoading } = useAppSync();
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
 
-  const [items, setItems] = useState([]);
-  const [bookings, setBookings] = useState([]);
+  const [items, setItems] = useState<Listing[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [err, setErr] = useState("");
-  const [feedback, setFeedback] = useState({ open: false, listing: null, subject: "", content: "", sending: false, err: null, done: false });
+  const [feedback, setFeedback] = useState<FeedbackState>({ 
+    open: false, 
+    listing: null, 
+    subject: "", 
+    content: "", 
+    sending: false, 
+    err: null, 
+    done: false 
+  });
   const pendingKey = useMemo(
-    () => makePendingKey(tenantId, vendor?.vendorId || vendor?.email || vendor?.id || ""),
-    [tenantId, vendor?.vendorId, vendor?.email, vendor?.id]
+    () => makePendingKey(tenantId, (vendor as Vendor)?.vendorId || (vendor as Vendor)?.email || (vendor as Vendor)?.id || ""),
+    [tenantId, (vendor as Vendor)?.vendorId, (vendor as Vendor)?.email, (vendor as Vendor)?.id]
   );
-  const [pendingLocal, setPendingLocal] = useState([]);
+  const [pendingLocal, setPendingLocal] = useState<Listing[]>([]);
 
   const newListingFromNav = (location.state as any)?.newListing;
 
   const persistPending = useCallback(
-    (listings) => {
+    (listings: Listing[]) => {
       setPendingLocal(listings);
       if (!pendingKey) return;
       if (!listings.length) {
@@ -140,7 +199,7 @@ export default function VendorMyListings() {
   }, [newListingFromNav, navigate, location.pathname, location.search, persistPending, pendingLocal]);
 
   const mergeLocalListings = useCallback(
-    (listings) => {
+    (listings: Listing[]) => {
       const base = Array.isArray(listings) ? [...listings] : [];
       const seen = new Set(base.map(listingId).filter(Boolean));
 
@@ -156,7 +215,7 @@ export default function VendorMyListings() {
       }
 
       if (pendingLocal.length) {
-        const remaining = [];
+        const remaining: Listing[] = [];
         pendingLocal.forEach((entry) => {
           const pid = listingId(entry);
           if (!pid) return;
@@ -180,7 +239,7 @@ export default function VendorMyListings() {
   // Redirect vendors who are not yet approved to their profile page
   useEffect(() => {
     if (!vendor) return;
-    if (!vendor.isApproved) {
+    if (!(vendor as Vendor).isApproved) {
       const next = encodeURIComponent("/listings-vendors-mine");
       navigate(`/profile-vendor?next=${next}`, { replace: true });
     }
@@ -216,11 +275,11 @@ export default function VendorMyListings() {
       const tenantKey = normalizeTenant(tenantId);
       const all = Array.isArray(liveDoc?.services) ? liveDoc.services : [];
       const allBookingsRaw = Array.isArray(liveDoc?.bookings) ? liveDoc.bookings : [];
-      const scopedBookings = allBookingsRaw.filter((b) => tenantMatches(b?.tenantId, tenantKey));
+      const scopedBookings = allBookingsRaw.filter((b: any) => tenantMatches(b?.tenantId, tenantKey));
       const vendorId = String(activeVendor?.vendorId || "");
       const email = String(activeVendor?.email || activeVendor?.contactEmail || "").toLowerCase();
       const name = String(activeVendor?.name || activeVendor?.companyName || "").toLowerCase();
-      const mine = all.filter((s) => {
+      const mine = all.filter((s: any) => {
         const sameTenant = tenantMatches(s?.tenantId, tenantKey);
         if (!sameTenant) return false;
         const sid = String(s.vendorId || "");
@@ -234,10 +293,10 @@ export default function VendorMyListings() {
 
       const idSet = new Set(
         mine
-          .flatMap((s) => [String(s.id || ""), String(s.serviceId || ""), String(s.vendorId || "")])
+          .flatMap((s: any) => [String(s.id || ""), String(s.serviceId || ""), String(s.vendorId || "")])
           .filter(Boolean)
       );
-      const bookingsForVendor = scopedBookings.filter((b) => {
+      const bookingsForVendor = scopedBookings.filter((b: any) => {
         const sid = String(b.serviceId || "");
         const vendorMatch = vendorId && String(b.vendorId || "") === vendorId;
         const emailMatch = email && String(b.vendorEmail || "").toLowerCase() === email;
@@ -260,7 +319,7 @@ export default function VendorMyListings() {
       markBusy(true);
       setErr("");
 
-      let activeVendorRef = vendor;
+      let activeVendorRef: any = vendor;
       try {
         if (signal?.aborted) return;
         if (vendorLoading && !vendor) return;
@@ -271,7 +330,7 @@ export default function VendorMyListings() {
           return;
         }
 
-        const ensured = ensureVendorId ? await ensureVendorId() : vendor;
+        const ensured = ensureVendorId ? await (ensureVendorId as any)() : vendor;
         if (signal?.aborted) return;
         activeVendorRef = ensured || vendor;
         if (!activeVendorRef) {
@@ -337,8 +396,11 @@ export default function VendorMyListings() {
   }, [loadListings]);
 
   const counts = useMemo(() => {
-    const c = { approved: 0, pending: 0, rejected: 0 };
-    items.forEach((i) => (c[(i.status || "pending").toLowerCase()] ||= 0, c[(i.status || "pending").toLowerCase()]++));
+    const c: Record<string, number> = { approved: 0, pending: 0, rejected: 0 };
+    items.forEach((i) => {
+      const status = (i.status || "pending").toLowerCase();
+      c[status] = (c[status] || 0) + 1;
+    });
     return c;
   }, [items]);
 
@@ -409,7 +471,7 @@ export default function VendorMyListings() {
     };
   }
 
-  function handleDuplicate(i) {
+  function handleDuplicate(i: Listing) {
     // Prefill the vendor form from this listing
     const prefill = encodeURIComponent(
       JSON.stringify({
@@ -424,37 +486,57 @@ export default function VendorMyListings() {
     navigate(`/listings-vendors?prefill=${prefill}`);
   }
 
-  function openFeedback(i) {
+  function openFeedback(i: Listing) {
     const subj = `Feedback request: ${i.title}`;
     const body = `Hello Admin\n\nMy listing "${i.title}" (ID: ${i.id}) was ${String(i.status || 'rejected')}. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!`;
     setFeedback({ open: true, listing: i, subject: subj, content: body, sending: false, err: null, done: false });
   }
+  
+  function openGeneralFeedback() {
+    const subj = `General inquiry from ${(vendor as Vendor)?.name || (vendor as Vendor)?.companyName || 'vendor'}`;
+    const body = `Hello Admin\n\nI have a question/concern regarding my vendor account or listings.\n\n[Please describe your question or concern here]\n\nThank you for your assistance!`;
+    setFeedback({ open: true, listing: null, subject: subj, content: body, sending: false, err: null, done: false });
+  }
+  
   function closeFeedback() {
     setFeedback({ open: false, listing: null, subject: "", content: "", sending: false, err: null, done: false });
   }
-  async function sendFeedback(e) {
+  async function sendFeedback(e: any) {
     e?.preventDefault?.();
-    if (!feedback.listing || !feedback.content.trim()) return;
+    if (!feedback.content.trim()) return;
     setFeedback((f) => ({ ...f, sending: true, err: null }));
     try {
-      await api.post(`/api/messages`, {
-        listingId: feedback.listing.id,
-        listingTitle: feedback.listing.title,
-        vendorId: vendor?.vendorId || "",
-        vendorEmail: vendor?.email || "",
+      const messageData: any = {
         subject: feedback.subject,
         content: feedback.content,
-      });
+        priority: "normal"
+      };
+      
+      // If this is feedback about a specific listing, include listing details
+      if (feedback.listing) {
+        messageData.listingId = (feedback.listing as any).id;
+        messageData.listingTitle = (feedback.listing as any).title;
+        messageData.vendorId = (vendor as any)?.vendorId || "";
+        messageData.vendorEmail = (vendor as any)?.email || "";
+      } else {
+        // For general feedback, use the new messaging API directly
+        messageData.to = "admin@22onsloane.co"; // Send to admin
+      }
+      
+      await api.post(`/api/messages`, messageData);
       setFeedback((f) => ({ ...f, sending: false, done: true }));
-      try { await refreshMessages({ force: true }); await syncMessagesToLive(); } catch {}
+      try { 
+        await (refreshMessages as any)({ force: true }); 
+        await (syncMessagesToLive as any)(); 
+      } catch {}
       setTimeout(() => closeFeedback(), 1200);
-    } catch (e) {
+    } catch (e: any) {
       setFeedback((f) => ({ ...f, sending: false, err: e?.response?.data?.message || e?.message || "Failed to send" }));
     }
   }
 
   return (
-    <MasterLayout activeRoute="/listings-vendors-mine" pageTitle="My listings">
+    <MasterLayout>
       <div className="container py-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h1 className="h4 mb-0">My listings</h1>
@@ -466,6 +548,15 @@ export default function VendorMyListings() {
               disabled={loading || refreshing || appDataLoading}
             >
               {refreshing || appDataLoading ? "Refreshing…" : "Refresh"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline-primary"
+              onClick={() => openGeneralFeedback()}
+              title="Contact admin about any questions or concerns"
+            >
+              <i className="bi bi-envelope me-1"></i>
+              Message Admin
             </button>
             <Link to="/listings-vendors" className="btn btn-primary">
               + Submit new listing
@@ -527,7 +618,7 @@ export default function VendorMyListings() {
                           {/* If you have a details page, point to it here */}
                           <Link
                             className="btn btn-outline-secondary btn-sm"
-                            to={`/marketplace-details?id=${encodeURIComponent(i.id)}`}
+                            to={`/marketplace-details?id=${encodeURIComponent(i.id || "")}`}
                           >
                             View
                           </Link>
@@ -639,7 +730,7 @@ export default function VendorMyListings() {
                   <div className="mb-2">
                     <label className="form-label">Message</label>
                     <textarea className="form-control" rows={6} value={feedback.content} onChange={(e) => setFeedback((f)=>({ ...f, content: e.target.value }))} />
-                    <div className="text-secondary small mt-1">Sent as {vendor?.email || "you"}</div>
+                    <div className="text-secondary small mt-1">Sent as {(vendor as Vendor)?.email || "you"}</div>
                   </div>
                 </div>
                 <div className="card-footer d-flex justify-content-end gap-2">

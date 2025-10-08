@@ -23,26 +23,6 @@
       "bookedAt": "2024-07-28T10:00:00Z",
       "status": "pending",
       "id": "iqEZWAsptu7ygSTQOAij"
-    },
-    {
-      "id": "cbb78e9d-6349-46c3-aa18-b1f03b452f4c",
-      "subscriptionId": "20c66dd3-69e2-4a6a-ab16-ac34fa08d7ef",
-      "serviceId": "memubqft-fcmcw1",
-      "serviceTitle": "Scalable Web App Development",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "vendorName": "22 On Sloane",
-      "vendorEmail": "khulekani@22onsloane.co",
-      "customerId": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "customerName": "22onsloanedigitalteam",
-      "customerEmail": "22onsloanedigitalteam@gmail.com",
-      "tenantId": "public",
-      "price": 42000,
-      "scheduledDate": "2025-10-25",
-      "scheduledSlot": "11:00",
-      "bookedAt": "2025-10-03T13:03:04.976Z",
-      "status": "canceled",
-      "updatedAt": "2025-10-04T04:34:48.310Z",
-      "canceledAt": "2025-10-04T04:34:48.310Z"
     }
   ],
   "cohorts": [
@@ -1145,7 +1125,411 @@
       "id": "S7fXbqndXNTAMRHzKuPw"
     }
   ],
-  "messageThreads": [],
+  "messageThreads": [
+    {
+      "id": "tmghoivn7",
+      "subject": "Feedback request: Testing New Saas Listing",
+      "participants": [
+        {
+          "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+          "name": "22OnSloane Digital Team",
+          "role": "Vendor"
+        },
+        {
+          "id": "admin",
+          "name": "Admin",
+          "role": "Admin"
+        }
+      ],
+      "participantIds": [
+        "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+        "admin",
+        "vendor:22onsloanedigitalteam@gmail.com"
+      ],
+      "messages": [
+        {
+          "id": "m1759909244083",
+          "senderId": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+          "senderName": "22OnSloane Digital Team",
+          "senderAvatar": "",
+          "senderRole": "Vendor",
+          "content": "Hello Admin\n\nMy listing \"Testing New Saas Listing\" (ID: mewcr2ki-ocdatn) was rejected. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!",
+          "date": "2025-10-08T07:40:44.083Z"
+        }
+      ],
+      "read": false,
+      "context": {
+        "type": "listing-feedback",
+        "listingId": "mewcr2ki-ocdatn",
+        "listingTitle": "Testing New Saas Listing",
+        "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "vendorEmail": "22onsloanedigitalteam@gmail.com"
+      },
+      "tenantId": "public",
+      "lastMessage": {
+        "snippet": "Hello Admin\n\nMy listing \"Testing New Saas Listing\" (ID: mewcr2ki-ocdatn) was rejected. Could you please share more details on what needs to be corrected so I ca",
+        "date": "2025-10-08T07:40:44.083Z"
+      }
+    },
+    {
+      "id": "msg-1728394200005",
+      "subject": "[ANNOUNCEMENT] Platform Maintenance Scheduled",
+      "from": {
+        "uid": "system",
+        "email": "system@22onsloane.co",
+        "name": "System Announcement",
+        "avatar": "https://ui-avatars.com/api/?name=System&background=dc2626&color=fff",
+        "type": "system"
+      },
+      "to": {
+        "email": "sarah.johnson@afritech.co.za",
+        "name": "Sarah Johnson",
+        "avatar": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff"
+      },
+      "content": "Dear 22 On Sloane Community, We will be performing scheduled maintenance on our platform this Sunday, October 13th, from 2:00 AM to 6:00 AM SAST. During this time, the platform may be temporarily unavailable. We apologize for any inconvenience and appreciate your patience as we work to improve your experience.",
+      "timestamp": "2025-10-08T16:00:00Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [
+        "announcement",
+        "maintenance",
+        "system"
+      ],
+      "threadId": "announcement-maintenance-sarah",
+      "isAnnouncement": true,
+      "attachments": [],
+      "metadata": {
+        "sentVia": "admin-panel",
+        "targetAudience": "all",
+        "announcementId": "ann-1728394200005"
+      }
+    },
+    {
+      "id": "msg-1728394200004",
+      "subject": "Partnership Opportunity",
+      "from": {
+        "uid": "user5_partner_mentor",
+        "email": "james.williams@mentornetwork.co.za",
+        "name": "James Williams",
+        "avatar": "https://ui-avatars.com/api/?name=James+Williams&background=1e40af&color=fff",
+        "type": "partner"
+      },
+      "to": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "content": "Hi Khulekani, I hope this message finds you well. I wanted to reach out about a potential partnership opportunity between Mentor Network and 22 On Sloane. We have a network of experienced mentors who could provide valuable guidance to startups in your incubator. Would you be interested in discussing how we can collaborate to support the entrepreneurial ecosystem in South Africa?",
+      "timestamp": "2025-10-08T14:45:00Z",
+      "status": "unread",
+      "priority": "normal",
+      "labels": [
+        "partnership",
+        "mentorship",
+        "collaboration"
+      ],
+      "threadId": "thread-james-partnership",
+      "attachments": [],
+      "metadata": {
+        "sentVia": "web",
+        "organizationType": "mentor-network"
+      }
+    },
+    {
+      "id": "msg-1728394200003",
+      "subject": "Re: Service Inquiry: Logo Design",
+      "from": {
+        "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "email": "22onsloanedigitalteam@gmail.com",
+        "name": "22 On Sloane Digital Team",
+        "avatar": "https://ui-avatars.com/api/?name=22+On+Sloane+Digital+Team&background=1e40af&color=fff",
+        "type": "vendor"
+      },
+      "to": {
+        "uid": "user3_tech_entrepreneur",
+        "email": "david.chen@finconnect.africa",
+        "name": "David Chen",
+        "avatar": "https://ui-avatars.com/api/?name=David+Chen&background=dc2626&color=fff",
+        "type": "user"
+      },
+      "content": "Hi David! Thank you for your interest in our Logo & Brand Identity Pack. We'd love to help create a strong brand identity for your fintech startup. I've available for a consultation tomorrow at 2 PM or Thursday at 10 AM. Our package includes logo design, brand guidelines, business card design, and letterhead. The process typically takes 5-7 business days. Looking forward to hearing from you!",
+      "timestamp": "2025-10-08T12:15:00Z",
+      "status": "unread",
+      "priority": "high",
+      "labels": [
+        "reply",
+        "consultation",
+        "logo-design"
+      ],
+      "threadId": "thread-david-logo-inquiry",
+      "parentMessageId": "msg-1728394200002",
+      "attachments": [],
+      "metadata": {
+        "sentVia": "web",
+        "serviceId": "1"
+      }
+    },
+    {
+      "id": "msg-1728394200002",
+      "subject": "Service Inquiry: Logo Design",
+      "from": {
+        "uid": "user3_tech_entrepreneur",
+        "email": "david.chen@finconnect.africa",
+        "name": "David Chen",
+        "avatar": "https://ui-avatars.com/api/?name=David+Chen&background=dc2626&color=fff",
+        "type": "user"
+      },
+      "to": {
+        "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "email": "22onsloanedigitalteam@gmail.com",
+        "name": "22 On Sloane Digital Team",
+        "avatar": "https://ui-avatars.com/api/?name=22+On+Sloane+Digital+Team&background=1e40af&color=fff",
+        "type": "vendor"
+      },
+      "content": "Hi there! I'm interested in your Logo & Brand Identity Pack service. My fintech startup needs a professional brand identity that appeals to the African market. Could we schedule a consultation to discuss our specific requirements and timeline?",
+      "timestamp": "2025-10-08T10:30:00Z",
+      "status": "read",
+      "priority": "high",
+      "labels": [
+        "inquiry",
+        "logo-design",
+        "consultation"
+      ],
+      "threadId": "thread-david-logo-inquiry",
+      "attachments": [],
+      "metadata": {
+        "sentVia": "web",
+        "serviceId": "1"
+      }
+    },
+    {
+      "id": "msg-1728394200001",
+      "subject": "Welcome to 22 On Sloane Hub",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "user2_startup_founder",
+        "email": "sarah.johnson@afritech.co.za",
+        "name": "Sarah Johnson",
+        "avatar": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff",
+        "type": "user"
+      },
+      "content": "Welcome to the 22 On Sloane marketplace! We're excited to have you as part of our community. Here you can connect with other entrepreneurs, access services, and grow your startup. If you have any questions, don't hesitate to reach out.",
+      "timestamp": "2025-10-08T09:00:00Z",
+      "status": "unread",
+      "priority": "normal",
+      "labels": [
+        "welcome",
+        "onboarding"
+      ],
+      "threadId": "thread-welcome-sarah",
+      "attachments": [],
+      "metadata": {
+        "sentVia": "admin-panel",
+        "ipAddress": "192.168.1.1"
+      }
+    },
+    {
+      "id": "msg-1728394200006",
+      "subject": "Startup Showcase Application",
+      "from": {
+        "uid": "user4_social_entrepreneur",
+        "email": "maria.santos@impactventures.co.za",
+        "name": "Maria Santos",
+        "avatar": "https://ui-avatars.com/api/?name=Maria+Santos&background=7c2d12&color=fff",
+        "type": "user"
+      },
+      "to": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "content": "Hello Khulekani, I hope you're doing well. I'm writing to inquire about the upcoming startup showcase event. Impact Ventures would love to participate and present our social impact solutions to the investor panel. Our startup focuses on sustainable agriculture technology for small-scale farmers in rural areas. Could you please share the application process and deadline for submissions?",
+      "timestamp": "2025-10-08T08:20:00Z",
+      "status": "read",
+      "priority": "high",
+      "labels": [
+        "showcase",
+        "application",
+        "social-impact"
+      ],
+      "threadId": "thread-maria-showcase",
+      "attachments": [],
+      "metadata": {
+        "sentVia": "web",
+        "eventType": "startup-showcase"
+      }
+    },
+    {
+      "id": "msg-1759909153613-4cmi3hz7m",
+      "subject": "Message to 22 On Sloane",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "email": "22onsloanedigitalteam@gmail.com",
+        "name": "22 On Sloane",
+        "avatar": "https://ui-avatars.com/api/?name=22%20On%20Sloane&background=059669&color=fff",
+        "type": "vendor"
+      },
+      "cc": [],
+      "bcc": [],
+      "content": "Testing",
+      "timestamp": "2025-10-08T07:39:13.613Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [],
+      "threadId": "thread-1759909153613",
+      "attachments": [],
+      "metadata": {
+        "ipAddress": "::1",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "sentVia": "web"
+      }
+    },
+    {
+      "id": "msg-1759909130447-o4tr18bmb",
+      "subject": "Message to 22 On Sloane",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "user"
+      },
+      "cc": [],
+      "bcc": [],
+      "content": "Received",
+      "timestamp": "2025-10-08T07:38:50.447Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [],
+      "threadId": "thread-1759909130447",
+      "attachments": [],
+      "metadata": {
+        "ipAddress": "::1",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "sentVia": "web"
+      }
+    },
+    {
+      "id": "msg-1759907938072-wtwf3hh7h",
+      "subject": "Test Integration Message",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "user"
+      },
+      "cc": [],
+      "bcc": [],
+      "content": "This is a test message to verify the messaging system integration is working properly.",
+      "timestamp": "2025-10-08T07:18:58.072Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [],
+      "threadId": "thread-1759907938072",
+      "attachments": [],
+      "metadata": {
+        "ipAddress": "::1",
+        "userAgent": "curl/8.7.1",
+        "sentVia": "web"
+      }
+    },
+    {
+      "id": "msg-1759906843717-wl1p5qqlq",
+      "subject": "Test Message - Data Persistence",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "user2_startup_founder",
+        "email": "sarah.johnson@afritech.co.za",
+        "name": "Sarah Johnson",
+        "avatar": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff",
+        "type": "user"
+      },
+      "cc": [],
+      "bcc": [],
+      "content": "This is a test message to verify that data persistence is working correctly with the real backend/appData.json file.",
+      "timestamp": "2025-10-08T07:00:43.717Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [],
+      "threadId": "thread-1759906843717",
+      "attachments": [],
+      "metadata": {
+        "ipAddress": "::1",
+        "userAgent": "curl/8.7.1",
+        "sentVia": "web"
+      }
+    },
+    {
+      "id": "msg-1759909172035-gma6x82q5",
+      "subject": "Message to Khulekani Mncube",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+        "email": "mncubekhulekani@gmail.com",
+        "name": "Khulekani Mncube",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani%20Mncube&background=059669&color=fff",
+        "type": "startup"
+      },
+      "cc": [],
+      "bcc": [],
+      "content": "Testing",
+      "timestamp": "2025-10-08T07:39:32.035Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [],
+      "threadId": "thread-1759909172035",
+      "attachments": [],
+      "metadata": {
+        "ipAddress": "::1",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "sentVia": "web"
+      }
+    }
+  ],
   "services": [
     {
       "id": "1",
@@ -2704,188 +3088,7 @@
       "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "tenantId": "public",
       "createdAt": "2025-09-17T11:51:09.146Z"
-    },
-    {
-      "id": "20c66dd3-69e2-4a6a-ab16-ac34fa08d7ef",
-      "type": "service",
-      "serviceId": "memubqft-fcmcw1",
-      "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "email": "22onsloanedigitalteam@gmail.com",
-      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "tenantId": "public",
-      "createdAt": "2025-10-03T13:03:04.976Z",
-      "scheduledDate": "2025-10-25",
-      "scheduledSlot": "11:00",
-      "canceledAt": "2025-10-04T04:34:48.310Z"
     }
   ],
-  "wallets": [
-    {
-      "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
-      "version": 1,
-      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "email": "22onsloanedigitalteam@gmail.com",
-      "tenantId": "vendor",
-      "role": "member",
-      "balance": 208000,
-      "startingBalance": 200000,
-      "transactions": [
-        {
-          "id": "c949df9b-8e39-48d6-b024-fa6435ede87f",
-          "type": "credit",
-          "amount": 50000,
-          "description": "Admin credit",
-          "balanceAfter": 208000,
-          "createdAt": "2025-10-04T11:43:09.355Z",
-          "reference": null,
-          "metadata": {
-            "source": "admin-grant"
-          }
-        },
-        {
-          "id": "348bac7c-7d85-479d-bffa-ecc16a1941b3",
-          "type": "debit",
-          "amount": 42000,
-          "description": "Listing booking: Scalable Web App Development",
-          "balanceAfter": 158000,
-          "createdAt": "2025-10-03T13:03:04.996Z",
-          "reference": "listing-memubqft-fcmcw1",
-          "metadata": {
-            "serviceId": "memubqft-fcmcw1",
-            "vendor": "22 On Sloane",
-            "category": "Tech & Programming",
-            "scheduledDate": "2025-10-25",
-            "scheduledSlot": "11:00",
-            "source": "dashboard-trending-booking"
-          }
-        },
-        {
-          "id": "94e5ee73-266f-42be-85a4-ff0d2a2a63bd",
-          "type": "credit",
-          "amount": 200000,
-          "description": "Initial voucher allocation",
-          "balanceAfter": 200000,
-          "createdAt": "2025-10-03T12:55:54.968Z",
-          "reference": "initial-credit",
-          "metadata": {
-            "reason": "auto-allocation",
-            "role": "member"
-          }
-        }
-      ],
-      "lastUpdated": "2025-10-04T11:43:09.355Z"
-    },
-    {
-      "id": "vendor:mncubekhulekani@gmail.com",
-      "version": 1,
-      "uid": "mncubekhulekani@gmail.com",
-      "email": "mncubekhulekani@gmail.com",
-      "tenantId": "vendor",
-      "role": "member",
-      "balance": 50000,
-      "startingBalance": 5000,
-      "transactions": [
-        {
-          "id": "9e2671af-aa0d-4984-a5e5-54ea350aa3d4",
-          "type": "credit",
-          "amount": 45000,
-          "description": "Admin credit",
-          "reference": null,
-          "metadata": {
-            "source": "admin-grant"
-          },
-          "createdAt": "2025-10-04T11:50:42.745Z",
-          "balanceAfter": 50000
-        },
-        {
-          "id": "81dc7240-095f-424b-aac2-e8da8acd7bc7",
-          "type": "credit",
-          "amount": 5000,
-          "description": "Admin credit",
-          "balanceAfter": 5000,
-          "createdAt": "2025-10-04T11:41:54.469Z",
-          "reference": null,
-          "metadata": {
-            "source": "admin-grant"
-          }
-        }
-      ],
-      "lastUpdated": "2025-10-04T11:50:42.745Z"
-    },
-    {
-      "id": "vendor:ruthmaphosa2024@gmail.com",
-      "version": 1,
-      "uid": "ruthmaphosa2024@gmail.com",
-      "email": "ruthmaphosa2024@gmail.com",
-      "tenantId": "vendor",
-      "role": "member",
-      "balance": 50000,
-      "startingBalance": 50000,
-      "transactions": [
-        {
-          "id": "da2a2ad1-4b8a-46fe-93a9-5825af3dd2cd",
-          "type": "credit",
-          "amount": 50000,
-          "description": "Admin credit",
-          "reference": null,
-          "metadata": {
-            "source": "admin-grant"
-          },
-          "createdAt": "2025-10-04T11:42:23.386Z",
-          "balanceAfter": 50000
-        }
-      ],
-      "lastUpdated": "2025-10-04T11:42:23.386Z"
-    },
-    {
-      "id": "vendor:zinhlesloane@gmail.com",
-      "version": 1,
-      "uid": "zinhlesloane@gmail.com",
-      "email": "zinhlesloane@gmail.com",
-      "tenantId": "vendor",
-      "role": "member",
-      "balance": 50000,
-      "startingBalance": 50000,
-      "transactions": [
-        {
-          "id": "abc14105-fb92-4fe2-a92d-cacc88a1dbcc",
-          "type": "credit",
-          "amount": 50000,
-          "description": "Admin credit",
-          "reference": null,
-          "metadata": {
-            "source": "admin-grant"
-          },
-          "createdAt": "2025-10-04T11:46:29.605Z",
-          "balanceAfter": 50000
-        }
-      ],
-      "lastUpdated": "2025-10-04T11:46:29.605Z"
-    },
-    {
-      "id": "vendor:khulekani@gecafrica.co",
-      "version": 1,
-      "uid": "khulekani@gecafrica.co",
-      "email": "khulekani@gecafrica.co",
-      "tenantId": "vendor",
-      "role": "member",
-      "balance": 50000,
-      "startingBalance": 50000,
-      "transactions": [
-        {
-          "id": "953132e0-368f-4261-bb42-d76ed9049916",
-          "type": "credit",
-          "amount": 50000,
-          "description": "Admin credit",
-          "reference": null,
-          "metadata": {
-            "source": "admin-grant"
-          },
-          "createdAt": "2025-10-04T11:46:50.134Z",
-          "balanceAfter": 50000
-        }
-      ],
-      "lastUpdated": "2025-10-04T11:46:50.134Z"
-    }
-  ]
+  "wallets": []
 }

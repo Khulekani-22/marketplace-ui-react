@@ -1,0 +1,1 @@
+import{j as s}from"./index-C1K-Ttoc.js";import{M as r}from"./MasterLayout-2IldCL2c.js";import{B as t}from"./Breadcrumb-Y9hUuaca.js";import{M as e}from"./MessagingSystem-CQicrl4o.js";import"./iconify-CXWIXv_s.js";const a=()=>s.jsx(e,{}),g=()=>s.jsx(s.Fragment,{children:s.jsxs(r,{children:[s.jsx(t,{title:"Chat Message"}),s.jsx(a,{})]})});export{g as default};
