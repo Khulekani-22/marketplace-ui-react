@@ -68,3 +68,13 @@
 [0mGET /api/messages?limit=100 [32m200[0m 0.181 ms - 10763[0m
 [0mGET /api/messages/conversation?user1=khulekani@22onsloane.co&user2=22onsloanedigitalteam@gmail.com [32m200[0m 0.526 ms - 950[0m
 [0mGET /api/messages/conversation?user1=khulekani@22onsloane.co&user2=khulekani@22onsloane.co [32m200[0m 0.518 ms - 1774[0m
+[0mGET /api/messages/contacts [36m304[0m 0.550 ms - -[0m
+[0mGET /api/me [36m304[0m 0.105 ms - -[0m
+[0mGET /api/messages?limit=100 [32m200[0m 0.310 ms - 10763[0m
+[0mGET /api/messages/conversation?user1=khulekani@22onsloane.co&user2=ruthmaphosa2024@gmail.com [36m304[0m 0.377 ms - -[0m
+[0mGET /api/me [36m304[0m 0.099 ms - -[0m
+[0mGET /api/messages/contacts [36m304[0m 0.064 ms - -[0m
+[0mGET /api/messages?limit=100 [32m200[0m 0.108 ms - 10763[0m
+[0mGET /api/me [36m304[0m 0.547 ms - -[0m
+[0mGET /api/messages/contacts [36m304[0m 0.264 ms - -[0m
+[0mGET /api/messages?limit=100 [32m200[0m 0.234 ms - 10763[0m

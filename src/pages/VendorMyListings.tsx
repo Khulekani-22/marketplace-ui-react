@@ -506,22 +506,15 @@ export default function VendorMyListings() {
     if (!feedback.content.trim()) return;
     setFeedback((f) => ({ ...f, sending: true, err: null }));
     try {
+      // Prepare message data in the format expected by the backend routes
       const messageData: any = {
+        listingId: feedback.listing ? (feedback.listing as any).id || "general" : "general-admin-message",
+        listingTitle: feedback.listing ? (feedback.listing as any).title || "General Feedback" : "General Admin Message",
+        vendorId: (vendor as any)?.vendorId || (vendor as any)?.id || "",
+        vendorEmail: (vendor as any)?.email || (vendor as any)?.contactEmail || "",
         subject: feedback.subject,
-        content: feedback.content,
-        priority: "normal"
+        content: feedback.content
       };
-      
-      // If this is feedback about a specific listing, include listing details
-      if (feedback.listing) {
-        messageData.listingId = (feedback.listing as any).id;
-        messageData.listingTitle = (feedback.listing as any).title;
-        messageData.vendorId = (vendor as any)?.vendorId || "";
-        messageData.vendorEmail = (vendor as any)?.email || "";
-      } else {
-        // For general feedback, use the new messaging API directly
-        messageData.to = "admin@22onsloane.co"; // Send to admin
-      }
       
       await api.post(`/api/messages`, messageData);
       setFeedback((f) => ({ ...f, sending: false, done: true }));
@@ -712,11 +705,16 @@ export default function VendorMyListings() {
             )}
           </div>
         </div>
-        {feedback.open && feedback.listing && (
+        {feedback.open && (
           <div className="position-fixed top-0 start-0 w-100 h-100" style={{ background: "rgba(0,0,0,0.5)", zIndex: 1070 }} onClick={(e) => e.target === e.currentTarget && closeFeedback()}>
             <div className="card" style={{ maxWidth: 560, margin: "10vh auto" }}>
               <div className="card-header d-flex align-items-center justify-content-between">
-                <h6 className="mb-0">Message Admin about: {feedback.listing.title}</h6>
+                <h6 className="mb-0">
+                  {feedback.listing 
+                    ? `Message Admin about: ${feedback.listing.title}`
+                    : "Message Admin"
+                  }
+                </h6>
                 <button className="btn btn-sm btn-outline-secondary" onClick={closeFeedback}>Close</button>
               </div>
               <form onSubmit={sendFeedback}>

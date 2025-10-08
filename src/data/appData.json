@@ -1127,8 +1127,8 @@
   ],
   "messageThreads": [
     {
-      "id": "tmghoivn7",
-      "subject": "Feedback request: Testing New Saas Listing",
+      "id": "tmghp8lux",
+      "subject": "Feedback request: Financial analysis consultation",
       "participants": [
         {
           "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
@@ -1148,27 +1148,72 @@
       ],
       "messages": [
         {
-          "id": "m1759909244083",
+          "id": "m1759910444457",
           "senderId": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
           "senderName": "22OnSloane Digital Team",
           "senderAvatar": "",
           "senderRole": "Vendor",
-          "content": "Hello Admin\n\nMy listing \"Testing New Saas Listing\" (ID: mewcr2ki-ocdatn) was rejected. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!",
-          "date": "2025-10-08T07:40:44.083Z"
+          "content": "Hello Admin\n\nMy listing \"Financial analysis consultation\" (ID: mf6s58mu-616wi6) was rejected. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!",
+          "date": "2025-10-08T08:00:44.457Z"
         }
       ],
       "read": false,
       "context": {
         "type": "listing-feedback",
-        "listingId": "mewcr2ki-ocdatn",
-        "listingTitle": "Testing New Saas Listing",
+        "listingId": "mf6s58mu-616wi6",
+        "listingTitle": "Financial analysis consultation",
         "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
         "vendorEmail": "22onsloanedigitalteam@gmail.com"
       },
       "tenantId": "public",
       "lastMessage": {
-        "snippet": "Hello Admin\n\nMy listing \"Testing New Saas Listing\" (ID: mewcr2ki-ocdatn) was rejected. Could you please share more details on what needs to be corrected so I ca",
-        "date": "2025-10-08T07:40:44.083Z"
+        "snippet": "Hello Admin\n\nMy listing \"Financial analysis consultation\" (ID: mf6s58mu-616wi6) was rejected. Could you please share more details on what needs to be corrected ",
+        "date": "2025-10-08T08:00:44.457Z"
+      }
+    },
+    {
+      "id": "tmghp82av",
+      "subject": "General inquiry from 22 On Sloane",
+      "participants": [
+        {
+          "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+          "name": "22OnSloane Digital Team",
+          "role": "Vendor"
+        },
+        {
+          "id": "admin",
+          "name": "Admin",
+          "role": "Admin"
+        }
+      ],
+      "participantIds": [
+        "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+        "admin",
+        "vendor:22onsloanedigitalteam@gmail.com"
+      ],
+      "messages": [
+        {
+          "id": "m1759910419111",
+          "senderId": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+          "senderName": "22OnSloane Digital Team",
+          "senderAvatar": "",
+          "senderRole": "Vendor",
+          "content": "Hello Admin\n\nI have a question/concern regarding my vendor account or listings.\n\n[Please describe your question or concern here]\n\nThank you for your assistance!",
+          "date": "2025-10-08T08:00:19.111Z"
+        }
+      ],
+      "read": false,
+      "context": {
+        "type": "listing-feedback",
+        "listingId": "general-admin-message",
+        "listingTitle": "General Admin Message",
+        "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "vendorEmail": "22onsloanedigitalteam@gmail.com"
+      },
+      "tenantId": "public",
+      "lastMessage": {
+        "snippet": "Hello Admin\n\nI have a question/concern regarding my vendor account or listings.\n\n[Please describe your question or concern here]\n\nThank you for your assistance!",
+        "date": "2025-10-08T08:00:19.111Z"
       }
     },
     {
@@ -3090,5 +3135,32 @@
       "createdAt": "2025-09-17T11:51:09.146Z"
     }
   ],
-  "wallets": []
+  "wallets": [
+    {
+      "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+      "version": 1,
+      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "email": "22onsloanedigitalteam@gmail.com",
+      "tenantId": "vendor",
+      "role": "member",
+      "balance": 200000,
+      "startingBalance": 200000,
+      "transactions": [
+        {
+          "id": "bd475d30-44b7-49c5-a9f7-f8f6dedee643",
+          "type": "credit",
+          "amount": 200000,
+          "description": "Initial voucher allocation",
+          "balanceAfter": 200000,
+          "createdAt": "2025-10-08T07:58:15.191Z",
+          "reference": "initial-credit",
+          "metadata": {
+            "reason": "auto-allocation",
+            "role": "member"
+          }
+        }
+      ],
+      "lastUpdated": "2025-10-08T07:58:15.191Z"
+    }
+  ]
 }
