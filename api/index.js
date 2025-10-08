@@ -1526,6 +1526,58 @@ app.get("/api/users", (req, res) => {
   res.json({ users, total: users.length });
 });
 
+// Update user role/tenant (grant admin functionality)
+app.post("/api/users", (req, res) => {
+  try {
+    const { email, tenantId = "public", role = "member", uid = "" } = req.body || {};
+    
+    if (!email) {
+      return res.status(400).json({ error: "Missing email" });
+    }
+    
+    const normalizedEmail = email.trim().toLowerCase();
+    
+    // Load current data
+    let data = getAppData();
+    const users = Array.isArray(data.users) ? [...data.users] : [];
+    
+    // Find existing user or create new one
+    const existingIndex = users.findIndex(u => 
+      (u.email || "").toLowerCase() === normalizedEmail
+    );
+    
+    const updatedUser = {
+      email: normalizedEmail,
+      tenantId,
+      role,
+      ...(uid ? { uid } : {}),
+      ...(existingIndex >= 0 ? users[existingIndex] : {}),
+      // Override with new values
+      email: normalizedEmail,
+      tenantId,
+      role
+    };
+    
+    if (existingIndex >= 0) {
+      users[existingIndex] = updatedUser;
+    } else {
+      users.push(updatedUser);
+    }
+    
+    // Update the data
+    data.users = users;
+    
+    // In a real application, you would save this to a database
+    // For now, just return success
+    console.log(`✅ Updated user: ${normalizedEmail} -> role: ${role}, tenant: ${tenantId}`);
+    
+    res.json({ ok: true, users: data.users });
+  } catch (error) {
+    console.error("❌ Error updating user:", error);
+    res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
 // Admin endpoints
 app.get("/api/admin/stats", (req, res) => {
   const data = getAppData();
