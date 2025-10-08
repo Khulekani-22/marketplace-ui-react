@@ -828,7 +828,7 @@
       "time": "17:30  - 19:00 SAST",
       "location": "Cnr Winnie Mandela Drive and Sloane Street, Bryanston, 2191, Johannesburg, South Africa",
       "locationUrl": "",
-      "description": "Startup Huddle: From Start to Scale \u2013 Building a Strong Foundation, is a bold and new monthly series hosted at 22 On Sloane, where alumni and resident founders come together to share what they\u2019re building, the challenges they\u2019re facing, and get real-time feedback from their peers and ecosystem mentors.\n\n \n\nEach session features two entrepreneurs who take us behind the scenes of their startup journey \u2014 offering an unfiltered look into the ups and downs of building a business. Through live input and community discussion, the goal is to learn together, grow together, and build stronger foundations for our ventures.\n\nEach edition of Startup Huddle will feature a different theme \u2014 keeping the format fresh, relevant, and driven by the needs of our founder community.",
+      "description": "Startup Huddle: From Start to Scale – Building a Strong Foundation, is a bold and new monthly series hosted at 22 On Sloane, where alumni and resident founders come together to share what they’re building, the challenges they’re facing, and get real-time feedback from their peers and ecosystem mentors.\n\n \n\nEach session features two entrepreneurs who take us behind the scenes of their startup journey — offering an unfiltered look into the ups and downs of building a business. Through live input and community discussion, the goal is to learn together, grow together, and build stronger foundations for our ventures.\n\nEach edition of Startup Huddle will feature a different theme — keeping the format fresh, relevant, and driven by the needs of our founder community.",
       "aiHint": "Business Networking Event",
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/07/Website-Banner-StartUp-Huddles-01.png",
       "id": "7D2QetgCDGTUefaouDag"
@@ -868,7 +868,7 @@
       "time": "18:00 onwards",
       "location": "Workshop17, V&A Waterfront, Cape Town",
       "locationUrl": "https://maps.google.com/?q=Workshop17+V%26A+Waterfront",
-      "description": "An exclusive, in-person networking event for startup founders and investors in the Cape Town ecosystem. Build connections, share ideas, and discover collaboration opportunities over drinks and canap\u00e9s.",
+      "description": "An exclusive, in-person networking event for startup founders and investors in the Cape Town ecosystem. Build connections, share ideas, and discover collaboration opportunities over drinks and canapés.",
       "imageUrl": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=600&h=400&fit=crop",
       "aiHint": "networking event people"
     },
@@ -1125,7 +1125,270 @@
       "id": "S7fXbqndXNTAMRHzKuPw"
     }
   ],
-  "messageThreads": [],
+  "messageThreads": [
+    {
+      "id": "msg-1728394200005",
+      "subject": "[ANNOUNCEMENT] Platform Maintenance Scheduled",
+      "from": {
+        "uid": "system",
+        "email": "system@22onsloane.co",
+        "name": "System Announcement",
+        "avatar": "https://ui-avatars.com/api/?name=System&background=dc2626&color=fff",
+        "type": "system"
+      },
+      "to": {
+        "email": "sarah.johnson@afritech.co.za",
+        "name": "Sarah Johnson",
+        "avatar": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff"
+      },
+      "content": "Dear 22 On Sloane Community, We will be performing scheduled maintenance on our platform this Sunday, October 13th, from 2:00 AM to 6:00 AM SAST. During this time, the platform may be temporarily unavailable. We apologize for any inconvenience and appreciate your patience as we work to improve your experience.",
+      "timestamp": "2025-10-08T16:00:00Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [
+        "announcement",
+        "maintenance",
+        "system"
+      ],
+      "threadId": "announcement-maintenance-sarah",
+      "isAnnouncement": true,
+      "attachments": [],
+      "metadata": {
+        "sentVia": "admin-panel",
+        "targetAudience": "all",
+        "announcementId": "ann-1728394200005"
+      }
+    },
+    {
+      "id": "msg-1728394200004",
+      "subject": "Partnership Opportunity",
+      "from": {
+        "uid": "user5_partner_mentor",
+        "email": "james.williams@mentornetwork.co.za",
+        "name": "James Williams",
+        "avatar": "https://ui-avatars.com/api/?name=James+Williams&background=1e40af&color=fff",
+        "type": "partner"
+      },
+      "to": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "content": "Hi Khulekani, I hope this message finds you well. I wanted to reach out about a potential partnership opportunity between Mentor Network and 22 On Sloane. We have a network of experienced mentors who could provide valuable guidance to startups in your incubator. Would you be interested in discussing how we can collaborate to support the entrepreneurial ecosystem in South Africa?",
+      "timestamp": "2025-10-08T14:45:00Z",
+      "status": "unread",
+      "priority": "normal",
+      "labels": [
+        "partnership",
+        "mentorship",
+        "collaboration"
+      ],
+      "threadId": "thread-james-partnership",
+      "attachments": [],
+      "metadata": {
+        "sentVia": "web",
+        "organizationType": "mentor-network"
+      }
+    },
+    {
+      "id": "msg-1728394200003",
+      "subject": "Re: Service Inquiry: Logo Design",
+      "from": {
+        "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "email": "22onsloanedigitalteam@gmail.com",
+        "name": "22 On Sloane Digital Team",
+        "avatar": "https://ui-avatars.com/api/?name=22+On+Sloane+Digital+Team&background=1e40af&color=fff",
+        "type": "vendor"
+      },
+      "to": {
+        "uid": "user3_tech_entrepreneur",
+        "email": "david.chen@finconnect.africa",
+        "name": "David Chen",
+        "avatar": "https://ui-avatars.com/api/?name=David+Chen&background=dc2626&color=fff",
+        "type": "user"
+      },
+      "content": "Hi David! Thank you for your interest in our Logo & Brand Identity Pack. We'd love to help create a strong brand identity for your fintech startup. I've available for a consultation tomorrow at 2 PM or Thursday at 10 AM. Our package includes logo design, brand guidelines, business card design, and letterhead. The process typically takes 5-7 business days. Looking forward to hearing from you!",
+      "timestamp": "2025-10-08T12:15:00Z",
+      "status": "unread",
+      "priority": "high",
+      "labels": [
+        "reply",
+        "consultation",
+        "logo-design"
+      ],
+      "threadId": "thread-david-logo-inquiry",
+      "parentMessageId": "msg-1728394200002",
+      "attachments": [],
+      "metadata": {
+        "sentVia": "web",
+        "serviceId": "1"
+      }
+    },
+    {
+      "id": "msg-1728394200002",
+      "subject": "Service Inquiry: Logo Design",
+      "from": {
+        "uid": "user3_tech_entrepreneur",
+        "email": "david.chen@finconnect.africa",
+        "name": "David Chen",
+        "avatar": "https://ui-avatars.com/api/?name=David+Chen&background=dc2626&color=fff",
+        "type": "user"
+      },
+      "to": {
+        "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+        "email": "22onsloanedigitalteam@gmail.com",
+        "name": "22 On Sloane Digital Team",
+        "avatar": "https://ui-avatars.com/api/?name=22+On+Sloane+Digital+Team&background=1e40af&color=fff",
+        "type": "vendor"
+      },
+      "content": "Hi there! I'm interested in your Logo & Brand Identity Pack service. My fintech startup needs a professional brand identity that appeals to the African market. Could we schedule a consultation to discuss our specific requirements and timeline?",
+      "timestamp": "2025-10-08T10:30:00Z",
+      "status": "read",
+      "priority": "high",
+      "labels": [
+        "inquiry",
+        "logo-design",
+        "consultation"
+      ],
+      "threadId": "thread-david-logo-inquiry",
+      "attachments": [],
+      "metadata": {
+        "sentVia": "web",
+        "serviceId": "1"
+      }
+    },
+    {
+      "id": "msg-1728394200001",
+      "subject": "Welcome to 22 On Sloane Hub",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "user2_startup_founder",
+        "email": "sarah.johnson@afritech.co.za",
+        "name": "Sarah Johnson",
+        "avatar": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff",
+        "type": "user"
+      },
+      "content": "Welcome to the 22 On Sloane marketplace! We're excited to have you as part of our community. Here you can connect with other entrepreneurs, access services, and grow your startup. If you have any questions, don't hesitate to reach out.",
+      "timestamp": "2025-10-08T09:00:00Z",
+      "status": "unread",
+      "priority": "normal",
+      "labels": [
+        "welcome",
+        "onboarding"
+      ],
+      "threadId": "thread-welcome-sarah",
+      "attachments": [],
+      "metadata": {
+        "sentVia": "admin-panel",
+        "ipAddress": "192.168.1.1"
+      }
+    },
+    {
+      "id": "msg-1728394200006",
+      "subject": "Startup Showcase Application",
+      "from": {
+        "uid": "user4_social_entrepreneur",
+        "email": "maria.santos@impactventures.co.za",
+        "name": "Maria Santos",
+        "avatar": "https://ui-avatars.com/api/?name=Maria+Santos&background=7c2d12&color=fff",
+        "type": "user"
+      },
+      "to": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "content": "Hello Khulekani, I hope you're doing well. I'm writing to inquire about the upcoming startup showcase event. Impact Ventures would love to participate and present our social impact solutions to the investor panel. Our startup focuses on sustainable agriculture technology for small-scale farmers in rural areas. Could you please share the application process and deadline for submissions?",
+      "timestamp": "2025-10-08T08:20:00Z",
+      "status": "read",
+      "priority": "high",
+      "labels": [
+        "showcase",
+        "application",
+        "social-impact"
+      ],
+      "threadId": "thread-maria-showcase",
+      "attachments": [],
+      "metadata": {
+        "sentVia": "web",
+        "eventType": "startup-showcase"
+      }
+    },
+    {
+      "id": "msg-1759906843717-wl1p5qqlq",
+      "subject": "Test Message - Data Persistence",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "user2_startup_founder",
+        "email": "sarah.johnson@afritech.co.za",
+        "name": "Sarah Johnson",
+        "avatar": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff",
+        "type": "user"
+      },
+      "cc": [],
+      "bcc": [],
+      "content": "This is a test message to verify that data persistence is working correctly with the real backend/appData.json file.",
+      "timestamp": "2025-10-08T07:00:43.717Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [],
+      "threadId": "thread-1759906843717",
+      "attachments": [],
+      "metadata": {
+        "ipAddress": "::1",
+        "userAgent": "curl/8.7.1",
+        "sentVia": "web"
+      }
+    },
+    {
+      "id": "msg-1759907938072-wtwf3hh7h",
+      "subject": "Test Integration Message",
+      "from": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "admin"
+      },
+      "to": {
+        "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        "email": "khulekani@22onsloane.co",
+        "name": "Khulekani Magubane",
+        "avatar": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
+        "type": "user"
+      },
+      "cc": [],
+      "bcc": [],
+      "content": "This is a test message to verify the messaging system integration is working properly.",
+      "timestamp": "2025-10-08T07:18:58.072Z",
+      "status": "sent",
+      "priority": "normal",
+      "labels": [],
+      "threadId": "thread-1759907938072",
+      "attachments": [],
+      "metadata": {
+        "ipAddress": "::1",
+        "userAgent": "curl/8.7.1",
+        "sentVia": "web"
+      }
+    }
+  ],
   "services": [
     {
       "id": "1",

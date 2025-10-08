@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Serverless functions for both frontend and backend APIs",
   "dependencies": {
-    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "morgan": "^1.10.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "helmet": "^7.2.0",
+    "morgan": "^1.10.1"
   }
 }

@@ -14,25 +14,38 @@ let appData = null;
 
 function loadAppData() {
   try {
-    // Try to load from backend/appData.json
-    const backendPath = path.join(process.cwd(), 'backend', 'appData.json');
+    // Try to load from backend/appData.json (go up one directory from api/)
+    const backendPath = path.join(__dirname, '..', 'backend', 'appData.json');
     if (fs.existsSync(backendPath)) {
       const rawData = fs.readFileSync(backendPath, 'utf8');
-      appData = JSON.parse(rawData);
+      const data = JSON.parse(rawData);
       console.log('✅ Loaded appData from backend/appData.json');
-      return appData;
+      console.log(`📊 Data loaded: ${data.users?.length || 0} users, ${data.messageThreads?.length || 0} messages, ${data.vendors?.length || 0} vendors, ${data.startups?.length || 0} startups`);
+      return data;
     }
     
-    // Fallback to src/data/appData.json
-    const srcPath = path.join(process.cwd(), 'src', 'data', 'appData.json');
-    if (fs.existsSync(srcPath)) {
-      const rawData = fs.readFileSync(srcPath, 'utf8');
-      appData = JSON.parse(rawData);
-      console.log('✅ Loaded appData from src/data/appData.json (fallback)');
-      return appData;
+    // Alternative path for development
+    const altBackendPath = path.join(process.cwd(), '..', 'backend', 'appData.json');
+    if (fs.existsSync(altBackendPath)) {
+      const rawData = fs.readFileSync(altBackendPath, 'utf8');
+      const data = JSON.parse(rawData);
+      console.log('✅ Loaded appData from ../backend/appData.json');
+      console.log(`📊 Data loaded: ${data.users?.length || 0} users, ${data.messageThreads?.length || 0} messages`);
+      return data;
     }
     
-    console.warn('⚠️ No appData.json found, using mock data');
+    // Try relative to current working directory
+    const cwdBackendPath = path.join(process.cwd(), 'backend', 'appData.json');
+    if (fs.existsSync(cwdBackendPath)) {
+      const rawData = fs.readFileSync(cwdBackendPath, 'utf8');
+      const data = JSON.parse(rawData);
+      console.log('✅ Loaded appData from ./backend/appData.json');
+      console.log(`📊 Data loaded: ${data.users?.length || 0} users, ${data.messageThreads?.length || 0} messages`);
+      return data;
+    }
+    
+    console.warn('⚠️ No appData.json found in any location, using mock data');
+    console.warn(`Tried paths: ${backendPath}, ${altBackendPath}, ${cwdBackendPath}`);
     return getMockData();
   } catch (error) {
     console.error('❌ Error loading appData:', error.message);
@@ -57,7 +70,8 @@ function getMockData() {
     users: [{
       uid: "test-user-id",
       email: "22onsloanedigitalteam@gmail.com",
-      role: "member",
+      displayName: "Test User",
+      role: "admin",
       tenantId: "vendor"
     }]
   };
@@ -86,6 +100,45 @@ function saveAuditData(auditLogs) {
     return true;
   } catch (error) {
     console.error('❌ Error saving audit data:', error.message);
+    return false;
+  }
+}
+
+// Function to save app data
+function saveAppData(data) {
+  try {
+    // Try multiple possible paths for backend/appData.json
+    const paths = [
+      path.join(__dirname, '..', 'backend', 'appData.json'),
+      path.join(process.cwd(), '..', 'backend', 'appData.json'),
+      path.join(process.cwd(), 'backend', 'appData.json')
+    ];
+    
+    let savedPath = null;
+    for (const appDataPath of paths) {
+      try {
+        const dir = path.dirname(appDataPath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(appDataPath, JSON.stringify(data, null, 2));
+        appData = data; // Update in-memory cache
+        savedPath = appDataPath;
+        console.log(`✅ Saved appData to ${appDataPath}`);
+        break;
+      } catch (err) {
+        console.warn(`⚠️ Failed to save to ${appDataPath}: ${err.message}`);
+        continue;
+      }
+    }
+    
+    if (!savedPath) {
+      throw new Error('Failed to save to any path');
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error saving app data:', error.message);
     return false;
   }
 }
@@ -172,13 +225,1043 @@ app.get("/api/me", (req, res) => {
   res.json(adminUser);
 });
 
-// Messages endpoints
+// Messages endpoints - Real data integration
 app.get("/api/messages", (req, res) => {
-  res.json(mockMessages);
+  const { userId, userEmail, limit = 50, offset = 0, status, priority } = req.query;
+  const data = getAppData();
+  let messages = data.messageThreads || [];
+  
+  // Filter messages for specific user if provided
+  if (userId || userEmail) {
+    messages = messages.filter(msg => 
+      msg.to.email === userEmail || msg.to.uid === userId ||
+      msg.from.email === userEmail || msg.from.uid === userId
+    );
+  }
+  
+  // Filter by status if provided
+  if (status) {
+    messages = messages.filter(msg => msg.status === status);
+  }
+  
+  // Filter by priority if provided
+  if (priority) {
+    messages = messages.filter(msg => msg.priority === priority);
+  }
+  
+  // Sort messages by timestamp (newest first)
+  messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  // Apply pagination
+  const startIndex = parseInt(offset);
+  const pageSize = parseInt(limit);
+  const paginatedMessages = messages.slice(startIndex, startIndex + pageSize);
+  
+  // Calculate unread count for current user
+  const unreadCount = messages.filter(msg => 
+    msg.status === 'unread' && 
+    (msg.to.email === userEmail || msg.to.uid === userId)
+  ).length;
+  
+  res.json({
+    messages: paginatedMessages,
+    unreadCount,
+    total: messages.length,
+    lastUpdated: new Date().toISOString(),
+    pagination: {
+      limit: pageSize,
+      offset: startIndex,
+      hasMore: startIndex + pageSize < messages.length
+    }
+  });
 });
 
 app.post("/api/messages", (req, res) => {
-  res.json({ success: true, message: "Message sent" });
+  const { to, subject, content, priority = "normal", labels = [], cc = [], bcc = [] } = req.body;
+  
+  if (!to || !subject || !content) {
+    return res.status(400).json({
+      success: false,
+      error: "Missing required fields: to, subject, content"
+    });
+  }
+  
+  const data = getAppData();
+  const users = data.users || [];
+  const vendors = data.vendors || [];
+  const startups = data.startups || [];
+  
+  // Find sender (for now using first admin, in real app get from authenticated user)
+  const currentUser = users.find(u => u.role === 'admin') || users[0];
+  
+  // Find recipient user details
+  let recipientDetails = null;
+  if (typeof to === 'string') {
+    // Find by email or UID
+    recipientDetails = users.find(u => u.email === to || u.uid === to);
+    if (!recipientDetails) {
+      // Check vendors
+      const vendor = vendors.find(v => v.email === to || v.contactEmail === to || v.vendorId === to);
+      if (vendor) {
+        recipientDetails = {
+          uid: vendor.vendorId || vendor.id,
+          email: vendor.contactEmail || vendor.email,
+          name: vendor.name || vendor.companyName,
+          type: 'vendor'
+        };
+      }
+    }
+    if (!recipientDetails) {
+      // Check startups
+      const startup = startups.find(s => s.contactEmail === to || s.id === to);
+      if (startup) {
+        recipientDetails = {
+          uid: startup.id,
+          email: startup.contactEmail,
+          name: startup.name,
+          type: 'startup'
+        };
+      }
+    }
+  } else {
+    recipientDetails = to;
+  }
+  
+  if (!recipientDetails) {
+    return res.status(400).json({
+      success: false,
+      error: "Recipient not found"
+    });
+  }
+  
+  // Create new message
+  const newMessage = {
+    id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    subject,
+    from: {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      name: currentUser.displayName || currentUser.name || "System",
+      avatar: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email)}&background=7c3aed&color=fff`,
+      type: currentUser.role || 'user'
+    },
+    to: {
+      uid: recipientDetails.uid,
+      email: recipientDetails.email,
+      name: recipientDetails.name || recipientDetails.displayName || recipientDetails.email,
+      avatar: recipientDetails.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(recipientDetails.name || recipientDetails.email)}&background=059669&color=fff`,
+      type: recipientDetails.type || 'user'
+    },
+    cc: cc.map(ccEmail => {
+      const ccUser = users.find(u => u.email === ccEmail) || { email: ccEmail, name: ccEmail };
+      return {
+        email: ccUser.email,
+        name: ccUser.displayName || ccUser.name || ccUser.email
+      };
+    }),
+    bcc: bcc.map(bccEmail => {
+      const bccUser = users.find(u => u.email === bccEmail) || { email: bccEmail, name: bccEmail };
+      return {
+        email: bccUser.email,
+        name: bccUser.displayName || bccUser.name || bccUser.email
+      };
+    }),
+    content,
+    timestamp: new Date().toISOString(),
+    status: "sent",
+    priority,
+    labels,
+    threadId: `thread-${Date.now()}`,
+    attachments: [],
+    metadata: {
+      ipAddress: req.get('x-forwarded-for') || req.connection.remoteAddress || "127.0.0.1",
+      userAgent: req.get('user-agent'),
+      sentVia: "web"
+    }
+  };
+  
+  // Add message to data
+  if (!data.messageThreads) {
+    data.messageThreads = [];
+  }
+  data.messageThreads.push(newMessage);
+  
+  // Save to backend
+  if (saveAppData(data)) {
+    // Log the action
+    const auditLog = {
+      id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toISOString(),
+      action: "MESSAGE_SENT",
+      userEmail: currentUser.email,
+      userId: currentUser.uid,
+      tenantId: currentUser.tenantId || "public",
+      targetType: "message",
+      targetId: newMessage.id,
+      ip: req.get('x-forwarded-for') || req.connection.remoteAddress || "127.0.0.1",
+      metadata: {
+        recipient: recipientDetails.email,
+        subject: subject,
+        priority: priority
+      }
+    };
+    
+    const auditLogs = getAuditData();
+    auditLogs.unshift(auditLog);
+    saveAuditData(auditLogs);
+    
+    res.status(201).json({ 
+      success: true, 
+      message: "Message sent successfully",
+      messageId: newMessage.id,
+      data: newMessage
+    });
+  } else {
+    res.status(500).json({
+      success: false,
+      error: "Failed to save message"
+    });
+  }
+});
+
+// Get user contacts (users, vendors, startups they can message) - MOVED UP to avoid route conflicts
+app.get("/api/messages/contacts", (req, res) => {
+  const { search = "", type = "all", limit = 100 } = req.query;
+  
+  const data = getAppData();
+  const users = data.users || [];
+  const vendors = data.vendors || [];
+  const startups = data.startups || [];
+  
+  let contacts = [];
+  
+  // Add users
+  if (type === "all" || type === "users") {
+    const userContacts = users.map(user => ({
+      id: user.uid,
+      name: user.displayName || user.name || "Unnamed User",
+      email: user.email,
+      avatar: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}&background=7c3aed&color=fff`,
+      type: "user",
+      role: user.role,
+      status: user.disabled ? "inactive" : "active",
+      lastActivity: user.lastLoginAt || user.lastActivity
+    }));
+    contacts.push(...userContacts);
+  }
+  
+  // Add vendors
+  if (type === "all" || type === "vendors") {
+    const vendorContacts = vendors
+      .filter(vendor => vendor.contactEmail || vendor.email)
+      .map(vendor => ({
+        id: vendor.vendorId || vendor.id,
+        name: vendor.name || vendor.companyName || "Unnamed Vendor",
+        email: vendor.contactEmail || vendor.email,
+        avatar: vendor.logoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(vendor.name || vendor.email)}&background=059669&color=fff`,
+        type: "vendor",
+        status: vendor.status || "active",
+        kycStatus: vendor.kycStatus,
+        lastActivity: vendor.lastUpdated
+      }));
+    contacts.push(...vendorContacts);
+  }
+  
+  // Add startups
+  if (type === "all" || type === "startups") {
+    const startupContacts = startups
+      .filter(startup => startup.contactEmail)
+      .map(startup => ({
+        id: startup.id,
+        name: startup.name || "Unnamed Startup",
+        email: startup.contactEmail,
+        avatar: startup.logoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(startup.name)}&background=dc2626&color=fff`,
+        type: "startup",
+        industry: startup.industry,
+        status: startup.status || "active",
+        lastActivity: startup.lastUpdated
+      }));
+    contacts.push(...startupContacts);
+  }
+  
+  // Filter by search term
+  if (search) {
+    const searchLower = search.toLowerCase();
+    contacts = contacts.filter(contact =>
+      contact.name.toLowerCase().includes(searchLower) ||
+      contact.email.toLowerCase().includes(searchLower)
+    );
+  }
+  
+  // Sort by name and apply limit
+  contacts.sort((a, b) => a.name.localeCompare(b.name));
+  contacts = contacts.slice(0, parseInt(limit));
+  
+  res.json({
+    success: true,
+    contacts,
+    total: contacts.length,
+    summary: {
+      users: contacts.filter(c => c.type === "user").length,
+      vendors: contacts.filter(c => c.type === "vendor").length,
+      startups: contacts.filter(c => c.type === "startup").length
+    }
+  });
+});
+
+// Get conversation between two users - MOVED UP to avoid route conflicts
+app.get("/api/messages/conversation", (req, res) => {
+  const { user1, user2, limit = 50, offset = 0 } = req.query;
+  
+  if (!user1 || !user2) {
+    return res.status(400).json({
+      success: false,
+      error: "Both user1 and user2 parameters are required"
+    });
+  }
+  
+  const data = getAppData();
+  const messages = data.messageThreads || [];
+  
+  // Find messages between the two users
+  const conversation = messages.filter(msg => 
+    (msg.from.email === user1 && msg.to.email === user2) ||
+    (msg.from.email === user2 && msg.to.email === user1) ||
+    (msg.from.uid === user1 && msg.to.uid === user2) ||
+    (msg.from.uid === user2 && msg.to.uid === user1)
+  );
+  
+  // Sort by timestamp
+  conversation.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  
+  // Apply pagination
+  const startIndex = parseInt(offset);
+  const pageSize = parseInt(limit);
+  const paginatedConversation = conversation.slice(startIndex, startIndex + pageSize);
+  
+  res.json({
+    success: true,
+    conversation: paginatedConversation,
+    total: conversation.length,
+    pagination: {
+      limit: pageSize,
+      offset: startIndex,
+      hasMore: startIndex + pageSize < conversation.length
+    }
+  });
+});
+
+// Send message to multiple recipients (broadcast) - MOVED UP to avoid route conflicts
+app.post("/api/messages/broadcast", (req, res) => {
+  const { recipients, subject, content, priority = "normal", labels = [] } = req.body;
+  
+  if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: "Recipients array is required and must not be empty"
+    });
+  }
+  
+  if (!subject || !content) {
+    return res.status(400).json({
+      success: false,
+      error: "Subject and content are required"
+    });
+  }
+  
+  const data = getAppData();
+  const users = data.users || [];
+  const vendors = data.vendors || [];
+  const startups = data.startups || [];
+  
+  // Find sender
+  const currentUser = users.find(u => u.role === 'admin') || users[0];
+  
+  const sentMessages = [];
+  const failedRecipients = [];
+  
+  for (const recipientEmail of recipients) {
+    // Find recipient details
+    let recipientDetails = users.find(u => u.email === recipientEmail);
+    
+    if (!recipientDetails) {
+      const vendor = vendors.find(v => v.email === recipientEmail || v.contactEmail === recipientEmail);
+      if (vendor) {
+        recipientDetails = {
+          uid: vendor.vendorId || vendor.id,
+          email: vendor.contactEmail || vendor.email,
+          name: vendor.name || vendor.companyName,
+          type: 'vendor'
+        };
+      }
+    }
+    
+    if (!recipientDetails) {
+      const startup = startups.find(s => s.contactEmail === recipientEmail);
+      if (startup) {
+        recipientDetails = {
+          uid: startup.id,
+          email: startup.contactEmail,
+          name: startup.name,
+          type: 'startup'
+        };
+      }
+    }
+    
+    if (!recipientDetails) {
+      failedRecipients.push(recipientEmail);
+      continue;
+    }
+    
+    // Create message for this recipient
+    const newMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      subject,
+      from: {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        name: currentUser.displayName || currentUser.name || "System",
+        avatar: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email)}&background=7c3aed&color=fff`,
+        type: currentUser.role || 'user'
+      },
+      to: {
+        uid: recipientDetails.uid,
+        email: recipientDetails.email,
+        name: recipientDetails.name || recipientDetails.displayName || recipientDetails.email,
+        avatar: recipientDetails.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(recipientDetails.name || recipientDetails.email)}&background=059669&color=fff`,
+        type: recipientDetails.type || 'user'
+      },
+      content,
+      timestamp: new Date().toISOString(),
+      status: "sent",
+      priority,
+      labels: [...labels, "broadcast"],
+      threadId: `thread-${Date.now()}-${recipientEmail}`,
+      isBroadcast: true,
+      attachments: [],
+      metadata: {
+        ipAddress: req.get('x-forwarded-for') || req.connection.remoteAddress || "127.0.0.1",
+        userAgent: req.get('user-agent'),
+        sentVia: "web",
+        broadcastId: `broadcast-${Date.now()}`
+      }
+    };
+    
+    sentMessages.push(newMessage);
+  }
+  
+  // Add all messages to data
+  if (!data.messageThreads) {
+    data.messageThreads = [];
+  }
+  data.messageThreads.push(...sentMessages);
+  
+  // Save updated data
+  if (saveAppData(data)) {
+    // Log the broadcast action
+    const auditLog = {
+      id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toISOString(),
+      action: "MESSAGE_BROADCAST",
+      userEmail: currentUser.email,
+      userId: currentUser.uid,
+      tenantId: currentUser.tenantId || "public",
+      targetType: "message",
+      targetId: "broadcast",
+      ip: req.get('x-forwarded-for') || req.connection.remoteAddress || "127.0.0.1",
+      metadata: {
+        recipientCount: sentMessages.length,
+        failedCount: failedRecipients.length,
+        subject: subject,
+        priority: priority
+      }
+    };
+    
+    const auditLogs = getAuditData();
+    auditLogs.unshift(auditLog);
+    saveAuditData(auditLogs);
+    
+    res.status(201).json({
+      success: true,
+      message: `Broadcast sent to ${sentMessages.length} recipients`,
+      sentCount: sentMessages.length,
+      failedCount: failedRecipients.length,
+      failedRecipients,
+      sentMessages: sentMessages.map(msg => ({
+        id: msg.id,
+        recipient: msg.to.email,
+        status: msg.status
+      }))
+    });
+  } else {
+    res.status(500).json({
+      success: false,
+      error: "Failed to save broadcast messages"
+    });
+  }
+});
+
+// Get messages for a specific thread - MOVED UP to avoid route conflicts
+app.get("/api/messages/thread/:threadId", (req, res) => {
+  const { threadId } = req.params;
+  const { userId, userEmail } = req.query;
+  
+  const data = getAppData();
+  const messages = data.messageThreads || [];
+  
+  const threadMessages = messages.filter(msg => msg.threadId === threadId);
+  
+  if (threadMessages.length === 0) {
+    return res.status(404).json({
+      success: false,
+      error: "Thread not found"
+    });
+  }
+  
+  // Check if user is authorized to view this thread
+  const userCanView = threadMessages.some(msg => 
+    msg.to.email === userEmail || msg.to.uid === userId ||
+    msg.from.email === userEmail || msg.from.uid === userId
+  );
+  
+  if (!userCanView) {
+    return res.status(403).json({
+      success: false,
+      error: "Not authorized to view this thread"
+    });
+  }
+  
+  // Sort by timestamp
+  threadMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  
+  res.json({
+    success: true,
+    threadId,
+    messages: threadMessages,
+    total: threadMessages.length
+  });
+});
+
+// Mark message as read
+app.put("/api/messages/:id/read", (req, res) => {
+  const { id } = req.params;
+  const { userId, userEmail } = req.body;
+  
+  const data = getAppData();
+  const messages = data.messageThreads || [];
+  
+  const messageIndex = messages.findIndex(msg => msg.id === id);
+  if (messageIndex === -1) {
+    return res.status(404).json({ 
+      success: false, 
+      error: "Message not found" 
+    });
+  }
+  
+  const message = messages[messageIndex];
+  
+  // Check if user is authorized to mark this message as read
+  if (message.to.email !== userEmail && message.to.uid !== userId) {
+    return res.status(403).json({
+      success: false,
+      error: "Not authorized to mark this message as read"
+    });
+  }
+  
+  // Update message status
+  messages[messageIndex].status = "read";
+  messages[messageIndex].readAt = new Date().toISOString();
+  
+  // Save updated data
+  if (saveAppData(data)) {
+    // Log the action
+    const auditLog = {
+      id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toISOString(),
+      action: "MESSAGE_READ",
+      userEmail: userEmail,
+      userId: userId,
+      tenantId: "public",
+      targetType: "message",
+      targetId: id,
+      ip: req.get('x-forwarded-for') || req.connection.remoteAddress || "127.0.0.1",
+      metadata: {
+        subject: message.subject
+      }
+    };
+    
+    const auditLogs = getAuditData();
+    auditLogs.unshift(auditLog);
+    saveAuditData(auditLogs);
+    
+    res.json({ 
+      success: true, 
+      message: `Message ${id} marked as read`,
+      data: messages[messageIndex]
+    });
+  } else {
+    res.status(500).json({
+      success: false,
+      error: "Failed to update message"
+    });
+  }
+});
+
+// Delete message
+app.delete("/api/messages/:id", (req, res) => {
+  const { id } = req.params;
+  const { userId, userEmail } = req.body;
+  
+  const data = getAppData();
+  const messages = data.messageThreads || [];
+  
+  const messageIndex = messages.findIndex(msg => msg.id === id);
+  if (messageIndex === -1) {
+    return res.status(404).json({ 
+      success: false, 
+      error: "Message not found" 
+    });
+  }
+  
+  const message = messages[messageIndex];
+  
+  // Check if user is authorized to delete this message
+  if (message.to.email !== userEmail && message.to.uid !== userId && 
+      message.from.email !== userEmail && message.from.uid !== userId) {
+    return res.status(403).json({
+      success: false,
+      error: "Not authorized to delete this message"
+    });
+  }
+  
+  // Remove message from array
+  const deletedMessage = messages.splice(messageIndex, 1)[0];
+  
+  // Save updated data
+  if (saveAppData(data)) {
+    // Log the action
+    const auditLog = {
+      id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toISOString(),
+      action: "MESSAGE_DELETED",
+      userEmail: userEmail,
+      userId: userId,
+      tenantId: "public",
+      targetType: "message",
+      targetId: id,
+      ip: req.get('x-forwarded-for') || req.connection.remoteAddress || "127.0.0.1",
+      metadata: {
+        subject: deletedMessage.subject
+      }
+    };
+    
+    const auditLogs = getAuditData();
+    auditLogs.unshift(auditLog);
+    saveAuditData(auditLogs);
+    
+    res.json({ 
+      success: true, 
+      message: `Message ${id} deleted successfully`,
+      deletedMessage
+    });
+  } else {
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete message"
+    });
+  }
+});
+
+// Get message by ID
+app.get("/api/messages/:id", (req, res) => {
+  const { id } = req.params;
+  const { userId, userEmail } = req.query;
+  
+  const data = getAppData();
+  const messages = data.messageThreads || [];
+  
+  const message = messages.find(msg => msg.id === id);
+  if (!message) {
+    return res.status(404).json({ 
+      success: false, 
+      error: "Message not found" 
+    });
+  }
+  
+  // Check if user is authorized to view this message
+  if (message.to.email !== userEmail && message.to.uid !== userId && 
+      message.from.email !== userEmail && message.from.uid !== userId) {
+    return res.status(403).json({
+      success: false,
+      error: "Not authorized to view this message"
+    });
+  }
+  
+  res.json({
+    success: true,
+    message,
+    threadMessages: messages.filter(msg => msg.threadId === message.threadId)
+  });
+});
+
+// Get messages for a specific thread
+app.get("/api/messages/thread/:threadId", (req, res) => {
+  const { threadId } = req.params;
+  const { userId, userEmail } = req.query;
+  
+  const data = getAppData();
+  const messages = data.messageThreads || [];
+  
+  const threadMessages = messages.filter(msg => msg.threadId === threadId);
+  
+  if (threadMessages.length === 0) {
+    return res.status(404).json({
+      success: false,
+      error: "Thread not found"
+    });
+  }
+  
+  // Check if user is authorized to view this thread
+  const userCanView = threadMessages.some(msg => 
+    msg.to.email === userEmail || msg.to.uid === userId ||
+    msg.from.email === userEmail || msg.from.uid === userId
+  );
+  
+  if (!userCanView) {
+    return res.status(403).json({
+      success: false,
+      error: "Not authorized to view this thread"
+    });
+  }
+  
+  // Sort by timestamp
+  threadMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  
+  res.json({
+    success: true,
+    threadId,
+    messages: threadMessages,
+    total: threadMessages.length
+  });
+});
+
+// Reply to a message (adds to existing thread)
+app.post("/api/messages/:id/reply", (req, res) => {
+  const { id } = req.params;
+  const { content, priority = "normal", labels = [] } = req.body;
+  
+  if (!content) {
+    return res.status(400).json({
+      success: false,
+      error: "Content is required"
+    });
+  }
+  
+  const data = getAppData();
+  const messages = data.messageThreads || [];
+  const users = data.users || [];
+  
+  const originalMessage = messages.find(msg => msg.id === id);
+  if (!originalMessage) {
+    return res.status(404).json({
+      success: false,
+      error: "Original message not found"
+    });
+  }
+  
+  // Find current user (in real app, get from authenticated user)
+  const currentUser = users.find(u => u.role === 'admin') || users[0];
+  
+  // Create reply message
+  const replyMessage = {
+    id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    subject: `Re: ${originalMessage.subject}`,
+    from: {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      name: currentUser.displayName || currentUser.name || "System",
+      avatar: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || currentUser.email)}&background=7c3aed&color=fff`,
+      type: currentUser.role || 'user'
+    },
+    to: originalMessage.from, // Reply to the sender
+    content,
+    timestamp: new Date().toISOString(),
+    status: "sent",
+    priority,
+    labels,
+    threadId: originalMessage.threadId, // Same thread
+    parentMessageId: id,
+    attachments: [],
+    metadata: {
+      ipAddress: req.get('x-forwarded-for') || req.connection.remoteAddress || "127.0.0.1",
+      userAgent: req.get('user-agent'),
+      sentVia: "web"
+    }
+  };
+  
+  // Add reply to messages
+  messages.push(replyMessage);
+  
+  // Save updated data
+  if (saveAppData(data)) {
+    // Log the action
+    const auditLog = {
+      id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toISOString(),
+      action: "MESSAGE_REPLY",
+      userEmail: currentUser.email,
+      userId: currentUser.uid,
+      tenantId: currentUser.tenantId || "public",
+      targetType: "message",
+      targetId: replyMessage.id,
+      ip: req.get('x-forwarded-for') || req.connection.remoteAddress || "127.0.0.1",
+      metadata: {
+        originalMessageId: id,
+        threadId: originalMessage.threadId,
+        recipient: originalMessage.from.email
+      }
+    };
+    
+    const auditLogs = getAuditData();
+    auditLogs.unshift(auditLog);
+    saveAuditData(auditLogs);
+    
+    res.status(201).json({
+      success: true,
+      message: "Reply sent successfully",
+      messageId: replyMessage.id,
+      data: replyMessage
+    });
+  } else {
+    res.status(500).json({
+      success: false,
+      error: "Failed to save reply"
+    });
+  }
+});
+
+// Admin: Get all messages with filtering
+app.get("/api/admin/messages", (req, res) => {
+  const { 
+    limit = 100, 
+    offset = 0, 
+    status, 
+    priority, 
+    fromDate, 
+    toDate, 
+    fromUser, 
+    toUser,
+    search
+  } = req.query;
+  
+  const data = getAppData();
+  let messages = data.messageThreads || [];
+  
+  // Apply filters
+  if (status) {
+    messages = messages.filter(msg => msg.status === status);
+  }
+  
+  if (priority) {
+    messages = messages.filter(msg => msg.priority === priority);
+  }
+  
+  if (fromDate) {
+    messages = messages.filter(msg => new Date(msg.timestamp) >= new Date(fromDate));
+  }
+  
+  if (toDate) {
+    messages = messages.filter(msg => new Date(msg.timestamp) <= new Date(toDate));
+  }
+  
+  if (fromUser) {
+    messages = messages.filter(msg => 
+      msg.from.email === fromUser || msg.from.uid === fromUser
+    );
+  }
+  
+  if (toUser) {
+    messages = messages.filter(msg => 
+      msg.to.email === toUser || msg.to.uid === toUser
+    );
+  }
+  
+  if (search) {
+    const searchLower = search.toLowerCase();
+    messages = messages.filter(msg =>
+      msg.subject.toLowerCase().includes(searchLower) ||
+      msg.content.toLowerCase().includes(searchLower) ||
+      msg.from.name.toLowerCase().includes(searchLower) ||
+      msg.to.name.toLowerCase().includes(searchLower)
+    );
+  }
+  
+  // Sort by timestamp (newest first)
+  messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  // Apply pagination
+  const startIndex = parseInt(offset);
+  const pageSize = parseInt(limit);
+  const paginatedMessages = messages.slice(startIndex, startIndex + pageSize);
+  
+  // Generate summary statistics
+  const summary = {
+    totalMessages: messages.length,
+    unreadMessages: messages.filter(msg => msg.status === 'unread').length,
+    highPriorityMessages: messages.filter(msg => msg.priority === 'high').length,
+    todayMessages: messages.filter(msg => {
+      const today = new Date();
+      const msgDate = new Date(msg.timestamp);
+      return msgDate.toDateString() === today.toDateString();
+    }).length,
+    messagesByStatus: {
+      sent: messages.filter(msg => msg.status === 'sent').length,
+      read: messages.filter(msg => msg.status === 'read').length,
+      unread: messages.filter(msg => msg.status === 'unread').length
+    },
+    messagesByPriority: {
+      high: messages.filter(msg => msg.priority === 'high').length,
+      normal: messages.filter(msg => msg.priority === 'normal').length,
+      low: messages.filter(msg => msg.priority === 'low').length
+    }
+  };
+  
+  res.json({
+    success: true,
+    messages: paginatedMessages,
+    total: messages.length,
+    summary,
+    pagination: {
+      limit: pageSize,
+      offset: startIndex,
+      hasMore: startIndex + pageSize < messages.length
+    }
+  });
+});
+
+// Admin: Send system announcement
+app.post("/api/admin/messages/announcement", (req, res) => {
+  const { subject, content, priority = "normal", targetAudience = "all" } = req.body;
+  
+  if (!subject || !content) {
+    return res.status(400).json({
+      success: false,
+      error: "Subject and content are required"
+    });
+  }
+  
+  const data = getAppData();
+  const users = data.users || [];
+  const vendors = data.vendors || [];
+  const startups = data.startups || [];
+  
+  let recipients = [];
+  
+  // Determine recipients based on target audience
+  switch (targetAudience) {
+    case "users":
+      recipients = users.map(u => u.email).filter(Boolean);
+      break;
+    case "vendors":
+      recipients = vendors.map(v => v.contactEmail || v.email).filter(Boolean);
+      break;
+    case "startups":
+      recipients = startups.map(s => s.contactEmail).filter(Boolean);
+      break;
+    case "admins":
+      recipients = users.filter(u => u.role === 'admin').map(u => u.email);
+      break;
+    case "all":
+    default:
+      recipients = [
+        ...users.map(u => u.email),
+        ...vendors.map(v => v.contactEmail || v.email),
+        ...startups.map(s => s.contactEmail)
+      ].filter(Boolean);
+  }
+  
+  const systemUser = {
+    uid: "system",
+    email: "system@22onsloane.co",
+    name: "System Announcement",
+    avatar: "https://ui-avatars.com/api/?name=System&background=dc2626&color=fff",
+    type: "system"
+  };
+  
+  const sentMessages = [];
+  
+  for (const recipientEmail of recipients) {
+    const newMessage = {
+      id: `announcement-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      subject: `[ANNOUNCEMENT] ${subject}`,
+      from: systemUser,
+      to: {
+        email: recipientEmail,
+        name: recipientEmail,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(recipientEmail)}&background=7c3aed&color=fff`
+      },
+      content,
+      timestamp: new Date().toISOString(),
+      status: "sent",
+      priority,
+      labels: ["announcement", "system", targetAudience],
+      threadId: `announcement-${Date.now()}-${recipientEmail}`,
+      isAnnouncement: true,
+      attachments: [],
+      metadata: {
+        sentVia: "admin-panel",
+        targetAudience,
+        announcementId: `ann-${Date.now()}`
+      }
+    };
+    
+    sentMessages.push(newMessage);
+  }
+  
+  // Add all messages to data
+  if (!data.messageThreads) {
+    data.messageThreads = [];
+  }
+  data.messageThreads.push(...sentMessages);
+  
+  // Save updated data
+  if (saveAppData(data)) {
+    // Log the announcement
+    const auditLog = {
+      id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toISOString(),
+      action: "SYSTEM_ANNOUNCEMENT",
+      userEmail: "system@22onsloane.co",
+      userId: "system",
+      tenantId: "public",
+      targetType: "announcement",
+      targetId: "system-announcement",
+      ip: req.get('x-forwarded-for') || req.connection.remoteAddress || "127.0.0.1",
+      metadata: {
+        recipientCount: sentMessages.length,
+        targetAudience,
+        subject: subject,
+        priority: priority
+      }
+    };
+    
+    const auditLogs = getAuditData();
+    auditLogs.unshift(auditLog);
+    saveAuditData(auditLogs);
+    
+    res.status(201).json({
+      success: true,
+      message: `System announcement sent to ${sentMessages.length} recipients`,
+      recipientCount: sentMessages.length,
+      targetAudience,
+      announcementId: `ann-${Date.now()}`
+    });
+  } else {
+    res.status(500).json({
+      success: false,
+      error: "Failed to save announcement"
+    });
+  }
 });
 
 // LMS endpoints
@@ -908,21 +1991,6 @@ app.get("/api/users/all", (req, res) => {
   });
 });
 
-// Messages endpoints
-app.get("/api/messages", (req, res) => {
-  const data = getAppData();
-  const messages = data.messageThreads || [];
-  res.json({
-    messages,
-    unreadCount: 0,
-    lastUpdated: new Date().toISOString()
-  });
-});
-
-app.post("/api/messages", (req, res) => {
-  res.json({ success: true, message: "Message sent" });
-});
-
 // Test endpoint
 app.get("/api/test", (req, res) => {
   const data = getAppData();
@@ -940,12 +2008,14 @@ app.get("/api/test", (req, res) => {
       users: (data.users || []).length
     },
     availableEndpoints: [
-      "/api/health", "/api/me", "/api/messages", "/api/lms/live",
-      "/api/tenants", "/api/wallets/me", "/api/audit-logs",
-      "/api/data/services", "/api/data/services/mine", "/api/data/vendors", "/api/data/startups",
-      "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", "/api/admin/stats", "/api/admin/users",
-      "/api/subscriptions", "/api/subscriptions/my", "/api/subscriptions/service",
-      "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
+      "/api/health", "/api/me", "/api/messages", "/api/messages/:id", "/api/messages/:id/read", 
+      "/api/messages/:id/reply", "/api/messages/thread/:threadId", "/api/messages/conversation",
+      "/api/messages/broadcast", "/api/messages/contacts", "/api/admin/messages", 
+      "/api/admin/messages/announcement", "/api/lms/live", "/api/tenants", "/api/wallets/me", 
+      "/api/audit-logs", "/api/data/services", "/api/data/services/mine", "/api/data/vendors", 
+      "/api/data/startups", "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", 
+      "/api/admin/stats", "/api/admin/users", "/api/subscriptions", "/api/subscriptions/my", 
+      "/api/subscriptions/service", "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
       "/api/assistant/chat", "/api/admin/wallet/users", "/api/admin/wallet/add-credits",
       "/api/admin/wallet/bulk-credits", "/api/admin/wallet/normalize-appdata",
       "/api/admin/wallet/sync-firebase-users", "/api/admin/wallet/summary",
@@ -973,12 +2043,14 @@ app.use((req, res, next) => {
       method: req.method,
       message: "This endpoint is not implemented yet",
       availableEndpoints: [
-        "/api/health", "/api/me", "/api/messages", "/api/lms/live",
-        "/api/tenants", "/api/wallets/me", "/api/audit-logs",
-        "/api/data/services", "/api/data/services/mine", "/api/data/vendors", "/api/data/startups",
-        "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", "/api/admin/stats", "/api/admin/users",
-        "/api/subscriptions", "/api/subscriptions/my", "/api/subscriptions/service",
-        "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
+        "/api/health", "/api/me", "/api/messages", "/api/messages/:id", "/api/messages/:id/read", 
+        "/api/messages/:id/reply", "/api/messages/thread/:threadId", "/api/messages/conversation",
+        "/api/messages/broadcast", "/api/messages/contacts", "/api/admin/messages", 
+        "/api/admin/messages/announcement", "/api/lms/live", "/api/tenants", "/api/wallets/me", 
+        "/api/audit-logs", "/api/data/services", "/api/data/services/mine", "/api/data/vendors", 
+        "/api/data/startups", "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", 
+        "/api/admin/stats", "/api/admin/users", "/api/subscriptions", "/api/subscriptions/my", 
+        "/api/subscriptions/service", "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
         "/api/assistant/chat", "/api/admin/wallet/users", "/api/admin/wallet/add-credits",
         "/api/admin/wallet/bulk-credits", "/api/admin/wallet/normalize-appdata",
         "/api/admin/wallet/sync-firebase-users", "/api/admin/wallet/summary",
@@ -1009,3 +2081,18 @@ module.exports = function handler(req, res) {
 
 // Also export the app for local testing
 module.exports.app = app;
+
+// Start server if running directly (not in Vercel)
+if (require.main === module) {
+  const PORT = process.env.PORT || 5500;
+  const server = app.listen(PORT, () => {
+    const actualPort = server.address().port;
+    console.log(`🚀 Sloane Hub API server running on port ${actualPort}`);
+    console.log(`📡 Server URL: http://localhost:${actualPort}`);
+    console.log(`📊 Health check: http://localhost:${actualPort}/api/health`);
+    console.log(`💬 Messages API: http://localhost:${actualPort}/api/messages`);
+    console.log(`👥 Users API: http://localhost:${actualPort}/api/users/all`);
+    console.log(`⚙️  Admin API: http://localhost:${actualPort}/api/admin/stats`);
+    console.log(`✅ API server running on http://localhost:${actualPort}`);
+  });
+}

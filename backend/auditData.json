@@ -1,5 +1,37 @@
 [
   {
+    "id": "1759907938073-gwo6wi5vd",
+    "timestamp": "2025-10-08T07:18:58.073Z",
+    "action": "MESSAGE_SENT",
+    "userEmail": "khulekani@22onsloane.co",
+    "userId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+    "tenantId": "22onsloane",
+    "targetType": "message",
+    "targetId": "msg-1759907938072-wtwf3hh7h",
+    "ip": "::1",
+    "metadata": {
+      "recipient": "khulekani@22onsloane.co",
+      "subject": "Test Integration Message",
+      "priority": "normal"
+    }
+  },
+  {
+    "id": "1759906843718-y3etmiy8w",
+    "timestamp": "2025-10-08T07:00:43.718Z",
+    "action": "MESSAGE_SENT",
+    "userEmail": "khulekani@22onsloane.co",
+    "userId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+    "tenantId": "22onsloane",
+    "targetType": "message",
+    "targetId": "msg-1759906843717-wl1p5qqlq",
+    "ip": "::1",
+    "metadata": {
+      "recipient": "sarah.johnson@afritech.co.za",
+      "subject": "Test Message - Data Persistence",
+      "priority": "normal"
+    }
+  },
+  {
     "id": "1dcff7a8-97ae-453a-9ddd-5f0e18c0c581",
     "timestamp": "2025-09-30T08:05:49.740Z",
     "action": "POST /api/audit-logs",

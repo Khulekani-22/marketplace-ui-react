@@ -1,6 +1,6 @@
 import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
-import EmailLayer from "../components/EmailLayer";
+import MessagingSystem from "../components/MessagingSystem";
 
 const EmailPage = () => {
   return (
@@ -10,8 +10,8 @@ const EmailPage = () => {
         {/* Breadcrumb */}
         <Breadcrumb title='Message Center' />
 
-        {/* EmailLayer */}
-        <EmailLayer />
+        {/* MessagingSystem */}
+        <MessagingSystem />
       </MasterLayout>
     </>
   );

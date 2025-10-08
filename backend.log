@@ -1,19 +1,26 @@
-
-> scdm-backend@1.0.0 start
-> node server.js
-
-Failed to start backend: Error: listen EPERM: operation not permitted 0.0.0.0:5055
-    at Server.setupListenHandle [as _listen2] (node:net:1881:21)
-    at listenInCluster (node:net:1946:12)
-    at Server.listen (node:net:2044:7)
-    at Function.listen (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/application.js:635:24)
-    at file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:436:8
-    at new Promise (<anonymous>)
-    at listenWithPort (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:434:10)
-    at start (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:488:15) {
-  code: 'EPERM',
-  errno: -1,
-  syscall: 'listen',
-  address: '0.0.0.0',
-  port: 5055
-}
+🚀 Sloane Hub API server running on port 5500
+📡 Server URL: http://localhost:5500
+📊 Health check: http://localhost:5500/api/health
+💬 Messages API: http://localhost:5500/api/messages
+👥 Users API: http://localhost:5500/api/users/all
+⚙️  Admin API: http://localhost:5500/api/admin/stats
+✅ API server running on http://localhost:5500
+✅ Loaded appData from backend/appData.json
+📊 Data loaded: 6 users, 7 messages, 3 vendors, 14 startups
+[0mGET /api/messages/contacts [32m200[0m 17.195 ms - 3681[0m
+[0mGET /api/messages/conversation/user1_startup_founder [33m404[0m 0.626 ms - 1108[0m
+[0mGET /api/messages/conversation?userId=user1_startup_founder [33m400[0m 0.154 ms - 72[0m
+[0mGET /api/messages/conversation?user1=user1_startup_founder&user2=user2_startup_founder [32m200[0m 0.174 ms - 97[0m
+[0mGET /api/me [32m200[0m 0.208 ms - 311[0m
+[0mGET /api/messages/contacts [32m200[0m 0.828 ms - 3681[0m
+[0mGET /api/messages?limit=100 [32m200[0m 1.182 ms - 7371[0m
+[0mGET /api/messages/contacts [32m200[0m 0.150 ms - 3681[0m
+[0mGET /api/messages/contacts [32m200[0m 0.166 ms - 3681[0m
+✅ Saved appData to /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/appData.json
+[0mPOST /api/messages [32m201[0m 6.206 ms - 928[0m
+[0mGET /api/messages?limit=1 [32m200[0m 0.138 ms - 1175[0m
+[0mGET /api/messages/conversation?user1=khulekani@22onsloane.co&user2=22onsloanedigitalteam@gmail.com [32m200[0m 0.606 ms - 97[0m
+[0mGET /api/messages/conversation?user1=khulekani@22onsloane.co&user2=khulekani@22onsloane.co [32m200[0m 0.130 ms - 921[0m
+[0mGET /api/messages/conversation?user1=khulekani@22onsloane.co&user2=khulekani@22onsloane.co [36m304[0m 0.161 ms - -[0m
+[0mGET /api/messages/conversation?user1=khulekani@22onsloane.co&user2=ruthmaphosa2024@gmail.com [32m200[0m 0.399 ms - 97[0m
+[0mGET /api/messages/conversation?user1=khulekani@22onsloane.co&user2=khulekani@22onsloane.co [36m304[0m 0.358 ms - -[0m
