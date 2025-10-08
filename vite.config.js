@@ -11,6 +11,33 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    build: {
+      // Optimize chunk loading and reduce bundle splitting issues
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Group related dependencies to reduce chunk loading failures
+            vendor: ['react', 'react-dom', 'react-router-dom'],
+            bootstrap: ['bootstrap'],
+            firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+            utils: ['axios', 'date-fns']
+          },
+          chunkFileNames: (chunkInfo) => {
+            // Use content hash for cache busting but shorter names for reliability
+            return `assets/[name]-[hash:8].js`;
+          },
+          entryFileNames: `assets/[name]-[hash:8].js`,
+          assetFileNames: `assets/[name]-[hash:8].[ext]`
+        }
+      },
+      // Increase chunk size limit to reduce small chunks that might fail to load
+      chunkSizeWarningLimit: 1000,
+      // Optimize for production
+      minify: mode === 'production' ? 'esbuild' : false,
+      sourcemap: mode === 'development',
+      // Ensure consistent builds
+      target: 'es2020'
+    },
     server: {
       // Bind to the requested host (defaults to localhost for dev convenience)
       host,

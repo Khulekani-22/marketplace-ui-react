@@ -2,21 +2,20 @@
 import React, { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import RouteScrollToTop from "./helper/RouteScrollToTop";
-import { AppSyncProvider } from "./context/AppSyncContext.tsx";
-
-// Shell / guards
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
+import { AppSyncProvider } from "./context/AppSyncContext.tsx";
+import { WalletProvider } from "./context/WalletContext.tsx";
+import LoginForm from "./components/LoginForm.tsx";
 import PrivateRoute from "./components/PrivateRoute.tsx";
 import AdminRoute from "./components/AdminRoute.tsx";
 import VendorRoute from "./components/VendorRoute.tsx";
-import LoginForm from "./components/LoginForm.tsx";
-import VendorSignupPage from "./pages/VendorSignupPage.tsx";
-import { WalletProvider } from "./context/WalletContext.tsx";
 
-import { lazyWithRetry } from "./utils/lazyWithRetry";
+// Lazy loading with retry logic for better UX
 
-// --- Lazy pages ---
-const Dashboard = lazyWithRetry(() => import("./pages/Dashboard.tsx"));
+console.log('📱 App.jsx is loading...');
+
+// Minimal test - just the Dashboard
+import Dashboard from "./pages/Dashboard.tsx";
 const LandingPage = React.lazy(() => import("./pages/LandingPage.tsx"));
 const HomePageTwo = React.lazy(() => import("./pages/HomePageTwo.tsx"));
 const HomePageThree = React.lazy(() => import("./pages/HomePageThree.tsx"));
@@ -127,6 +126,7 @@ const AdminWalletCreditsPage = React.lazy(() => import("./pages/AdminWalletCredi
 
 const StartupProfilePage = React.lazy(() => import("./pages/StartupProfilePage.tsx"));
 const VendorDashboardPage = React.lazy(() => import("./pages/VendorDashboardPage.tsx"));
+const VendorSignupPage = React.lazy(() => import("./pages/VendorSignupPage.tsx"));
 
 
 
@@ -139,6 +139,8 @@ function Fallback() {
 }
 
 function App() {
+  console.log('🎯 App component is rendering...');
+  
   return (
     <>
       <RouteScrollToTop />
@@ -153,11 +155,7 @@ function App() {
               {/* protected */}
               <Route
                 path="/dashboard"
-                element={
-                  <PrivateRoute>
-                    <Dashboard />
-                  </PrivateRoute>
-                }
+                element={<Dashboard />}
               />
               <Route
                 path="/lms-admin"

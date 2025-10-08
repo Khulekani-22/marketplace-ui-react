@@ -7,6 +7,8 @@ import App from "./App.jsx";
 import { VendorProvider } from "./context/VendorContext";
 import { MessagesProvider } from "./context/MessagesContext.tsx";
 
+console.log('🚀 Main.jsx is loading...');
+
 // --- Styles (order matters: base CSS before component CSS) ---
 import "bootstrap/dist/css/bootstrap.min.css";
 import "quill/dist/quill.snow.css";
@@ -40,6 +42,8 @@ if (!rootEl) {
   throw new Error("Missing #root element in index.html");
 }
 
+console.log('🔥 About to render React app...');
+
 createRoot(rootEl).render(
   // <React.StrictMode> can be re-enabled if desired
   <BrowserRouter>
@@ -51,3 +55,5 @@ createRoot(rootEl).render(
     </VendorProvider>
   </BrowserRouter>
 );
+
+console.log('✅ React app rendered');

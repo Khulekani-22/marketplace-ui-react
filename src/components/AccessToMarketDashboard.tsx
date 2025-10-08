@@ -30,30 +30,95 @@ const AccessToMarketDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [availableCategories, setAvailableCategories] = useState<string[]>(["All"]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const tenantHeader = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
 
-  // Fetch startup and vendor profiles for current user
+  // Fetch startup and vendor profiles for current user with timeout and retry
   useEffect(() => {
-    (async () => {
+    let timeoutId: NodeJS.Timeout;
+    let abortController = new AbortController();
+    
+    const fetchProfiles = async (retryCount = 0) => {
       try {
+        setLoading(true);
+        setError(null);
+        
         const user = auth.currentUser;
-        if (!user) return;
+        if (!user) {
+          setLoading(false);
+          return;
+        }
+        
         const email = (user.email || "").toLowerCase();
         const uid = user.uid;
         let startup = null;
         let vendor = null;
+
+        // Set a timeout for the API calls
+        const timeoutPromise = new Promise((_, reject) => {
+          timeoutId = setTimeout(() => {
+            reject(new Error('Request timeout - API calls taking too long'));
+          }, 8000); // 8 second timeout
+        });
+
         try {
-          const sList = await api.get("/api/data/startups").then((r) => r.data || []);
-          startup = sList.find((s: any) => (s.ownerUid && s.ownerUid === uid) || ((s.contactEmail || s.email || "").toLowerCase() === email)) || null;
-        } catch {}
+          // Startup API call with timeout
+          const startupPromise = api.get("/api/data/startups", { 
+            signal: abortController.signal,
+            timeout: 6000 
+          }).then((r) => r.data || []);
+          
+          const sList = await Promise.race([startupPromise, timeoutPromise]);
+          startup = (sList as any[]).find((s: any) => 
+            (s.ownerUid && s.ownerUid === uid) || 
+            ((s.contactEmail || s.email || "").toLowerCase() === email)
+          ) || null;
+        } catch (err) {
+          console.warn('Failed to fetch startup data:', err);
+        }
+
         try {
-          const vList = await api.get("/api/data/vendors").then((r) => r.data || []);
-          vendor = vList.find((v: any) => (v.ownerUid && v.ownerUid === uid) || ((v.contactEmail || v.email || "").toLowerCase() === email)) || null;
-        } catch {}
+          // Vendor API call with timeout  
+          const vendorPromise = api.get("/api/data/vendors", { 
+            signal: abortController.signal,
+            timeout: 6000 
+          }).then((r) => r.data || []);
+          
+          const vList = await Promise.race([vendorPromise, timeoutPromise]);
+          vendor = (vList as any[]).find((v: any) => 
+            (v.ownerUid && v.ownerUid === uid) || 
+            ((v.contactEmail || v.email || "").toLowerCase() === email)
+          ) || null;
+        } catch (err) {
+          console.warn('Failed to fetch vendor data:', err);
+        }
+
         setProfiles({ startup, vendor });
-      } catch {}
-    })();
+        setLoading(false);
+        
+      } catch (error: any) {
+        console.error('Profile fetch error:', error);
+        
+        if (retryCount < 2 && !abortController.signal.aborted) {
+          console.log(`Retrying profile fetch (attempt ${retryCount + 1})...`);
+          setTimeout(() => fetchProfiles(retryCount + 1), 2000);
+        } else {
+          setError(error.message || 'Failed to load profile data');
+          setLoading(false);
+        }
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+      }
+    };
+
+    fetchProfiles();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      abortController.abort();
+    };
   }, []);
 
   // Handle category changes from TrendingNFTsOne
@@ -74,6 +139,36 @@ const AccessToMarketDashboard = () => {
   return (
     <>
       <div className='row gy-4'>
+        {/* Loading State */}
+        {loading && (
+          <div className='col-12'>
+            <div className="text-center py-5">
+              <div className="spinner-border text-primary mb-3" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p className="text-muted">Loading your personalized dashboard...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className='col-12'>
+            <div className="alert alert-warning text-center">
+              <i className="bi bi-exclamation-triangle me-2"></i>
+              <strong>Dashboard partially unavailable:</strong> {error}
+              <div className="mt-2">
+                <button 
+                  className="btn btn-sm btn-outline-primary"
+                  onClick={() => window.location.reload()}
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header Section */}
         <div className='col-12 d-none'>
           <div className="d-flex align-items-center justify-content-between mb-4">
@@ -81,7 +176,7 @@ const AccessToMarketDashboard = () => {
               <h2 className="h4 mb-1">Access To Market</h2>
               <p className="text-muted mb-0">
                 Discover services and solutions tailored to your needs
-                {profiles.startup?.name && ` for ${profiles.startup.name}`}
+                {!loading && profiles.startup?.name && ` for ${profiles.startup.name}`}
               </p>
             </div>
             <Link to="/marketplace" className="btn btn-outline-primary">
@@ -91,7 +186,7 @@ const AccessToMarketDashboard = () => {
         </div>
 
         {/* Personalization Info */}
-        {auth.currentUser && profiles.startup && (
+        {!loading && auth.currentUser && profiles.startup && (
           <div className='col-12'>
             <div className="alert alert-info py-2 mb-3">
               <small>
@@ -105,15 +200,17 @@ const AccessToMarketDashboard = () => {
         )}
 
         {/* TrendingNFTsOne Component with controlled props */}
-        <div className='col-12'>
-          <TrendingNFTsOne 
-            query={searchQuery}
-            onQueryChange={handleQueryChange}
-            category={selectedCategory}
-            onCategoryChange={handleCategoryChange}
-            onCategoriesChange={handleCategoriesChange}
-          />
-        </div>
+        {!loading && (
+          <div className='col-12'>
+            <TrendingNFTsOne 
+              query={searchQuery}
+              onQueryChange={handleQueryChange}
+              category={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+              onCategoriesChange={handleCategoriesChange}
+            />
+          </div>
+        )}
 
         {/* Quick Actions for non-authenticated users */}
         {!auth.currentUser && (

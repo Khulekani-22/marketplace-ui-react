@@ -78,3 +78,6 @@
 [0mGET /api/me [36m304[0m 0.547 ms - -[0m
 [0mGET /api/messages/contacts [36m304[0m 0.264 ms - -[0m
 [0mGET /api/messages?limit=100 [32m200[0m 0.234 ms - 10763[0m
+[0mGET /api/me [36m304[0m 0.483 ms - -[0m
+[0mGET /api/messages/contacts [36m304[0m 0.232 ms - -[0m
+[0mGET /api/messages?limit=100 [32m200[0m 0.228 ms - 10763[0m

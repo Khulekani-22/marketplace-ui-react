@@ -1,1 +1,0 @@
-import{j as r}from"./index-C1K-Ttoc.js";import{M as s}from"./MasterLayout-2IldCL2c.js";import{B as t}from"./Breadcrumb-Y9hUuaca.js";import{M as e}from"./MessagingSystem-CQicrl4o.js";import"./iconify-CXWIXv_s.js";const p=()=>r.jsx(r.Fragment,{children:r.jsxs(s,{children:[r.jsx(t,{title:"Message Center"}),r.jsx(e,{})]})});export{p as default};
