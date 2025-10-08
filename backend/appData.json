@@ -2854,6 +2854,16 @@
   },
   "users": [
     {
+      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "email": "22onsloanedigitalteam@gmail.com",
+      "displayName": "Sloane Digital Team",
+      "tenantId": "public",
+      "role": "admin",
+      "photoURL": "https://ui-avatars.com/api/?name=Sloane+Digital+Team&background=7c3aed&color=fff",
+      "createdAt": "2025-10-08T12:00:00Z",
+      "lastLoginAt": "2025-10-08T12:00:00Z"
+    },
+    {
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "email": "khulekani@22onsloane.co",
       "displayName": "Khulekani Magubane",

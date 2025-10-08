@@ -72,10 +72,16 @@ router.get("/me", (req, res) => {
 });
 
 // Upsert a user's role/tenant
-router.post("/", (req, res) => {
+router.post("/", firebaseAuthRequired, isAdminForTenant, (req, res) => {
   const { email, tenantId = "public", role = "member", uid = "" } = req.body || {};
   const norm = normalizeEmail(email);
   if (!norm) return res.status(400).json({ error: "Missing email" });
+  
+  // Only admins can grant admin roles
+  if (role === "admin" && !req.user?.isAdmin) {
+    return res.status(403).json({ error: "Only admins can grant admin roles" });
+  }
+  
   const updated = saveData((data) => {
     const list = Array.isArray(data.users) ? data.users : [];
     const idx = list.findIndex((u) => normalizeEmail(u.email) === norm);

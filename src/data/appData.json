@@ -23,25 +23,6 @@
       "bookedAt": "2024-07-28T10:00:00Z",
       "status": "pending",
       "id": "iqEZWAsptu7ygSTQOAij"
-    },
-    {
-      "id": "dd126fa5-3360-44ca-b5f4-68d46bdb9bc0",
-      "subscriptionId": "7b449164-e11b-4e8a-85e7-e0a883bb2866",
-      "serviceId": "8",
-      "serviceTitle": "Animated Explainer Video",
-      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
-      "vendorName": "22 On Sloane Programmes",
-      "vendorEmail": "ruthmaphosa2024@gmail.com",
-      "customerId": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "customerName": "22onsloanedigitalteam",
-      "customerEmail": "22onsloanedigitalteam@gmail.com",
-      "tenantId": "public",
-      "price": 18000,
-      "scheduledDate": "2025-10-23",
-      "scheduledSlot": "14:00",
-      "bookedAt": "2025-10-08T11:00:15.660Z",
-      "status": "scheduled",
-      "updatedAt": "2025-10-08T11:00:15.660Z"
     }
   ],
   "cohorts": [
@@ -2873,6 +2854,16 @@
   },
   "users": [
     {
+      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "email": "22onsloanedigitalteam@gmail.com",
+      "displayName": "Sloane Digital Team",
+      "tenantId": "public",
+      "role": "admin",
+      "photoURL": "https://ui-avatars.com/api/?name=Sloane+Digital+Team&background=7c3aed&color=fff",
+      "createdAt": "2025-10-08T12:00:00Z",
+      "lastLoginAt": "2025-10-08T12:00:00Z"
+    },
+    {
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "email": "khulekani@22onsloane.co",
       "displayName": "Khulekani Magubane",
@@ -2881,56 +2872,6 @@
       "photoURL": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
       "createdAt": "2024-01-15T10:00:00Z",
       "lastLoginAt": "2025-01-28T08:30:00Z"
-    },
-    {
-      "uid": "user2_startup_founder",
-      "email": "sarah.johnson@afritech.co.za",
-      "displayName": "Sarah Johnson",
-      "tenantId": "22onsloane",
-      "role": "member",
-      "photoURL": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff",
-      "createdAt": "2024-03-20T14:30:00Z",
-      "lastLoginAt": "2025-01-27T16:45:00Z"
-    },
-    {
-      "uid": "user3_tech_entrepreneur",
-      "email": "david.chen@finconnect.africa",
-      "displayName": "David Chen",
-      "tenantId": "22onsloane",
-      "role": "member",
-      "photoURL": "https://ui-avatars.com/api/?name=David+Chen&background=dc2626&color=fff",
-      "createdAt": "2024-05-10T09:15:00Z",
-      "lastLoginAt": "2025-01-28T12:20:00Z"
-    },
-    {
-      "uid": "user4_social_entrepreneur",
-      "email": "maria.santos@impactventures.co.za",
-      "displayName": "Maria Santos",
-      "tenantId": "22onsloane",
-      "role": "member",
-      "photoURL": "https://ui-avatars.com/api/?name=Maria+Santos&background=7c2d12&color=fff",
-      "createdAt": "2024-07-08T11:00:00Z",
-      "lastLoginAt": "2025-01-26T19:30:00Z"
-    },
-    {
-      "uid": "user5_partner_mentor",
-      "email": "james.williams@mentornetwork.co.za",
-      "displayName": "James Williams",
-      "tenantId": "22onsloane",
-      "role": "partner",
-      "photoURL": "https://ui-avatars.com/api/?name=James+Williams&background=1e40af&color=fff",
-      "createdAt": "2024-02-28T13:45:00Z",
-      "lastLoginAt": "2025-01-28T07:15:00Z"
-    },
-    {
-      "uid": "user6_startup_cto",
-      "email": "emily.brown@blockchainsa.co.za",
-      "displayName": "Emily Brown",
-      "tenantId": "22onsloane",
-      "role": "member",
-      "photoURL": "https://ui-avatars.com/api/?name=Emily+Brown&background=7c3aed&color=fff",
-      "createdAt": "2024-06-15T16:20:00Z",
-      "lastLoginAt": "2025-01-27T22:10:00Z"
     }
   ],
   "tenants": [
@@ -3062,63 +3003,7 @@
       "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "tenantId": "public",
       "createdAt": "2025-09-17T11:51:09.146Z"
-    },
-    {
-      "id": "7b449164-e11b-4e8a-85e7-e0a883bb2866",
-      "type": "service",
-      "serviceId": "8",
-      "vendorId": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
-      "email": "22onsloanedigitalteam@gmail.com",
-      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "tenantId": "public",
-      "createdAt": "2025-10-08T11:00:15.660Z",
-      "scheduledDate": "2025-10-23",
-      "scheduledSlot": "14:00"
     }
   ],
-  "wallets": [
-    {
-      "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
-      "version": 1,
-      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "email": "22onsloanedigitalteam@gmail.com",
-      "tenantId": "vendor",
-      "role": "member",
-      "balance": 182000,
-      "startingBalance": 200000,
-      "transactions": [
-        {
-          "id": "6f06b178-282a-43b2-bd5e-ec488aeb7908",
-          "type": "debit",
-          "amount": 18000,
-          "description": "Listing booking: Animated Explainer Video",
-          "reference": "listing-8",
-          "metadata": {
-            "serviceId": "8",
-            "vendor": "22 On Sloane Programmes",
-            "category": "Video & Animation",
-            "scheduledDate": "2025-10-23",
-            "scheduledSlot": "14:00",
-            "source": "dashboard-trending-booking"
-          },
-          "createdAt": "2025-10-08T11:00:15.682Z",
-          "balanceAfter": 182000
-        },
-        {
-          "id": "fc5c3145-02dc-4e76-a404-3792de20235e",
-          "type": "credit",
-          "amount": 200000,
-          "description": "Initial voucher allocation",
-          "balanceAfter": 200000,
-          "createdAt": "2025-10-08T10:11:01.254Z",
-          "reference": "initial-credit",
-          "metadata": {
-            "reason": "auto-allocation",
-            "role": "member"
-          }
-        }
-      ],
-      "lastUpdated": "2025-10-08T11:00:15.682Z"
-    }
-  ]
+  "wallets": []
 }
