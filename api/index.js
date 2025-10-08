@@ -63,6 +63,33 @@ function getMockData() {
   };
 }
 
+// Data loading helper for audit data
+function getAuditData() {
+  try {
+    const auditPath = path.join(process.cwd(), 'backend', 'auditData.json');
+    if (fs.existsSync(auditPath)) {
+      const rawData = fs.readFileSync(auditPath, 'utf8');
+      return JSON.parse(rawData);
+    }
+    return [];
+  } catch (error) {
+    console.error('❌ Error loading audit data:', error.message);
+    return [];
+  }
+}
+
+// Function to save audit data
+function saveAuditData(auditLogs) {
+  try {
+    const auditPath = path.join(process.cwd(), 'backend', 'auditData.json');
+    fs.writeFileSync(auditPath, JSON.stringify(auditLogs, null, 2));
+    return true;
+  } catch (error) {
+    console.error('❌ Error saving audit data:', error.message);
+    return false;
+  }
+}
+
 function getAppData() {
   if (!appData) {
     appData = loadAppData();
@@ -192,15 +219,123 @@ app.post("/api/wallets/transaction", (req, res) => {
   res.json({ success: true, transactionId: Date.now().toString() });
 });
 
-// Audit logs endpoint
+// Audit logs endpoints
 app.post("/api/audit-logs", (req, res) => {
-  // Mock audit log creation
-  res.json({ success: true, logId: Date.now().toString() });
+  const { action, userEmail, userId, targetType, targetId, metadata } = req.body;
+  
+  // Create new audit log entry
+  const auditLog = {
+    id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+    timestamp: new Date().toISOString(),
+    action: action || "UNKNOWN_ACTION",
+    userEmail: userEmail || null,
+    userId: userId || null,
+    tenantId: "public", // Default tenant
+    targetType: targetType || "unknown",
+    targetId: targetId || null,
+    ip: req.get('x-forwarded-for') || req.connection.remoteAddress || "127.0.0.1",
+    metadata: metadata || {}
+  };
+  
+  // Get existing audit data and add new log
+  const auditLogs = getAuditData();
+  auditLogs.unshift(auditLog); // Add to beginning for latest first
+  
+  // Save updated audit data
+  if (saveAuditData(auditLogs)) {
+    res.status(201).json({ success: true, logId: auditLog.id, log: auditLog });
+  } else {
+    res.status(500).json({ success: false, error: "Failed to save audit log" });
+  }
 });
 
 app.get("/api/audit-logs", (req, res) => {
-  res.json({ logs: [], total: 0 });
+  const { 
+    limit = 50, 
+    offset = 0, 
+    userEmail, 
+    action, 
+    targetType, 
+    startDate, 
+    endDate 
+  } = req.query;
+  
+  let auditLogs = getAuditData();
+  
+  // Apply filters
+  if (userEmail) {
+    auditLogs = auditLogs.filter(log => 
+      log.userEmail && log.userEmail.toLowerCase().includes(userEmail.toLowerCase())
+    );
+  }
+  
+  if (action) {
+    auditLogs = auditLogs.filter(log => 
+      log.action && log.action.toLowerCase().includes(action.toLowerCase())
+    );
+  }
+  
+  if (targetType) {
+    auditLogs = auditLogs.filter(log => log.targetType === targetType);
+  }
+  
+  if (startDate) {
+    auditLogs = auditLogs.filter(log => 
+      new Date(log.timestamp) >= new Date(startDate)
+    );
+  }
+  
+  if (endDate) {
+    auditLogs = auditLogs.filter(log => 
+      new Date(log.timestamp) <= new Date(endDate)
+    );
+  }
+  
+  // Sort by timestamp (newest first)
+  auditLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  // Apply pagination
+  const total = auditLogs.length;
+  const startIndex = parseInt(offset);
+  const pageSize = parseInt(limit);
+  const paginatedLogs = auditLogs.slice(startIndex, startIndex + pageSize);
+  
+  // Generate summary statistics
+  const summary = {
+    totalLogs: total,
+    uniqueUsers: [...new Set(auditLogs.map(log => log.userEmail).filter(Boolean))].length,
+    topActions: getTopActions(auditLogs),
+    recentActivity: auditLogs.slice(0, 10).map(log => ({
+      timestamp: log.timestamp,
+      action: log.action,
+      userEmail: log.userEmail
+    }))
+  };
+  
+  res.json({ 
+    logs: paginatedLogs, 
+    total,
+    summary,
+    pagination: {
+      limit: pageSize,
+      offset: startIndex,
+      hasMore: startIndex + pageSize < total
+    }
+  });
 });
+
+// Helper function to get top actions
+function getTopActions(logs) {
+  const actionCounts = {};
+  logs.forEach(log => {
+    actionCounts[log.action] = (actionCounts[log.action] || 0) + 1;
+  });
+  
+  return Object.entries(actionCounts)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 10)
+    .map(([action, count]) => ({ action, count }));
+}
 
 // Data services endpoints
 app.get("/api/data/services", (req, res) => {
