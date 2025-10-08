@@ -418,24 +418,40 @@ app.post("/api/assistant/chat", (req, res) => {
 app.get("/api/admin/wallet/users", (req, res) => {
   const data = getAppData();
   const users = data.users || [];
+  const wallets = data.wallets || [];
   
-  // Only return actual users from data.users array, not composite list
-  // The platform users are handled separately via /api/users/all
-  const usersWithWallets = users.map(user => ({
-    id: user.uid || user.id,
-    uid: user.uid || user.id,
-    name: user.name || user.displayName || "Unnamed User",
-    email: user.email,
-    role: user.role || "member",
-    tenantId: user.tenantId || "public",
-    createdAt: user.createdAt || new Date().toISOString(),
-    lastActivity: user.lastActivity || user.lastLoginAt || user.updatedAt || new Date().toISOString(),
-    walletBalance: 0, // Mock wallet balance - in real implementation would query wallets
-    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=7c3aed&color=fff`
-  }));
+  // Only return users who actually have wallet records or have been granted credits
+  // This separates true "local wallet users" from general platform users
+  let localWalletUsers = [];
+  
+  // Check if any users have actual wallet data
+  if (wallets.length > 0) {
+    // Filter to users who have actual wallet records
+    localWalletUsers = users.filter(user => 
+      wallets.some(wallet => wallet.userId === user.uid || wallet.userId === user.id)
+    ).map(user => {
+      const userWallet = wallets.find(w => w.userId === user.uid || w.userId === user.id);
+      return {
+        id: user.uid || user.id,
+        uid: user.uid || user.id,
+        name: user.name || user.displayName || "Unnamed User",
+        email: user.email,
+        role: user.role || "member",
+        tenantId: user.tenantId || "public",
+        createdAt: user.createdAt || new Date().toISOString(),
+        lastActivity: user.lastActivity || user.lastLoginAt || user.updatedAt || new Date().toISOString(),
+        walletBalance: userWallet?.balance || 0,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=7c3aed&color=fff`
+      };
+    });
+  } else {
+    // No wallet data exists yet - return empty list for local wallet users
+    // This makes it clear this section is for users with actual wallet activity
+    localWalletUsers = [];
+  }
   
   // Sort by wallet balance then name
-  usersWithWallets.sort((a, b) => 
+  localWalletUsers.sort((a, b) => 
     b.walletBalance !== a.walletBalance ? 
     b.walletBalance - a.walletBalance : 
     a.name.localeCompare(b.name)
@@ -443,11 +459,11 @@ app.get("/api/admin/wallet/users", (req, res) => {
   
   res.json({
     status: "success",
-    users: usersWithWallets,
+    users: localWalletUsers,
     summary: {
-      totalUsers: usersWithWallets.length,
-      usersWithCredits: usersWithWallets.filter(u => u.walletBalance > 0).length,
-      totalCreditsAllocated: usersWithWallets.reduce((sum, u) => sum + (u.walletBalance || 0), 0)
+      totalUsers: localWalletUsers.length,
+      usersWithCredits: localWalletUsers.filter(u => u.walletBalance > 0).length,
+      totalCreditsAllocated: localWalletUsers.reduce((sum, u) => sum + (u.walletBalance || 0), 0)
     }
   });
 });

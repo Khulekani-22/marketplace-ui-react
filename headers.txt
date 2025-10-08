@@ -1,0 +1,16 @@
+HTTP/2 200 
+accept-ranges: bytes
+access-control-allow-origin: *
+age: 1335
+cache-control: no-cache, no-store, must-revalidate
+content-disposition: inline; filename="index.html"
+content-type: text/html; charset=utf-8
+date: Tue, 07 Oct 2025 15:04:19 GMT
+etag: "a6079f57b8921f0890ca5d3336414f44"
+last-modified: Tue, 07 Oct 2025 14:42:03 GMT
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-vercel-cache: HIT
+x-vercel-id: cpt1::zz6qd-1759849459063-fb62f0a5fe1f
+content-length: 3590
+
