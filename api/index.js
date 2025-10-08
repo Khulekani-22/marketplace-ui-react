@@ -418,62 +418,18 @@ app.post("/api/assistant/chat", (req, res) => {
 app.get("/api/admin/wallet/users", (req, res) => {
   const data = getAppData();
   const users = data.users || [];
-  const vendors = data.vendors || [];
-  const startups = data.startups || [];
   
-  // Build composite eligible user list (matching backend logic)
-  const baseUsers = [];
-  
-  // Add existing users
-  users.forEach(user => {
-    if (user.uid || user.email) {
-      baseUsers.push({
-        id: user.uid || user.id,
-        uid: user.uid || user.id,
-        name: user.name || user.displayName || "Unnamed User",
-        email: user.email,
-        role: user.role || "member",
-        tenantId: user.tenantId || "public",
-        createdAt: user.createdAt || new Date().toISOString(),
-        lastActivity: user.lastActivity || user.lastLoginAt || user.updatedAt || new Date().toISOString()
-      });
-    }
-  });
-  
-  // Add vendor owners as users
-  vendors.forEach(vendor => {
-    if (vendor.ownerUid && !baseUsers.find(u => u.uid === vendor.ownerUid)) {
-      baseUsers.push({
-        id: vendor.ownerUid,
-        uid: vendor.ownerUid,
-        name: vendor.name || vendor.companyName || "Vendor Owner",
-        email: vendor.email || vendor.contactEmail,
-        role: "vendor",
-        tenantId: vendor.tenantId || "public",
-        createdAt: vendor.createdAt || new Date().toISOString(),
-        lastActivity: vendor.lastUpdated || new Date().toISOString()
-      });
-    }
-  });
-  
-  // Add startup owners as users
-  startups.forEach(startup => {
-    if (startup.ownerUid && !baseUsers.find(u => u.uid === startup.ownerUid)) {
-      baseUsers.push({
-        id: startup.ownerUid,
-        uid: startup.ownerUid,
-        name: startup.name || startup.title || "Startup Owner", 
-        email: startup.email || startup.contactEmail,
-        role: "startup",
-        tenantId: startup.tenantId || "public",
-        createdAt: startup.createdAt || new Date().toISOString(),
-        lastActivity: startup.lastUpdated || new Date().toISOString()
-      });
-    }
-  });
-  
-  const usersWithWallets = baseUsers.map(user => ({
-    ...user,
+  // Only return actual users from data.users array, not composite list
+  // The platform users are handled separately via /api/users/all
+  const usersWithWallets = users.map(user => ({
+    id: user.uid || user.id,
+    uid: user.uid || user.id,
+    name: user.name || user.displayName || "Unnamed User",
+    email: user.email,
+    role: user.role || "member",
+    tenantId: user.tenantId || "public",
+    createdAt: user.createdAt || new Date().toISOString(),
+    lastActivity: user.lastActivity || user.lastLoginAt || user.updatedAt || new Date().toISOString(),
     walletBalance: 0, // Mock wallet balance - in real implementation would query wallets
     avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=7c3aed&color=fff`
   }));
