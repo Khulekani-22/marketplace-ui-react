@@ -327,6 +327,47 @@ app.get("/api/admin/stats", (req, res) => {
   });
 });
 
+app.get("/api/admin/users", (req, res) => {
+  const data = getAppData();
+  const users = data.users || [];
+  const startups = data.startups || [];
+  const vendors = data.vendors || [];
+  
+  // Transform users with additional admin info
+  const adminUsers = users.map(user => ({
+    id: user.uid || user.id,
+    uid: user.uid || user.id,
+    name: user.name || user.displayName || "Unnamed User",
+    email: user.email,
+    role: user.role || "member",
+    tenantId: user.tenantId || "public",
+    status: user.disabled ? "disabled" : "active",
+    emailVerified: user.emailVerified !== false,
+    createdAt: user.createdAt || new Date().toISOString(),
+    lastLoginAt: user.lastLoginAt || user.lastActivity || new Date().toISOString(),
+    photoURL: user.photoURL || user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=7c3aed&color=fff`,
+    metadata: {
+      totalBookings: 0, // Could be calculated from bookings data
+      totalSpent: 0,    // Could be calculated from bookings data
+      isVendor: vendors.some(v => v.email === user.email || v.userId === user.uid),
+      isStartupOwner: startups.some(s => s.email === user.email || s.userId === user.uid)
+    }
+  }));
+  
+  res.json({
+    status: "success",
+    users: adminUsers,
+    total: adminUsers.length,
+    summary: {
+      totalUsers: adminUsers.length,
+      activeUsers: adminUsers.filter(u => u.status === "active").length,
+      adminUsers: adminUsers.filter(u => u.role === "admin").length,
+      vendorUsers: adminUsers.filter(u => u.metadata.isVendor).length,
+      startupUsers: adminUsers.filter(u => u.metadata.isStartupOwner).length
+    }
+  });
+});
+
 // Subscriptions endpoint
 app.get("/api/subscriptions", (req, res) => {
   const data = getAppData();
@@ -767,7 +808,7 @@ app.get("/api/test", (req, res) => {
       "/api/health", "/api/me", "/api/messages", "/api/lms/live",
       "/api/tenants", "/api/wallets/me", "/api/audit-logs",
       "/api/data/services", "/api/data/services/mine", "/api/data/vendors", "/api/data/startups",
-      "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", "/api/admin/stats", 
+      "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", "/api/admin/stats", "/api/admin/users",
       "/api/subscriptions", "/api/subscriptions/my", "/api/subscriptions/service",
       "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
       "/api/assistant/chat", "/api/admin/wallet/users", "/api/admin/wallet/add-credits",
@@ -800,7 +841,7 @@ app.use((req, res, next) => {
         "/api/health", "/api/me", "/api/messages", "/api/lms/live",
         "/api/tenants", "/api/wallets/me", "/api/audit-logs",
         "/api/data/services", "/api/data/services/mine", "/api/data/vendors", "/api/data/startups",
-        "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", "/api/admin/stats",
+        "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", "/api/admin/stats", "/api/admin/users",
         "/api/subscriptions", "/api/subscriptions/my", "/api/subscriptions/service",
         "/api/subscriptions/service/cancel", "/api/subscriptions/service/:id",
         "/api/assistant/chat", "/api/admin/wallet/users", "/api/admin/wallet/add-credits",
