@@ -67,13 +67,43 @@ function getMockData() {
     startups: [],
     vendors: [],
     wallets: [],
-    users: [{
-      uid: "test-user-id",
-      email: "22onsloanedigitalteam@gmail.com",
-      displayName: "Test User",
-      role: "admin",
-      tenantId: "vendor"
-    }]
+    users: [
+      {
+        uid: "duFghKRYhyRFUhlBRm66iMLKgh22",
+        email: "22onsloanedigitalteam@gmail.com",
+        displayName: "22 On Sloane Digital Team",
+        role: "admin",
+        tenantId: "public"
+      },
+      {
+        uid: "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+        email: "khulekani@22onsloane.co",
+        displayName: "Khulekani Magubane",
+        role: "admin", 
+        tenantId: "vendor"
+      },
+      {
+        uid: "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+        email: "khulekani@gecafrica.co",
+        displayName: "Khulekani Magubane",
+        role: "member",
+        tenantId: "vendor"
+      },
+      {
+        uid: "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+        email: "zinhlesloane@gmail.com",
+        displayName: "Zinhle Sloane",
+        role: "member",
+        tenantId: "vendor"
+      },
+      {
+        uid: "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+        email: "mncubekhulekani@gmail.com",
+        displayName: "Mncube Khulekani",
+        role: "member",
+        tenantId: "vendor"
+      }
+    ]
   };
 }
 
@@ -182,10 +212,11 @@ app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 /* ------------------------ Mock Data for Compatibility ------------------------ */
 const mockUser = {
-  uid: "test-user-id",
+  uid: "duFghKRYhyRFUhlBRm66iMLKgh22",
   email: "22onsloanedigitalteam@gmail.com",
-  role: "member",
-  tenantId: "vendor"
+  displayName: "22 On Sloane Digital Team",
+  role: "admin",
+  tenantId: "public"
 };
 
 const mockWallet = {
@@ -220,8 +251,20 @@ app.get("/api/me", (req, res) => {
   const users = data.users || [];
   
   // In a real app, this would verify the Firebase token and find the user
-  // For now, return the first admin user or mock user
-  const adminUser = users.find(u => u.role === 'admin') || users[0] || mockUser;
+  // For now, return the admin user with proper Firebase structure
+  const adminUser = users.find(u => u.role === 'admin' || u.email === '22onsloanedigitalteam@gmail.com') || {
+    uid: "duFghKRYhyRFUhlBRm66iMLKgh22",
+    email: "22onsloanedigitalteam@gmail.com",
+    displayName: "22 On Sloane Digital Team",
+    tenantId: "public",
+    role: "admin",
+    photoURL: "https://ui-avatars.com/api/?name=22+On+Sloane+Digital+Team&background=7c3aed&color=fff",
+    createdAt: "2025-10-07T10:00:00Z",
+    lastLoginAt: new Date().toISOString(),
+    emailVerified: true,
+    disabled: false
+  };
+  
   res.json(adminUser);
 });
 
@@ -1331,12 +1374,19 @@ app.post("/api/wallets/me/redeem", (req, res) => {
   }
 
   const data = getAppData();
-  const wallets = data.wallets || [];
+  data.wallets = data.wallets || [];
   
   // Find or create user wallet
-  let userWallet = wallets.find(w => w.userId === mockUser.uid);
+  let userWallet = data.wallets.find(w => w.userId === mockUser.uid);
   if (!userWallet) {
-    userWallet = { ...mockWallet, transactions: [] };
+    userWallet = { 
+      ...mockWallet, 
+      userId: mockUser.uid,
+      email: mockUser.email,
+      transactions: [],
+      createdAt: new Date().toISOString()
+    };
+    data.wallets.push(userWallet);
   }
   
   // Create transaction
@@ -1357,6 +1407,17 @@ app.post("/api/wallets/me/redeem", (req, res) => {
   userWallet.transactions.unshift(transaction);
   userWallet.lastUpdated = new Date().toISOString();
 
+  // Update in-memory cache (file system writes are not available in Vercel serverless)
+  appData = data;
+  
+  // Attempt to save to file system if possible (will work locally, fail gracefully on Vercel)
+  try {
+    saveAppData(data);
+    console.log('✅ Wallet data saved successfully');
+  } catch (error) {
+    console.warn('⚠️ File system save failed (expected in serverless):', error.message);
+  }
+  
   res.json({
     ok: true,
     wallet: userWallet,
@@ -1382,10 +1443,10 @@ app.post("/api/wallets/grant", (req, res) => {
   }
 
   const data = getAppData();
-  const wallets = data.wallets || [];
+  data.wallets = data.wallets || [];
   
   // Find or create target user wallet
-  let targetWallet = wallets.find(w => 
+  let targetWallet = data.wallets.find(w => 
     w.email?.toLowerCase() === email.toLowerCase() ||
     w.userEmail?.toLowerCase() === email.toLowerCase()
   );
@@ -1395,13 +1456,14 @@ app.post("/api/wallets/grant", (req, res) => {
       id: `wallet-${Date.now()}`,
       userId: email,
       email: email,
+      userEmail: email,
       balance: 0,
       currency: "USD",
       transactions: [],
       createdAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString()
     };
-    wallets.push(targetWallet);
+    data.wallets.push(targetWallet);
   }
   
   // Create transaction
@@ -1422,6 +1484,17 @@ app.post("/api/wallets/grant", (req, res) => {
   targetWallet.transactions.unshift(transaction);
   targetWallet.lastUpdated = new Date().toISOString();
 
+  // Update in-memory cache (file system writes are not available in Vercel serverless)
+  appData = data;
+  
+  // Attempt to save to file system if possible (will work locally, fail gracefully on Vercel)
+  try {
+    saveAppData(data);
+    console.log('✅ Wallet data saved successfully');
+  } catch (error) {
+    console.warn('⚠️ File system save failed (expected in serverless):', error.message);
+  }
+  
   res.json({
     ok: true,
     wallet: targetWallet,
@@ -2153,12 +2226,61 @@ app.post("/api/admin/wallet/normalize-appdata", (req, res) => {
 });
 
 app.post("/api/admin/wallet/sync-firebase-users", (req, res) => {
-  // Mock Firebase user sync
-  res.json({
-    status: "success", 
-    message: "Firebase users synced successfully",
-    syncedCount: 0
-  });
+  try {
+    const { promoteVendors = [], defaultRole = "member", defaultTenant = "public" } = req.body;
+    
+    const data = getAppData();
+    if (!data.wallets) {
+      data.wallets = [];
+    }
+    
+    // Get users from backend data
+    const users = data.users || [];
+    let syncedCount = 0;
+    
+    // Sync each user - create wallet if doesn't exist
+    users.forEach(user => {
+      // Check if user already has a wallet
+      const existingWallet = data.wallets.find(w => w.userId === user.uid);
+      
+      if (!existingWallet) {
+        // Create new wallet for user
+        const newWallet = {
+          id: `wallet_${user.uid}_${Date.now()}`,
+          userId: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          balance: 0,
+          totalEarned: 0,
+          totalSpent: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: "active"
+        };
+        
+        data.wallets.push(newWallet);
+        syncedCount++;
+      }
+    });
+    
+    // Save updated data
+    saveAppData(data);
+    
+    res.json({
+      status: "success", 
+      message: `Successfully synced ${syncedCount} Firebase users`,
+      synced: syncedCount,
+      total: users.length
+    });
+    
+  } catch (error) {
+    console.error('Error syncing Firebase users:', error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to sync Firebase users",
+      error: error.message
+    });
+  }
 });
 
 app.get("/api/admin/wallet/summary", (req, res) => {
@@ -2191,121 +2313,36 @@ app.get("/api/admin/wallet/transactions", (req, res) => {
   });
 });
 
-// Users/all endpoint for Firebase user search
+// Users/all endpoint - reads from backend/appData.json
 app.get("/api/users/all", (req, res) => {
   const { search = "", pageSize = 100 } = req.query;
   
-  // Real Firebase authenticated users from the system
-  const firebaseUsers = [
-    {
-      uid: "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
-      email: "khulekani@gecafrica.co",
-      displayName: "Khulekani Magubane",
-      photoURL: "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
-      emailVerified: true,
-      disabled: false,
-      metadata: {
-        creationTime: "2025-09-05T10:00:00Z",
-        lastSignInTime: "2025-09-05T10:00:00Z"
-      },
-      providerData: [{
-        providerId: "password",
-        uid: "khulekani@gecafrica.co",
-        email: "khulekani@gecafrica.co",
-        displayName: "Khulekani Magubane"
-      }]
+  // Get users from backend data file
+  const data = getAppData();
+  const backendUsers = data.users || [];
+  
+  // Convert backend users to Firebase-compatible format for frontend
+  const firebaseUsers = backendUsers.map(user => ({
+    uid: user.uid,
+    email: user.email,
+    displayName: user.displayName,
+    photoURL: user.photoURL,
+    emailVerified: true,
+    disabled: false,
+    metadata: {
+      creationTime: user.createdAt || "2025-01-01T00:00:00Z",
+      lastSignInTime: user.lastLoginAt || "2025-01-01T00:00:00Z"
     },
-    {
-      uid: "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
-      email: "zinhlesloane@gmail.com",
-      displayName: "Zinhle Sloane",
-      photoURL: "https://ui-avatars.com/api/?name=Zinhle+Sloane&background=059669&color=fff",
-      emailVerified: true,
-      disabled: false,
-      metadata: {
-        creationTime: "2025-09-05T10:00:00Z",
-        lastSignInTime: "2025-09-05T10:00:00Z"
-      },
-      providerData: [{
-        providerId: "password",
-        uid: "zinhlesloane@gmail.com",
-        email: "zinhlesloane@gmail.com",
-        displayName: "Zinhle Sloane"
-      }]
-    },
-    {
-      uid: "MFIzWLlhKjSDkV8FPlwXixdUCFX2",
-      email: "ruthmaphosa2024@gmail.com",
-      displayName: "Ruth Maphosa",
-      photoURL: "https://ui-avatars.com/api/?name=Ruth+Maphosa&background=dc2626&color=fff",
-      emailVerified: true,
-      disabled: false,
-      metadata: {
-        creationTime: "2025-08-31T10:00:00Z",
-        lastSignInTime: "2025-08-31T10:00:00Z"
-      },
-      providerData: [{
-        providerId: "password",
-        uid: "ruthmaphosa2024@gmail.com",
-        email: "ruthmaphosa2024@gmail.com",
-        displayName: "Ruth Maphosa"
-      }]
-    },
-    {
-      uid: "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      email: "khulekani@22onsloane.co",
-      displayName: "Khulekani Magubane",
-      photoURL: "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
-      emailVerified: true,
-      disabled: false,
-      metadata: {
-        creationTime: "2025-08-23T10:00:00Z",
-        lastSignInTime: "2025-10-06T10:00:00Z"
-      },
-      providerData: [{
-        providerId: "password",
-        uid: "khulekani@22onsloane.co",
-        email: "khulekani@22onsloane.co",
-        displayName: "Khulekani Magubane"
-      }]
-    },
-    {
-      uid: "duFghKRYhyRFUhlBRm66iMLKgh22",
-      email: "22onsloanedigitalteam@gmail.com",
-      displayName: "22 On Sloane Digital Team",
-      photoURL: "https://ui-avatars.com/api/?name=22+On+Sloane+Digital+Team&background=1e40af&color=fff",
-      emailVerified: true,
-      disabled: false,
-      metadata: {
-        creationTime: "2025-08-22T10:00:00Z",
-        lastSignInTime: "2025-10-07T10:00:00Z"
-      },
-      providerData: [{
-        providerId: "password",
-        uid: "22onsloanedigitalteam@gmail.com",
-        email: "22onsloanedigitalteam@gmail.com",
-        displayName: "22 On Sloane Digital Team"
-      }]
-    },
-    {
-      uid: "93cUbdo4BkXnVQrXQBgJVDapYdS2",
-      email: "mncubekhulekani@gmail.com",
-      displayName: "Mncube Khulekani",
-      photoURL: "https://ui-avatars.com/api/?name=Mncube+Khulekani&background=7c2d12&color=fff",
-      emailVerified: true,
-      disabled: false,
-      metadata: {
-        creationTime: "2025-08-16T10:00:00Z",
-        lastSignInTime: "2025-10-02T10:00:00Z"
-      },
-      providerData: [{
-        providerId: "password",
-        uid: "mncubekhulekani@gmail.com",
-        email: "mncubekhulekani@gmail.com",
-        displayName: "Mncube Khulekani"
-      }]
-    }
-  ];
+    providerData: [{
+      providerId: "password",
+      uid: user.email,
+      email: user.email,
+      displayName: user.displayName
+    }],
+    // Include additional backend data
+    tenantId: user.tenantId,
+    role: user.role
+  }));
   
   // Filter users based on search term
   let filteredUsers = firebaseUsers;
