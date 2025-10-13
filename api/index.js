@@ -1291,6 +1291,28 @@ app.get("/api/tenants", (req, res) => {
 });
 
 // Wallet endpoints
+app.get("/api/wallets", (req, res) => {
+  const data = getAppData();
+  const wallets = data.wallets || [];
+  
+  res.json({
+    ok: true,
+    wallets: wallets.map(wallet => ({
+      id: wallet.id,
+      userId: wallet.userId || wallet.uid,
+      userEmail: wallet.email || wallet.userEmail,
+      balance: wallet.balance || 0,
+      currency: wallet.currency || "USD",
+      tenantId: wallet.tenantId || "vendor",
+      role: wallet.role || "member",
+      createdAt: wallet.createdAt,
+      lastUpdated: wallet.lastUpdated,
+      transactions: wallet.transactions || []
+    })),
+    total: wallets.length
+  });
+});
+
 app.get("/api/wallets/me", (req, res) => {
   const data = getAppData();
   const wallets = data.wallets || [];
@@ -1298,8 +1320,270 @@ app.get("/api/wallets/me", (req, res) => {
   res.json(userWallet);
 });
 
+app.post("/api/wallets/me/redeem", (req, res) => {
+  const { amount, description, reference, metadata } = req.body;
+  
+  if (!amount || amount <= 0) {
+    return res.status(400).json({
+      status: "error",
+      message: "Amount must be greater than zero"
+    });
+  }
+
+  const data = getAppData();
+  const wallets = data.wallets || [];
+  
+  // Find or create user wallet
+  let userWallet = wallets.find(w => w.userId === mockUser.uid);
+  if (!userWallet) {
+    userWallet = { ...mockWallet, transactions: [] };
+  }
+  
+  // Create transaction
+  const transaction = {
+    id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+    type: "debit",
+    amount: parseFloat(amount),
+    description: description || "Voucher redemption",
+    reference: reference || null,
+    metadata: metadata || null,
+    createdAt: new Date().toISOString(),
+    balanceAfter: Math.max(0, (userWallet.balance || 0) - parseFloat(amount))
+  };
+
+  // Update wallet
+  userWallet.balance = transaction.balanceAfter;
+  userWallet.transactions = userWallet.transactions || [];
+  userWallet.transactions.unshift(transaction);
+  userWallet.lastUpdated = new Date().toISOString();
+
+  res.json({
+    ok: true,
+    wallet: userWallet,
+    transaction: transaction
+  });
+});
+
+app.post("/api/wallets/grant", (req, res) => {
+  const { amount, email, description, reference, metadata } = req.body;
+  
+  if (!amount || amount <= 0) {
+    return res.status(400).json({
+      status: "error",
+      message: "Amount must be greater than zero"
+    });
+  }
+
+  if (!email) {
+    return res.status(400).json({
+      status: "error",
+      message: "Email is required"
+    });
+  }
+
+  const data = getAppData();
+  const wallets = data.wallets || [];
+  
+  // Find or create target user wallet
+  let targetWallet = wallets.find(w => 
+    w.email?.toLowerCase() === email.toLowerCase() ||
+    w.userEmail?.toLowerCase() === email.toLowerCase()
+  );
+  
+  if (!targetWallet) {
+    targetWallet = {
+      id: `wallet-${Date.now()}`,
+      userId: email,
+      email: email,
+      balance: 0,
+      currency: "USD",
+      transactions: [],
+      createdAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString()
+    };
+    wallets.push(targetWallet);
+  }
+  
+  // Create transaction
+  const transaction = {
+    id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+    type: "credit",
+    amount: parseFloat(amount),
+    description: description || "Admin credit grant",
+    reference: reference || null,
+    metadata: metadata || null,
+    createdAt: new Date().toISOString(),
+    balanceAfter: (targetWallet.balance || 0) + parseFloat(amount)
+  };
+
+  // Update wallet
+  targetWallet.balance = transaction.balanceAfter;
+  targetWallet.transactions = targetWallet.transactions || [];
+  targetWallet.transactions.unshift(transaction);
+  targetWallet.lastUpdated = new Date().toISOString();
+
+  res.json({
+    ok: true,
+    wallet: targetWallet,
+    transaction: transaction
+  });
+});
+
 app.post("/api/wallets/transaction", (req, res) => {
   res.json({ success: true, transactionId: Date.now().toString() });
+});
+
+// Additional wallet admin endpoints (matching frontend expectations)
+app.get("/api/wallets/admin/transactions", (req, res) => {
+  const data = getAppData();
+  const wallets = data.wallets || [];
+  
+  // Extract query parameters for filtering
+  const {
+    userEmail,
+    type,
+    dateFrom,
+    dateTo,
+    minAmount,
+    maxAmount,
+    page = 1,
+    limit = 100
+  } = req.query;
+
+  // Collect all transactions from all wallets
+  let allTransactions = [];
+  
+  wallets.forEach(wallet => {
+    if (wallet && wallet.transactions && Array.isArray(wallet.transactions)) {
+      wallet.transactions.forEach(transaction => {
+        // Add user info to each transaction
+        allTransactions.push({
+          ...transaction,
+          userEmail: wallet.email || wallet.userEmail,
+          userName: wallet.displayName || wallet.email,
+          walletId: wallet.id
+        });
+      });
+    }
+  });
+
+  // Apply filters
+  if (userEmail) {
+    const emailLower = userEmail.toLowerCase();
+    allTransactions = allTransactions.filter(t => 
+      t.userEmail?.toLowerCase().includes(emailLower)
+    );
+  }
+  
+  if (type && type !== 'all') {
+    allTransactions = allTransactions.filter(t => t.type === type);
+  }
+  
+  if (dateFrom) {
+    const fromDate = new Date(dateFrom);
+    allTransactions = allTransactions.filter(t => 
+      new Date(t.createdAt) >= fromDate
+    );
+  }
+  
+  if (dateTo) {
+    const toDate = new Date(dateTo);
+    allTransactions = allTransactions.filter(t => 
+      new Date(t.createdAt) <= toDate
+    );
+  }
+  
+  if (minAmount) {
+    allTransactions = allTransactions.filter(t => 
+      (t.amount || 0) >= parseFloat(minAmount)
+    );
+  }
+  
+  if (maxAmount) {
+    allTransactions = allTransactions.filter(t => 
+      (t.amount || 0) <= parseFloat(maxAmount)
+    );
+  }
+
+  // Sort by date (newest first)
+  allTransactions.sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  // Apply pagination
+  const pageNum = parseInt(page) || 1;
+  const limitNum = parseInt(limit) || 100;
+  const offset = (pageNum - 1) * limitNum;
+  const paginatedTransactions = allTransactions.slice(offset, offset + limitNum);
+
+  res.json({
+    ok: true,
+    transactions: paginatedTransactions,
+    total: allTransactions.length,
+    page: pageNum,
+    limit: limitNum,
+    hasMore: offset + limitNum < allTransactions.length
+  });
+});
+
+app.get("/api/wallets/admin/lookup", (req, res) => {
+  const { email } = req.query;
+  
+  if (!email) {
+    return res.status(400).json({ 
+      status: "error", 
+      message: "Email parameter is required" 
+    });
+  }
+
+  const data = getAppData();
+  const wallets = data.wallets || [];
+  const users = data.users || [];
+  
+  // Find wallet by email
+  const emailLower = email.toLowerCase();
+  const wallet = wallets.find(w => 
+    w.email?.toLowerCase() === emailLower || 
+    w.userEmail?.toLowerCase() === emailLower
+  );
+  
+  // Find user info
+  const user = users.find(u => u.email?.toLowerCase() === emailLower);
+  
+  if (wallet) {
+    res.json({
+      ok: true,
+      wallet: {
+        ...wallet,
+        displayName: user?.displayName || wallet.displayName || wallet.email,
+        role: user?.role || wallet.role || "member",
+        tenantId: user?.tenantId || wallet.tenantId || "vendor"
+      }
+    });
+  } else {
+    res.json({
+      ok: true,
+      wallet: null,
+      message: "No wallet found for this user"
+    });
+  }
+});
+
+app.get("/api/wallets/admin/debug/wallets", (req, res) => {
+  const data = getAppData();
+  const wallets = data.wallets || [];
+  
+  res.json({
+    ok: true,
+    walletsCount: wallets.length,
+    firstWallet: wallets[0] || null,
+    sampleWallets: wallets.slice(0, 3).map(w => ({
+      email: w.email || w.userEmail,
+      balance: w.balance || 0,
+      transactionCount: w.transactions?.length || 0,
+      id: w.id
+    }))
+  });
 });
 
 // Audit logs endpoints
@@ -2063,7 +2347,9 @@ app.get("/api/test", (req, res) => {
       "/api/health", "/api/me", "/api/messages", "/api/messages/:id", "/api/messages/:id/read", 
       "/api/messages/:id/reply", "/api/messages/thread/:threadId", "/api/messages/conversation",
       "/api/messages/broadcast", "/api/messages/contacts", "/api/admin/messages", 
-      "/api/admin/messages/announcement", "/api/lms/live", "/api/tenants", "/api/wallets/me", 
+      "/api/admin/messages/announcement", "/api/lms/live", "/api/tenants", 
+      "/api/wallets", "/api/wallets/me", "/api/wallets/me/redeem", "/api/wallets/grant",
+      "/api/wallets/admin/transactions", "/api/wallets/admin/lookup", "/api/wallets/admin/debug/wallets",
       "/api/audit-logs", "/api/data/services", "/api/data/services/mine", "/api/data/vendors", 
       "/api/data/startups", "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", 
       "/api/admin/stats", "/api/admin/users", "/api/subscriptions", "/api/subscriptions/my", 
@@ -2098,7 +2384,9 @@ app.use((req, res, next) => {
         "/api/health", "/api/me", "/api/messages", "/api/messages/:id", "/api/messages/:id/read", 
         "/api/messages/:id/reply", "/api/messages/thread/:threadId", "/api/messages/conversation",
         "/api/messages/broadcast", "/api/messages/contacts", "/api/admin/messages", 
-        "/api/admin/messages/announcement", "/api/lms/live", "/api/tenants", "/api/wallets/me", 
+        "/api/admin/messages/announcement", "/api/lms/live", "/api/tenants", 
+        "/api/wallets", "/api/wallets/me", "/api/wallets/me/redeem", "/api/wallets/grant",
+        "/api/wallets/admin/transactions", "/api/wallets/admin/lookup", "/api/wallets/admin/debug/wallets",
         "/api/audit-logs", "/api/data/services", "/api/data/services/mine", "/api/data/vendors", 
         "/api/data/startups", "/api/data/vendors/:id/stats", "/api/users", "/api/users/all", 
         "/api/admin/stats", "/api/admin/users", "/api/subscriptions", "/api/subscriptions/my", 
