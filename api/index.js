@@ -152,7 +152,9 @@ function saveAppData(data) {
       
       // Write to backend/appData.json
       fs.writeFileSync(backendPath, JSON.stringify(data, null, 2));
-      console.log(`✅ Successfully saved appData to ${backendPath}`);
+      const walletCount = data.wallets?.length || 0;
+      const totalTransactions = data.wallets?.reduce((sum, w) => sum + (w.transactions?.length || 0), 0) || 0;
+      console.log(`✅ Successfully saved appData to ${backendPath} - ${walletCount} wallets, ${totalTransactions} transactions`);
       return true;
       
     } catch (backendError) {
@@ -1450,8 +1452,6 @@ app.get("/api/wallets", (req, res) => {
 
 app.get("/api/wallets/me", (req, res) => {
   const currentUser = getCurrentUser();
-  // Force fresh data load to ensure we get persistent wallet data
-  appData = null;
   const data = getAppData();
   const wallets = data.wallets || [];
   
@@ -2620,6 +2620,40 @@ app.use((err, req, res, next) => {
 module.exports = function handler(req, res) {
   return app(req, res);
 };
+
+// Admin endpoint to persist current wallet state to backend file
+app.post("/api/admin/wallet/persist-to-backend", (req, res) => {
+  try {
+    const data = getAppData();
+    const wallets = data.wallets || [];
+    
+    if (wallets.length === 0) {
+      return res.json({
+        status: "info",
+        message: "No wallets to persist",
+        wallets: []
+      });
+    }
+    
+    // This endpoint helps administrators manually update the backend file
+    // by providing the current wallet state that can be copied to the source
+    res.json({
+      status: "success",
+      message: `Current wallet state for ${wallets.length} wallets`,
+      instructions: "Copy this wallet data to backend/appData.json and redeploy to make it persistent",
+      walletsJson: wallets,
+      totalWallets: wallets.length,
+      note: "In serverless environments, runtime changes cannot be automatically persisted to source files"
+    });
+  } catch (error) {
+    console.error('Error in persist-to-backend:', error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to generate persistence data",
+      error: error.message
+    });
+  }
+});
 
 // Also export the app for local testing
 module.exports.app = app;
