@@ -140,49 +140,52 @@ function saveAppData(data) {
   appData = data;
   
   try {
-    // Detect serverless environment (Vercel sets VERCEL env variable)
-    const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.FUNCTIONS_RUNTIME;
+    // Primary focus: backend/appData.json (the authoritative source)
+    const backendPath = path.join(process.cwd(), 'backend', 'appData.json');
     
-    if (isServerless) {
-      console.log('🔄 Serverless environment detected - data updated in memory cache');
-      // In serverless, file system writes often fail, so we rely on memory cache
-      // and external persistence mechanisms like databases
-      return true;
-    }
-    
-    // Try multiple possible paths for backend/appData.json
-    const paths = [
-      path.join(__dirname, '..', 'backend', 'appData.json'),
-      path.join(process.cwd(), '..', 'backend', 'appData.json'),
-      path.join(process.cwd(), 'backend', 'appData.json')
-    ];
-    
-    let savedPath = null;
-    for (const appDataPath of paths) {
-      try {
-        const dir = path.dirname(appDataPath);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
-        }
-        fs.writeFileSync(appDataPath, JSON.stringify(data, null, 2));
-        savedPath = appDataPath;
-        console.log(`✅ Saved appData to ${appDataPath}`);
-        break;
-      } catch (err) {
-        console.warn(`⚠️ Failed to save to ${appDataPath}: ${err.message}`);
-        continue;
+    try {
+      // Ensure directory exists
+      const dir = path.dirname(backendPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
       }
+      
+      // Write to backend/appData.json
+      fs.writeFileSync(backendPath, JSON.stringify(data, null, 2));
+      console.log(`✅ Successfully saved appData to ${backendPath}`);
+      return true;
+      
+    } catch (backendError) {
+      console.warn(`⚠️ Failed to save to backend directory: ${backendError.message}`);
+      
+      // Fallback: try alternative paths only if backend fails
+      const fallbackPaths = [
+        path.join(__dirname, '..', 'backend', 'appData.json'),
+        path.join(process.cwd(), '..', 'backend', 'appData.json')
+      ];
+      
+      for (const fallbackPath of fallbackPaths) {
+        try {
+          const dir = path.dirname(fallbackPath);
+          if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+          }
+          fs.writeFileSync(fallbackPath, JSON.stringify(data, null, 2));
+          console.log(`✅ Fallback save successful to ${fallbackPath}`);
+          return true;
+        } catch (fallbackError) {
+          console.warn(`⚠️ Fallback path failed ${fallbackPath}: ${fallbackError.message}`);
+        }
+      }
+      
+      // In serverless environments, file writes may fail, but data persists in memory
+      console.warn('⚠️ All file saves failed - data exists in memory for this serverless instance');
+      return false;
     }
     
-    if (!savedPath) {
-      console.warn('⚠️ File system save failed - data exists in memory for this session');
-    }
-    
-    return true;
   } catch (error) {
-    console.error('❌ Error saving app data:', error.message);
-    // Even if file save fails, we still have in-memory data, so this is not a critical failure
-    return true;
+    console.error('❌ Critical error in saveAppData:', error.message);
+    return false;
   }
 }
 
@@ -1461,10 +1464,14 @@ app.get("/api/wallets/me", (req, res) => {
       balance: 0,
       totalEarned: 0,
       totalSpent: 0,
+      transactions: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: "active"
     };
+    data.wallets.push(userWallet);
+    // Save immediately to ensure persistence
+    saveAppData(data);
   }
   
   res.json(userWallet);
