@@ -1450,6 +1450,8 @@ app.get("/api/wallets", (req, res) => {
 
 app.get("/api/wallets/me", (req, res) => {
   const currentUser = getCurrentUser();
+  // Force fresh data load to ensure we get persistent wallet data
+  appData = null;
   const data = getAppData();
   const wallets = data.wallets || [];
   
