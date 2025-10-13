@@ -1493,6 +1493,8 @@ app.post("/api/wallets/me/redeem", (req, res) => {
   // Create transaction
   const transaction = {
     id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+    userId: currentUser.uid,
+    userEmail: currentUser.email,
     type: "debit",
     amount: parseFloat(amount),
     description: description || "Voucher redemption",
@@ -1504,20 +1506,26 @@ app.post("/api/wallets/me/redeem", (req, res) => {
 
   // Update wallet
   userWallet.balance = transaction.balanceAfter;
+  userWallet.totalSpent = (userWallet.totalSpent || 0) + parseFloat(amount);
   userWallet.transactions = userWallet.transactions || [];
   userWallet.transactions.unshift(transaction);
-  userWallet.lastUpdated = new Date().toISOString();
+  userWallet.updatedAt = new Date().toISOString();
 
-  // Update in-memory cache (file system writes are not available in Vercel serverless)
+  // Update in-memory cache
   appData = data;
   
-  // Attempt to save to file system if possible (will work locally, fail gracefully on Vercel)
-  try {
-    saveAppData(data);
-    console.log('✅ Wallet data saved successfully');
-  } catch (error) {
-    console.warn('⚠️ File system save failed (expected in serverless):', error.message);
+  // Save to persistent storage - CRITICAL for transaction persistence
+  if (!saveAppData(data)) {
+    console.error('❌ CRITICAL: Failed to save transaction data to persistent storage');
+    return res.status(500).json({
+      ok: false,
+      error: "Failed to save transaction - data may be lost on refresh",
+      transaction: transaction,
+      wallet: userWallet
+    });
   }
+  
+  console.log('✅ Transaction saved successfully to backend/appData.json');
   
   res.json({
     ok: true,
@@ -1546,23 +1554,33 @@ app.post("/api/wallets/grant", (req, res) => {
   const data = getAppData();
   data.wallets = data.wallets || [];
   
-  // Find or create target user wallet
-  let targetWallet = data.wallets.find(w => 
-    w.email?.toLowerCase() === email.toLowerCase() ||
-    w.userEmail?.toLowerCase() === email.toLowerCase()
-  );
+  // Find the target user by email from Firebase users
+  const firebaseUsers = getRealFirebaseUsers();
+  const targetUser = firebaseUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
+  
+  if (!targetUser) {
+    return res.status(404).json({
+      ok: false,
+      error: `User with email ${email} not found in Firebase users`
+    });
+  }
+  
+  // Find or create target user wallet using Firebase UID
+  let targetWallet = data.wallets.find(w => w.userId === targetUser.uid);
   
   if (!targetWallet) {
     targetWallet = {
-      id: `wallet-${Date.now()}`,
-      userId: email,
-      email: email,
-      userEmail: email,
+      id: `wallet_${targetUser.uid}_${Date.now()}`,
+      userId: targetUser.uid,
+      email: targetUser.email,
+      displayName: targetUser.displayName,
       balance: 0,
-      currency: "USD",
+      totalEarned: 0,
+      totalSpent: 0,
       transactions: [],
       createdAt: new Date().toISOString(),
-      lastUpdated: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      status: "active"
     };
     data.wallets.push(targetWallet);
   }
@@ -1570,6 +1588,8 @@ app.post("/api/wallets/grant", (req, res) => {
   // Create transaction
   const transaction = {
     id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+    userId: targetUser.uid,
+    userEmail: targetUser.email,
     type: "credit",
     amount: parseFloat(amount),
     description: description || "Admin credit grant",
@@ -1581,20 +1601,26 @@ app.post("/api/wallets/grant", (req, res) => {
 
   // Update wallet
   targetWallet.balance = transaction.balanceAfter;
+  targetWallet.totalEarned = (targetWallet.totalEarned || 0) + parseFloat(amount);
   targetWallet.transactions = targetWallet.transactions || [];
   targetWallet.transactions.unshift(transaction);
-  targetWallet.lastUpdated = new Date().toISOString();
+  targetWallet.updatedAt = new Date().toISOString();
 
-  // Update in-memory cache (file system writes are not available in Vercel serverless)
+  // Update in-memory cache
   appData = data;
   
-  // Attempt to save to file system if possible (will work locally, fail gracefully on Vercel)
-  try {
-    saveAppData(data);
-    console.log('✅ Wallet data saved successfully');
-  } catch (error) {
-    console.warn('⚠️ File system save failed (expected in serverless):', error.message);
+  // Save to persistent storage - CRITICAL for transaction persistence
+  if (!saveAppData(data)) {
+    console.error('❌ CRITICAL: Failed to save grant transaction to persistent storage');
+    return res.status(500).json({
+      ok: false,
+      error: "Failed to save grant transaction - data may be lost on refresh",
+      transaction: transaction,
+      wallet: targetWallet
+    });
   }
+  
+  console.log('✅ Grant transaction saved successfully to backend/appData.json');
   
   res.json({
     ok: true,
