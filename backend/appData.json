@@ -3061,13 +3061,25 @@
       "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
       "email": "khulekani@gecafrica.co",
       "displayName": "Khulekani Magubane",
-      "balance": 350,
-      "totalEarned": 500,
+      "balance": 450,
+      "totalEarned": 600,
       "totalSpent": 150,
       "createdAt": "2025-10-10T10:00:00.000Z",
       "updatedAt": "2025-10-13T14:00:00.000Z",
       "status": "active",
       "transactions": [
+        {
+          "id": "1760350000001-tx0",
+          "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+          "userEmail": "khulekani@gecafrica.co",
+          "type": "credit",
+          "amount": 100,
+          "description": "Manual persistence test - source file update",
+          "reference": "ADMIN_MANUAL_PERSIST",
+          "metadata": null,
+          "createdAt": "2025-10-13T15:08:00.000Z",
+          "balanceAfter": 450
+        },
         {
           "id": "1760330000001-tx1",
           "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
