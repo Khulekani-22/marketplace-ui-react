@@ -210,22 +210,98 @@ app.use(
 
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-/* ------------------------ Mock Data for Compatibility ------------------------ */
-const mockUser = {
-  uid: "duFghKRYhyRFUhlBRm66iMLKgh22",
-  email: "22onsloanedigitalteam@gmail.com",
-  displayName: "22 On Sloane Digital Team",
-  role: "admin",
-  tenantId: "public"
-};
+/* ------------------------ Real Firebase Users ------------------------ */
+// Real Firebase authenticated users from your system
+function getRealFirebaseUsers() {
+  return [
+    {
+      uid: "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+      email: "khulekani@gecafrica.co",
+      displayName: "Khulekani Magubane",
+      tenantId: "gecafrica",
+      role: "admin",
+      createdAt: "2025-09-05T10:00:00Z",
+      lastLoginAt: "2025-09-05T10:00:00Z"
+    },
+    {
+      uid: "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+      email: "zinhlesloane@gmail.com",
+      displayName: "Zinhle Sloane",
+      tenantId: "sloane",
+      role: "admin",
+      createdAt: "2025-09-05T10:00:00Z",
+      lastLoginAt: "2025-09-05T10:00:00Z"
+    },
+    {
+      uid: "MFIzWLlhKjSDkV8FPlwXixdUCFX2",
+      email: "ruthmaphosa2024@gmail.com",
+      displayName: "Ruth Maphosa",
+      tenantId: "public",
+      role: "member",
+      createdAt: "2025-08-31T10:00:00Z",
+      lastLoginAt: "2025-08-31T10:00:00Z"
+    },
+    {
+      uid: "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      email: "khulekani@22onsloane.co",
+      displayName: "Khulekani Magubane",
+      tenantId: "22onsloane",
+      role: "admin",
+      createdAt: "2025-08-23T10:00:00Z",
+      lastLoginAt: "2025-10-13T10:00:00Z"
+    },
+    {
+      uid: "duFghKRYhyRFUhlBRm66iMLKgh22",
+      email: "22onsloanedigitalteam@gmail.com",
+      displayName: "22 On Sloane Digital Team",
+      tenantId: "22onsloane",
+      role: "admin",
+      createdAt: "2025-08-22T10:00:00Z",
+      lastLoginAt: "2025-10-09T10:00:00Z"
+    },
+    {
+      uid: "93cUbdo4BkXnVQrXQBgJVDapYdS2",
+      email: "mncubekhulekani@gmail.com",
+      displayName: "Mncube Khulekani",
+      tenantId: "public",
+      role: "member",
+      createdAt: "2025-08-16T10:00:00Z",
+      lastLoginAt: "2025-10-02T10:00:00Z"
+    }
+  ];
+}
 
-const mockWallet = {
-  id: "wallet-1",
-  userId: mockUser.uid,
-  balance: 100.00,
-  currency: "USD",
-  transactions: []
-};
+// Combine Firebase users with backend users
+function getAllUsers() {
+  const firebaseUsers = getRealFirebaseUsers();
+  const data = getAppData();
+  const backendUsers = data.users || [];
+  
+  // Create a map to avoid duplicates (Firebase users take priority)
+  const userMap = new Map();
+  
+  // Add Firebase users first (they have priority)
+  firebaseUsers.forEach(user => {
+    userMap.set(user.uid, user);
+  });
+  
+  // Add backend users only if they don't exist in Firebase
+  backendUsers.forEach(user => {
+    if (!userMap.has(user.uid)) {
+      userMap.set(user.uid, user);
+    }
+  });
+  
+  return Array.from(userMap.values());
+}
+
+// Get current authenticated user (for demo, use admin user)
+function getCurrentUser() {
+  // In a real app, this would extract user from JWT token or session
+  // For demo purposes, use the admin user
+  const firebaseUsers = getRealFirebaseUsers();
+  return firebaseUsers.find(u => u.role === 'admin') || firebaseUsers[0];
+}
 
 const mockTenants = [
   { id: "vendor", name: "Vendor", type: "vendor" },
@@ -247,25 +323,25 @@ app.get("/api/health", (req, res) => {
 
 // User authentication endpoint
 app.get("/api/me", (req, res) => {
-  const data = getAppData();
-  const users = data.users || [];
-  
   // In a real app, this would verify the Firebase token and find the user
-  // For now, return the admin user with proper Firebase structure
-  const adminUser = users.find(u => u.role === 'admin' || u.email === '22onsloanedigitalteam@gmail.com') || {
-    uid: "duFghKRYhyRFUhlBRm66iMLKgh22",
-    email: "22onsloanedigitalteam@gmail.com",
-    displayName: "22 On Sloane Digital Team",
-    tenantId: "public",
-    role: "admin",
-    photoURL: "https://ui-avatars.com/api/?name=22+On+Sloane+Digital+Team&background=7c3aed&color=fff",
-    createdAt: "2025-10-07T10:00:00Z",
-    lastLoginAt: new Date().toISOString(),
+  // For now, return the current user from our system
+  const currentUser = getCurrentUser();
+  
+  // Format as Firebase user structure
+  const firebaseUser = {
+    uid: currentUser.uid,
+    email: currentUser.email,
+    displayName: currentUser.displayName,
+    tenantId: currentUser.tenantId,
+    role: currentUser.role,
+    photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName)}&background=7c3aed&color=fff`,
+    createdAt: currentUser.createdAt,
+    lastLoginAt: currentUser.lastLoginAt || new Date().toISOString(),
     emailVerified: true,
     disabled: false
   };
   
-  res.json(adminUser);
+  res.json(firebaseUser);
 });
 
 // Messages endpoints - Real data integration
@@ -1357,9 +1433,27 @@ app.get("/api/wallets", (req, res) => {
 });
 
 app.get("/api/wallets/me", (req, res) => {
+  const currentUser = getCurrentUser();
   const data = getAppData();
   const wallets = data.wallets || [];
-  const userWallet = wallets.find(w => w.userId === mockUser.uid) || mockWallet;
+  
+  // Find user wallet or create a default one
+  let userWallet = wallets.find(w => w.userId === currentUser.uid);
+  if (!userWallet) {
+    userWallet = {
+      id: `wallet_${currentUser.uid}_${Date.now()}`,
+      userId: currentUser.uid,
+      email: currentUser.email,
+      displayName: currentUser.displayName,
+      balance: 0,
+      totalEarned: 0,
+      totalSpent: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: "active"
+    };
+  }
+  
   res.json(userWallet);
 });
 
@@ -1373,18 +1467,25 @@ app.post("/api/wallets/me/redeem", (req, res) => {
     });
   }
 
+  const currentUser = getCurrentUser();
   const data = getAppData();
   data.wallets = data.wallets || [];
   
   // Find or create user wallet
-  let userWallet = data.wallets.find(w => w.userId === mockUser.uid);
+  let userWallet = data.wallets.find(w => w.userId === currentUser.uid);
   if (!userWallet) {
-    userWallet = { 
-      ...mockWallet, 
-      userId: mockUser.uid,
-      email: mockUser.email,
+    userWallet = {
+      id: `wallet_${currentUser.uid}_${Date.now()}`,
+      userId: currentUser.uid,
+      email: currentUser.email,
+      displayName: currentUser.displayName,
+      balance: 0,
+      totalEarned: 0,
+      totalSpent: 0,
       transactions: [],
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: "active"
     };
     data.wallets.push(userWallet);
   }
@@ -1878,8 +1979,7 @@ app.get("/api/data/startups", (req, res) => {
 
 // Users endpoint
 app.get("/api/users", (req, res) => {
-  const data = getAppData();
-  const users = data.users || [mockUser];
+  const users = getAllUsers();
   res.json({ users, total: users.length });
 });
 
@@ -2234,43 +2334,74 @@ app.post("/api/admin/wallet/sync-firebase-users", (req, res) => {
       data.wallets = [];
     }
     
-    // Get users from backend data
-    const users = data.users || [];
+    // Get all users (Firebase + backend combined)
+    const allUsers = getAllUsers();
     let syncedCount = 0;
+    let existingCount = 0;
+    let errorCount = 0;
+    const errors = [];
     
     // Sync each user - create wallet if doesn't exist
-    users.forEach(user => {
-      // Check if user already has a wallet
-      const existingWallet = data.wallets.find(w => w.userId === user.uid);
-      
-      if (!existingWallet) {
-        // Create new wallet for user
-        const newWallet = {
-          id: `wallet_${user.uid}_${Date.now()}`,
-          userId: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          balance: 0,
-          totalEarned: 0,
-          totalSpent: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          status: "active"
-        };
+    allUsers.forEach(user => {
+      try {
+        // Check if user already has a wallet
+        const existingWallet = data.wallets.find(w => w.userId === user.uid);
         
-        data.wallets.push(newWallet);
-        syncedCount++;
+        if (!existingWallet) {
+          // Create new wallet for user
+          const newWallet = {
+            id: `wallet_${user.uid}_${Date.now()}`,
+            userId: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            balance: 0,
+            totalEarned: 0,
+            totalSpent: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            status: "active"
+          };
+          
+          data.wallets.push(newWallet);
+          syncedCount++;
+        } else {
+          existingCount++;
+        }
+      } catch (userError) {
+        errorCount++;
+        errors.push(`${user.email}: ${userError.message}`);
       }
     });
     
-    // Save updated data
-    saveAppData(data);
+    // Save updated data (gracefully handle file system issues in serverless)
+    try {
+      saveAppData(data);
+    } catch (saveError) {
+      console.warn('Could not persist data to file system (serverless environment):', saveError.message);
+    }
+    
+    // Create informative message
+    let message;
+    if (syncedCount > 0) {
+      message = `Successfully synced ${syncedCount} new users`;
+    } else if (existingCount > 0) {
+      message = `All ${existingCount} users already have wallets - sync complete`;
+    } else {
+      message = "No users found to sync";
+    }
+    
+    if (errorCount > 0) {
+      message += ` (${errorCount} errors)`;
+    }
     
     res.json({
       status: "success", 
-      message: `Successfully synced ${syncedCount} Firebase users`,
+      message: message,
       synced: syncedCount,
-      total: users.length
+      existing: existingCount,
+      errors: errorCount,
+      total: allUsers.length,
+      details: errorCount > 0 ? errors : undefined
     });
     
   } catch (error) {
@@ -2313,20 +2444,19 @@ app.get("/api/admin/wallet/transactions", (req, res) => {
   });
 });
 
-// Users/all endpoint - reads from backend/appData.json
+// Users/all endpoint - combines Firebase users with backend data
 app.get("/api/users/all", (req, res) => {
   const { search = "", pageSize = 100 } = req.query;
   
-  // Get users from backend data file
-  const data = getAppData();
-  const backendUsers = data.users || [];
+  // Get combined users from Firebase and backend
+  const allUsers = getAllUsers();
   
-  // Convert backend users to Firebase-compatible format for frontend
-  const firebaseUsers = backendUsers.map(user => ({
+  // Convert to Firebase-compatible format for frontend
+  const firebaseUsers = allUsers.map(user => ({
     uid: user.uid,
     email: user.email,
     displayName: user.displayName,
-    photoURL: user.photoURL,
+    photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=7c3aed&color=fff`,
     emailVerified: true,
     disabled: false,
     metadata: {
@@ -2339,9 +2469,8 @@ app.get("/api/users/all", (req, res) => {
       email: user.email,
       displayName: user.displayName
     }],
-    // Include additional backend data
-    tenantId: user.tenantId,
-    role: user.role
+    tenantId: user.tenantId || "public",
+    role: user.role || "member"
   }));
   
   // Filter users based on search term

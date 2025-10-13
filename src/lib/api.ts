@@ -26,7 +26,7 @@ function computeApiBases(): string[] {
   if (typeof window !== "undefined") {
     const { origin, protocol, hostname } = window.location;
     // In production (Vercel), use the same origin for API calls
-    if (hostname.endsWith('.vercel.app') || hostname === 'marketplace-ui-react-vcl-6oct2025-4.vercel.app') {
+    if (hostname.endsWith('.vercel.app')) {
       return [origin];
     }
     const make = (port: number) => `${protocol}//${hostname}:${port}`;
