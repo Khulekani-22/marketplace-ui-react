@@ -2,6 +2,7 @@
 import axios, { isAxiosError, type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { toast } from "react-toastify";
 import { auth } from "./firebase";
+import { waitForAuth } from "./authReady";
 
 // In-memory session derived from the API (authoritative)
 interface Session {
@@ -205,6 +206,10 @@ export async function bootstrapSession(): Promise<Session> {
 }
 
 api.interceptors.request.use(async (config) => {
+  // Wait for Firebase auth to initialize before sending requests
+  // This prevents 401 errors during app startup
+  await waitForAuth();
+  
   const user = auth.currentUser;
   if (user) {
     // use a fresh token each request; SDK refreshes under the hood

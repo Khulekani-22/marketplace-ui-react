@@ -39363,5 +39363,495 @@
       "status": 201,
       "durationMs": 10
     }
+  },
+  {
+    "id": "mgqksahr-7586vo",
+    "timestamp": "2025-10-14T13:06:00.339Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "a285929e-3f50-41ed-94e3-e9a975fcc1f9",
+    "timestamp": "2025-10-14T13:06:00.358Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 7
+    }
+  },
+  {
+    "id": "mgqksbmv-tciw4k",
+    "timestamp": "2025-10-14T13:06:01.820Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "9834c1b8-5b55-4124-a467-264a2bbcdc90",
+    "timestamp": "2025-10-14T13:06:01.841Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 10
+    }
+  },
+  {
+    "id": "mgqkse32-pdh7g6",
+    "timestamp": "2025-10-14T13:06:05.001Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "a51aee8a-e697-4b4a-94c8-5f65e9c57090",
+    "timestamp": "2025-10-14T13:06:05.020Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 14
+    }
+  },
+  {
+    "id": "mgqksect-ak7das",
+    "timestamp": "2025-10-14T13:06:05.353Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "8eb13ab4-e82a-45f7-ad94-9f18f726b6fe",
+    "timestamp": "2025-10-14T13:06:05.365Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 8
+    }
+  },
+  {
+    "id": "mgqkyt22-evtova",
+    "timestamp": "2025-10-14T13:11:04.343Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "373ee40c-e5f5-41cd-ac2e-878c7ff20327",
+    "timestamp": "2025-10-14T13:11:04.353Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 7
+    }
+  },
+  {
+    "id": "mgqkz0vm-w2a6ie",
+    "timestamp": "2025-10-14T13:11:14.479Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "f5fb8a4a-ae78-448a-a3be-0cd51b522294",
+    "timestamp": "2025-10-14T13:11:14.488Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 6
+    }
+  },
+  {
+    "id": "mgql2sjx-es4kzg",
+    "timestamp": "2025-10-14T13:14:10.312Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": null,
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "vendor"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "d502c986-8184-40ff-88f3-b65676c4998e",
+    "timestamp": "2025-10-14T13:14:10.326Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "public",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 9
+    }
+  },
+  {
+    "id": "mgql2ux4-t99y7j",
+    "timestamp": "2025-10-14T13:14:13.381Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": null,
+    "targetType": "route",
+    "targetId": "/login",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "member",
+      "tenantId": "vendor"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "d5496e78-e4f1-411c-a71d-61a737714292",
+    "timestamp": "2025-10-14T13:14:13.396Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "public",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 12
+    }
+  },
+  {
+    "id": "mgql4lar-lu0n1q",
+    "timestamp": "2025-10-14T13:15:34.204Z",
+    "action": "LOGIN",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": null,
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {},
+    "tenantId": "public"
+  },
+  {
+    "id": "13fb92a9-1c98-403e-b8d5-dfa0cefe98c5",
+    "timestamp": "2025-10-14T13:15:34.246Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "public",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 19
+    }
+  },
+  {
+    "id": "mgql4omm-v2pd01",
+    "timestamp": "2025-10-14T13:15:38.537Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/login",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "2de1caff-59de-407a-bcaf-b79bef477a62",
+    "timestamp": "2025-10-14T13:15:38.565Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 23
+    }
+  },
+  {
+    "id": "mgql4vjp-jv3fd3",
+    "timestamp": "2025-10-14T13:15:47.505Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/listings-vendors-mine",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "97738bb3-ea70-4707-96ac-9803e6cd2aee",
+    "timestamp": "2025-10-14T13:15:47.517Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 8
+    }
+  },
+  {
+    "id": "mgql502h-d3e0n4",
+    "timestamp": "2025-10-14T13:15:53.364Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/market1",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "92dd47f9-09b0-4867-95d8-cc3d05fe85d5",
+    "timestamp": "2025-10-14T13:15:53.380Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 11
+    }
+  },
+  {
+    "id": "mgql50u7-s69yhb",
+    "timestamp": "2025-10-14T13:15:54.364Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/listings-vendors-mine",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "76f33954-0d55-4259-9084-21dc9f83f672",
+    "timestamp": "2025-10-14T13:15:54.375Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 8
+    }
+  },
+  {
+    "id": "mgql51ij-rnpxqj",
+    "timestamp": "2025-10-14T13:15:55.240Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "8d02cbca-fe15-427a-bd2b-8f2251f496e2",
+    "timestamp": "2025-10-14T13:15:55.262Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 19
+    }
+  },
+  {
+    "id": "mgql53s5-gckmhk",
+    "timestamp": "2025-10-14T13:15:58.178Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/admin/wallet-credits",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "fe925ba5-3d91-4195-b020-60021db3bde8",
+    "timestamp": "2025-10-14T13:15:58.188Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 7
+    }
+  },
+  {
+    "id": "mgql5civ-ahmfp8",
+    "timestamp": "2025-10-14T13:16:09.503Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/subscriptions",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "461c7148-f836-4b3a-87eb-daf4fae1516f",
+    "timestamp": "2025-10-14T13:16:09.525Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 14
+    }
+  },
+  {
+    "id": "mgql5n54-df5e3r",
+    "timestamp": "2025-10-14T13:16:23.266Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/listings-vendors-mine",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "34c2d15a-6c58-41a1-924a-f93d9c93d3bb",
+    "timestamp": "2025-10-14T13:16:23.282Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 10
+    }
   }
 ]

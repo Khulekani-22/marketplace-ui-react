@@ -1,1 +1,0 @@
-import{j as r,M as s}from"./index-Bn5LcKgl.js";import{B as t}from"./Breadcrumb-B3g6Xnkc.js";import{M as e}from"./MessagingSystem-DDfVfXNs.js";import"./vendor-DW3XjTa1.js";import"./firebase-BBiW2ZCr.js";import"./utils-B2rxisVD.js";const x=()=>r.jsx(r.Fragment,{children:r.jsxs(s,{children:[r.jsx(t,{title:"Message Center"}),r.jsx(e,{})]})});export{x as default};

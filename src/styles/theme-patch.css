@@ -1,6 +1,15 @@
 /* Map common UI pieces to theme tokens set by data-theme and utils/theme.js */
 :root {
   color-scheme: light;
+  /* Define sidebar variables for light mode */
+  --sidebar-bg: #ffffff;
+  --sidebar-fg: #374151;
+}
+
+[data-theme="dark"] {
+  /* Define sidebar variables for dark mode */
+  --sidebar-bg: #0f172a;
+  --sidebar-fg: #e5e7eb;
 }
 
 /* Page + text */
