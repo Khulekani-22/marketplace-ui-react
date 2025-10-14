@@ -1,10 +1,10 @@
-import { Router } from "express";
-import { v4 as uuid } from "uuid";
-import { getData, saveData } from "../utils/dataStore.js";
+import express from "express";
+import { v4 as uuidv4 } from "uuid";
+import { getData, saveData } from "../utils/hybridDataStore.js";
 import { ServiceSchema } from "../utils/validators.js";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 
-
+const { Router } = express;
 const router = Router();
 
 function normalizeTenantId(id) {
@@ -65,19 +65,20 @@ function findVendorRecord(data, tenantId, { uid, email }) {
  * Respects tenant scoping via req.tenant.id
  */
 
-router.get("/", (req, res) => {
-  const {
-    q = "",
-    category,
-    vendor,
-    featured,
-    minPrice,
-    maxPrice,
-    page = 1,
-    pageSize = 20,
-  } = req.query;
+router.get("/", async (req, res) => {
+  try {
+    const {
+      q = "",
+      category,
+      vendor,
+      featured,
+      minPrice,
+      maxPrice,
+      page = 1,
+      pageSize = 20,
+    } = req.query;
 
-  const { services = [] } = getData();
+    const { services = [] } = await getData();
   const tenantId = req.tenant.id;
 
   let rows = services.filter(
@@ -103,18 +104,23 @@ router.get("/", (req, res) => {
   if (!Number.isNaN(min)) rows = rows.filter((s) => Number(s.price) >= min);
   if (!Number.isNaN(max)) rows = rows.filter((s) => Number(s.price) <= max);
 
-  const p = Math.max(1, parseInt(page));
-  const ps = Math.min(100, Math.max(1, parseInt(pageSize)));
-  const total = rows.length;
-  const start = (p - 1) * ps;
-  const slice = rows.slice(start, start + ps);
+    const p = Math.max(1, parseInt(page));
+    const ps = Math.min(100, Math.max(1, parseInt(pageSize)));
+    const total = rows.length;
+    const start = (p - 1) * ps;
+    const slice = rows.slice(start, start + ps);
 
-  res.json({ page: p, pageSize: ps, total, items: slice });
+    res.json({ page: p, pageSize: ps, total, items: slice });
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    res.status(500).json({ error: 'Failed to fetch services' });
+  }
 });
 
-router.get("/mine", firebaseAuthRequired, (req, res) => {
-  const tenantId = req.tenant.id;
-  const data = getData();
+router.get("/mine", firebaseAuthRequired, async (req, res) => {
+  try {
+    const tenantId = req.tenant.id;
+    const data = await getData();
   const services = Array.isArray(data?.services) ? data.services : [];
   const bookings = Array.isArray(data?.bookings) ? data.bookings : [];
   const vendorRecord = findVendorRecord(data, tenantId, req.user || {});
@@ -181,22 +187,26 @@ router.get("/mine", firebaseAuthRequired, (req, res) => {
           name: vendorNameRaw || "",
           email: vendorEmail,
         },
-    listings,
-    bookings: bookingsForVendor,
-  });
+      listings,
+      bookings: bookingsForVendor,
+    });
+  } catch (error) {
+    console.error('Error fetching user services:', error);
+    res.status(500).json({ error: 'Failed to fetch user services' });
+  }
 });
 
 /**
  * POST /api/data/services
  * Body: ServiceSchema (id optional). Requires auth.
  */
-router.post("/", firebaseAuthRequired, (req, res, next) => {
+router.post("/", firebaseAuthRequired, async (req, res, next) => {
   try {
     const parsed = ServiceSchema.parse(req.body);
     const id = parsed.id || uuid();
     const tenantId = req.tenant.id;
 
-    const result = saveData((data) => {
+    const result = await saveData((data) => {
       data.services = data.services || [];
       data.services.push({ ...parsed, id, tenantId });
       return data;
@@ -212,14 +222,14 @@ router.post("/", firebaseAuthRequired, (req, res, next) => {
 /**
  * PUT /api/data/services/:id
  */
-router.put("/:id", firebaseAuthRequired, (req, res, next) => {
+router.put("/:id", firebaseAuthRequired, async (req, res, next) => {
   try {
     const id = req.params.id;
     const tenantId = req.tenant.id;
     const parsed = ServiceSchema.partial().parse(req.body);
 
     let found = null;
-    const result = saveData((data) => {
+    const result = await saveData((data) => {
       data.services = data.services || [];
       const idx = data.services.findIndex(
         (s) => s.id === id && (s.tenantId ?? "public") === tenantId
@@ -242,24 +252,29 @@ router.put("/:id", firebaseAuthRequired, (req, res, next) => {
 /**
  * DELETE /api/data/services/:id
  */
-router.delete("/:id", firebaseAuthRequired, (req, res) => {
-  const id = req.params.id;
-  const tenantId = req.tenant.id;
+router.delete("/:id", firebaseAuthRequired, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const tenantId = req.tenant.id;
 
-  let removed = false;
-  saveData((data) => {
-    data.services = (data.services || []).filter((s) => {
-      const match = s.id === id && (s.tenantId ?? "public") === tenantId;
-      if (match) removed = true;
-      return !match;
+    let removed = false;
+    await saveData((data) => {
+      data.services = (data.services || []).filter((s) => {
+        const match = s.id === id && (s.tenantId ?? "public") === tenantId;
+        if (match) removed = true;
+        return !match;
+      });
+      return data;
     });
-    return data;
-  });
 
-  if (!removed) {
-    return res.status(404).json({ status: "error", message: "Not found" });
+    if (!removed) {
+      return res.status(404).json({ status: "error", message: "Not found" });
+    }
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting service:', error);
+    res.status(500).json({ error: 'Failed to delete service' });
   }
-  res.status(204).send();
 });
 
 // export placed at end of file
@@ -276,7 +291,7 @@ router.post("/:id/reviews", async (req, res, next) => {
     }
 
     let updated = null;
-    saveData((data) => {
+    await saveData((data) => {
       data.services = data.services || [];
       let idx = data.services.findIndex(
         (s) => String(s.id) === id && (s.tenantId ?? "public") === tenantId

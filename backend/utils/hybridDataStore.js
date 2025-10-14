@@ -3,6 +3,9 @@ import path from "path";
 import dotenv from "dotenv";
 dotenv.config();
 
+// Import both data stores
+import { getData as getFirestoreData, saveData as saveFirestoreData } from './firestoreDataStore.js';
+
 function resolveAppDataPath() {
   const envPath = process.env.APP_DATA_PATH;
   if (envPath) return path.resolve(envPath);
@@ -45,7 +48,11 @@ let cache = null;
 let lastLoaded = 0;
 const TTL_MS = 1000; // 1s cache
 
-function load() {
+// Configuration to enable/disable Firestore
+const USE_FIRESTORE = process.env.USE_FIRESTORE !== 'false'; // Default to true
+const FIRESTORE_FALLBACK = process.env.FIRESTORE_FALLBACK !== 'false'; // Default to true
+
+function loadFromFile() {
   const now = Date.now();
   if (cache && now - lastLoaded < TTL_MS) return cache;
   try {
@@ -71,7 +78,7 @@ function load() {
   }
 }
 
-function persist(data) {
+function persistToFile(data) {
   const text = JSON.stringify(data, null, 2);
   // Write canonical (backend) atomically
   fs.writeFileSync(appDataPath + ".tmp", text);
@@ -90,53 +97,93 @@ function persist(data) {
   lastLoaded = Date.now();
 }
 
+/**
+ * Hybrid getData function that tries Firestore first, then falls back to file
+ */
 export async function getData(forceReload = false) {
-  // Try to import and use hybrid data store
   try {
-    const { getData: getHybridData } = await import('./hybridDataStore.js');
-    return await getHybridData(forceReload);
-  } catch (error) {
-    console.warn('[dataStore] Hybrid store unavailable, using file fallback:', error.message);
-    // Fallback to original file-based implementation
-    if (forceReload) {
-      cache = null;
-      lastLoaded = 0;
+    // Try Firestore first if enabled
+    if (USE_FIRESTORE) {
+      console.log('[dataStore] Attempting to load from Firestore...');
+      const firestoreData = await getFirestoreData(forceReload);
+      console.log('[dataStore] ✅ Successfully loaded from Firestore');
+      return firestoreData;
     }
-    return load();
+  } catch (error) {
+    console.warn('[dataStore] ⚠️  Firestore failed:', error.message);
+    
+    // If Firestore is enabled but failed, and fallback is disabled, throw
+    if (USE_FIRESTORE && !FIRESTORE_FALLBACK) {
+      throw error;
+    }
+  }
+
+  // Fall back to file system
+  console.log('[dataStore] Loading from file system...');
+  if (forceReload) {
+    cache = null;
+    lastLoaded = 0;
+  }
+  return loadFromFile();
+}
+
+/**
+ * Hybrid saveData function that tries Firestore first, then falls back to file
+ */
+export async function saveData(data) {
+  let firestoreSuccess = false;
+
+  try {
+    // Try Firestore first if enabled
+    if (USE_FIRESTORE) {
+      console.log('[dataStore] Attempting to save to Firestore...');
+      await saveFirestoreData(data);
+      console.log('[dataStore] ✅ Successfully saved to Firestore');
+      firestoreSuccess = true;
+    }
+  } catch (error) {
+    console.warn('[dataStore] ⚠️  Firestore save failed:', error.message);
+    
+    // If Firestore is enabled but failed, and fallback is disabled, throw
+    if (USE_FIRESTORE && !FIRESTORE_FALLBACK) {
+      throw error;
+    }
+  }
+
+  // Always save to file as backup, or as primary if Firestore failed
+  console.log('[dataStore] Saving to file system...');
+  persistToFile(data);
+  
+  if (firestoreSuccess) {
+    console.log('[dataStore] ✅ Data saved to both Firestore and file');
+  } else {
+    console.log('[dataStore] ✅ Data saved to file system');
   }
 }
 
-// Keep the original sync version for backward compatibility
+// Export the old sync version for backward compatibility
+// This will use the cached version or load synchronously from file
 export function getDataSync(forceReload = false) {
   if (forceReload) {
     cache = null;
     lastLoaded = 0;
   }
-  return load(); // { services:[], vendors:[], tenants:[], ... }
+  return loadFromFile();
 }
 
-export async function saveData(mutatorFn) {
-  // Try to import and use hybrid data store
-  try {
-    const { getData: getHybridData, saveData: saveHybridData } = await import('./hybridDataStore.js');
-    const data = await getHybridData();
-    const updated = mutatorFn(structuredClone(data));
-    await saveHybridData(updated);
-    return updated;
-  } catch (error) {
-    console.warn('[dataStore] Hybrid store unavailable, using file fallback:', error.message);
-    // Fallback to original file-based implementation
-    const data = load();
-    const updated = mutatorFn(structuredClone(data));
-    persist(updated);
-    return updated;
-  }
+export function saveDataSync(data) {
+  persistToFile(data);
 }
 
-// Keep the original sync version for backward compatibility
-export function saveDataSync(mutatorFn) {
-  const data = load();
-  const updated = mutatorFn(structuredClone(data));
-  persist(updated);
-  return updated;
+// Configuration helpers
+export function isFirestoreEnabled() {
+  return USE_FIRESTORE;
+}
+
+export function enableFirestore(enable = true) {
+  process.env.USE_FIRESTORE = enable ? 'true' : 'false';
+}
+
+export function enableFallback(enable = true) {
+  process.env.FIRESTORE_FALLBACK = enable ? 'true' : 'false';
 }

@@ -28,10 +28,10 @@ class AppDataMigration {
       if (!admin.apps.length) {
         // Look for service account key
         const serviceAccountPaths = [
+          path.join(__dirname, '../serviceAccountKey.json'),
           path.join(__dirname, '../../serviceAccountKey.json'),
           path.join(__dirname, '../../secrets/sloane-hub-service-account.json'),
-          path.join(process.cwd(), 'serviceAccountKey.json'),
-          path.join(__dirname, '../serviceAccountKey.json')
+          path.join(process.cwd(), 'serviceAccountKey.json')
         ];
 
         let serviceAccountKey = null;

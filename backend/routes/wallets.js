@@ -1,9 +1,10 @@
-import { Router } from "express";
-import { v4 as uuid } from "uuid";
-import { getData, saveData } from "../utils/dataStore.js";
+import express from "express";
+import { v4 as uuidv4 } from "uuid";
+import { getData, saveData } from "../utils/hybridDataStore.js";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 import { requireAdmin, normalizeEmail, collectUsers } from "../middleware/isAdmin.js";
 
+const { Router } = express;
 const router = Router();
 
 // Apply Firebase authentication to all routes

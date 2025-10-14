@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { v4 as uuid } from "uuid";
-import { getData, saveData } from "../utils/dataStore.js";
+import { getData, saveData } from "../utils/hybridDataStore.js";
 import { StartupSchema } from "../utils/validators.js";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 

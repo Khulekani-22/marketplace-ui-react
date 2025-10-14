@@ -19,7 +19,7 @@ import tenantsRouter from "./routes/tenants.js";
 import subscriptionsRouter from "./routes/subscriptions.js";
 import usersRouter from "./routes/users.js";
 import adminRouter from "./routes/admin.js";
-import { getData } from "./utils/dataStore.js";
+import { getData } from "./utils/hybridDataStore.js";
 import auditLogsRouter from "./routes/auditLogs.js";
 import assistantRouter from "./routes/assistant.js";
 import messagesRouter from "./routes/messages.js";

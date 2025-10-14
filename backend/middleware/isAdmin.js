@@ -1,4 +1,4 @@
-import { getData } from "../utils/dataStore.js";
+import { getData } from "../utils/hybridDataStore.js";
 
 export function normalizeEmail(x) {
   return (x || "").toString().trim().toLowerCase();
@@ -35,7 +35,7 @@ export function collectUsers(data) {
 }
 
 // Tenant-aware admin check using datastore mapping
-export function isAdminForTenant(req, { email, tenantId } = {}) {
+export async function isAdminForTenant(req, { email, tenantId } = {}) {
   try {
     const em = normalizeEmail(email || req.user?.email);
     console.log('🔐 isAdminForTenant check:', {
@@ -46,7 +46,8 @@ export function isAdminForTenant(req, { email, tenantId } = {}) {
     });
     if (!em) return false;
     const target = mapTenant(tenantId || req.tenant?.id);
-    const users = collectUsers(getData());
+    const data = await getData();
+    const users = collectUsers(data);
     const found = users.find((u) => normalizeEmail(u.email) === em);
     console.log('🔐 Found user:', found);
     if (!found) return false;
@@ -61,9 +62,9 @@ export function isAdminForTenant(req, { email, tenantId } = {}) {
 }
 
 // Express middleware to enforce admin for current tenant
-export function requireAdmin(req, res, next) {
+export async function requireAdmin(req, res, next) {
   if (!normalizeEmail(req.user?.email)) return res.status(401).json({ status: "error", message: "Unauthorized" });
-  if (!isAdminForTenant(req)) return res.status(403).json({ status: "error", message: "Forbidden: admin required for tenant" });
+  if (!(await isAdminForTenant(req))) return res.status(403).json({ status: "error", message: "Forbidden: admin required for tenant" });
   next();
 }
 

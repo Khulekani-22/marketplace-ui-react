@@ -3055,5 +3055,106 @@
       "createdAt": "2025-09-17T11:51:09.146Z"
     }
   ],
-  "wallets": []
+  "wallets": [
+    {
+      "id": "wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent",
+      "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+      "email": "khulekani@gecafrica.co",
+      "displayName": "Khulekani Magubane",
+      "balance": 450,
+      "totalEarned": 600,
+      "totalSpent": 150,
+      "createdAt": "2025-10-10T10:00:00.000Z",
+      "updatedAt": "2025-10-13T14:00:00.000Z",
+      "status": "active",
+      "transactions": [
+        {
+          "id": "1760350000001-tx0",
+          "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+          "userEmail": "khulekani@gecafrica.co",
+          "type": "credit",
+          "amount": 100,
+          "description": "Manual persistence test - source file update",
+          "reference": "ADMIN_MANUAL_PERSIST",
+          "metadata": null,
+          "createdAt": "2025-10-13T15:08:00.000Z",
+          "balanceAfter": 450
+        },
+        {
+          "id": "1760330000001-tx1",
+          "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+          "userEmail": "khulekani@gecafrica.co",
+          "type": "debit",
+          "amount": 75,
+          "description": "Service marketplace fee",
+          "reference": "SERVICE_FEE_001",
+          "metadata": null,
+          "createdAt": "2025-10-13T14:00:00.000Z",
+          "balanceAfter": 350
+        },
+        {
+          "id": "1760320000001-tx2",
+          "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+          "userEmail": "khulekani@gecafrica.co",
+          "type": "credit",
+          "amount": 200,
+          "description": "Admin credit grant - quarterly bonus",
+          "reference": "QUARTERLY_BONUS",
+          "metadata": null,
+          "createdAt": "2025-10-13T12:30:00.000Z",
+          "balanceAfter": 425
+        },
+        {
+          "id": "1760310000001-tx3",
+          "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+          "userEmail": "khulekani@gecafrica.co",
+          "type": "debit",
+          "amount": 75,
+          "description": "Platform subscription renewal",
+          "reference": "SUBSCRIPTION_RENEWAL",
+          "metadata": null,
+          "createdAt": "2025-10-13T10:15:00.000Z",
+          "balanceAfter": 225
+        },
+        {
+          "id": "1760300000001-tx4",
+          "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+          "userEmail": "khulekani@gecafrica.co",
+          "type": "credit",
+          "amount": 300,
+          "description": "Initial setup credit - welcome package",
+          "reference": "WELCOME_SETUP",
+          "metadata": null,
+          "createdAt": "2025-10-10T10:00:00.000Z",
+          "balanceAfter": 300
+        }
+      ]
+    },
+    {
+      "id": "wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent",
+      "userId": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+      "email": "zinhlesloane@gmail.com",
+      "displayName": "Zinhle Sloane",
+      "balance": 750,
+      "totalEarned": 750,
+      "totalSpent": 0,
+      "createdAt": "2025-10-08T08:00:00.000Z",
+      "updatedAt": "2025-10-13T11:00:00.000Z",
+      "status": "active",
+      "transactions": [
+        {
+          "id": "1760340000001-tx5",
+          "userId": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+          "userEmail": "zinhlesloane@gmail.com",
+          "type": "credit",
+          "amount": 750,
+          "description": "Admin privilege setup - full platform access",
+          "reference": "ADMIN_SETUP_FULL",
+          "metadata": null,
+          "createdAt": "2025-10-13T11:00:00.000Z",
+          "balanceAfter": 750
+        }
+      ]
+    }
+  ]
 }

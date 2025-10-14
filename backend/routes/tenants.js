@@ -1,6 +1,7 @@
-import { Router } from "express";
-import { getData } from "../utils/dataStore.js";
+import express from "express";
+import { getData } from "../utils/hybridDataStore.js";
 
+const { Router } = express;
 const router = Router();
 
 router.get("/current", (req, res) => {

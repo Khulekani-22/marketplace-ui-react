@@ -1,6 +1,6 @@
-import { Router } from "express";
-import { v4 as uuid } from "uuid";
-import { getData, saveData } from "../utils/dataStore.js";
+import express from "express";
+import { v4 as uuidv4 } from "uuid";
+import { getData, saveData } from "../utils/hybridDataStore.js";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 
 const SERVICE_DAY_START = 8;
@@ -88,6 +88,7 @@ function markBookingStatus({ data, subscription, serviceId, customerEmail, statu
   data.bookings = bookings;
 }
 
+const { Router } = express;
 const router = Router();
 
 function normalizeTenantId(value) {
