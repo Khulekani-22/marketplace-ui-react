@@ -7,6 +7,9 @@ const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
 
+// Import Firestore wallet service for persistent storage
+const firestoreWalletService = require("./services/firestoreWalletService");
+
 const app = express();
 
 /* ------------------------ Data Loading ------------------------ */
@@ -1450,33 +1453,72 @@ app.get("/api/wallets", (req, res) => {
   });
 });
 
-app.get("/api/wallets/me", (req, res) => {
-  const currentUser = getCurrentUser();
-  const data = getAppData();
-  const wallets = data.wallets || [];
-  
-  // Find user wallet or create a default one
-  let userWallet = wallets.find(w => w.userId === currentUser.uid);
-  if (!userWallet) {
-    userWallet = {
-      id: `wallet_${currentUser.uid}_${Date.now()}`,
-      userId: currentUser.uid,
-      email: currentUser.email,
-      displayName: currentUser.displayName,
-      balance: 0,
-      totalEarned: 0,
-      totalSpent: 0,
-      transactions: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: "active"
-    };
-    data.wallets.push(userWallet);
-    // Save immediately to ensure persistence
-    saveAppData(data);
+app.get("/api/wallets/me", async (req, res) => {
+  try {
+    const currentUser = getCurrentUser();
+    
+    // Try to get wallet from Firestore first
+    let userWallet = await firestoreWalletService.getWallet(currentUser.uid);
+    
+    // If no wallet in Firestore, create a new one
+    if (!userWallet) {
+      userWallet = {
+        id: `wallet_${currentUser.uid}_persistent`,
+        userId: currentUser.uid,
+        email: currentUser.email,
+        displayName: currentUser.displayName,
+        balance: 0,
+        totalEarned: 0,
+        totalSpent: 0,
+        transactions: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: "active"
+      };
+      
+      await firestoreWalletService.saveWallet(userWallet);
+      console.log(`✅ Created new Firestore wallet for user: ${currentUser.uid}`);
+    }
+
+    return res.json(userWallet);
+  } catch (error) {
+    console.error('❌ Error in /api/wallets/me:', error);
+    
+    // Fallback to file-based storage if Firestore fails
+    try {
+      const currentUser = getCurrentUser();
+      const data = getAppData();
+      const wallets = data.wallets || [];
+      
+      let userWallet = wallets.find(w => w.userId === currentUser.uid);
+      if (!userWallet) {
+        userWallet = {
+          id: `wallet_${currentUser.uid}_${Date.now()}`,
+          userId: currentUser.uid,
+          email: currentUser.email,
+          displayName: currentUser.displayName,
+          balance: 0,
+          totalEarned: 0,
+          totalSpent: 0,
+          transactions: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: "active"
+        };
+        data.wallets.push(userWallet);
+        saveAppData(data);
+      }
+      
+      return res.json(userWallet);
+    } catch (fallbackError) {
+      console.error('❌ Fallback also failed:', fallbackError);
+      return res.status(500).json({
+        status: "error",
+        message: "Could not load wallet",
+        error: error.message
+      });
+    }
   }
-  
-  res.json(userWallet);
 });
 
 app.post("/api/wallets/me/redeem", (req, res) => {
@@ -1550,93 +1592,162 @@ app.post("/api/wallets/me/redeem", (req, res) => {
   });
 });
 
-app.post("/api/wallets/grant", (req, res) => {
-  const { amount, email, description, reference, metadata } = req.body;
-  
-  if (!amount || amount <= 0) {
-    return res.status(400).json({
+app.post("/api/wallets/grant", async (req, res) => {
+  try {
+    const { amount, email, description, reference, metadata } = req.body;
+    
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        status: "error",
+        message: "Amount must be greater than zero"
+      });
+    }
+
+    if (!email) {
+      return res.status(400).json({
+        status: "error",
+        message: "Email is required"
+      });
+    }
+
+    // Find the target user by email from Firebase users
+    const firebaseUsers = getRealFirebaseUsers();
+    const targetUser = firebaseUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    
+    if (!targetUser) {
+      return res.status(404).json({
+        ok: false,
+        error: `User with email ${email} not found in Firebase users`
+      });
+    }
+
+    // Try Firestore first
+    try {
+      // Get or create wallet in Firestore
+      let targetWallet = await firestoreWalletService.getWallet(targetUser.uid);
+      
+      if (!targetWallet) {
+        targetWallet = {
+          id: `wallet_${targetUser.uid}_persistent`,
+          userId: targetUser.uid,
+          email: targetUser.email,
+          displayName: targetUser.displayName,
+          balance: 0,
+          totalEarned: 0,
+          totalSpent: 0,
+          transactions: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: "active"
+        };
+        
+        await firestoreWalletService.saveWallet(targetWallet);
+        console.log(`✅ Created Firestore wallet for: ${targetUser.uid}`);
+      }
+
+      // Create and add transaction in Firestore
+      const transaction = {
+        id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+        userId: targetUser.uid,
+        userEmail: targetUser.email,
+        type: "credit",
+        amount: parseFloat(amount),
+        description: description || "Admin credit grant",
+        reference: reference || null,
+        metadata: metadata || null,
+        createdAt: new Date().toISOString(),
+        balanceAfter: (targetWallet.balance || 0) + parseFloat(amount)
+      };
+
+      // Add transaction to Firestore (this will also update wallet totals)
+      await firestoreWalletService.addTransaction(targetUser.uid, transaction);
+      
+      // Get updated wallet with new transaction
+      targetWallet = await firestoreWalletService.getWallet(targetUser.uid);
+      
+      console.log(`🔥 Firestore grant successful: ${amount} credits to ${email}`);
+      
+      return res.json({
+        ok: true,
+        wallet: targetWallet,
+        transaction: transaction,
+        source: "firestore"
+      });
+
+    } catch (firestoreError) {
+      console.warn('⚠️ Firestore failed, falling back to file system:', firestoreError.message);
+      
+      // Fallback to file-based storage
+      const data = getAppData();
+      data.wallets = data.wallets || [];
+      
+      // Find or create target user wallet using Firebase UID
+      let targetWallet = data.wallets.find(w => w.userId === targetUser.uid);
+      
+      if (!targetWallet) {
+        targetWallet = {
+          id: `wallet_${targetUser.uid}_${Date.now()}`,
+          userId: targetUser.uid,
+          email: targetUser.email,
+          displayName: targetUser.displayName,
+          balance: 0,
+          totalEarned: 0,
+          totalSpent: 0,
+          transactions: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: "active"
+        };
+        data.wallets.push(targetWallet);
+      }
+      
+      // Create transaction
+      const transaction = {
+        id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+        userId: targetUser.uid,
+        userEmail: targetUser.email,
+        type: "credit",
+        amount: parseFloat(amount),
+        description: description || "Admin credit grant",
+        reference: reference || null,
+        metadata: metadata || null,
+        createdAt: new Date().toISOString(),
+        balanceAfter: (targetWallet.balance || 0) + parseFloat(amount)
+      };
+
+      // Update wallet
+      targetWallet.balance = transaction.balanceAfter;
+      targetWallet.totalEarned = (targetWallet.totalEarned || 0) + parseFloat(amount);
+      targetWallet.transactions = targetWallet.transactions || [];
+      targetWallet.transactions.unshift(transaction);
+      targetWallet.updatedAt = new Date().toISOString();
+
+      // Update in-memory cache
+      appData = data;
+      
+      // Save to persistent storage
+      if (saveAppData(data)) {
+        console.log('✅ Fallback: Grant transaction saved to backend/appData.json');
+      } else {
+        console.warn('⚠️ File system save failed - transaction exists in memory for this session');
+      }
+      
+      return res.json({
+        ok: true,
+        wallet: targetWallet,
+        transaction: transaction,
+        source: "filesystem"
+      });
+    }
+
+  } catch (error) {
+    console.error('❌ Grant endpoint error:', error);
+    return res.status(500).json({
       status: "error",
-      message: "Amount must be greater than zero"
+      message: "Internal server error",
+      error: error.message
     });
   }
-
-  if (!email) {
-    return res.status(400).json({
-      status: "error",
-      message: "Email is required"
-    });
-  }
-
-  const data = getAppData();
-  data.wallets = data.wallets || [];
-  
-  // Find the target user by email from Firebase users
-  const firebaseUsers = getRealFirebaseUsers();
-  const targetUser = firebaseUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
-  
-  if (!targetUser) {
-    return res.status(404).json({
-      ok: false,
-      error: `User with email ${email} not found in Firebase users`
-    });
-  }
-  
-  // Find or create target user wallet using Firebase UID
-  let targetWallet = data.wallets.find(w => w.userId === targetUser.uid);
-  
-  if (!targetWallet) {
-    targetWallet = {
-      id: `wallet_${targetUser.uid}_${Date.now()}`,
-      userId: targetUser.uid,
-      email: targetUser.email,
-      displayName: targetUser.displayName,
-      balance: 0,
-      totalEarned: 0,
-      totalSpent: 0,
-      transactions: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: "active"
-    };
-    data.wallets.push(targetWallet);
-  }
-  
-  // Create transaction
-  const transaction = {
-    id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
-    userId: targetUser.uid,
-    userEmail: targetUser.email,
-    type: "credit",
-    amount: parseFloat(amount),
-    description: description || "Admin credit grant",
-    reference: reference || null,
-    metadata: metadata || null,
-    createdAt: new Date().toISOString(),
-    balanceAfter: (targetWallet.balance || 0) + parseFloat(amount)
-  };
-
-  // Update wallet
-  targetWallet.balance = transaction.balanceAfter;
-  targetWallet.totalEarned = (targetWallet.totalEarned || 0) + parseFloat(amount);
-  targetWallet.transactions = targetWallet.transactions || [];
-  targetWallet.transactions.unshift(transaction);
-  targetWallet.updatedAt = new Date().toISOString();
-
-  // Update in-memory cache
-  appData = data;
-  
-  // Save to persistent storage - attempt but allow graceful fallback for serverless
-  if (saveAppData(data)) {
-    console.log('✅ Grant transaction saved successfully to backend/appData.json');
-  } else {
-    console.warn('⚠️ File system save failed (expected in serverless) - transaction exists in memory for this session');
-  }
-  
-  res.json({
-    ok: true,
-    wallet: targetWallet,
-    transaction: transaction
-  });
 });
 
 app.post("/api/wallets/transaction", (req, res) => {
