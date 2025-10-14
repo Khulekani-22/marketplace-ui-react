@@ -36,13 +36,45 @@ function collectUsers(data){
 function mapTenant(id){ return (id === 'vendor') ? 'public' : (id || 'public'); }
 function isAdminRequest(req) { return isAdminForTenant(req); }
 
-router.get("/", (req, res) => {
-  const { vendors = [] } = getData();
-  const tenantId = req.tenant.id;
-  const rows = vendors.filter(
-    (v) => (v.tenantId ?? "public") === tenantId || (tenantId === "public" && !v.tenantId)
-  );
-  res.json(rows);
+router.get("/", async (req, res) => {
+  try {
+    const {
+      page = 1,
+      pageSize = 20,
+      q = "",
+    } = req.query;
+
+    const { vendors = [] } = await getData();
+    const tenantId = req.tenant.id;
+    
+    let rows = vendors.filter(
+      (v) => (v.tenantId ?? "public") === tenantId || (tenantId === "public" && !v.tenantId)
+    );
+
+    // Add search functionality if needed
+    if (q) {
+      const needle = String(q).toLowerCase();
+      rows = rows.filter(
+        (v) =>
+          v.name?.toLowerCase().includes(needle) ||
+          v.companyName?.toLowerCase().includes(needle) ||
+          v.email?.toLowerCase().includes(needle) ||
+          v.skills?.some((s) => s.toLowerCase().includes(needle))
+      );
+    }
+
+    // Pagination
+    const p = Math.max(1, parseInt(page));
+    const ps = Math.min(100, Math.max(1, parseInt(pageSize)));
+    const total = rows.length;
+    const start = (p - 1) * ps;
+    const slice = rows.slice(start, start + ps);
+
+    res.json({ page: p, pageSize: ps, total, items: slice });
+  } catch (error) {
+    console.error('Error fetching vendors:', error);
+    res.status(500).json({ error: 'Failed to fetch vendors' });
+  }
 });
 
 router.post("/", firebaseAuthRequired, (req, res, next) => {
@@ -126,7 +158,7 @@ router.put("/:id", firebaseAuthRequired, (req, res, next) => {
   }
 });
 
-router.delete("/:id", firebaseAuthRequired, (req, res) => {
+router.delete("/:id", firebaseAuthRequired, async (req, res) => {
   const id = req.params.id;
   const tenantId = req.tenant.id;
   let removed = false;
@@ -154,7 +186,7 @@ export default router;
 // - subscriptions[].vendorId
 // - bookings[].vendorId
 // - messageThreads[].participantIds/participants.id/messages[].senderId containing `vendor:<id>`; and context.vendorId
-router.post("/rename-id", firebaseAuthRequired, (req, res) => {
+router.post("/rename-id", firebaseAuthRequired, async (req, res) => {
   const tenantId = req.tenant.id;
   const ownerUid = (req.body?.ownerUid || "").toString().trim();
   const oldId = (req.body?.oldId || "").toString().trim();
@@ -401,12 +433,12 @@ router.post("/migrate-startups", firebaseAuthRequired, (req, res, next) => {
 });
 
 // Vendor stats: listings, reviews, bookings/revenue, subscription (scaffold)
-router.get("/:id/stats", (req, res) => {
+router.get("/:id/stats", async (req, res) => {
   const id = String(req.params.id || "");
   if (!id) return res.status(400).json({ status: "error", message: "Missing vendor id" });
   const tenantId = req.tenant.id;
   try {
-    const data = getData();
+    const data = await getData();
     const vendors = Array.isArray(data.vendors) ? data.vendors : [];
     const services = Array.isArray(data.services) ? data.services : [];
     const bookings = Array.isArray(data.bookings) ? data.bookings : [];

@@ -2,7 +2,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState, useCallback, useEffect, useRef, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useWallet } from "../context/useWallet";
+import { useWallet } from "../hook/useWalletAxios";
 import { useAppSync } from "../context/useAppSync";
 import { WalletSummaryCard, TransactionTable, formatCredits } from "./shared/WalletComponents";
 import AdminWalletManager from "./shared/AdminWalletManager";
@@ -47,7 +47,7 @@ export default function WalletLayer() {
   const [allBusy, setAllBusy] = useState(false);
   const [allErr, setAllErr] = useState("");
   const [allNext, setAllNext] = useState("");
-  const [allPageSize, setAllPageSize] = useState(50);
+  const [allPageSize] = useState(50);
   const autoLoadedRef = useRef(false);
 
   // Platform transaction history
@@ -106,24 +106,33 @@ export default function WalletLayer() {
   // Load local users for admin
   const loadLocalUsers = useCallback(async () => {
     if (!isAdmin) return;
-    
+
     try {
       setUsersLoading(true);
-      const response = await api.get("/api/users");
-      const userData = response.data || [];
-      
-      // Transform the data to include wallet balance
-      const usersWithWallets = userData.map((user: any) => ({
-        ...user,
-        walletBalance: user.walletBalance || 0,
-        lastActivity: user.lastActivity || new Date().toISOString(),
-        avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=6366f1&color=fff`
+      const { data } = await api.get("/api/admin/wallet/users", {
+        suppressToast: true,
+        suppressErrorLog: true,
+      } as any);
+
+      const list = Array.isArray(data?.users) ? data.users : [];
+      const mapped: User[] = list.map((entry: any) => ({
+        uid: entry.uid || entry.id || entry.email,
+        email: entry.email || "",
+        name: entry.name || entry.email || "Unknown user",
+        role: entry.role || "member",
+        tenantId: entry.tenantId || "public",
+        walletBalance: Number(entry.walletBalance) || 0,
+        lastActivity: entry.lastActivity || new Date().toISOString(),
+        avatar:
+          entry.avatar ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(entry.name || entry.email || "User")}&background=6366f1&color=fff`,
       }));
-      
-      setUsers(usersWithWallets);
-    } catch (error) {
+
+      setUsers(mapped);
+    } catch (error: any) {
       console.error("Error loading users:", error);
-      toast.error("Failed to load user data");
+      const message = error?.response?.data?.message || "Failed to load user data";
+      toast.error(message);
     } finally {
       setUsersLoading(false);
     }
@@ -180,88 +189,97 @@ export default function WalletLayer() {
         }
       } catch (endpointError: any) {
         console.warn("Dedicated transactions endpoint failed, trying fallback approach:", endpointError);
-        
-        // Fallback: Get all wallets and extract transactions manually
+
+        try {
+          const { data: legacyData } = await api.get("/api/admin/wallet/transactions", {
+            params: {
+              limit: 500,
+              offset: 0,
+              userId: transactionFilters.userEmail || undefined,
+            },
+            suppressToast: true,
+            suppressErrorLog: true,
+          } as any);
+
+          const fallbackTransactions = Array.isArray(legacyData?.transactions) ? legacyData.transactions : [];
+          if (fallbackTransactions.length) {
+            const normalized = fallbackTransactions.map((tx: any) => ({
+              ...tx,
+              userEmail: tx.userEmail || tx.email || tx.userId || "unknown",
+              userName: tx.userName || tx.displayName || tx.userId || tx.email || "Unknown",
+              userRole: tx.userRole || tx.role || "member",
+              userTenant: tx.userTenant || tx.tenantId || "public",
+              walletBalance: Number(tx.walletBalance) || 0,
+            }));
+
+            normalized.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            setAllTransactions(normalized);
+            toast.success(`Loaded ${normalized.length} transactions (admin fallback)`);
+            return;
+          }
+        } catch (secondaryError) {
+          console.warn("Admin wallet transactions fallback failed, using wallet snapshot fallback:", secondaryError);
+        }
+
+        // Final fallback: inspect wallet snapshot if available
         const { data: walletsData } = await api.get("/api/wallets", {
           suppressToast: true,
-          suppressErrorLog: true
+          suppressErrorLog: true,
         } as any);
-        
-        console.log("Received wallets data for transaction extraction:", walletsData);
-        
-        // Extract transactions from all wallets
-        let allTransactions: any[] = [];
-        
+
+        let extracted: any[] = [];
         if (Array.isArray(walletsData)) {
           walletsData.forEach((wallet: any) => {
-            if (wallet && wallet.transactions && Array.isArray(wallet.transactions)) {
+            if (wallet && Array.isArray(wallet.transactions) && wallet.transactions.length) {
               wallet.transactions.forEach((transaction: any) => {
-                allTransactions.push({
+                extracted.push({
                   ...transaction,
-                  userEmail: wallet.userEmail || wallet.email || 'Unknown',
-                  userName: wallet.userName || wallet.name,
+                  userEmail: wallet.userEmail || wallet.email || "unknown",
+                  userName: wallet.userName || wallet.name || wallet.userEmail || wallet.email,
                   userRole: wallet.role,
                   userTenant: wallet.tenantId,
-                  walletBalance: wallet.balance
+                  walletBalance: wallet.balance,
                 });
               });
             }
           });
         }
-        
-        // Apply client-side filtering
-        let filteredTransactions = allTransactions;
-        
+
         if (transactionFilters.userEmail) {
           const normalizedEmail = transactionFilters.userEmail.toLowerCase();
-          filteredTransactions = filteredTransactions.filter(t => 
-            t.userEmail.toLowerCase().includes(normalizedEmail)
-          );
+          extracted = extracted.filter((t) => t.userEmail?.toLowerCase().includes(normalizedEmail));
         }
-        
+
         if (transactionFilters.type) {
-          filteredTransactions = filteredTransactions.filter(t => t.type === transactionFilters.type);
+          extracted = extracted.filter((t) => t.type === transactionFilters.type);
         }
-        
+
         if (transactionFilters.dateFrom) {
           const fromDate = new Date(transactionFilters.dateFrom);
-          filteredTransactions = filteredTransactions.filter(t => 
-            new Date(t.createdAt) >= fromDate
-          );
+          extracted = extracted.filter((t) => new Date(t.createdAt) >= fromDate);
         }
-        
+
         if (transactionFilters.dateTo) {
           const toDate = new Date(transactionFilters.dateTo);
           toDate.setHours(23, 59, 59, 999);
-          filteredTransactions = filteredTransactions.filter(t => 
-            new Date(t.createdAt) <= toDate
-          );
+          extracted = extracted.filter((t) => new Date(t.createdAt) <= toDate);
         }
-        
+
         if (transactionFilters.minAmount) {
           const min = Number(transactionFilters.minAmount);
-          if (Number.isFinite(min)) {
-            filteredTransactions = filteredTransactions.filter(t => t.amount >= min);
-          }
+          if (Number.isFinite(min)) extracted = extracted.filter((t) => t.amount >= min);
         }
-        
+
         if (transactionFilters.maxAmount) {
           const max = Number(transactionFilters.maxAmount);
-          if (Number.isFinite(max)) {
-            filteredTransactions = filteredTransactions.filter(t => t.amount <= max);
-          }
+          if (Number.isFinite(max)) extracted = extracted.filter((t) => t.amount <= max);
         }
-        
-        // Sort by creation date (newest first)
-        filteredTransactions.sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        
-        console.log("Extracted and filtered transactions:", filteredTransactions);
-        setAllTransactions(filteredTransactions);
-        
-        if (filteredTransactions.length > 0) {
-          toast.success(`Loaded ${filteredTransactions.length} transactions (fallback method)`);
+
+        extracted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setAllTransactions(extracted);
+
+        if (extracted.length) {
+          toast.success(`Loaded ${extracted.length} transactions (snapshot fallback)`);
         } else {
           toast.info("No transactions found in any wallets");
         }
@@ -399,7 +417,7 @@ export default function WalletLayer() {
         reference: "manual-redemption",
       });
 
-      if (!result.ok) {
+      if (!result.success) {
         setFeedback({ type: "danger", message: result.error || "Unable to record voucher usage." });
         return;
       }
@@ -644,7 +662,15 @@ export default function WalletLayer() {
       {isAdmin && (
         <div className='col-12'>
           <AdminWalletManager
-            grantCredits={grantCredits}
+            grantCredits={async (payload) => {
+          const result = await grantCredits(
+            payload.email || '',
+            payload.amount,
+            payload.description,
+            { metadata: payload.metadata || undefined, reference: payload.reference }
+          );
+          return { ok: result.success, error: result.error, wallet: result.wallet };
+        }}
             onRefresh={async () => {
               await loadLocalUsers();
               await refresh();

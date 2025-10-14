@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
@@ -78,13 +78,27 @@ function MasterLayoutInner({ children }) {
       setTenantId(tenant);
     } catch (error) {
       console.error("🔄 Role refresh error:", error);
-      if (!auth.currentUser) {
+      // Handle axios errors gracefully
+      if (error.response?.status === 401) {
+        console.log("🔄 Unauthorized - clearing session");
         sessionStorage.removeItem("role");
         sessionStorage.removeItem("tenantId");
+        sessionStorage.removeItem("userEmail");
+        sessionStorage.removeItem("userId");
+        setIsAdmin(false);
+        setIsPartnerRole(false);
+        setTenantId("vendor");
+      } else if (!auth.currentUser) {
+        // User signed out
+        sessionStorage.removeItem("role");
+        sessionStorage.removeItem("tenantId");
+        sessionStorage.removeItem("userEmail");
+        sessionStorage.removeItem("userId");
         setIsAdmin(false);
         setIsPartnerRole(false);
         setTenantId("vendor");
       }
+      // For other errors (network, server), keep current session data
     }
   }, [isAdmin, isPartnerRole]);
 
@@ -170,13 +184,16 @@ function MasterLayoutInner({ children }) {
   useEffect(() => {
     (async () => {
       try {
+        console.log("🏢 Loading tenants list...");
         const { data } = await api.get("/api/tenants");
         const arr = Array.isArray(data)
           ? data.map((t) => (t?.id === "public" ? { ...t, id: "vendor", name: t?.name || "Vendor" } : t))
           : [];
         const withVendor = [{ id: "vendor", name: "Vendor" }, ...arr.filter((t) => t?.id !== "vendor")];
+        console.log("🏢 Loaded tenants:", withVendor);
         setTenants(withVendor);
-      } catch {
+      } catch (error) {
+        console.warn("🏢 Failed to load tenants:", error);
         setTenants([{ id: "vendor", name: "Vendor" }]);
       }
     })();

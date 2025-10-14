@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useMemo, useState, type FormEvent } from "react";
-import { useWallet } from "../context/useWallet";
+import { useWallet } from "../hook/useWalletAxios";
 import { useAppSync } from "../context/useAppSync";
 import { WalletSummaryCard, TransactionTable, formatCredits } from "./shared/WalletComponents";
 import AdminWalletManager from "./shared/AdminWalletManager";

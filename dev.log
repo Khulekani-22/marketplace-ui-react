@@ -1,10 +1,10 @@
 
 > wowdash-vite-react@0.0.0 dev
-> vite --host --port 5173
+> vite --host localhost
 
 error when starting dev server:
-Error: listen EPERM: operation not permitted 0.0.0.0:5173
-    at Server.setupListenHandle [as _listen2] (node:net:1881:21)
-    at listenInCluster (node:net:1946:12)
-    at Server.listen (node:net:2044:7)
-    at httpServer.listen (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:38729:14)
+Error: Port 5173 is already in use
+    at Server.onError (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:45596:18)
+    at Server.emit (node:events:507:28)
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)

@@ -37,7 +37,7 @@ function listVendors(data = {}) {
 // POST /api/messages
 // Body: { listingId, listingTitle, vendorId, vendorEmail?, subject, content }
 // Appends a message to a per-listing feedback thread (creates if missing)
-router.post("/", firebaseAuthRequired, (req, res) => {
+router.post("/", firebaseAuthRequired, async (req, res) => {
   const {
     listingId = "",
     listingTitle = "",
@@ -57,7 +57,7 @@ router.post("/", firebaseAuthRequired, (req, res) => {
   const senderIsAdmin = isAdminRequest(req);
 
   try {
-    const updated = saveData((data) => {
+    const updated = await saveData((data) => {
       const tenantId = req.tenant?.id || "public";
       const threads = Array.isArray(data.messageThreads) ? data.messageThreads : [];
 
@@ -164,14 +164,14 @@ router.post("/", firebaseAuthRequired, (req, res) => {
   }
 });
 
-router.post("/sync", firebaseAuthRequired, (req, res) => {
+router.post("/sync", firebaseAuthRequired, async (req, res) => {
   try {
     const email = normalizeEmail(req.user?.email);
     if (!email) {
       return res.status(401).json({ status: "error", message: "Unauthorized" });
     }
 
-    const data = getData();
+    const data = await getData();
     const isAdmin = isAdminRequest(req);
     const vendor = resolveVendorByIdentity(data, email, req.user?.uid);
 
@@ -179,7 +179,7 @@ router.post("/sync", firebaseAuthRequired, (req, res) => {
       return res.status(403).json({ status: "error", message: "Forbidden: admin or vendor required" });
     }
 
-    saveData((doc) => doc);
+    await saveData((doc) => doc);
     return res.json({ ok: true, role: isAdmin ? "admin" : "vendor" });
   } catch (e) {
     return res.status(500).json({ status: "error", message: e?.message || "Failed to sync messages" });
@@ -225,7 +225,7 @@ function canAccessThread(t, { isAdmin, email, vendorId }) {
 }
 
 // GET /api/messages -> list threads (latest first) for current tenant
-router.get("/", firebaseAuthRequired, messageListLimiter, (req, res) => {
+router.get("/", firebaseAuthRequired, messageListLimiter, async (req, res) => {
   try {
     const tenantId = req.tenant?.id || "public";
     
@@ -267,11 +267,11 @@ router.get("/", firebaseAuthRequired, messageListLimiter, (req, res) => {
 });
 
 // GET /api/messages/:id -> one thread
-router.get("/:id", firebaseAuthRequired, (req, res) => {
+router.get("/:id", firebaseAuthRequired, async (req, res) => {
   try {
     const tenantId = req.tenant?.id || "public";
     const id = String(req.params.id || "");
-    const data = getData();
+    const data = await getData();
     const { messageThreads = [] } = data;
     const found = messageThreads.find((t) => t.id === id && (t?.tenantId || "public") === tenantId);
     if (!found) return res.status(404).json({ status: "error", message: "Not found" });
@@ -287,7 +287,7 @@ router.get("/:id", firebaseAuthRequired, (req, res) => {
 });
 
 // POST /api/messages/reply { threadId, content }
-router.post("/reply", firebaseAuthRequired, (req, res) => {
+router.post("/reply", firebaseAuthRequired, async (req, res) => {
   const { threadId = "", content: raw = "" } = req.body || {};
   const content = (raw || "").toString().trim();
   if (!threadId || !content) return res.status(400).json({ status: "error", message: "Missing threadId or content" });
@@ -295,7 +295,7 @@ router.post("/reply", firebaseAuthRequired, (req, res) => {
   const senderEmail = normalizeEmail(req.user?.email);
   const senderIsAdmin = isAdminRequest(req);
   try {
-    saveData((data) => {
+    await saveData((data) => {
       const threads = Array.isArray(data.messageThreads) ? data.messageThreads : [];
       const idx = threads.findIndex((t) => t.id === String(threadId));
       if (idx === -1) {
@@ -344,12 +344,12 @@ router.post("/reply", firebaseAuthRequired, (req, res) => {
 });
 
 // POST /api/messages/read { threadId, read }
-router.post("/read", firebaseAuthRequired, (req, res) => {
+router.post("/read", firebaseAuthRequired, async (req, res) => {
   const { threadId = "", read = true } = req.body || {};
   if (!threadId) return res.status(400).json({ status: "error", message: "Missing threadId" });
   const tenantId = req.tenant?.id || "public";
   try {
-    saveData((data) => {
+    await saveData((data) => {
       const threads = Array.isArray(data.messageThreads) ? data.messageThreads : [];
       const idx = threads.findIndex((t) => t.id === String(threadId));
       if (idx === -1) {
@@ -382,7 +382,7 @@ router.post("/read", firebaseAuthRequired, (req, res) => {
 export default router;
 
 // Compose helper: create thread for vendor<->subscriber
-router.post("/compose", firebaseAuthRequired, (req, res) => {
+router.post("/compose", firebaseAuthRequired, async (req, res) => {
   try {
     const { type, listingId, serviceId, subject: subj, content: body } = req.body || {};
     const subscriberEmailParam = normalizeEmail(req.body?.subscriberEmail || "");
@@ -391,7 +391,7 @@ router.post("/compose", firebaseAuthRequired, (req, res) => {
     if (!content) return res.status(400).json({ status: "error", message: "Missing content" });
 
     const tenantId = req.tenant?.id || "public";
-    const { services = [], messageThreads = [], subscriptions = [], vendors: vendorsRaw = [], startups = [] } = getData();
+    const { services = [], messageThreads = [], subscriptions = [], vendors: vendorsRaw = [], startups = [] } = await getData();
     const vendors = listVendors({ vendors: vendorsRaw, startups });
     const now = nowIso();
 
@@ -407,7 +407,7 @@ router.post("/compose", firebaseAuthRequired, (req, res) => {
       const participants = [ { id: `vendor:${vId}`, name: vName, role: 'Vendor' }, { id: 'admin', name: 'Admin', role: 'Admin' } ];
       const base = { id: `t${Date.now().toString(36)}`, subject: subject || `Listing Feedback • ${svc?.title || id}`, participants, participantIds: participants.map(p=>p.id), messages: [], read: false, context: { type: 'listing-feedback', listingId: id, listingTitle: svc?.title || '', vendorId: vId }, tenantId };
       const msg = { id: `m${Date.now()}`, senderId: `vendor:${vId}`, senderName: vName, senderAvatar: '', senderRole: 'Vendor', content, date: now };
-      saveData((data) => {
+      await saveData((data) => {
         const list = Array.isArray(data.messageThreads) ? data.messageThreads : [];
         const idx = list.findIndex((t) => t?.context?.type === 'listing-feedback' && String(t?.context?.listingId) === id && (t?.tenantId || 'public') === tenantId);
         if (idx === -1) list.unshift({ ...base, messages: [msg], lastMessage: { snippet: content.slice(0,160), date: now } });
@@ -468,7 +468,7 @@ router.post("/compose", firebaseAuthRequired, (req, res) => {
             date: now,
           };
 
-      saveData((data) => {
+      await saveData((data) => {
         const list = Array.isArray(data.messageThreads) ? data.messageThreads : [];
         if (idx === -1) {
           const thread = {

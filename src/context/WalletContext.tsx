@@ -1,7 +1,7 @@
 import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { onIdTokenChanged, type User } from "firebase/auth";
 import { isAxiosError } from "axios";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { api } from "../lib/api";
 import { useAppSync } from "./useAppSync";
 import { normalizeRole } from "../utils/roles";

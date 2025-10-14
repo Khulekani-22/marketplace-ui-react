@@ -1,10 +1,11 @@
 import { useParams, Link } from "react-router-dom";
-import appData from "../../data/appData.json";
+import { useAppSync } from "../../context/useAppSync";
 import { Icon } from "@iconify/react";
 
 const CohortDetail = () => {
+  const { appData } = useAppSync();
   const { cohortId } = useParams();
-  const cohort = appData.cohorts.find((c) => c.id === cohortId);
+  const cohort = appData?.cohorts?.find((c) => c.id === cohortId);
 
   if (!cohort) {
     return (

@@ -58,14 +58,14 @@ function sanitizeUsersPayload(list = []) {
 }
 
 // List all user role mappings
-router.get("/", (_req, res) => {
-  const data = getData();
+router.get("/", async (_req, res) => {
+  const data = await getData();
   res.json(collectUsers(data));
 });
 
 // Get current user's role/tenant (by Firebase token if present, else by query ?email=)
-router.get("/me", (req, res) => {
-  const data = getData();
+router.get("/me", async (req, res) => {
+  const data = await getData();
   const users = collectUsers(data);
   const email = normalizeEmail(req.user?.email || req.query.email);
   if (!email) return res.status(400).json({ error: "Missing email" });
@@ -74,7 +74,7 @@ router.get("/me", (req, res) => {
 });
 
 // Upsert a user's role/tenant
-router.post("/", firebaseAuthRequired, isAdminForTenant, (req, res) => {
+router.post("/", firebaseAuthRequired, isAdminForTenant, async (req, res) => {
   const { email, tenantId = "public", role = "member", uid = "" } = req.body || {};
   const norm = normalizeEmail(email);
   if (!norm) return res.status(400).json({ error: "Missing email" });
@@ -84,7 +84,7 @@ router.post("/", firebaseAuthRequired, isAdminForTenant, (req, res) => {
     return res.status(403).json({ error: "Only admins can grant admin roles" });
   }
   
-  const updated = saveData((data) => {
+  const updated = await saveData((data) => {
     const list = Array.isArray(data.users) ? data.users : [];
     const idx = list.findIndex((u) => normalizeEmail(u.email) === norm);
     const next = { email: norm, tenantId, role, ...(uid ? { uid } : {}) };
@@ -105,12 +105,12 @@ router.post("/", firebaseAuthRequired, isAdminForTenant, (req, res) => {
 });
 
 // Upgrade a public user to a private tenant and grant admin role
-router.post("/upgrade", (req, res) => {
+router.post("/upgrade", async (req, res) => {
   const { email, newTenantId } = req.body || {};
   const norm = normalizeEmail(email);
   const tenantId = (newTenantId || "").trim();
   if (!norm || !tenantId) return res.status(400).json({ error: "Missing email or newTenantId" });
-  const updated = saveData((data) => {
+  const updated = await saveData((data) => {
     const list = Array.isArray(data.users) ? data.users : [];
     const idx = list.findIndex((u) => normalizeEmail(u.email) === norm);
     const next = { email: norm, tenantId, role: "admin" };
@@ -126,7 +126,7 @@ router.post("/upgrade", (req, res) => {
 });
 
 // Bulk replace users list (admin only, backs the "Save All Changes" action)
-router.put("/bulk", firebaseAuthRequired, (req, res) => {
+router.put("/bulk", firebaseAuthRequired, async (req, res) => {
   try {
     if (!isAdminRequest(req)) {
       return res.status(403).json({ status: "error", message: "Forbidden" });
@@ -135,7 +135,7 @@ router.put("/bulk", firebaseAuthRequired, (req, res) => {
     const incoming = Array.isArray(req.body?.users) ? req.body.users : [];
     const sanitized = sanitizeUsersPayload(incoming);
 
-    const updated = saveData((data) => {
+    const updated = await saveData((data) => {
       data.users = sanitized;
       const tenants = Array.isArray(data.tenants) ? [...data.tenants] : [];
       const known = new Set(tenants.map((t) => (t && typeof t === "object" ? t.id : t)).filter(Boolean));
@@ -182,7 +182,7 @@ router.delete("/", firebaseAuthRequired, async (req, res) => {
     if (!email) return res.status(400).json({ status: "error", message: "Missing email" });
 
     // Remove role mapping from data store
-    const updated = saveData((data) => {
+    const updated = await saveData((data) => {
       const list = Array.isArray(data.users) ? data.users : [];
       const next = list.filter((u) => normalizeEmail(u.email) !== email);
       data.users = next;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, bootstrapSession } from "../lib/api";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { writeAuditLog } from "../lib/audit";
 import { hasFullAccess, normalizeRole } from "../utils/roles";
 

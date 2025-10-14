@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import appData from "../../data/appData.json";
+import { useAppSync } from "../../context/useAppSync";
 
 const Workspace1 = () => {
-  const events = appData.events || [];
+  const { appData } = useAppSync();
+  const events = appData?.events || [];
 
   // Dynamically collect unique types
   const types = [

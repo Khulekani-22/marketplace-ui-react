@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import MasterLayout from "../masterLayout/MasterLayout.jsx";
-import appData from "../../backend/appData.json";
+import { useAppSync } from "../context/useAppSync";
 
 const PROGRESS_KEY = "sloane_academy_progress_v2";
 const FALLBACK_VIDEO = "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4";
@@ -37,8 +37,6 @@ interface AppDataShape {
   cohorts?: Cohort[];
   events?: EventItem[];
 }
-
-const rawData = appData as AppDataShape;
 
 function readStoredProgress(): Set<string> {
   try {
@@ -86,7 +84,10 @@ function resolveVideoUrl(course: Course | undefined): string {
 }
 
 export default function SloaneAcademyPage() {
-  const cohorts = useMemo(() => (Array.isArray(rawData?.cohorts) ? rawData.cohorts : []), []);
+  const { appData } = useAppSync();
+  const rawData = (appData || { cohorts: [], events: [] }) as AppDataShape;
+  
+  const cohorts = useMemo(() => (Array.isArray(rawData?.cohorts) ? rawData.cohorts : []), [rawData]);
   const [progress, setProgress] = useState<Set<string>>(readStoredProgress);
   const [cohortId, setCohortId] = useState(() => cohorts[0]?.id ?? "");
   const [courseId, setCourseId] = useState(() => cohorts[0]?.courses?.[0]?.id ?? "");

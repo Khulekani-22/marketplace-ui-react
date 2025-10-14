@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/useVendor";
-import { auth } from "../lib/firebase";
-import appDataLocal from "../data/appData.json";
+import { auth } from "../firebase.js";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
 import { hasFullAccess } from "../utils/roles";
@@ -138,7 +137,7 @@ export default function VendorProfilePage() {
   // Full LIVE appData working copy (same pattern as ListingsAdminPage)
   const [data, setData] = useState(() => {
     const draft = safeParse(localStorage.getItem(LS_DRAFT_KEY));
-    return draft ?? appDataLocal;
+    return draft ?? { startups: [], vendors: [], companies: [], services: [] }; // Empty structure instead of appDataLocal
   });
 
   const isAdmin = hasFullAccess(sessionStorage.getItem("role"));
@@ -216,7 +215,7 @@ export default function VendorProfilePage() {
       try {
         await ensureVendorId();
         // Start with LMS live if available
-        let base = appDataLocal;
+        let base = { startups: [], vendors: [], companies: [], services: [] }; // Empty structure instead of appDataLocal
         try {
           const { data: live } = await api.get(`${API_BASE}/live`, {
             headers: {

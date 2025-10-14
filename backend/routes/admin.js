@@ -53,7 +53,7 @@ router.post("/wallet/add-credits", async (req, res, next) => {
     };
 
     // Update wallet and save transaction
-    const result = saveData((data) => {
+    const result = await saveData((data) => {
       // Initialize wallets array if it doesn't exist
       if (!Array.isArray(data.wallets)) {
         data.wallets = [];
@@ -131,7 +131,7 @@ router.post("/wallet/bulk-credits", async (req, res, next) => {
     }
 
     // Get composite eligible user data to validate userIds
-    const data = getData();
+    const data = await getData();
     const eligible = collectEligibleUsers(data);
     const validUserIds = userIds.filter((id) => eligible.some((u) => u.id === id || u.uid === id));
 
@@ -143,7 +143,7 @@ router.post("/wallet/bulk-credits", async (req, res, next) => {
     const bulkId = uuid(); // Group transactions with same bulk ID
 
     // Process bulk credit allocation
-    saveData((data) => {
+    await saveData((data) => {
       if (!Array.isArray(data.wallets)) data.wallets = [];
       if (!Array.isArray(data.walletTransactions)) data.walletTransactions = [];
 
@@ -207,10 +207,10 @@ router.post("/wallet/bulk-credits", async (req, res, next) => {
  * GET /api/admin/wallet/transactions
  * Get wallet transaction history (admin view)
  */
-router.get("/wallet/transactions", (req, res) => {
+router.get("/wallet/transactions", async (req, res) => {
   try {
     const { userId, limit = 100, offset = 0 } = req.query;
-    const data = getData();
+    const data = await getData();
     const transactions = Array.isArray(data.walletTransactions) ? data.walletTransactions : [];
 
     let filtered = transactions;
@@ -249,9 +249,9 @@ router.get("/wallet/transactions", (req, res) => {
  * GET /api/admin/wallet/summary
  * Get wallet summary statistics for admin dashboard
  */
-router.get("/wallet/summary", (req, res) => {
+router.get("/wallet/summary", async (req, res) => {
   try {
-    const data = getData();
+    const data = await getData();
     const wallets = Array.isArray(data.wallets) ? data.wallets : [];
     const transactions = Array.isArray(data.walletTransactions) ? data.walletTransactions : [];
 
@@ -291,9 +291,9 @@ router.get("/wallet/summary", (req, res) => {
  * Get users with their wallet information
  * GET /api/admin/wallet/users
  */
-router.get("/wallet/users", (req, res) => {
+router.get("/wallet/users", async (req, res) => {
   try {
-    const data = getData();
+    const data = await getData();
     const wallets = Array.isArray(data.wallets) ? data.wallets : [];
 
     // Build composite eligible user list
@@ -337,7 +337,7 @@ router.get("/wallet/users", (req, res) => {
  */
 router.post("/wallet/normalize-appdata", async (req, res, next) => {
   try {
-    const result = saveData((data) => {
+    const result = await saveData((data) => {
       data.users = Array.isArray(data.users) ? data.users : [];
       data.vendors = Array.isArray(data.vendors) ? data.vendors : [];
       data.startups = Array.isArray(data.startups) ? data.startups : [];
@@ -448,7 +448,7 @@ router.post("/wallet/sync-firebase-users", async (req, res, next) => {
       pageToken = resp.pageToken;
     } while (pageToken);
 
-    const updated = saveData((data) => {
+    const updated = await saveData((data) => {
       const list = Array.isArray(data.users) ? data.users : [];
       const byEmail = new Map(list.map((u) => [String((u.email || "").toLowerCase()), u]));
 

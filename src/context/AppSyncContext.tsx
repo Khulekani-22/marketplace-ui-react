@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
 import { onIdTokenChanged } from "firebase/auth";
-import appDataLocal from "../data/appData.json";
 import { AppSyncContext } from "./appSyncContext";
 import { toast } from "react-toastify";
 import { hasFullAccess, normalizeRole } from "../utils/roles";
@@ -45,8 +44,7 @@ function writeCachedAppData(payload: unknown) {
 
 const initialAppData = (() => {
   const cached = readCachedAppData();
-  if (cached) return cached;
-  return appDataLocal || null;
+  return cached || null; // Use cached data only, no local JSON fallback
 })();
 
 export function AppSyncProvider({ children }) {
@@ -111,18 +109,20 @@ export function AppSyncProvider({ children }) {
       setAppData(next);
       writeCachedAppData(next);
     } catch (e) {
-      // API failed: best-effort fallback to cached data or bundled appData.json
+      // API failed: try to use cached data, but don't fallback to bundled JSON
       const cached = readCachedAppData();
-      const fallback = cached || appDataLocal || null;
-      setAppData(fallback);
-      if (fallback) writeCachedAppData(fallback);
+      if (cached) {
+        setAppData(cached);
+        console.warn('[AppSync] Using cached data, API unavailable');
+      } else {
+        setAppData(null);
+        console.error('[AppSync] No data available - API failed and no cache');
+      }
       const err: any = e;
       const isNetwork = err?.code === "ERR_NETWORK";
-      if (isNetwork) {
-        setAppDataError("");
-      } else {
+      if (!isNetwork) {
         setAppDataError(
-          err?.response?.data?.message || err?.message || "Loaded local fallback app data"
+          err?.response?.data?.message || err?.message || "Failed to load app data from API"
         );
       }
     } finally {

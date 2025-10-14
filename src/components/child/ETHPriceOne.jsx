@@ -1,12 +1,13 @@
 import { useState } from "react";
 import useReactApexChart from "../../hook/useReactApexChart";
-import appData from "../../data/appData.json";
+import { useAppSync } from "../../context/useAppSync";
 
 const ETHPriceOne = () => {
+  const { appData } = useAppSync();
   const { createChartSeven } = useReactApexChart();
   const [selectedMonth, setSelectedMonth] = useState("September");
 
-  const leads = appData.leads || [];
+  const leads = appData?.leads || [];
 
   // Filter and summarize lead totals by month
   const months = [

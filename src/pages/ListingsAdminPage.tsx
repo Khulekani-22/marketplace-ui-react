@@ -1,10 +1,9 @@
 // src/pages/ListingsAdminPage.jsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import appDataLocal from "../data/appData.json";
 import { useMessages } from "../context/useMessages";
 import { useAppSync } from "../context/useAppSync";
 import { api } from "../lib/api";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { writeAuditLog } from "../lib/audit";
 import MasterLayout from "../masterLayout/MasterLayout";
 
@@ -144,7 +143,7 @@ export default function ListingsAdminPage() {
   // Working copy of FULL appData (we only edit services visually)
   const [data, setData] = useState(() => {
     const draft = safeParse(localStorage.getItem(LS_DRAFT_KEY));
-    return draft ?? appDataLocal;
+    return draft ?? { startups: [], vendors: [], companies: [], services: [] };
   });
   const services = useMemo(
     () => (data?.services || []).map(normalizeService),

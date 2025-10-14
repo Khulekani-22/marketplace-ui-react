@@ -1,0 +1,250 @@
+🔑 Firebase service account found at: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/serviceAccountKey.json
+✅ Firestore data store initialized
+SCDM backend running on http://127.0.0.1:5055
+Live appData.json: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/appData.json
+Snapshots dir:     /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/secrets/lms_snapshots
+[Replicator] appData.json -> src/data replicated at 2025-10-14T09:16:38.261Z
+[0mGET /api/health [32m200[0m 2.414 ms - 47[0m
+[0mGET /api/startups [33m404[0m 0.340 ms - 46[0m
+API Error: Error: Not allowed by CORS
+    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
+    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
+    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
+[0mGET /api/startups [33m404[0m 0.156 ms - 46[0m
+API Error: Error: Not allowed by CORS
+    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
+    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
+    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Attempting to load from Firestore...
+📡 Loading data from Firestore...
+🔐 isAdminForTenant check: {
+  email: 'khulekani@22onsloane.co',
+  requestTenant: 'public',
+  userFromReq: {
+    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+    email: 'khulekani@22onsloane.co',
+    roles: []
+  },
+  tenantFromReq: { id: 'public' }
+}
+[dataStore] Attempting to load from Firestore...
+📡 Loading data from Firestore...
+[0mGET /api/messages?t=1760433508434 [32m200[0m 309.410 ms - 114[0m
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 19 messageThreads
+📥 Loaded 19 services
+📥 Loaded 19 messageThreads
+📥 Loaded 10 leads
+📥 Loaded 19 services
+📥 Loaded 14 startups
+📥 Loaded 10 leads
+📥 Loaded 2 vendors
+📥 Loaded 14 startups
+📥 Loaded 1 companies
+📥 Loaded 2 vendors
+📥 Loaded 1 profiles
+📥 Loaded 1 companies
+📥 Loaded 7 users
+📥 Loaded 1 profiles
+📥 Loaded 1 tenants
+📥 Loaded 7 users
+📥 Loaded 12 subscriptions
+📥 Loaded 1 tenants
+📥 Loaded 2 wallets
+📥 Loaded 12 subscriptions
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+📥 Loaded 2 wallets
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+🔐 Found user: {
+  email: 'khulekani@22onsloane.co',
+  tenantId: '22onsloane',
+  role: 'admin'
+}
+🔐 Admin check: {
+  role: 'admin',
+  userTenant: '22onsloane',
+  targetTenant: 'public',
+  isAdmin: true,
+  tenantMatch: false
+}
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760433556491 [33m429[0m 4.334 ms - 88[0m
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760433556491 [33m429[0m 1.939 ms - 88[0m
+[0mGET /api/lms/live [32m200[0m 3.457 ms - 87919[0m
+[0mGET /api/lms/live [32m200[0m 3.584 ms - 87919[0m
+API Error: Error: Not allowed by CORS
+    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
+    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
+    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
+API Error: Error: Not allowed by CORS
+    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
+    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
+    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
+[Replicator] appData.json -> src/data replicated at 2025-10-14T09:21:38.267Z
+API Error: Error: Not allowed by CORS
+    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
+    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
+    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
+API Error: Error: Not allowed by CORS
+    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
+    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
+    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
+    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760433748435 [33m429[0m 6.088 ms - 88[0m
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Attempting to load from Firestore...
+📡 Loading data from Firestore...
+🔐 isAdminForTenant check: {
+  email: 'khulekani@22onsloane.co',
+  requestTenant: 'public',
+  userFromReq: {
+    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+    email: 'khulekani@22onsloane.co',
+    roles: []
+  },
+  tenantFromReq: { id: 'public' }
+}
+[dataStore] Attempting to load from Firestore...
+📡 Loading data from Firestore...
+[0mGET /api/messages?t=1760433748435 [32m200[0m 1.401 ms - 114[0m
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 19 messageThreads
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 19 services
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 3 vendors
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 19 messageThreads
+📥 Loaded 12 subscriptions
+📥 Loaded 19 services
+📥 Loaded 2 wallets
+📥 Loaded 10 leads
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+📥 Loaded 14 startups
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+📥 Loaded 3 vendors
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+📥 Loaded 2 wallets
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+🔐 Found user: {
+  email: 'khulekani@22onsloane.co',
+  tenantId: '22onsloane',
+  role: 'admin'
+}
+🔐 Admin check: {
+  role: 'admin',
+  userTenant: '22onsloane',
+  targetTenant: 'public',
+  isAdmin: true,
+  tenantMatch: false
+}
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760433796493 [33m429[0m 6.054 ms - 88[0m

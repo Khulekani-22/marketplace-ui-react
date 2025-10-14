@@ -7,13 +7,45 @@ import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 const router = Router();
 
 // List startups for current tenant
-router.get("/", (req, res) => {
-  const { startups = [] } = getData();
-  const tenantId = req.tenant.id;
-  const rows = startups.filter(
-    (s) => (s.tenantId ?? "public") === tenantId || (tenantId === "public" && !s.tenantId)
-  );
-  res.json(rows);
+router.get("/", async (req, res) => {
+  try {
+    const {
+      page = 1,
+      pageSize = 20,
+      q = "",
+    } = req.query;
+
+    const { startups = [] } = await getData();
+    const tenantId = req.tenant.id;
+    
+    let rows = startups.filter(
+      (s) => (s.tenantId ?? "public") === tenantId || (tenantId === "public" && !s.tenantId)
+    );
+
+    // Add search functionality if needed
+    if (q) {
+      const needle = String(q).toLowerCase();
+      rows = rows.filter(
+        (s) =>
+          s.name?.toLowerCase().includes(needle) ||
+          s.industry?.toLowerCase().includes(needle) ||
+          s.description?.toLowerCase().includes(needle) ||
+          s.founderName?.toLowerCase().includes(needle)
+      );
+    }
+
+    // Pagination
+    const p = Math.max(1, parseInt(page));
+    const ps = Math.min(100, Math.max(1, parseInt(pageSize)));
+    const total = rows.length;
+    const start = (p - 1) * ps;
+    const slice = rows.slice(start, start + ps);
+
+    res.json({ page: p, pageSize: ps, total, items: slice });
+  } catch (error) {
+    console.error('Error fetching startups:', error);
+    res.status(500).json({ error: 'Failed to fetch startups' });
+  }
 });
 
 // Create or upsert startup for current tenant

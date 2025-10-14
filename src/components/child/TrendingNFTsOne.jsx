@@ -1,11 +1,10 @@
 // src/components/TrendingNFTsOne.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { auth } from "../../lib/firebase";
+import { auth } from "../../firebase.js";
 import { api } from "../../lib/api";
 import { useAppSync } from "../../context/useAppSync";
-import { useWallet } from "../../context/useWallet";
-import appDataLocal from "../../data/appData.json";
+import { useWallet } from "../../hook/useWalletAxios";
 import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../../lib/subscriptions";
 
 // Normalize any legacy keys so the card always has the fields your UI expects
@@ -76,11 +75,8 @@ const TrendingNFTsOne = ({
     []
   );
 
-  // Start with local file as an immediate render fallback (approved only)
-  const baseApproved = useMemo(
-    () => (appDataLocal.services || []).map(normalize).filter(isApproved),
-    []
-  );
+  // Start with empty array, will load from API
+  const baseApproved = useMemo(() => [], []);
   const [services, setServices] = useState(baseApproved);
   const servicesRef = useRef(baseApproved);
   const versionRef = useRef(0); // guards against stale fetch overwriting fresher state
@@ -262,7 +258,7 @@ const TrendingNFTsOne = ({
             source: 'dashboard-trending',
           },
         });
-        if (!result.ok) {
+        if (!result.success) {
           await unsubscribeFromService(id);
           setToastType('danger');
           setToast(result.error || 'Unable to redeem wallet credits; subscription canceled.');
@@ -418,7 +414,7 @@ const TrendingNFTsOne = ({
             source: 'dashboard-trending-booking',
           },
         });
-        if (!result.ok) {
+        if (!result.success) {
           await unsubscribeFromService(String(id));
           setBookingModal((prev) => ({ ...prev, error: result.error || 'Unable to redeem wallet credits; booking canceled.' }));
           return;

@@ -1,7 +1,7 @@
 // src/components/AdminRoute.jsx
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { api } from "../lib/api";
 import { hasFullAccess, normalizeRole } from "../utils/roles";
 

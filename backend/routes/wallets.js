@@ -11,9 +11,9 @@ const router = Router();
 router.use(firebaseAuthRequired);
 
 // GET /api/wallets - Get all wallets (admin only)
-router.get("/", requireAdmin, (req, res) => {
+router.get("/", requireAdmin, async (req, res) => {
   try {
-    const data = getData();
+    const data = await getData();
     const wallets = ensureWalletArray(data);
     
     res.json(wallets.map(wallet => ({
@@ -216,10 +216,9 @@ function findUserRecord(data, { email, uid }) {
   return hit;
 }
 
-function resolveUserContext(req) {
+function resolveUserContext(req, data) {
   const email = normalizeEmail(req.user?.email);
   const uid = typeof req.user?.uid === "string" ? req.user.uid : null;
-  const data = getData();
   const record = findUserRecord(data, { email, uid }) || {};
   const role = normalizeRole(record.role || req.user?.role || req.user?.roles?.[0]);
   const tenantId = normalizeTenant(record.tenantId || req.tenant?.id);
@@ -344,14 +343,14 @@ function sendWalletResponse(res, { eligible, wallet }) {
   res.json({ eligible, wallet: wallet ? sanitizeWallet(wallet) : null });
 }
 
-router.get("/me", firebaseAuthRequired, (req, res) => {
+router.get("/me", firebaseAuthRequired, async (req, res) => {
   try {
-    const { email, uid, role, tenantId } = resolveUserContext(req);
+    const snapshot = await getData();
+    const { email, uid, role, tenantId } = resolveUserContext(req, snapshot);
     const eligible = eligibleForWallet(role, tenantId);
     if (!eligible) return sendWalletResponse(res, { eligible: false, wallet: null });
 
     const id = walletId({ tenantId, uid, email });
-    const snapshot = getData();
     const existingList = Array.isArray(snapshot?.wallets) ? snapshot.wallets : [];
     const existing = existingList.find((w) => w && w.id === id);
     if (existing) {
@@ -359,7 +358,7 @@ router.get("/me", firebaseAuthRequired, (req, res) => {
     }
 
     let createdWallet = null;
-    saveData((draft) => {
+    await saveData((draft) => {
       const { wallet, index } = ensureWallet(draft, { uid, email, role, tenantId }, { initialize: true });
       persistWallet(draft, index, wallet);
       createdWallet = wallet;
@@ -372,9 +371,10 @@ router.get("/me", firebaseAuthRequired, (req, res) => {
   }
 });
 
-router.post("/me/redeem", firebaseAuthRequired, (req, res) => {
+router.post("/me/redeem", firebaseAuthRequired, async (req, res) => {
   try {
-    const { email, uid, role, tenantId } = resolveUserContext(req);
+    const snapshot = await getData();
+    const { email, uid, role, tenantId } = resolveUserContext(req, snapshot);
     console.log("[WALLET] Redeem request - User context:", { email, uid, role, tenantId });
     
     if (!eligibleForWallet(role, tenantId)) {
@@ -393,7 +393,7 @@ router.post("/me/redeem", firebaseAuthRequired, (req, res) => {
     let resultWallet = null;
     let transaction = null;
     
-    saveData((draft) => {
+    await saveData((draft) => {
       console.log("[WALLET] Before ensureWallet - wallets count:", draft.wallets?.length || 0);
       const { wallet, index } = ensureWallet(draft, { uid, email, role, tenantId });
       console.log("[WALLET] After ensureWallet - wallet index:", index, "wallet id:", wallet.id);
@@ -418,7 +418,7 @@ router.post("/me/redeem", firebaseAuthRequired, (req, res) => {
   }
 });
 
-router.post("/grant", firebaseAuthRequired, requireAdmin, (req, res) => {
+router.post("/grant", firebaseAuthRequired, requireAdmin, async (req, res) => {
   try {
     const targetEmail = normalizeEmail(req.body?.email || req.body?.targetEmail);
     const targetUid = typeof req.body?.uid === "string" && req.body.uid.trim() ? req.body.uid.trim() : null;
@@ -433,7 +433,7 @@ router.post("/grant", firebaseAuthRequired, requireAdmin, (req, res) => {
       return res.status(400).json({ status: "error", message: "Provide a target email or uid" });
     }
 
-    const incomingData = getData();
+    const incomingData = await getData();
     const record = findUserRecord(incomingData, { email: targetEmail, uid: targetUid }) || {};
     const role = normalizeRole(explicitRole || record.role || "member");
     const tenantId = normalizeTenant(explicitTenant || record.tenantId || req.tenant?.id);
@@ -442,7 +442,7 @@ router.post("/grant", firebaseAuthRequired, requireAdmin, (req, res) => {
 
     let resultWallet = null;
     let transaction = null;
-    saveData((draft) => {
+    await saveData((draft) => {
       const { wallet, index } = ensureWallet(draft, { uid, email, role, tenantId }, { initialize: false });
       const nextWallet = applyCredit(wallet, amount, { description, reference, metadata });
       transaction = nextWallet.transactions[0];
@@ -458,14 +458,14 @@ router.post("/grant", firebaseAuthRequired, requireAdmin, (req, res) => {
   }
 });
 
-router.get("/admin/lookup", firebaseAuthRequired, requireAdmin, (req, res) => {
+router.get("/admin/lookup", firebaseAuthRequired, requireAdmin, async (req, res) => {
   try {
     const email = normalizeEmail(req.query?.email);
     const uid = typeof req.query?.uid === "string" && req.query.uid.trim() ? req.query.uid.trim() : null;
     if (!email && !uid) {
       return res.status(400).json({ status: "error", message: "Provide email or uid" });
     }
-    const data = getData();
+    const data = await getData();
     const record = findUserRecord(data, { email, uid }) || {};
     const tenantId = normalizeTenant(record.tenantId || req.tenant?.id);
     const userUid = uid || record.uid || email;
@@ -493,9 +493,9 @@ router.get("/admin/lookup", firebaseAuthRequired, requireAdmin, (req, res) => {
 });
 
 // GET /api/wallets/admin/transactions - Get all transactions across all wallets (admin only)
-router.get("/admin/transactions", firebaseAuthRequired, requireAdmin, (req, res) => {
+router.get("/admin/transactions", firebaseAuthRequired, requireAdmin, async (req, res) => {
   try {
-    const data = getData();
+    const data = await getData();
     const wallets = ensureWalletArray(data);
     const users = data.users || [];
     
@@ -644,9 +644,9 @@ router.get("/admin/transactions", firebaseAuthRequired, requireAdmin, (req, res)
 });
 
 // Debug endpoint to check wallet persistence (admin only)
-router.get("/admin/debug/wallets", firebaseAuthRequired, requireAdmin, (req, res) => {
+router.get("/admin/debug/wallets", firebaseAuthRequired, requireAdmin, async (req, res) => {
   try {
-    const data = getData();
+    const data = await getData();
     const wallets = ensureWalletArray(data);
     return res.json({
       ok: true,
@@ -665,7 +665,7 @@ router.get("/admin/debug/wallets", firebaseAuthRequired, requireAdmin, (req, res
 });
 
 // Debug endpoint to list available routes
-router.get("/admin/debug/routes", (req, res) => {
+router.get("/admin/debug/routes", async (req, res) => {
   try {
     const routes = [
       'GET /api/wallets',
@@ -691,7 +691,7 @@ router.get("/admin/debug/routes", (req, res) => {
 });
 
 // Debug endpoint to manually test wallet creation (admin only)
-router.post("/admin/debug/test-create", firebaseAuthRequired, requireAdmin, (req, res) => {
+router.post("/admin/debug/test-create", firebaseAuthRequired, requireAdmin, async (req, res) => {
   try {
     const { email, uid, role, tenantId } = req.body;
     if (!email && !uid) {
@@ -699,7 +699,7 @@ router.post("/admin/debug/test-create", firebaseAuthRequired, requireAdmin, (req
     }
 
     let createdWallet = null;
-    saveData((draft) => {
+    await saveData((draft) => {
       const { wallet, index } = ensureWallet(draft, {
         uid: uid || email,
         email: normalizeEmail(email),
@@ -723,7 +723,7 @@ router.post("/admin/debug/test-create", firebaseAuthRequired, requireAdmin, (req
 });
 
 // Debug endpoint to manually test wallet transaction (admin only)
-router.post("/admin/debug/test-transaction", firebaseAuthRequired, requireAdmin, (req, res) => {
+router.post("/admin/debug/test-transaction", firebaseAuthRequired, requireAdmin, async (req, res) => {
   try {
     const { email, uid, amount, description } = req.body;
     if (!email && !uid) {
@@ -734,7 +734,7 @@ router.post("/admin/debug/test-transaction", firebaseAuthRequired, requireAdmin,
     let resultWallet = null;
     let transaction = null;
 
-    saveData((draft) => {
+    await saveData((draft) => {
       const { wallet, index } = ensureWallet(draft, {
         uid: uid || email,
         email: normalizeEmail(email),

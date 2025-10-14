@@ -3,10 +3,9 @@ import { Link } from "react-router-dom";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useMessages } from "../context/useMessages";
 import { useVendor } from "../context/useVendor";
-import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
 import { useAppSync } from "../context/useAppSync";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { fetchMyVendorListings } from "../lib/listings";
 import { hasFullAccess, normalizeRole } from "../utils/roles";
 
@@ -237,7 +236,7 @@ const EmailLayer = () => {
   }
   async function loadLists() {
     try {
-      const live = appData || appDataLocal;
+      const live = appData || { startups: [], vendors: [], companies: [], services: [] };
       const services = Array.isArray(live?.services) ? live.services : [];
 
       let apiListings: any[] = [];
@@ -324,7 +323,7 @@ const EmailLayer = () => {
   const fallbackSubscribersForService = useCallback(
     (serviceId, q = '', page = 1, pageSize = 10) => {
       if (!serviceId) return { items: [], total: 0 };
-      const live = appData || appDataLocal;
+      const live = appData || { startups: [], vendors: [], companies: [], services: [], subscriptions: [] };
       const raw = Array.isArray(live?.subscriptions) ? live.subscriptions : [];
       const normalizedVendorId = vendor?.vendorId ? String(vendor.vendorId).toLowerCase() : '';
       const search = (q || '').trim().toLowerCase();

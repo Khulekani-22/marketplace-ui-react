@@ -206,7 +206,7 @@ router.post("/", firebaseAuthRequired, async (req, res, next) => {
     const id = parsed.id || uuid();
     const tenantId = req.tenant.id;
 
-    const result = await saveData((data) => {
+    const result = await await saveData((data) => {
       data.services = data.services || [];
       data.services.push({ ...parsed, id, tenantId });
       return data;
@@ -229,7 +229,7 @@ router.put("/:id", firebaseAuthRequired, async (req, res, next) => {
     const parsed = ServiceSchema.partial().parse(req.body);
 
     let found = null;
-    const result = await saveData((data) => {
+    const result = await await saveData((data) => {
       data.services = data.services || [];
       const idx = data.services.findIndex(
         (s) => s.id === id && (s.tenantId ?? "public") === tenantId
@@ -258,7 +258,7 @@ router.delete("/:id", firebaseAuthRequired, async (req, res) => {
     const tenantId = req.tenant.id;
 
     let removed = false;
-    await saveData((data) => {
+    await await saveData((data) => {
       data.services = (data.services || []).filter((s) => {
         const match = s.id === id && (s.tenantId ?? "public") === tenantId;
         if (match) removed = true;
@@ -291,7 +291,7 @@ router.post("/:id/reviews", async (req, res, next) => {
     }
 
     let updated = null;
-    await saveData((data) => {
+    await await saveData((data) => {
       data.services = data.services || [];
       let idx = data.services.findIndex(
         (s) => String(s.id) === id && (s.tenantId ?? "public") === tenantId

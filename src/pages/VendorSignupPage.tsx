@@ -1,7 +1,7 @@
 // src/pages/VendorSignupPage.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { api } from "../lib/api";
 import {
   GoogleAuthProvider,

@@ -3,8 +3,7 @@ import { toast } from "react-toastify";
 import { api } from "../lib/api";
 import { getLive } from "../lib/lmsClient";
 import { MessagesContext } from "./messagesContext";
-import appDataLocal from "../data/appData.json";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { onIdTokenChanged } from "firebase/auth";
 import { hasFullAccess } from "../utils/roles";
 
@@ -109,13 +108,8 @@ const filterThreadsForIdentity = (doc: any, tenantId: string, identity: Identity
 
 const fallbackThreadsForTenant = (tenantId: string) => {
   const tenantKey = (tenantId === "vendor" ? "public" : tenantId).toString().toLowerCase();
-  const raw = Array.isArray(appDataLocal?.messageThreads) ? appDataLocal.messageThreads : [];
-  return raw
-    .filter((t) => {
-      const scope = (t?.tenantId ?? "public").toString().toLowerCase();
-      return scope === tenantKey;
-    })
-    .map((t) => ({ ...t }));
+  // Return empty array instead of using local JSON
+  return [];
 };
 
 const resolveIdentity = (tenantId: string): Identity => {
@@ -185,12 +179,7 @@ export function MessagesProvider({ children }) {
       // fall through to local fallback
     }
 
-    const fallbackItems = filterThreadsForIdentity(appDataLocal, tenantId, identity);
-    if (fallbackItems.length) {
-      applyThreads(fallbackItems);
-      setError("Showing cached messages while the network is unavailable.");
-      return true;
-    }
+    // Return from cache only, no bundled JSON fallback
     return threadsRef.current.length > 0;
   }, []);
 

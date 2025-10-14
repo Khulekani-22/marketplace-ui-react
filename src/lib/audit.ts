@@ -1,8 +1,8 @@
-// src/lib/audit.js
+// src/lib/audit.ts
 // Centralized audit logging client with API-first strategy and Firestore fallback.
 
 import { api } from "./api";
-import db from "../db";
+import { db } from "../firebase";
 import {
   addDoc,
   collection,
@@ -18,7 +18,7 @@ import {
 const COLL = "audit_logs";
 
 // Normalizes log item fields for UI consumption
-export function normalizeAuditItem(item) {
+export function normalizeAuditItem(item: any) {
   const ts = item.timestamp?._seconds
     ? new Date(item.timestamp._seconds * 1000)
     : item.timestamp instanceof Date
@@ -48,10 +48,18 @@ export async function fetchAuditLogs({
   dateTo,
   limit = 100,
   tenantId,
+}: {
+  search?: string;
+  userEmail?: string;
+  action?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  limit?: number;
+  tenantId?: string;
 } = {}) {
   // Try API first
   try {
-    const params = { search, userEmail, action, limit };
+    const params: any = { search, userEmail, action, limit };
     if (dateFrom instanceof Date) params.dateFrom = dateFrom.toISOString();
     if (dateTo instanceof Date) params.dateTo = dateTo.toISOString();
     const headers = tenantId ? { "x-tenant-id": tenantId } : undefined;
@@ -102,6 +110,14 @@ export async function writeAuditLog({
   targetId,
   ip,
   metadata = {},
+}: {
+  action: string;
+  userId?: string;
+  userEmail?: string;
+  targetType?: string;
+  targetId?: string;
+  ip?: string;
+  metadata?: Record<string, any>;
 }) {
   const tenantId = sessionStorage.getItem("tenantId") || "vendor";
   const payload = {

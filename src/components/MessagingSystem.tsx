@@ -1,212 +1,471 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Icon } from "@iconify/react/dist/iconify.js";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Icon } from '@iconify/react/dist/iconify.js';
+import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { api, bootstrapSession, getSession } from '../lib/api';
 
-interface User {
-  uid: string;
-  email: string;
-  name: string;
-  avatar: string;
-  type: string;
+type SessionInfo = ReturnType<typeof getSession>;
+
+interface ParticipantSummary {
+  id?: string;
+  name?: string;
+  email?: string;
   role?: string;
 }
 
-interface Message {
+interface ThreadSummary {
   id: string;
+  kind: 'thread' | 'legacy';
   subject: string;
-  from: User;
-  to: User;
-  content: string;
-  timestamp: string;
-  status: string;
-  priority: string;
-  labels: string[];
-  threadId: string;
-  attachments: any[];
-  metadata: any;
+  lastMessageSnippet: string;
+  lastMessageAt?: string;
+  unreadCount?: number;
+  participants: ParticipantSummary[];
+  context?: Record<string, any>;
+  legacy?: {
+    user1?: string;
+    user2?: string;
+  };
+  raw?: any;
 }
 
-interface Contact {
+interface ContactSummary {
   id: string;
+  threadId: string;
   name: string;
-  email: string;
+  email?: string;
   avatar: string;
-  type: string;
   status: string;
-  lastActivity?: string;
+  type: 'thread' | 'legacy';
+  lastMessageSnippet: string;
+  lastMessageAt?: string;
+  unreadCount?: number;
+  thread: ThreadSummary;
+}
+
+interface ConversationMessage {
+  id: string;
+  senderId?: string;
+  senderName?: string;
+  senderEmail?: string;
+  senderRole?: string;
+  senderAvatar?: string;
+  content: string;
+  timestamp: string;
+}
+
+function truncate(text: string, max = 80) {
+  if (!text) return '';
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
+function placeholderAvatar(name: string) {
+  const safeName = encodeURIComponent(name || 'User');
+  return `https://ui-avatars.com/api/?name=${safeName}&background=059669&color=fff`;
+}
+
+function normalizeLegacyMessage(message: any): ConversationMessage {
+  const from = message?.from || {};
+  const timestamp = message?.timestamp || message?.date || new Date().toISOString();
+  return {
+    id: String(message?.id || timestamp),
+    senderId: from?.uid || from?.email,
+    senderName: from?.name || from?.email || 'User',
+    senderEmail: from?.email,
+    senderRole: from?.type,
+    senderAvatar: from?.avatar,
+    content: (message?.content ?? '').toString(),
+    timestamp,
+  };
+}
+
+function normalizeMessagesFromThread(thread: any, fallbackContext?: Record<string, any>): ConversationMessage[] {
+  const items = Array.isArray(thread?.messages) ? thread.messages : [];
+  const context = thread?.context || fallbackContext || {};
+  const normalized = items.map((msg: any) => {
+    const role = msg?.senderRole || msg?.role;
+    let senderEmail = msg?.senderEmail || msg?.email;
+    if (!senderEmail) {
+      const lowered = (role || '').toLowerCase();
+      if (lowered === 'admin' && context.adminEmail) senderEmail = context.adminEmail;
+      if (lowered === 'vendor' && context.vendorEmail) senderEmail = context.vendorEmail;
+      if (lowered === 'subscriber' && context.subscriberEmail) senderEmail = context.subscriberEmail;
+    }
+    const timestamp = msg?.date || msg?.timestamp || msg?.createdAt || new Date().toISOString();
+    return {
+      id: String(msg?.id || msg?.messageId || timestamp),
+      senderId: msg?.senderId || msg?.sender?.id,
+      senderName: msg?.senderName || msg?.sender?.name || msg?.senderId || 'User',
+      senderEmail,
+      senderRole: role,
+      senderAvatar: msg?.senderAvatar || msg?.sender?.avatar,
+      content: (msg?.content ?? msg?.text ?? '').toString(),
+      timestamp,
+    };
+  });
+  normalized.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  return normalized;
+}
+
+function normalizeLegacyThreads(messages: any[]): ThreadSummary[] {
+  const grouped = new Map<string, any[]>();
+  messages.forEach((message) => {
+    if (!message) return;
+    const key = String(message.threadId || message.id || message.subject || `legacy-${Date.now()}`);
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key)!.push(message);
+  });
+
+  const threads: ThreadSummary[] = [];
+  for (const [threadId, list] of grouped.entries()) {
+    list.sort(
+      (a, b) => new Date(a?.timestamp || a?.date || 0).getTime() - new Date(b?.timestamp || b?.date || 0).getTime()
+    );
+    const first = list[0];
+    const last = list[list.length - 1] || first;
+    const participants: ParticipantSummary[] = [];
+    if (first?.from) {
+      participants.push({
+        id: first.from.uid || first.from.email || first.from.name,
+        name: first.from.name || first.from.email,
+        email: first.from.email,
+        role: first.from.type,
+      });
+    }
+    if (first?.to) {
+      participants.push({
+        id: first.to.uid || first.to.email || first.to.name,
+        name: first.to.name || first.to.email,
+        email: first.to.email,
+        role: first.to.type,
+      });
+    }
+
+    threads.push({
+      id: threadId,
+      kind: 'legacy',
+      subject: last?.subject || first?.subject || 'Conversation',
+      lastMessageSnippet: truncate(last?.content || ''),
+      lastMessageAt: last?.timestamp || last?.date,
+      participants,
+      legacy: {
+        user1: participants[0]?.email,
+        user2: participants[1]?.email,
+      },
+      raw: list,
+    });
+  }
+  return threads;
+}
+
+function normalizeNewThread(item: any): ThreadSummary {
+  const messages = Array.isArray(item?.messages) ? [...item.messages] : [];
+  const last = item?.lastMessage || messages[messages.length - 1] || {};
+  const participants: ParticipantSummary[] = Array.isArray(item?.participants)
+    ? item.participants.map((participant: any) => ({
+        id: participant?.id || participant?.email || participant?.name,
+        name: participant?.name || participant?.id || 'Participant',
+        email: participant?.email,
+        role: participant?.role,
+      }))
+    : [];
+  const context = item?.context || {};
+
+  const thread: ThreadSummary = {
+    id: String(item?.id || item?.threadId || context.threadId || `thread-${Date.now()}`),
+    kind: 'thread',
+    subject: item?.subject || context.listingTitle || context.serviceTitle || 'Conversation',
+    lastMessageSnippet: truncate(item?.lastMessage?.snippet || last?.snippet || last?.content || ''),
+    lastMessageAt: last?.date || last?.timestamp || item?.updatedAt || item?.createdAt,
+    unreadCount: typeof item?.unreadCount === 'number' ? item.unreadCount : undefined,
+    participants,
+    context,
+    raw: item,
+  };
+
+  const vendorEmail = context.vendorEmail;
+  const adminEmail = context.adminEmail;
+  const subscriberEmail = context.subscriberEmail;
+
+  if (vendorEmail) {
+    const vendor = thread.participants.find(
+      (participant) => (participant?.role || '').toLowerCase() === 'vendor' || (participant?.id || '').startsWith('vendor:')
+    );
+    if (vendor && !vendor.email) vendor.email = vendorEmail;
+  }
+  if (adminEmail) {
+    const admin = thread.participants.find((participant) => (participant?.role || '').toLowerCase() === 'admin');
+    if (admin && !admin.email) admin.email = adminEmail;
+  }
+  if (subscriberEmail) {
+    const subscriber = thread.participants.find((participant) => (participant?.role || '').toLowerCase() === 'subscriber');
+    if (subscriber && !subscriber.email) subscriber.email = subscriberEmail;
+  }
+
+  return thread;
 }
 
 const MessagingSystem = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [conversationMessages, setConversationMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [threads, setThreads] = useState<ThreadSummary[]>([]);
+  const [contacts, setContacts] = useState<ContactSummary[]>([]);
+  const [selectedContact, setSelectedContact] = useState<ContactSummary | null>(null);
+  const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
+  const [currentSession, setCurrentSession] = useState<SessionInfo | null>(() => {
+    try {
+      return getSession();
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const API_BASE = 'http://localhost:5500/api';
-
-  // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [conversationMessages]);
+  }, [conversationMessages, scrollToBottom]);
 
-  // Fetch current user
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/me`);
-        const user = await response.json();
-        setCurrentUser(user);
-      } catch (error) {
-        console.error('Error fetching current user:', error);
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
-
-  // Fetch contacts
-  useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/messages/contacts`);
-        const data = await response.json();
-        if (data.success) {
-          setContacts(data.contacts);
-        }
-      } catch (error) {
-        console.error('Error fetching contacts:', error);
-      }
-    };
-
-    fetchContacts();
-  }, []);
-
-  // Fetch messages
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/messages?limit=100`);
-        const data = await response.json();
-        setMessages(data.messages || []);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching messages:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchMessages();
-  }, []);
-
-  // Fetch conversation when contact is selected
-  useEffect(() => {
-    if (selectedContact && currentUser) {
-      const fetchConversation = async () => {
-        try {
-          const response = await fetch(
-            `${API_BASE}/messages/conversation?user1=${currentUser.email}&user2=${selectedContact.email}`
-          );
-          const data = await response.json();
-          if (data.success) {
-            setConversationMessages(data.conversation || []);
-          }
-        } catch (error) {
-          console.error('Error fetching conversation:', error);
-        }
-      };
-
-      fetchConversation();
-    }
-  }, [selectedContact, currentUser]);
-
-  // Send message
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !selectedContact || !currentUser || sending) {
-      return;
-    }
-
-    setSending(true);
-
-    try {
-      const response = await fetch(`${API_BASE}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: selectedContact.email,
-          subject: `Message to ${selectedContact.name}`,
-          content: newMessage,
-          priority: 'normal',
-          from: {
-            uid: currentUser.uid,
-            email: currentUser.email,
-            name: currentUser.name || currentUser.email,
-            type: currentUser.role || 'user'
-          }
-        }),
+    bootstrapSession()
+      .then((session) => setCurrentSession(session))
+      .catch(() => {
+        // leave existing session info (likely unauthenticated)
       });
+  }, []);
 
-      const data = await response.json();
-      if (data.success) {
-        // Add the new message to the conversation
-        setConversationMessages(prev => [...prev, data.data]);
-        setNewMessage('');
-        
-        // Refresh messages list
-        const messagesResponse = await fetch(`${API_BASE}/messages?limit=100`);
-        const messagesData = await messagesResponse.json();
-        setMessages(messagesData.messages || []);
+  const buildContacts = useCallback(
+    (threadList: ThreadSummary[]): ContactSummary[] => {
+      const sessionEmail = (currentSession?.email || '').toLowerCase();
+      return threadList
+        .map((thread) => {
+          const participants = thread.participants || [];
+          let counterpart = participants.find(
+            (participant) => (participant?.email || '').toLowerCase() !== sessionEmail
+          );
+          if (!counterpart && participants.length) counterpart = participants[0];
+          const name = counterpart?.name || counterpart?.email || thread.subject || 'Conversation';
+          const email =
+            counterpart?.email ||
+            (thread.legacy
+              ? [thread.legacy.user1, thread.legacy.user2].find(
+                  (candidate) => (candidate || '').toLowerCase() !== sessionEmail
+                )
+              : undefined);
+          const avatar = placeholderAvatar(name);
+          const statusRaw =
+            thread.kind === 'thread'
+              ? thread.context?.type || 'active'
+              : 'legacy conversation';
+          const status = statusRaw.replace(/[-_]/g, ' ');
+
+          return {
+            id: `${thread.kind}:${thread.id}`,
+            threadId: thread.id,
+            name,
+            email,
+            avatar,
+            status: status.charAt(0).toUpperCase() + status.slice(1),
+            type: thread.kind,
+            lastMessageSnippet: truncate(thread.lastMessageSnippet || ''),
+            lastMessageAt: thread.lastMessageAt,
+            unreadCount: thread.unreadCount,
+            thread,
+          };
+        })
+        .sort((a, b) => {
+          const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+          const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+          return bTime - aTime;
+        });
+    },
+    [currentSession]
+  );
+
+  const loadThreads = useCallback(
+    async ({ silent = false }: { silent?: boolean } = {}): Promise<ContactSummary[]> => {
+      if (!silent) setLoading(true);
+      try {
+        const response = await api.get('/api/messages', { params: { limit: 100 } });
+        const data = response.data;
+        let normalized: ThreadSummary[] = [];
+        if (Array.isArray(data?.items)) {
+          normalized = data.items.map(normalizeNewThread);
+        } else if (Array.isArray(data?.messages)) {
+          normalized = normalizeLegacyThreads(data.messages);
+        } else if (Array.isArray(data)) {
+          normalized = normalizeLegacyThreads(data);
+        }
+        setThreads(normalized);
+        const nextContacts = buildContacts(normalized);
+        setContacts(nextContacts);
+        return nextContacts;
+      } catch (error: any) {
+        console.error('Error fetching messages:', error);
+        if (!silent) {
+          const message = error?.response?.data?.message || 'Failed to load messages';
+          toast.error(message);
+        }
+        setThreads([]);
+        setContacts([]);
+        return [];
+      } finally {
+        if (!silent) setLoading(false);
       }
-    } catch (error) {
-      console.error('Error sending message:', error);
-    } finally {
-      setSending(false);
+    },
+    [buildContacts]
+  );
+
+  useEffect(() => {
+    void loadThreads();
+  }, [loadThreads]);
+
+  const selectContact = useCallback(
+    async (contact: ContactSummary) => {
+      setSelectedContact(contact);
+      if (contact.type === 'thread') {
+        try {
+          const response = await api.get(`/api/messages/${contact.threadId}`);
+          const threadData = response.data && response.data.id ? response.data : contact.thread.raw;
+          const normalized = normalizeMessagesFromThread(threadData, contact.thread.context);
+          setConversationMessages(normalized);
+        } catch (error) {
+          console.error('Error fetching thread conversation:', error);
+          const fallback = normalizeMessagesFromThread(contact.thread.raw, contact.thread.context);
+          setConversationMessages(fallback);
+          toast.error('Unable to refresh conversation; showing cached messages.');
+        }
+      } else {
+        const user1 = contact.thread.legacy?.user1;
+        const user2 = contact.thread.legacy?.user2 || contact.email;
+        if (!user1 || !user2) {
+          setConversationMessages([]);
+          return;
+        }
+        try {
+          const response = await api.get('/api/messages/conversation', {
+            params: { user1, user2, limit: 100 },
+          });
+          const rawConversation = Array.isArray(response.data?.conversation) ? response.data.conversation : [];
+          const normalized = rawConversation
+            .map(normalizeLegacyMessage)
+            .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+          setConversationMessages(normalized);
+        } catch (error) {
+          console.error('Error fetching legacy conversation:', error);
+          toast.error('Unable to load conversation');
+          const fallback = Array.isArray(contact.thread.raw)
+            ? contact.thread.raw.map(normalizeLegacyMessage)
+            : [];
+          fallback.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+          setConversationMessages(fallback);
+        }
+      }
+    },
+    []
+  );
+
+  const handleSendMessage = useCallback(
+    async (event: React.FormEvent) => {
+      event.preventDefault();
+      if (!selectedContact || !newMessage.trim() || sending) {
+        return;
+      }
+
+      const content = newMessage.trim();
+      setSending(true);
+      try {
+        if (selectedContact.type === 'thread') {
+          await api.post('/api/messages/reply', {
+            threadId: selectedContact.threadId,
+            content,
+          });
+        } else {
+          const recipient = selectedContact.email || selectedContact.thread.legacy?.user2;
+          if (!recipient) {
+            throw new Error('Missing recipient email');
+          }
+          const subject = selectedContact.thread.subject || `Message to ${selectedContact.name}`;
+          await api.post('/api/messages', {
+            to: recipient,
+            subject,
+            content,
+            priority: 'normal',
+          });
+        }
+
+        setNewMessage('');
+        const nextContacts = await loadThreads({ silent: true });
+        const refreshed = nextContacts.find(
+          (contact) => contact.threadId === selectedContact.threadId && contact.type === selectedContact.type
+        );
+        if (refreshed) {
+          await selectContact(refreshed);
+        }
+        toast.success('Message sent');
+      } catch (error: any) {
+        console.error('Error sending message:', error);
+        const message = error?.response?.data?.message || error?.message || 'Failed to send message';
+        toast.error(message);
+      } finally {
+        setSending(false);
+      }
+    },
+    [selectedContact, newMessage, sending, loadThreads, selectContact]
+  );
+
+  const getLastMessageForContact = useCallback((contact: ContactSummary): ConversationMessage | null => {
+    if (contact.type === 'thread') {
+      const normalized = normalizeMessagesFromThread(contact.thread.raw, contact.thread.context);
+      return normalized.length ? normalized[normalized.length - 1] : null;
     }
-  };
+    if (Array.isArray(contact.thread.raw)) {
+      const normalized = contact.thread.raw
+        .map(normalizeLegacyMessage)
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      return normalized.length ? normalized[normalized.length - 1] : null;
+    }
+    return null;
+  }, []);
 
-  // Format timestamp
-  const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', {
+  const getUnreadCount = useCallback((contact: ContactSummary) => contact.unreadCount || 0, []);
+
+  const currentUserAvatar = useMemo(
+    () => placeholderAvatar(currentSession?.email || 'User'),
+    [currentSession]
+  );
+  const currentUserName = useMemo(() => currentSession?.email || 'User', [currentSession]);
+  const currentUserStatus = useMemo(() => currentSession?.role || 'member', [currentSession]);
+
+  const isFromCurrentUser = useCallback(
+    (message: ConversationMessage) => {
+      const email = (currentSession?.email || '').toLowerCase();
+      if (!email) return false;
+      if (message.senderEmail && message.senderEmail.toLowerCase() === email) return true;
+      if (message.senderId && message.senderId.toLowerCase().includes(email)) return true;
+      if (message.senderRole?.toLowerCase() === 'admin' && currentSession?.role === 'admin') return true;
+      return false;
+    },
+    [currentSession]
+  );
+
+  const formatTime = useCallback((timestamp?: string) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    if (!Number.isFinite(date.getTime())) return '';
+    return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
-  };
-
-  // Get last message with contact
-  const getLastMessageWithContact = (contact: Contact) => {
-    const contactMessages = messages.filter(msg => 
-      (msg.from.email === contact.email && msg.to.email === currentUser?.email) ||
-      (msg.from.email === currentUser?.email && msg.to.email === contact.email)
-    );
-    
-    return contactMessages.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    )[0];
-  };
-
-  // Get unread count for contact
-  const getUnreadCount = (contact: Contact) => {
-    return messages.filter(msg => 
-      msg.from.email === contact.email && 
-      msg.to.email === currentUser?.email && 
-      msg.status === 'unread'
-    ).length;
-  };
+  }, []);
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{height: '400px'}}>
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -219,11 +478,11 @@ const MessagingSystem = () => {
       <div className='chat-sidebar card'>
         <div className='chat-sidebar-single active top-profile'>
           <div className='img'>
-            <img src={currentUser?.avatar || 'assets/images/chat/1.png'} alt='Current user' />
+            <img src={currentUserAvatar} alt='Current user' />
           </div>
           <div className='info'>
-            <h6 className='text-md mb-0'>{currentUser?.name || 'User'}</h6>
-            <p className='mb-0'>Available</p>
+            <h6 className='text-md mb-0'>{currentUserName}</h6>
+            <p className='mb-0 text-capitalize'>{currentUserStatus}</p>
           </div>
           <div className='action'>
             <div className='btn-group'>
@@ -260,14 +519,18 @@ const MessagingSystem = () => {
 
         <div className='chat-all-list'>
           {contacts.map((contact) => {
-            const lastMessage = getLastMessageWithContact(contact);
+            const lastMessage = getLastMessageForContact(contact);
             const unreadCount = getUnreadCount(contact);
-            
+            const lastSnippet = lastMessage ? truncate(lastMessage.content, 30) : 'No messages yet';
+            const lastTimestamp = lastMessage ? formatTime(lastMessage.timestamp) : '';
+
             return (
-              <div 
+              <div
                 key={contact.id}
                 className={`chat-sidebar-single ${selectedContact?.id === contact.id ? 'active' : ''}`}
-                onClick={() => setSelectedContact(contact)}
+                onClick={() => {
+                  void selectContact(contact);
+                }}
                 style={{ cursor: 'pointer' }}
               >
                 <div className='img'>
@@ -275,20 +538,10 @@ const MessagingSystem = () => {
                 </div>
                 <div className='info'>
                   <h6 className='text-sm mb-1'>{contact.name}</h6>
-                  <p className='mb-0 text-xs'>
-                    {lastMessage ? 
-                      (lastMessage.content.length > 30 ? 
-                        lastMessage.content.substring(0, 30) + '...' : 
-                        lastMessage.content
-                      ) : 
-                      'No messages yet'
-                    }
-                  </p>
+                  <p className='mb-0 text-xs'>{lastSnippet}</p>
                 </div>
                 <div className='action text-end'>
-                  <p className='mb-0 text-neutral-400 text-xs lh-1'>
-                    {lastMessage ? formatTime(lastMessage.timestamp) : ''}
-                  </p>
+                  <p className='mb-0 text-neutral-400 text-xs lh-1'>{lastTimestamp}</p>
                   {unreadCount > 0 && (
                     <span className='w-16-px h-16-px text-xs rounded-circle bg-warning-main text-white d-inline-flex align-items-center justify-content-center'>
                       {unreadCount}
@@ -310,7 +563,7 @@ const MessagingSystem = () => {
               </div>
               <div className='info'>
                 <h6 className='text-md mb-0'>{selectedContact.name}</h6>
-                <p className='mb-0'>{selectedContact.status}</p>
+                <p className='mb-0 text-capitalize'>{selectedContact.status}</p>
               </div>
               <div className='action d-inline-flex align-items-center gap-3'>
                 <button type='button' className='text-xl text-primary-light'>
@@ -344,16 +597,16 @@ const MessagingSystem = () => {
               </div>
             </div>
 
-            <div className='chat-message-list' style={{maxHeight: '400px', overflowY: 'auto'}}>
+            <div className='chat-message-list' style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {conversationMessages.map((message) => {
-                const isFromCurrentUser = message.from.email === currentUser?.email;
-                
+                const fromCurrentUser = isFromCurrentUser(message);
+                const avatar = message.senderAvatar || placeholderAvatar(message.senderName || 'User');
                 return (
-                  <div key={message.id} className={`chat-single-message ${isFromCurrentUser ? 'right' : 'left'}`}>
-                    {!isFromCurrentUser && (
+                  <div key={message.id} className={`chat-single-message ${fromCurrentUser ? 'right' : 'left'}`}>
+                    {!fromCurrentUser && (
                       <img
-                        src={message.from.avatar}
-                        alt={message.from.name}
+                        src={avatar}
+                        alt={message.senderName || 'Contact'}
                         className='avatar-lg object-fit-cover rounded-circle'
                       />
                     )}
@@ -370,12 +623,12 @@ const MessagingSystem = () => {
             </div>
 
             <form className='chat-message-box' onSubmit={handleSendMessage}>
-              <input 
-                type='text' 
-                name='chatMessage' 
+              <input
+                type='text'
+                name='chatMessage'
                 placeholder='Write message'
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={(event) => setNewMessage(event.target.value)}
                 disabled={sending}
               />
               <div className='chat-message-box-action'>
@@ -398,7 +651,7 @@ const MessagingSystem = () => {
           </>
         ) : (
           <div className='d-flex flex-column align-items-center justify-content-center h-100 text-center'>
-            <Icon icon='fluent:chat-48-regular' className='text-primary' style={{fontSize: '4rem'}} />
+            <Icon icon='fluent:chat-48-regular' className='text-primary' style={{ fontSize: '4rem' }} />
             <h5 className='mt-3 mb-2'>Select a conversation</h5>
             <p className='text-muted'>Choose a contact from the sidebar to start messaging</p>
           </div>

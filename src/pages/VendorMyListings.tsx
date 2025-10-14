@@ -4,10 +4,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMessages } from "../context/useMessages";
 import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/useVendor";
-import { useAppSync } from "../context/useAppSync";
 import { api } from "../lib/api";
 import { fetchMyVendorListings } from "../lib/listings";
-import appDataLocal from "../data/appData.json";
 
 // Type definitions
 interface Listing {
@@ -86,15 +84,6 @@ function parsePending(raw: any): any[] {
   }
 }
 
-function tenantMatches(entryTenant?: string | null, currentTenant?: string | null): boolean {
-  const entry = normalizeTenant(entryTenant);
-  const current = normalizeTenant(currentTenant);
-  if (entry === current) return true;
-  if (entry === "public") return true;
-  if (current === "public") return true;
-  return false;
-}
-
 function StatusChip({ s }: { s?: string }) {
   const k = (s || "unknown").toLowerCase();
   const map: Record<string, string> = {
@@ -117,7 +106,6 @@ export default function VendorMyListings() {
   const navListingRef = useRef<any>(null);
   const { vendor, ensureVendorId, loading: vendorLoading } = useVendor();
   const { refresh: refreshMessages, syncMessagesToLive } = useMessages();
-  const { appData, appDataLoading } = useAppSync();
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
 
   const [items, setItems] = useState<Listing[]>([]);
@@ -134,9 +122,11 @@ export default function VendorMyListings() {
     err: null, 
     done: false 
   });
+  const activeVendor = useMemo(() => (vendor ? (vendor as Vendor) : null), [vendor]);
+
   const pendingKey = useMemo(
-    () => makePendingKey(tenantId, (vendor as Vendor)?.vendorId || (vendor as Vendor)?.email || (vendor as Vendor)?.id || ""),
-    [tenantId, (vendor as Vendor)?.vendorId, (vendor as Vendor)?.email, (vendor as Vendor)?.id]
+    () => makePendingKey(tenantId, activeVendor?.vendorId || activeVendor?.email || activeVendor?.id || ""),
+    [tenantId, activeVendor]
   );
   const [pendingLocal, setPendingLocal] = useState<Listing[]>([]);
 
@@ -245,70 +235,6 @@ export default function VendorMyListings() {
     }
   }, [vendor, navigate]);
 
-  function unwrapAppData(candidate: any) {
-    let cursor = candidate;
-    const guard = new Set();
-    while (cursor && typeof cursor === "object" && !Array.isArray(cursor?.services)) {
-      if (guard.has(cursor)) break;
-      guard.add(cursor);
-      if (Array.isArray(cursor?.data?.services)) {
-        cursor = cursor.data;
-        continue;
-      }
-      if (Array.isArray(cursor?.payload?.services)) {
-        cursor = cursor.payload;
-        continue;
-      }
-      if (Array.isArray(cursor?.appData?.services)) {
-        cursor = cursor.appData;
-        continue;
-      }
-      break;
-    }
-    return cursor && typeof cursor === "object" ? cursor : null;
-  }
-
-  const deriveFallbackData = useCallback(
-    (activeVendor: any) => {
-      if (!activeVendor) return { listings: [], bookings: [] };
-      const liveDoc = unwrapAppData(appData) || unwrapAppData(appDataLocal) || appDataLocal;
-      const tenantKey = normalizeTenant(tenantId);
-      const all = Array.isArray(liveDoc?.services) ? liveDoc.services : [];
-      const allBookingsRaw = Array.isArray(liveDoc?.bookings) ? liveDoc.bookings : [];
-      const scopedBookings = allBookingsRaw.filter((b: any) => tenantMatches(b?.tenantId, tenantKey));
-      const vendorId = String(activeVendor?.vendorId || "");
-      const email = String(activeVendor?.email || activeVendor?.contactEmail || "").toLowerCase();
-      const name = String(activeVendor?.name || activeVendor?.companyName || "").toLowerCase();
-      const mine = all.filter((s: any) => {
-        const sameTenant = tenantMatches(s?.tenantId, tenantKey);
-        if (!sameTenant) return false;
-        const sid = String(s.vendorId || "");
-        const svcEmail = String(s.contactEmail || s.email || "").toLowerCase();
-        const svcName = String(s.vendor || "").toLowerCase();
-        return (
-          (sid && vendorId && sid === vendorId) ||
-          (!sid && ((svcName && svcName === name) || (email && svcEmail === email)))
-        );
-      });
-
-      const idSet = new Set(
-        mine
-          .flatMap((s: any) => [String(s.id || ""), String(s.serviceId || ""), String(s.vendorId || "")])
-          .filter(Boolean)
-      );
-      const bookingsForVendor = scopedBookings.filter((b: any) => {
-        const sid = String(b.serviceId || "");
-        const vendorMatch = vendorId && String(b.vendorId || "") === vendorId;
-        const emailMatch = email && String(b.vendorEmail || "").toLowerCase() === email;
-        const nameMatch = name && String(b.vendorName || "").toLowerCase() === name;
-        return idSet.has(sid) || vendorMatch || emailMatch || nameMatch;
-      });
-
-      return { listings: mine, bookings: bookingsForVendor };
-    },
-    [appData, tenantId]
-  );
-
   const loadListings = useCallback(
     async ({ signal, silent }: { signal?: AbortSignal; silent?: boolean } = {}) => {
       const markBusy = (val: boolean) => {
@@ -344,42 +270,21 @@ export default function VendorMyListings() {
         const normalizedListings = Array.isArray(listings) ? listings : [];
         const normalizedBookings = Array.isArray(bookings) ? bookings : [];
         const mergedListings = mergeLocalListings(normalizedListings);
-        if (!mergedListings.length) {
-          const fallback = deriveFallbackData(activeVendorRef);
-          if (fallback.listings.length) {
-            const mergedFallback = mergeLocalListings(fallback.listings);
-            setItems(mergedFallback);
-            setBookings(fallback.bookings);
-            if (!silent) {
-              setErr("Showing cached listings until the live catalog updates.");
-            }
-          } else {
-            setItems(mergedListings);
-            setBookings([]);
-          }
-        } else {
-          setItems(mergedListings);
-          setBookings(normalizedBookings);
-        }
+        setItems(mergedListings);
+        setBookings(normalizedBookings);
       } catch (e: any) {
         if (signal?.aborted) return;
         const code = e?.code;
         if (code === "ERR_NETWORK") {
-          const fallback = deriveFallbackData(activeVendorRef);
-          const mergedFallback = mergeLocalListings(fallback.listings);
-          setItems(mergedFallback);
-          setBookings(fallback.bookings);
-          setErr("Showing cached data while the network is unavailable.");
+          setErr("Network error – showing cached drafts.");
         } else {
           setErr(e?.response?.data?.message || e?.message || "Failed to load listings");
-          setItems(mergeLocalListings([]));
-          setBookings([]);
         }
       } finally {
         markBusy(false);
       }
     },
-    [deriveFallbackData, ensureVendorId, mergeLocalListings, vendor, vendorLoading]
+    [ensureVendorId, mergeLocalListings, vendor, vendorLoading]
   );
 
   useEffect(() => {
@@ -538,9 +443,9 @@ export default function VendorMyListings() {
               type="button"
               className="btn btn-outline-secondary"
               onClick={handleRefresh}
-              disabled={loading || refreshing || appDataLoading}
+              disabled={loading || refreshing}
             >
-              {refreshing || appDataLoading ? "Refreshing…" : "Refresh"}
+              {refreshing ? "Refreshing…" : "Refresh"}
             </button>
             <button
               type="button"

@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
 import { api, bootstrapSession } from "../lib/api";
 import { toast } from "react-toastify";
-import { useWallet } from "../context/useWallet";
+import { useWallet } from "../hook/useWalletAxios";
 import { useAppSync } from "../context/useAppSync";
 import { WalletSummaryCard, TransactionTable, formatCredits } from "./shared/WalletComponents";
 import AdminWalletManager from "./shared/AdminWalletManager";
@@ -312,7 +312,15 @@ export default function AdminWalletCreditsLayer() {
         {/* Admin Credit Management Tools */}
         <div className="col-12">
           <AdminWalletManager
-            grantCredits={grantCredits}
+            grantCredits={async (payload) => {
+              const result = await grantCredits(
+                payload.email || '',
+                payload.amount,
+                payload.description,
+                { metadata: payload.metadata || undefined, reference: payload.reference }
+              );
+              return { ok: result.success, error: result.error, wallet: result.wallet };
+            }}
             onRefresh={async () => {
               await loadData();
               await refreshWallet();

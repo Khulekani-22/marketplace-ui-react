@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { auth } from "../../lib/firebase";
+import { auth } from "../../firebase.js";
 import { api } from "../../lib/api";
 import { useAppSync } from "../../context/useAppSync";
-import { useWallet } from "../../context/useWallet";
-import appDataLocal from "../../data/appData.json";
+import { useWallet } from "../../hook/useWalletAxios";
 import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../../lib/subscriptions";
 
 // Normalize service objects to a consistent shape
@@ -35,7 +34,7 @@ function formatCredits(amount) {
 }
 
 export default function Recommendations() {
-  const [services, setServices] = useState(() => (appDataLocal.services || []).map(normalizeService).filter(isApproved));
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subs, setSubs] = useState(() => new Set()); // my subscriptions (service ids)
   const [err, setErr] = useState("");
@@ -61,13 +60,8 @@ export default function Recommendations() {
         const liveServices = Array.isArray(live.services) ? live.services : [];
         const normalized = liveServices.map(normalizeService).filter(isApproved);
 
-        // Merge with bundled data in case of partial live
-        const base = (appDataLocal.services || []).map(normalizeService).filter(isApproved);
-        const byId = new Map();
-        base.forEach((s) => byId.set(String(s.id), s));
-        normalized.forEach((s) => byId.set(String(s.id), { ...byId.get(String(s.id)), ...s }));
-        const merged = Array.from(byId.values());
-        if (mountedRef.current) setServices(merged);
+        // Use live data directly
+        if (mountedRef.current) setServices(normalized);
 
         // Load my subscriptions if logged in
         if (auth.currentUser) {
@@ -144,10 +138,10 @@ export default function Recommendations() {
     return keys;
   }, [profiles.startup, profiles.vendor]);
 
-  // Helper to compute subscriber counts per service from live data in window.appData (if available) or bundled appData
+  // Helper to compute subscriber counts per service from live data in window.appData (if available)
   const subsByService = useMemo(() => {
     const live = liveDataRef.current;
-    const src = (live && Array.isArray(live.subscriptions)) ? live.subscriptions : (Array.isArray(appDataLocal.subscriptions) ? appDataLocal.subscriptions : []);
+    const src = (live && Array.isArray(live.subscriptions)) ? live.subscriptions : [];
     const out = {};
     src.forEach((x) => {
       const tid = (x.tenantId ?? "public");

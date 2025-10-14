@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState, type FormEvent } from "react";
-import { useWallet } from "../context/useWallet";
+import { useWallet } from "../hook/useWalletAxios";
 import { useAppSync } from "../context/useAppSync";
 import { WalletSummaryCard, TransactionTable, formatCredits } from "./shared/WalletComponents";
 import AdminWalletManager from "./shared/AdminWalletManager";
@@ -35,7 +35,7 @@ export default function WalletLayer() {
         reference: "manual-redemption",
       });
 
-      if (!result.ok) {
+      if (!result.success) {
         setFeedback({ type: "danger", message: result.error || "Unable to record voucher usage." });
         return;
       }
@@ -148,8 +148,16 @@ export default function WalletLayer() {
       {isAdmin && (
         <div className='col-12'>
           <AdminWalletManager
-            grantCredits={grantCredits}
-            onRefresh={refresh}
+            grantCredits={async (payload) => {
+              const result = await grantCredits(
+                payload.email || '',
+                payload.amount,
+                payload.description,
+                { metadata: payload.metadata || undefined, reference: payload.reference }
+              );
+              return { ok: result.success, error: result.error, wallet: result.wallet };
+            }}
+            onRefresh={async () => refresh()}
             compact={false}
             showUserLookup={true}
           />

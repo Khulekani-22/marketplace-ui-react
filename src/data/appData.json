@@ -2776,6 +2776,47 @@
       "tenantId": "22onsloane",
       "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "email": "khulekani@22onsloane.co"
+    },
+    {
+      "id": "5aqihwtrjmgqcqtql",
+      "vendorId": "62sc9vzsmmgqcqtql",
+      "name": "22 On Sloane Programmes",
+      "companyName": "22 On Sloane Programmes",
+      "email": "ruthmaphosa2024@gmail.com",
+      "contactEmail": "ruthmaphosa2024@gmail.com",
+      "website": "",
+      "phone": "+27763732884",
+      "country": "South Africa",
+      "city": "Sandton",
+      "address": "",
+      "bio": "",
+      "avatar": "",
+      "skills": [
+        "Business",
+        "Marketing",
+        "Video & Animation",
+        "Writing & Translation"
+      ],
+      "rating": 4.5,
+      "totalEarnings": 0,
+      "completedProjects": 0,
+      "responseTime": "2 hours",
+      "languages": [
+        "English"
+      ],
+      "certifications": [],
+      "portfolio": [],
+      "availability": "Available",
+      "hourlyRate": 500,
+      "createdAt": "2025-10-14T09:20:55.053Z",
+      "updatedAt": "2025-10-14T09:20:55.054Z",
+      "status": "active",
+      "isVerified": false,
+      "metadata": {
+        "source": "startup-sync",
+        "originalStartupData": true
+      },
+      "tenantId": "public"
     }
   ],
   "companies": [

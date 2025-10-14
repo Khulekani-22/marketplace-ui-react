@@ -24,6 +24,7 @@ import auditLogsRouter from "./routes/auditLogs.js";
 import assistantRouter from "./routes/assistant.js";
 import messagesRouter from "./routes/messages.js";
 import walletsRouter from "./routes/wallets.js";
+import integrityRouter from "./routes/integrity.js";
 import { tenantContext } from "./middleware/tenantContext.js";
 import { jwtAuthOptional } from "./middleware/authJWT.js";
 import { firebaseAuthRequired } from "./middleware/authFirebase.js";
@@ -75,10 +76,10 @@ app.use(jwtAuthOptional);
 app.use(auditMutations);
 
 /* -------------------------- Authenticated identity ---------------------- */
-app.get("/api/me", firebaseAuthRequired, (req, res) => {
+app.get("/api/me", firebaseAuthRequired, async (req, res) => {
   try {
-    // Look up user role from appData.json
-    const data = getData();
+    // Look up user role from Firestore
+    const data = await getData();
     const users = Array.isArray(data?.users) ? data.users : [];
     const userEmail = req.user.email?.toLowerCase();
     
@@ -475,6 +476,7 @@ app.use("/api/subscriptions", subscriptionsRouter);
 app.use("/api/assistant", assistantRouter);
 app.use("/api/messages", messagesRouter);
 app.use("/api/wallets", walletsRouter);
+app.use("/api/integrity", integrityRouter);
 
 /* --------------------------------- 404 ----------------------------------- */
 app.use((req, res) => {

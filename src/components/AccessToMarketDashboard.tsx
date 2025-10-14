@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { api } from "../lib/api";
 import TrendingNFTsOne from "./child/TrendingNFTsOne";
 

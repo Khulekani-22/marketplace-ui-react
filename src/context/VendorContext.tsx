@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { onIdTokenChanged, signOut } from "firebase/auth";
 import { api } from "../lib/api";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { VendorContext } from "./vendorContextBase";
 
 const API_BASE = "/api/lms";

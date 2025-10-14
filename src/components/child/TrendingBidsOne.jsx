@@ -1,28 +1,31 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
-import appData from "../../data/appData.json"; // <-- ensure correct path
-
-// Utility: count bookings per serviceId
-const getMostUsedService = () => {
-  const counts = {};
-  appData.bookings.forEach(b => {
-    counts[b.serviceId] = (counts[b.serviceId] || 0) + 1;
-  });
-  const mostUsedId = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
-  return appData.services.find(s => s.id === mostUsedId);
-};
-
-// Utility: top rated service
-const getTopRatedService = () => {
-  return [...appData.services].sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
-};
-
-// Utility: AI recommended service (featured)
-const getAIRecommendedService = () => {
-  return appData.services.find(s => s.isFeatured) || appData.services[0];
-};
+import { useAppSync } from "../../context/useAppSync";
 
 const TrendingBidsOne = () => {
+  const { appData } = useAppSync();
+  
+  // Utility: count bookings per serviceId
+  const getMostUsedService = () => {
+    const counts = {};
+    (appData?.bookings || []).forEach(b => {
+      counts[b.serviceId] = (counts[b.serviceId] || 0) + 1;
+    });
+    const mostUsedId = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+    return (appData?.services || []).find(s => s.id === mostUsedId);
+  };
+
+  // Utility: top rated service
+  const getTopRatedService = () => {
+    return [...(appData?.services || [])].sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+  };
+
+  // Utility: AI recommended service (featured)
+  const getAIRecommendedService = () => {
+    const services = appData?.services || [];
+    return services.find(s => s.isFeatured) || services[0];
+  };
+
   const mostUsed = getMostUsedService();
   const topRated = getTopRatedService();
   const recommended = getAIRecommendedService();

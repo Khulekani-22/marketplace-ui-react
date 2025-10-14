@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import React, { useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import useReactApexChart from "../../hook/useReactApexChart";
-import appData from "../../data/appData.json";
+import { useAppSync } from "../../context/useAppSync";
 
 // Chart.js setup
 import {
@@ -19,25 +19,28 @@ import { Bar } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-// Prepare app data
-const leads = appData.leads || [];
-const services = appData.services || [];
+const StatisticsOne = () => {
+  const { appData } = useAppSync();
+  
+  // Prepare app data
+  const leads = appData?.leads || [];
+  const services = appData?.services || [];
 
-// Group by year
-const leadsByYear = leads.reduce((acc, lead) => {
-  const year = new Date(lead?.date || "2024-01-01").getFullYear();
-  const amount = parseFloat(lead?.finalSale?.amount?.replace(/[^\d.]/g, "") || "0");
-  acc[year] = (acc[year] || 0) + amount;
-  return acc;
-}, {});
+  // Group by year
+  const leadsByYear = leads.reduce((acc, lead) => {
+    const year = new Date(lead?.date || "2024-01-01").getFullYear();
+    const amount = parseFloat(lead?.finalSale?.amount?.replace(/[^\d.]/g, "") || "0");
+    acc[year] = (acc[year] || 0) + amount;
+    return acc;
+  }, {});
 
-// Group by service/vendor
-const leadsByService = leads.reduce((acc, lead) => {
-  const owner = lead.owner || "Unknown";
-  const amount = parseFloat(lead?.finalSale?.amount?.replace(/[^\d.]/g, "") || "0");
-  acc[owner] = (acc[owner] || 0) + amount;
-  return acc;
-}, {});
+  // Group by service/vendor
+  const leadsByService = leads.reduce((acc, lead) => {
+    const owner = lead.owner || "Unknown";
+    const amount = parseFloat(lead?.finalSale?.amount?.replace(/[^\d.]/g, "") || "0");
+    acc[owner] = (acc[owner] || 0) + amount;
+    return acc;
+  }, {});
 
 const StatisticsOne = () => {
   const {

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../lib/subscriptions";
-import { useWallet } from "../context/useWallet";
+import { useWallet } from "../hook/useWalletAxios";
 
 const creditsFormatter = new Intl.NumberFormat("en-ZA");
 
@@ -135,7 +135,7 @@ export default function Market1() {
       setPurchase((prev) => ({ ...prev, success: "This listing does not require voucher credits.", error: "" }));
       return;
     }
-    if (wallet.balance < amount) {
+    if (!wallet || wallet.balance < amount) {
       setPurchase((prev) => ({ ...prev, error: "You do not have enough voucher credits for this listing." }));
       return;
     }
@@ -152,7 +152,7 @@ export default function Market1() {
         },
       });
 
-      if (!result.ok) {
+      if (!result.success) {
         setPurchase((prev) => ({ ...prev, working: false, error: result.error || "Unable to redeem vouchers." }));
         return;
       }

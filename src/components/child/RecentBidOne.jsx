@@ -1,7 +1,9 @@
-import appData from "../../data/appData.json";
+import { Link } from "react-router-dom";
+import { useAppSync } from "../../context/useAppSync";
 
 const RecentBidOne = () => {
-  const leads = appData.leads || [];
+  const { appData } = useAppSync();
+  const leads = appData?.leads || [];
 
   return (
     <div className='col-12'>

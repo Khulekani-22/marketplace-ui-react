@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import appDataLocal from "../data/appData.json";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { api } from "../lib/api";
 import { useAppSync } from "../context/useAppSync";
 import { Link } from "react-router-dom";
@@ -17,7 +16,7 @@ export default function ReviewsWidget() {
 
   useEffect(() => {
     try {
-      const live = appData || appDataLocal;
+      const live = appData || { startups: [], vendors: [], companies: [], services: [] };
       const items = Array.isArray(live?.services) ? live.services.slice(0, 8) : [];
       setServices(items);
     } catch (e) {

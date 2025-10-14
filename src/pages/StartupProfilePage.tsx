@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
 import { useNavigate, Link } from "react-router-dom";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
 

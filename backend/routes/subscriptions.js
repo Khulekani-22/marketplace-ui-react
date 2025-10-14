@@ -156,23 +156,23 @@ function findSubscriptionIndex(list, { serviceId, tenantId, email, uid }) {
 }
 
 // List current user's subscriptions for this tenant
-router.get("/my", firebaseAuthRequired, (req, res) => {
+router.get("/my", firebaseAuthRequired, async (req, res) => {
   const email = (req.user?.email || "").toLowerCase();
-  const { subscriptions = [] } = getData();
+  const { subscriptions = [] } = await getData();
   const items = subscriptions.filter((s) => (s.email || "").toLowerCase() === email && !s.canceledAt);
   res.json(items);
 });
 
 // List subscribers for a specific service/listing (tenant-scoped)
 // Returns minimal info: id, email, uid, createdAt. Requires auth.
-router.get("/service/:id", firebaseAuthRequired, (req, res) => {
+router.get("/service/:id", firebaseAuthRequired, async (req, res) => {
   const serviceId = String(req.params.id || "");
   const tenantId = normalizeTenantId(req.tenant.id);
   const q = (req.query.q || "").toString().trim().toLowerCase();
   const page = Math.max(1, parseInt(req.query.page || "1", 10));
   const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize || "10", 10)));
   if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
-  const { subscriptions = [] } = getData();
+  const { subscriptions = [] } = await getData();
   let rows = subscriptions
     .filter((s) => tenantMatches(s.tenantId, tenantId) && (s.type || "service") === "service" && String(s.serviceId || "") === serviceId && !s.canceledAt)
     .map((s) => ({ id: s.id, email: (s.email || "").toLowerCase(), uid: s.uid, createdAt: s.createdAt }));
@@ -184,7 +184,7 @@ router.get("/service/:id", firebaseAuthRequired, (req, res) => {
 });
 
 // Subscribe to a service/listing
-router.post("/service", firebaseAuthRequired, (req, res) => {
+router.post("/service", firebaseAuthRequired, async (req, res) => {
   const serviceId = String(req.body?.serviceId || "").trim();
   const tenantScope = normalizeTenantId(req.tenant.id);
   const email = (req.user?.email || "").toLowerCase();
@@ -297,7 +297,7 @@ router.post("/service", firebaseAuthRequired, (req, res) => {
 });
 
 // Unsubscribe from a service/listing
-router.delete("/service", firebaseAuthRequired, (req, res) => {
+router.delete("/service", firebaseAuthRequired, async (req, res) => {
   const serviceId = String((req.body?.serviceId || req.query?.serviceId || "")).trim();
   const tenantId = normalizeTenantId(req.tenant.id);
   const email = normalizeEmail(req.user?.email || "");
@@ -334,7 +334,7 @@ router.delete("/service", firebaseAuthRequired, (req, res) => {
 });
 
 // Cancel (soft) a subscription to preserve revenue history
-router.put("/service/cancel", firebaseAuthRequired, (req, res) => {
+router.put("/service/cancel", firebaseAuthRequired, async (req, res) => {
   const serviceId = String(req.body?.serviceId || req.query?.serviceId || "").trim();
   const tenantId = normalizeTenantId(req.tenant.id);
   const email = normalizeEmail(req.user?.email || "");

@@ -1,7 +1,7 @@
 // src/pages/StartupSignupPage.jsx
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { api } from "../lib/api";
 import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from "firebase/auth";
 import { writeAuditLog } from "../lib/audit";

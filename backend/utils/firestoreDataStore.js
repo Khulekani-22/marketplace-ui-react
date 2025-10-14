@@ -158,9 +158,16 @@ class FirestoreDataStore {
     }
 
     try {
-      const batch = this.db.batch();
+      let batch = this.db.batch();
       let operationCount = 0;
       const MAX_BATCH_SIZE = 500;
+
+      const flushBatch = async () => {
+        if (operationCount === 0) return;
+        await batch.commit();
+        batch = this.db.batch();
+        operationCount = 0;
+      };
 
       const collections = [
         'bookings', 'cohorts', 'events', 'forumThreads', 'jobs', 
@@ -176,8 +183,7 @@ class FirestoreDataStore {
 
         for (const item of data[collectionName]) {
           if (operationCount >= MAX_BATCH_SIZE) {
-            await batch.commit();
-            operationCount = 0;
+            await flushBatch();
           }
 
           const { id, transactions, ...cleanItem } = item;
@@ -195,8 +201,7 @@ class FirestoreDataStore {
           if (collectionName === 'wallets' && transactions && Array.isArray(transactions)) {
             for (const transaction of transactions) {
               if (operationCount >= MAX_BATCH_SIZE) {
-                await batch.commit();
-                operationCount = 0;
+                await flushBatch();
               }
 
               const { id: txId, ...cleanTx } = transaction;
@@ -213,9 +218,7 @@ class FirestoreDataStore {
         }
       }
 
-      if (operationCount > 0) {
-        await batch.commit();
-      }
+      await flushBatch();
 
       console.log('✅ Data saved to Firestore');
 
@@ -312,6 +315,11 @@ class FirestoreDataStore {
    */
   async saveData(data) {
     try {
+      // Validate data parameter
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid data parameter: must be an object');
+      }
+
       if (this.initialized) {
         // Save to Firestore
         console.log('💾 Saving data to Firestore...');

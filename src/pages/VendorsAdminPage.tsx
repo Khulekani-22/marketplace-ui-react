@@ -1,8 +1,7 @@
 // src/pages/VendorsAdminPage.jsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import appDataLocal from "../data/appData.json";
 import { api } from "../lib/api";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import MasterLayout from "../masterLayout/MasterLayout";
 import { writeAuditLog } from "../lib/audit";
 
@@ -137,7 +136,7 @@ export default function VendorsAdminPage() {
   // Working copy of FULL appData (we edit startups/vendors here)
   const [data, setData] = useState(() => {
     const draft = safeParse(localStorage.getItem(LS_DRAFT_KEY));
-    return draft ?? appDataLocal;
+    return draft ?? { startups: [], vendors: [], companies: [], services: [] }; // Empty structure instead of appDataLocal
   });
 
   const vendors = useMemo(() => {
@@ -207,7 +206,7 @@ export default function VendorsAdminPage() {
         });
       } catch {}
       // Reload base from LMS, then merge API vendors
-      let base = appDataLocal;
+      let base = null;
       try {
         const { data: live } = await api.get(`${API_BASE}/live`, {
           headers: {
@@ -218,8 +217,9 @@ export default function VendorsAdminPage() {
           suppressErrorLog: true,
         } as any);
         if (live) base = live;
-      } catch {
-        base = appDataLocal;
+      } catch (e) {
+        console.error('[VendorsAdmin] Failed to load base data:', e);
+        base = { startups: [], vendors: [], companies: [], services: [] };
       }
       try {
         const list = await api
@@ -477,7 +477,7 @@ export default function VendorsAdminPage() {
       else setLoading(true);
       setLoadErr("");
       try {
-        let base = appDataLocal;
+        let base = null;
         try {
           const { data: live } = await api.get(`${API_BASE}/live`, {
             headers: {
@@ -491,6 +491,8 @@ export default function VendorsAdminPage() {
             base = live;
           }
         } catch (e: any) {
+          console.error('[VendorsAdmin] Failed to load live data:', e);
+          base = { startups: [], vendors: [], companies: [], services: [] };
           const message =
             e?.response?.data?.message ||
             e?.message ||

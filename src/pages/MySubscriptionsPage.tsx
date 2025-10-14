@@ -1,7 +1,7 @@
 import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { useAppSync } from "../context/useAppSync";
 import { fetchMySubscriptions, unsubscribeFromService } from "../lib/subscriptions";
 import { api } from "../lib/api";
@@ -35,6 +35,52 @@ export default function MySubscriptionsPage() {
   const [refreshing, setRefreshing] = useState(false);
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
   const { appData } = useAppSync();
+
+  const fallbackServices = useMemo(
+    () => (Array.isArray((appData as any)?.services) ? (appData as any).services : []),
+    [appData]
+  );
+
+  const fetchSubscribedServices = useCallback(
+    async (serviceIds: Set<string>) => {
+      if (!serviceIds.size) return [] as Service[];
+
+      const pageSize = Math.max(50, Math.min(500, serviceIds.size * 3));
+      try {
+        const { data } = await api.get("/api/data/services", {
+          params: { page: 1, pageSize },
+          suppressToast: true,
+          suppressErrorLog: true,
+        } as any);
+        const remoteItems = Array.isArray(data?.items) ? data.items : [];
+        const matched = remoteItems.filter((svc: any) => serviceIds.has(String(svc?.id ?? "")));
+        const remoteIds = new Set(matched.map((svc: any) => String(svc?.id ?? "")));
+
+        if (remoteIds.size !== serviceIds.size && fallbackServices.length) {
+          const missingIds = [...serviceIds].filter((id) => !remoteIds.has(id));
+          if (missingIds.length) {
+            const fallbackMatches = fallbackServices.filter((svc: any) =>
+              missingIds.includes(String(svc?.id ?? ""))
+            );
+            if (fallbackMatches.length) {
+              return [...matched, ...fallbackMatches] as Service[];
+            }
+          }
+        }
+
+        return matched as Service[];
+      } catch (error) {
+        console.warn("Failed to fetch services from API; using appData fallback", error);
+        if (fallbackServices.length) {
+          return fallbackServices.filter((svc: any) =>
+            serviceIds.has(String(svc?.id ?? ""))
+          ) as Service[];
+        }
+        throw error;
+      }
+    },
+    [fallbackServices]
+  );
 
   // Debug function to test API connection
   const testApiConnection = useCallback(async () => {
@@ -77,21 +123,18 @@ export default function MySubscriptionsPage() {
         console.log('📡 Fetching subscriptions for user:', auth.currentUser.email);
         const subs = await fetchMySubscriptions();
         console.log('📋 Raw subscriptions from API:', subs);
-        
-        const ids = new Set(
+
+        const idSet = new Set(
           subs
-            .filter((x: any) => (x.type || "service") === "service")
+            .filter((x: any) => (x.type || "service") === "service" && x.serviceId != null)
             .map((x: any) => String(x.serviceId))
         );
-        console.log('🔍 Service IDs from subscriptions:', Array.from(ids));
+        console.log('🔍 Service IDs from subscriptions:', Array.from(idSet));
 
-        const services = Array.isArray((appData as any)?.services) ? (appData as any).services : [];
-        console.log('📦 Available services in appData:', services.length);
-        
-        const selected = services.filter((s: any) => ids.has(String(s.id)));
-        console.log('✅ Matched services:', selected.length, selected.map((s: any) => ({ id: s.id, title: s.title })));
-        
-        if (!signal?.aborted) setItems(selected);
+        const matchedServices = await fetchSubscribedServices(idSet);
+        console.log('✅ Matched services:', matchedServices.length, matchedServices.map((s: any) => ({ id: s.id, title: s.title })));
+
+        if (!signal?.aborted) setItems(matchedServices);
       } catch (e: any) {
         console.error('❌ Failed to load subscriptions:', e);
         if (!signal?.aborted) setErr(e?.message || "Failed to load subscriptions");
@@ -103,7 +146,7 @@ export default function MySubscriptionsPage() {
         }
       }
     },
-    [appData]
+    [fetchSubscribedServices]
   );
 
   useEffect(() => {

@@ -6,8 +6,7 @@ import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/useVendor";
 import { useAppSync } from "../context/useAppSync";
 import { api } from "../lib/api";
-import { auth } from "../lib/firebase";
-import appDataLocal from "../data/appData.json";
+import { auth } from "../firebase.js";
 import { hasFullAccess } from "../utils/roles";
 
 const API_BASE = "/api/lms";
@@ -109,7 +108,7 @@ export default function VendorAddListingPage() {
   const isAdmin = hasFullAccess(sessionStorage.getItem("role"));
 
   // Full LIVE appData working copy on this page as well
-  const [data, setData] = useState(appDataLocal);
+  const [data, setData] = useState({ startups: [], vendors: [], companies: [], services: [] });
   const [history, setHistory] = useState(() => (isAdmin ? [] : []));
 
   // categories derived from working copy
@@ -137,7 +136,7 @@ export default function VendorAddListingPage() {
     (async () => {
       await ensureVendorId();
       try {
-        let base = appDataLocal;
+        let base = { startups: [], vendors: [], companies: [], services: [] };
         try {
           const { data: live } = await api.get(`${API_BASE}/live`, {
             headers: {

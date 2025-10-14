@@ -5,7 +5,6 @@ import { useVendor } from "../context/useVendor";
 import { api } from "../lib/api";
 import { useAppSync } from "../context/useAppSync";
 import { Link } from "react-router-dom";
-import appDataLocal from "../data/appData.json";
 import ReactApexChart from "react-apexcharts";
 
 export default function VendorDashboardPage() {
@@ -27,7 +26,7 @@ export default function VendorDashboardPage() {
       if (!vendor) return;
       setLoading(true);
       try {
-        const live = appData || appDataLocal;
+        const live = appData || { startups: [], vendors: [], companies: [], services: [] };
         const all = Array.isArray(live?.services) ? live.services : [];
         const vId = vendor?.vendorId || vendor?.id || "";
         const vEmail = (vendor?.email || vendor?.contactEmail || "").toLowerCase();

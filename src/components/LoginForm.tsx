@@ -8,7 +8,7 @@ import {
   sendPasswordResetEmail,
   onIdTokenChanged,
 } from "firebase/auth";
-import { auth } from "../lib/firebase";
+import { auth } from "../firebase.js";
 import { bootstrapSession } from "../lib/api";
 import { hasFullAccess } from "../utils/roles";
 import { useVendor } from "../context/useVendor";

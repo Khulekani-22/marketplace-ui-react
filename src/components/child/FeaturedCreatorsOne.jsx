@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
-import appData from "../../data/appData.json";
+import { useAppSync } from "../../context/useAppSync";
 
 const FeaturedCreatorsOne = () => {
-  const cohorts = appData.cohorts;
+  const { appData } = useAppSync();
+  const cohorts = appData?.cohorts || [];
   const [activeTab, setActiveTab] = useState("All");
 
   const allCourses = cohorts.flatMap((cohort) =>
