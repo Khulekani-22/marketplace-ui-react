@@ -32,7 +32,9 @@ function findVendorRecord(data, tenantId, { uid, email }) {
     Array.isArray(data?.profiles) ? data.profiles : [],
   ];
 
-  const lookup = (arr, predicate) => arr.find((v) => sameTenant(v?.tenantId, tenantId) && predicate(v));
+  // Don't filter by tenant during vendor lookup - vendors can own services in multiple tenants
+  // Services are filtered by tenant separately in the listings endpoints
+  const lookup = (arr, predicate) => arr.find((v) => predicate(v));
 
   if (uid) {
     for (const arr of pools) {
