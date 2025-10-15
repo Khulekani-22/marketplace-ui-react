@@ -225,7 +225,8 @@ function MasterLayoutInner({ children }) {
 
   // Access flags
   const isBasic = !isAdmin && tenantId === "basic";
-  const showWalletLink = !isAdmin || tenantId === "vendor" || tenantId === "basic";
+  // Show wallet/subscriptions to startup, vendor, admin users (wallet-eligible roles)
+  const showWalletLink = ["vendor", "startup", "admin", "member"].includes(tenantId) || isBasic;
 
   // Debug current state in render
   console.log("🏗️ MasterLayout Render State:", {
@@ -413,13 +414,15 @@ function MasterLayoutInner({ children }) {
               </li>
             )}
 
-            {/* My Subscriptions (available to all signed-in users; useful for basic) */}
-            <li>
-              <NavLink to="/subscriptions" className={navClass}>
-                <Icon icon="mdi:bell-ring-outline" className="menu-icon" />
-                <span>My Subscriptions</span>
-              </NavLink>
-            </li>
+            {/* My Subscriptions (wallet-based subscriptions for eligible roles) */}
+            {showWalletLink && (
+              <li>
+                <NavLink to="/subscriptions" className={navClass}>
+                  <Icon icon="mdi:bell-ring-outline" className="menu-icon" />
+                  <span>My Subscriptions</span>
+                </NavLink>
+              </li>
+            )}
 
             <li>
               <NavLink to="/sloane-academy" className={navClass}>

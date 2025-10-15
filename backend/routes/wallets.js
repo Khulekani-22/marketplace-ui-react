@@ -36,7 +36,7 @@ router.get("/", requireAdmin, async (req, res) => {
 const STARTING_BALANCE = 200_000;
 const MAX_TRANSACTIONS = 150;
 const WALLET_VERSION = 1;
-const ELIGIBLE_ROLES = new Set(["vendor", "member", "startup"]);
+const ELIGIBLE_ROLES = new Set(["vendor", "member", "startup", "admin"]);
 const ELIGIBLE_TENANTS = new Set(["vendor", "basic", "startup"]);
 
 const uuid = () => uuidv4();

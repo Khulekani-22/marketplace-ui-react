@@ -27,12 +27,12 @@
       "startingBalance": 200000,
       "transactions": [
         {
-          "id": "def3d0e3-535e-45a6-a9a3-7f33bdaa6600",
+          "id": "5fd2c83b-0966-492e-a5d0-d59f2a612dce",
           "type": "credit",
           "amount": 200000,
           "description": "Initial voucher allocation",
           "balanceAfter": 200000,
-          "createdAt": "2025-10-15T12:35:13.318Z",
+          "createdAt": "2025-10-15T13:48:08.833Z",
           "reference": "initial-credit",
           "metadata": {
             "reason": "auto-allocation",
@@ -40,7 +40,7 @@
           }
         }
       ],
-      "lastUpdated": "2025-10-15T12:35:13.318Z"
+      "lastUpdated": "2025-10-15T13:48:08.833Z"
     }
   ]
 }

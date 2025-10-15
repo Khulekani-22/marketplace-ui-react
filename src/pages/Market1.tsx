@@ -109,7 +109,7 @@ export default function Market1() {
       open: true,
       service,
       working: false,
-      error: walletEligible ? "" : "My Wallet is only available to startup and vendor accounts.",
+      error: walletEligible ? "" : "My Wallet is only available to startup, vendor, and admin accounts.",
       success: "",
     });
   }
@@ -204,7 +204,7 @@ export default function Market1() {
                   <dd className='col-6 text-end'>R {formatCredits(Math.max(0, balance - price))}</dd>
                 </dl>
                 {!walletEligible && (
-                  <div className='alert alert-warning mt-3 mb-0'>My Wallet is only available to startup and vendor accounts.</div>
+                  <div className='alert alert-warning mt-3 mb-0'>My Wallet is only available to startup, vendor, and admin accounts.</div>
                 )}
                 {walletEligible && wallet && shortfall > 0 && (
                   <div className='alert alert-warning mt-3 mb-0'>

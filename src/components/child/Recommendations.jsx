@@ -244,7 +244,7 @@ export default function Recommendations() {
           return;
         }
         if (!walletEligible) {
-          setErr("My Wallet is only available to startup and vendor accounts.");
+          setErr("My Wallet is only available to startup, vendor, and admin accounts.");
           return;
         }
         if (!wallet) {

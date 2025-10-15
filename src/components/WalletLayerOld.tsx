@@ -299,8 +299,8 @@ export default function WalletLayer() {
       <div className='card p-24 radius-12'>
         <div className='d-flex flex-column gap-2'>
           <Icon icon='mdi:shield-alert-outline' className='text-2xl text-warning-600' />
-          <h5 className='mb-8'>My Wallet is only available to startup and vendor accounts.</h5>
-          <p className='text-secondary-light mb-8'>Switch to your startup or vendor profile, or contact the marketplace team if you think this is a mistake.</p>
+          <h5 className='mb-8'>My Wallet is only available to startup, vendor, and admin accounts.</h5>
+          <p className='text-secondary-light mb-8'>Switch to your startup, vendor, or admin profile, or contact the marketplace team if you think this is a mistake.</p>
           <Link to='/support' className='btn btn-outline-primary btn-sm align-self-start'>Contact Support</Link>
         </div>
       </div>

@@ -226,7 +226,7 @@ const TrendingNFTsOne = ({
         }
         if (!walletEligible) {
           setToastType('danger');
-          setToast('My Wallet is only available to startup and vendor accounts.');
+          setToast('My Wallet is only available to startup, vendor, and admin accounts.');
           setTimeout(() => setToast(''), 2500);
           return;
         }
@@ -383,7 +383,7 @@ const TrendingNFTsOne = ({
         return;
       }
       if (!walletEligible) {
-        setBookingModal((prev) => ({ ...prev, error: 'My Wallet is only available to startup and vendor accounts.' }));
+        setBookingModal((prev) => ({ ...prev, error: 'My Wallet is only available to startup, vendor, and admin accounts.' }));
         return;
       }
       if (!wallet) {
@@ -578,7 +578,7 @@ const TrendingNFTsOne = ({
       )}
       {!walletEligible && auth.currentUser && (
         <div className="alert alert-warning mb-3" role="alert">
-          My Wallet credits are reserved for startup and vendor profiles. Contact your programme manager if you need access.
+          My Wallet credits are reserved for startup, vendor, and admin profiles. Contact your programme manager if you need access.
         </div>
       )}
 
