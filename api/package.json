@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "Serverless functions for both frontend and backend APIs",
   "dependencies": {
+    "axios": "^1.12.2",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "firebase-admin": "^13.5.0",
     "helmet": "^7.2.0",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1"
   }
 }

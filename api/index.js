@@ -5,7 +5,118 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
+
+const FIRESTORE_BASE_URL = "https://firestore.googleapis.com/v1";
+const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const FIRESTORE_SCOPE = "https://www.googleapis.com/auth/datastore";
+
+let serviceAccountCache = null;
+let firestoreTokenCache = { token: null, exp: 0 };
+
+function unwrapPrivateKey(key) {
+  if (!key) return key;
+  return key.replace(/\\n/g, "\n");
+}
+
+function loadServiceAccount() {
+  if (serviceAccountCache) return serviceAccountCache;
+
+  const envClientEmail = process.env.GOOGLE_CLIENT_EMAIL || process.env.FIREBASE_CLIENT_EMAIL;
+  const envPrivateKey = unwrapPrivateKey(process.env.GOOGLE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY);
+  const envProjectId = process.env.GOOGLE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+
+  if (envClientEmail && envPrivateKey) {
+    serviceAccountCache = {
+      client_email: envClientEmail,
+      private_key: envPrivateKey,
+      project_id: envProjectId,
+    };
+    return serviceAccountCache;
+  }
+
+  const candidatePaths = [
+    path.join(__dirname, "serviceAccountKey.json"),
+    path.join(__dirname, "secrets", "sloane-hub-service-account.json"),
+    path.join(__dirname, "..", "serviceAccountKey.json"),
+    path.join(__dirname, "..", "secrets", "sloane-hub-service-account.json"),
+    path.join(process.cwd(), "serviceAccountKey.json"),
+  ];
+
+  for (const filePath of candidatePaths) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, "utf8");
+        serviceAccountCache = JSON.parse(raw);
+        serviceAccountCache.private_key = unwrapPrivateKey(serviceAccountCache.private_key);
+        return serviceAccountCache;
+      }
+    } catch (error) {
+      console.warn(`⚠️ Failed to read service account from ${filePath}:`, error.message);
+    }
+  }
+
+  return null;
+}
+
+async function getFirestoreAccessToken() {
+  const serviceAccount = loadServiceAccount();
+  if (!serviceAccount) {
+    throw new Error("Firestore service account credentials not configured");
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (firestoreTokenCache.token && firestoreTokenCache.exp - 60 > now) {
+    return firestoreTokenCache.token;
+  }
+
+  const privateKey = serviceAccount.private_key;
+  const clientEmail = serviceAccount.client_email;
+
+  if (!privateKey || !clientEmail) {
+    throw new Error("Incomplete Firestore service account credentials");
+  }
+
+  const jwtPayload = {
+    iss: clientEmail,
+    sub: clientEmail,
+    aud: GOOGLE_OAUTH_TOKEN_URL,
+    scope: FIRESTORE_SCOPE,
+    iat: now,
+    exp: now + 3600,
+  };
+
+  const assertion = jwt.sign(jwtPayload, privateKey, {
+    algorithm: "RS256",
+    header: {
+      typ: "JWT",
+    },
+  });
+
+  const params = new URLSearchParams();
+  params.append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
+  params.append("assertion", assertion);
+
+  const { data } = await axios.post(GOOGLE_OAUTH_TOKEN_URL, params.toString(), {
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  });
+
+  const { access_token: accessToken, expires_in: expiresIn = 3600 } = data || {};
+  if (!accessToken) {
+    throw new Error("Failed to obtain Firestore access token");
+  }
+
+  firestoreTokenCache = {
+    token: accessToken,
+    exp: now + expiresIn,
+  };
+
+  return accessToken;
+}
 
 // Import Firestore wallet service for persistent storage
 const firestoreWalletService = require("./services/firestoreWalletService");
@@ -14,6 +125,167 @@ const app = express();
 
 /* ------------------------ Data Loading ------------------------ */
 let appData = null;
+
+function mapFirestoreDoc(doc) {
+  if (!doc || !doc.fields) return null;
+  return Object.entries(doc.fields).reduce((acc, [key, value]) => {
+    if (!value || typeof value !== "object") return acc;
+    const type = Object.keys(value)[0];
+    const raw = value[type];
+    switch (type) {
+      case "stringValue":
+        acc[key] = raw;
+        break;
+      case "integerValue":
+        acc[key] = Number(raw);
+        break;
+      case "doubleValue":
+      case "timestampValue":
+      case "referenceValue":
+        acc[key] = raw;
+        break;
+      case "booleanValue":
+        acc[key] = Boolean(raw);
+        break;
+      case "nullValue":
+        acc[key] = null;
+        break;
+      case "mapValue":
+        acc[key] = mapFirestoreDoc({ fields: raw.fields || {} }) || {};
+        break;
+      case "arrayValue":
+        acc[key] = Array.isArray(raw?.values)
+          ? raw.values.map((entry) => {
+              if (entry.mapValue) return mapFirestoreDoc({ fields: entry.mapValue.fields || {} });
+              if (entry.stringValue !== undefined) return entry.stringValue;
+              if (entry.integerValue !== undefined) return Number(entry.integerValue);
+              if (entry.doubleValue !== undefined) return entry.doubleValue;
+              if (entry.booleanValue !== undefined) return Boolean(entry.booleanValue);
+              if (entry.nullValue !== undefined) return null;
+              return entry;
+            })
+          : [];
+        break;
+      default:
+        acc[key] = raw;
+    }
+    return acc;
+  }, {});
+}
+
+function normalizeFirestoreDocument(document) {
+  if (!document) return null;
+  const mapped = mapFirestoreDoc(document);
+  if (!mapped) return null;
+  const id = document.name?.split("/")?.pop() || mapped.id;
+  let tenantId = mapped.tenantId || "public";
+  try {
+    const nameParts = document.name?.split("/") || [];
+    const tenantsIndex = nameParts.indexOf("tenants");
+    if (tenantsIndex >= 0 && nameParts[tenantsIndex + 1]) {
+      tenantId = nameParts[tenantsIndex + 1];
+    }
+  } catch {
+    /* ignore */
+  }
+  return {
+    id,
+    ...mapped,
+    tenantId,
+  };
+}
+
+async function fetchFirestoreCollection(collectionPath, { tenantFilter } = {}) {
+  const serviceAccount = loadServiceAccount();
+  if (!serviceAccount) {
+    throw new Error("Firestore service account not configured");
+  }
+
+  const projectId = serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  if (!projectId) {
+    throw new Error("Unable to determine Firestore project id");
+  }
+
+  const accessToken = await getFirestoreAccessToken();
+  const url = `${FIRESTORE_BASE_URL}/projects/${projectId}/databases/(default)/documents/${collectionPath}`;
+
+  let documents = [];
+  let pageToken;
+
+  try {
+    do {
+      const params = pageToken ? { pageToken, pageSize: 300 } : { pageSize: 300 };
+      const response = await axios.get(url, {
+        params,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const fetched = Array.isArray(response.data.documents) ? response.data.documents : [];
+      documents = documents.concat(fetched.map(normalizeFirestoreDocument).filter(Boolean));
+
+      pageToken = response.data.nextPageToken;
+    } while (pageToken);
+  } catch (error) {
+    const status = error?.response?.status;
+    if (status === 404) {
+      // Treat missing collection as empty
+      return [];
+    }
+    console.error(`❌ Firestore fetch failed for ${collectionPath}:`, error.response?.data || error.message);
+    throw error;
+  }
+
+  if (tenantFilter) {
+    documents = documents.filter((doc) => {
+      const docTenant = doc.tenantId || "public";
+      if (!doc.tenantId) return true;
+      if (tenantFilter === "public") {
+        return docTenant === "public";
+      }
+      return docTenant === tenantFilter;
+    });
+  }
+
+  return documents;
+}
+
+async function loadFirestoreAppData({ tenantId = "public" } = {}) {
+  const collections = [
+    "bookings",
+    "cohorts",
+    "events",
+    "forumThreads",
+    "jobs",
+    "mentorshipSessions",
+    "messageThreads",
+    "services",
+    "leads",
+    "startups",
+    "vendors",
+    "companies",
+    "profiles",
+    "users",
+    "tenants",
+    "subscriptions",
+    "wallets",
+  ];
+
+  const results = await Promise.all(
+    collections.map((name) => fetchFirestoreCollection(name, { tenantFilter: tenantId }))
+  );
+
+  const data = collections.reduce((acc, name, idx) => {
+    acc[name] = results[idx] || [];
+    return acc;
+  }, {});
+
+  return {
+    ...data,
+    tenantId,
+  };
+}
 
 function loadAppData() {
   try {
@@ -1405,9 +1677,23 @@ app.post("/api/admin/messages/announcement", (req, res) => {
 });
 
 // LMS endpoints
-app.get("/api/lms/live", (req, res) => {
-  const data = getAppData();
-  res.json(data);
+app.get("/api/lms/live", async (req, res) => {
+  const tenantId = (req.headers["x-tenant-id"] || "public").toString();
+  try {
+    const data = await loadFirestoreAppData({ tenantId });
+    res.json(data);
+  } catch (error) {
+    console.error("[LMS] Firestore live fetch failed:", error.message);
+    try {
+      const fallback = getAppData();
+      res.json(fallback);
+    } catch (fallbackError) {
+      res.status(500).json({
+        error: "Failed to load live LMS data",
+        details: fallbackError.message || error.message,
+      });
+    }
+  }
 });
 
 app.put("/api/lms/publish", (req, res) => {
@@ -2096,96 +2382,214 @@ function getTopActions(logs) {
 }
 
 // Data services endpoints
-app.get("/api/data/services", (req, res) => {
-  const data = getAppData();
-  const services = data.services || [];
-  res.json({ services, total: services.length });
+app.get("/api/data/services", async (req, res) => {
+  const tenantId = (req.headers["x-tenant-id"] || "public").toString();
+  try {
+    const services = await fetchFirestoreCollection("services", { tenantFilter: tenantId });
+    res.json({ services, total: services.length });
+  } catch (error) {
+    console.error("/api/data/services Firestore fallback:", error.message);
+    try {
+      const data = getAppData();
+      const services = (data.services || []).filter((service) => {
+        const docTenant = service.tenantId || "public";
+        if (!service.tenantId) return true;
+        if (tenantId === "public") return docTenant === "public";
+        return docTenant === tenantId;
+      });
+      res.json({ services, total: services.length, source: "file" });
+    } catch (fallbackError) {
+      res.status(500).json({ error: "Failed to load services", details: fallbackError.message || error.message });
+    }
+  }
 });
 
 // My vendor services endpoint
-app.get("/api/data/services/mine", (req, res) => {
-  const data = getAppData();
-  const services = data.services || [];
-  const vendors = data.vendors || [];
-  const bookings = data.bookings || [];
-  
-  // In a real app, this would filter by authenticated user's vendor ID
-  // For now, find services from the first vendor or filter by a common vendor ID
-  const firstVendor = vendors[0];
-  const vendorId = firstVendor?.id || firstVendor?.vendorId || "tAsFySNxnsW4a7L43wMRVLkJAqE3";
-  
-  // Filter services by this vendor
-  const myServices = services.filter(service => 
-    service.vendorId === vendorId || 
-    service.vendor === firstVendor?.name ||
-    service.contactEmail === firstVendor?.contactEmail
-  );
-  
-  // Get bookings for these services
-  const myServiceIds = myServices.map(s => s.id);
-  const myBookings = bookings.filter(booking => 
-    myServiceIds.includes(booking.serviceId)
-  );
-  
-  res.json({
-    listings: myServices,
-    bookings: myBookings,
-    vendor: firstVendor,
-    tenantId: firstVendor?.tenantId || "public",
-    total: myServices.length
-  });
+app.get("/api/data/services/mine", async (req, res) => {
+  const tenantId = (req.headers["x-tenant-id"] || "public").toString();
+  try {
+    const [services, vendors, bookings] = await Promise.all([
+      fetchFirestoreCollection("services", { tenantFilter: tenantId }),
+      fetchFirestoreCollection("vendors", { tenantFilter: tenantId }),
+      fetchFirestoreCollection("bookings", { tenantFilter: tenantId }),
+    ]);
+
+    const firstVendor = vendors[0];
+    const vendorId = firstVendor?.vendorId || firstVendor?.id;
+
+    const myServices = vendorId
+      ? services.filter((service) =>
+          service.vendorId === vendorId ||
+          service.vendor === firstVendor?.name ||
+          (service.contactEmail || "").toLowerCase() === (firstVendor?.contactEmail || "").toLowerCase()
+        )
+      : services;
+
+    const serviceIds = new Set(myServices.map((s) => s.id));
+    const myBookings = bookings.filter((booking) => serviceIds.has(booking.serviceId));
+
+    res.json({
+      listings: myServices,
+      bookings: myBookings,
+      vendor: firstVendor || null,
+      tenantId: firstVendor?.tenantId || tenantId,
+      total: myServices.length,
+    });
+  } catch (error) {
+    console.error("/api/data/services/mine Firestore fallback:", error.message);
+    try {
+      const data = getAppData();
+      const services = data.services || [];
+      const vendors = data.vendors || [];
+      const bookings = data.bookings || [];
+      const firstVendor = vendors[0];
+      const vendorId = firstVendor?.id || firstVendor?.vendorId || "";
+      const myServices = vendorId
+        ? services.filter((service) =>
+            service.vendorId === vendorId ||
+            service.vendor === firstVendor?.name ||
+            service.contactEmail === firstVendor?.contactEmail
+          )
+        : services;
+      const myServiceIds = new Set(myServices.map((s) => s.id));
+      const myBookings = bookings.filter((booking) => myServiceIds.has(booking.serviceId));
+      res.json({
+        listings: myServices,
+        bookings: myBookings,
+        vendor: firstVendor,
+        tenantId: firstVendor?.tenantId || "public",
+        total: myServices.length,
+        source: "file",
+      });
+    } catch (fallbackError) {
+      res.status(500).json({
+        error: "Failed to load vendor services",
+        details: fallbackError.message || error.message,
+      });
+    }
+  }
 });
 
-app.get("/api/data/vendors", (req, res) => {
-  const data = getAppData();
-  const vendors = data.vendors || [];
-  res.json({ vendors, total: vendors.length });
+app.get("/api/data/vendors", async (req, res) => {
+  const tenantId = (req.headers["x-tenant-id"] || "public").toString();
+  try {
+    const vendors = await fetchFirestoreCollection("vendors", { tenantFilter: tenantId });
+    res.json({ vendors, total: vendors.length });
+  } catch (error) {
+    console.error("/api/data/vendors Firestore fallback:", error.message);
+    try {
+      const data = getAppData();
+      const all = data.vendors || [];
+      const filtered = all.filter((v) => {
+        const docTenant = v.tenantId || "public";
+        if (tenantId === "public") return !v.tenantId || docTenant === "public";
+        return docTenant === tenantId;
+      });
+      res.json({ vendors: filtered, total: filtered.length, source: "file" });
+    } catch (fallbackError) {
+      res.status(500).json({ error: "Failed to load vendors", details: fallbackError.message || error.message });
+    }
+  }
 });
 
-app.get("/api/data/vendors/:id/stats", (req, res) => {
-  const data = getAppData();
-  const vendors = data.vendors || [];
-  const services = data.services || [];
-  const bookings = data.bookings || [];
-  
+app.get("/api/data/vendors/:id/stats", async (req, res) => {
+  const tenantId = (req.headers["x-tenant-id"] || "public").toString();
   const vendorId = req.params.id;
-  const vendor = vendors.find(v => v.id === vendorId || v.vendorId === vendorId);
-  
-  // Calculate stats from real data
-  const vendorServices = services.filter(s => s.vendorId === vendorId || s.vendor === vendorId);
-  const vendorBookings = bookings.filter(b => b.vendorId === vendorId);
-  
-  const listingStats = {
-    total: vendorServices.length,
-    byStatus: vendorServices.reduce((acc, service) => {
-      const status = service.status || 'active';
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {})
-  };
-  
-  const reviewStats = {
-    totalReviews: vendorServices.reduce((total, service) => {
-      return total + (service.reviewCount || (service.reviews ? service.reviews.length : 0));
-    }, 0),
-    avgRating: vendorServices.length > 0 ? 
-      vendorServices.reduce((sum, service) => sum + (service.rating || 0), 0) / vendorServices.length : 0
-  };
-  
-  const subscriptionStats = {
-    byService: vendorServices.reduce((acc, service) => {
-      acc[service.id] = vendorBookings.filter(b => b.serviceId === service.id).length;
-      return acc;
-    }, {})
-  };
-  
-  res.json({
-    listingStats,
-    reviewStats,
-    subscription: { plan: vendor?.subscriptionPlan || "Free", status: vendor?.status || "active" },
-    subscriptionStats,
-    salesTime: { monthly: {}, quarterly: {}, annual: {} }
-  });
+  try {
+    const [vendors, services, bookings] = await Promise.all([
+      fetchFirestoreCollection("vendors", { tenantFilter: tenantId }),
+      fetchFirestoreCollection("services", { tenantFilter: tenantId }),
+      fetchFirestoreCollection("bookings", { tenantFilter: tenantId }),
+    ]);
+
+    const vendor = vendors.find((v) => v.id === vendorId || v.vendorId === vendorId);
+    const vendorServices = services.filter((s) => s.vendorId === vendorId || s.vendor === vendorId);
+    const vendorBookings = bookings.filter((b) => b.vendorId === vendorId || b.serviceVendorId === vendorId);
+
+    const listingStats = {
+      total: vendorServices.length,
+      byStatus: vendorServices.reduce((acc, service) => {
+        const status = (service.status || "active").toLowerCase();
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {}),
+    };
+
+    const reviewStats = {
+      totalReviews: vendorServices.reduce((total, service) => {
+        if (Array.isArray(service.reviews)) return total + service.reviews.length;
+        if (typeof service.reviewCount === "number") return total + service.reviewCount;
+        return total;
+      }, 0),
+      avgRating:
+        vendorServices.length > 0
+          ? vendorServices.reduce((sum, service) => sum + (Number(service.rating) || 0), 0) / vendorServices.length
+          : 0,
+    };
+
+    const subscriptionStats = {
+      byService: vendorServices.reduce((acc, service) => {
+        const count = vendorBookings.filter((b) => b.serviceId === service.id).length;
+        acc[service.id] = count;
+        return acc;
+      }, {}),
+    };
+
+    res.json({
+      listingStats,
+      reviewStats,
+      subscription: { plan: vendor?.subscriptionPlan || "Free", status: vendor?.status || "active" },
+      subscriptionStats,
+      salesTime: { monthly: {}, quarterly: {}, annual: {} },
+    });
+  } catch (error) {
+    console.error(`/api/data/vendors/${vendorId}/stats Firestore fallback:`, error.message);
+    try {
+      const data = getAppData();
+      const vendors = data.vendors || [];
+      const services = data.services || [];
+      const bookings = data.bookings || [];
+      const vendor = vendors.find((v) => v.id === vendorId || v.vendorId === vendorId);
+      const vendorServices = services.filter((s) => s.vendorId === vendorId || s.vendor === vendorId);
+      const vendorBookings = bookings.filter((b) => b.vendorId === vendorId);
+      const listingStats = {
+        total: vendorServices.length,
+        byStatus: vendorServices.reduce((acc, service) => {
+          const status = service.status || "active";
+          acc[status] = (acc[status] || 0) + 1;
+          return acc;
+        }, {}),
+      };
+      const reviewStats = {
+        totalReviews: vendorServices.reduce((total, service) => {
+          return total + (service.reviewCount || (service.reviews ? service.reviews.length : 0));
+        }, 0),
+        avgRating:
+          vendorServices.length > 0
+            ? vendorServices.reduce((sum, service) => sum + (service.rating || 0), 0) / vendorServices.length
+            : 0,
+      };
+      const subscriptionStats = {
+        byService: vendorServices.reduce((acc, service) => {
+          acc[service.id] = vendorBookings.filter((b) => b.serviceId === service.id).length;
+          return acc;
+        }, {}),
+      };
+      res.json({
+        listingStats,
+        reviewStats,
+        subscription: { plan: vendor?.subscriptionPlan || "Free", status: vendor?.status || "active" },
+        subscriptionStats,
+        salesTime: { monthly: {}, quarterly: {}, annual: {} },
+        source: "file",
+      });
+    } catch (fallbackError) {
+      res.status(500).json({
+        error: "Failed to compute vendor stats",
+        details: fallbackError.message || error.message,
+      });
+    }
+  }
 });
 
 app.get("/api/data/startups", (req, res) => {
