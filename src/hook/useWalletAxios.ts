@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { auth } from '../firebase.js';
 import { api } from '../lib/api';
 import { toast } from 'react-toastify';
 
@@ -53,6 +54,15 @@ export function useWallet() {
 
   const fetchWallet = useCallback(async () => {
     try {
+      // Skip if not authenticated
+      if (!auth.currentUser) {
+        console.log('⏭️ Skipping wallet fetch - user not authenticated');
+        setLoading(false);
+        setEligible(false);
+        setWallet(null);
+        return;
+      }
+
       setLoading(true);
       setError(null);
       
@@ -156,9 +166,22 @@ export function useWallet() {
     fetchWallet();
   }, [fetchWallet]);
 
-  // Initial load
+  // Listen for auth state changes and refresh wallet
   useEffect(() => {
-    fetchWallet();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User logged in, fetch wallet
+        fetchWallet();
+      } else {
+        // User logged out, clear wallet
+        setLoading(false);
+        setEligible(false);
+        setWallet(null);
+        setError(null);
+      }
+    });
+
+    return () => unsubscribe();
   }, [fetchWallet]);
 
   return {
