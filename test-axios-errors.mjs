@@ -3,8 +3,10 @@ import axios from 'axios';
 
 console.log('🧪 Testing axios error handling with Firestore...\n');
 
+const API_BASE_URL = process.env.TEST_API_BASE_URL || 'http://localhost:5055';
+
 const api = axios.create({ 
-  baseURL: 'http://localhost:5173',
+  baseURL: API_BASE_URL,
   timeout: 5000
 });
 
@@ -63,7 +65,7 @@ async function testErrorHandling() {
       test: async () => {
         try {
           // Create a very short timeout to force timeout
-          await axios.get('http://localhost:5173/api/health', { timeout: 1 });
+          await axios.get(`${API_BASE_URL}/api/health`, { timeout: 1 });
           return { success: false, error: 'Should have timed out' };
         } catch (error) {
           return { 
@@ -125,7 +127,7 @@ async function testInterceptors() {
   let requestIntercepted = false;
   let responseIntercepted = false;
   
-  const testApi = axios.create({ baseURL: 'http://localhost:5173' });
+  const testApi = axios.create({ baseURL: API_BASE_URL });
   
   // Add request interceptor
   testApi.interceptors.request.use(

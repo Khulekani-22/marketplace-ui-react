@@ -599,12 +599,15 @@ const TrendingNFTsOne = ({
                 const isSub = subs.has(id);
                 const bookable = isServiceListing(service);
                 const bookingInfo = bookings[id];
-                const price = Number(service.price || 0) || 0;
-                const walletBalance = wallet?.balance ?? 0;
-                const hasWallet = walletEligible && wallet;
-                const shortfall = hasWallet ? Math.max(0, price - walletBalance) : 0;
+                const price = Math.max(0, Number(service.price || 0) || 0);
+                const hasWallet = walletEligible && !!wallet;
+                const walletBalance = hasWallet ? Number(wallet?.balance || 0) : 0;
+                const walletShortfall = price > 0 ? Math.max(0, price - walletBalance) : 0;
+                const walletStillLoading = walletLoading && walletEligible && !wallet;
+                const subscriptionRequiresWallet = !bookable && price > 0;
+                const subscriptionCovered = !subscriptionRequiresWallet || (hasWallet && walletShortfall === 0);
                 const disableSubscription =
-                  !bookable && !isSub && price > 0 && (!walletEligible || !wallet || wallet.balance < price);
+                  !bookable && !isSub && price > 0 && !subscriptionCovered && !walletStillLoading;
                 return (
                   <div className="col-12 col-md-6 col-lg-4" key={service.id}>
                     <article
@@ -649,10 +652,12 @@ const TrendingNFTsOne = ({
                               {price > 0 && (
                                 <div className="d-flex align-items-center justify-content-between text-xs mt-1" style={{ fontSize: '0.72rem' }}>
                                   <span className="fw-semibold text-neutral-800">R {formatCredits(price)}</span>
-                                  {hasWallet ? (
-                                    <span className={shortfall > 0 ? 'text-danger' : 'text-success'}>
-                                      {shortfall > 0
-                                        ? `Short by ${formatCredits(shortfall)} credits`
+                                  {walletStillLoading ? (
+                                    <span className="text-secondary">Checking wallet…</span>
+                                  ) : hasWallet ? (
+                                    <span className={walletShortfall > 0 ? 'text-danger' : 'text-success'}>
+                                      {walletShortfall > 0
+                                        ? `Short by ${formatCredits(walletShortfall)} credits`
                                         : 'Covered by wallet'}
                                     </span>
                                   ) : (
@@ -748,6 +753,10 @@ const TrendingNFTsOne = ({
         const baseId = String(bookingModal.id ?? '');
         const dateInputId = `booking-date-${baseId}`;
         const slotInputId = `booking-slot-${baseId}`;
+        const modalPrice = Math.max(0, Number(svc?.price || 0) || 0);
+        const modalHasWallet = walletEligible && !!wallet;
+        const modalWalletBalance = modalHasWallet ? Number(wallet?.balance || 0) : 0;
+        const modalWalletShortfall = modalPrice > 0 ? Math.max(0, modalPrice - modalWalletBalance) : 0;
         return (
           <div
             className="position-fixed top-0 start-0 w-100 h-100"
@@ -767,6 +776,27 @@ const TrendingNFTsOne = ({
                 <div className="text-secondary small mb-3">
                   One-hour slots available between 8:00 AM and 5:00 PM.
                 </div>
+                {modalPrice > 0 && (
+                  <div className="alert alert-info py-2" role="status">
+                    <div className="fw-semibold">Wallet summary</div>
+                    <div className="small">
+                      Cost: R {formatCredits(modalPrice)} · Balance: R {formatCredits(modalWalletBalance)}
+                    </div>
+                    {walletLoading && !wallet && (
+                      <div className="small text-secondary">Checking wallet balance…</div>
+                    )}
+                    {!walletLoading && (!modalHasWallet || modalWalletShortfall > 0) && (
+                      <div className="small text-danger mt-1">
+                        {modalHasWallet
+                          ? `You need ${formatCredits(modalWalletShortfall)} more credits to book this session.`
+                          : 'Wallet credits required. Visit the wallet page to request top-up.'}
+                      </div>
+                    )}
+                    {!walletLoading && modalHasWallet && modalWalletShortfall === 0 && (
+                      <div className="small text-success mt-1">This booking will draw from your wallet credits automatically.</div>
+                    )}
+                  </div>
+                )}
                 <div className="mb-3">
                   <label className="form-label small fw-semibold" htmlFor={dateInputId}>Choose a date</label>
                   <input

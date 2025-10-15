@@ -13,6 +13,7 @@ require("dotenv").config();
 const FIRESTORE_BASE_URL = "https://firestore.googleapis.com/v1";
 const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const FIRESTORE_SCOPE = "https://www.googleapis.com/auth/datastore";
+const FIRESTORE_REQUEST_TIMEOUT_MS = Number(process.env.FIRESTORE_REQUEST_TIMEOUT_MS || 4000);
 
 let serviceAccountCache = null;
 let firestoreTokenCache = { token: null, exp: 0 };
@@ -104,6 +105,7 @@ async function getFirestoreAccessToken() {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
+    timeout: FIRESTORE_REQUEST_TIMEOUT_MS,
   });
 
   const { access_token: accessToken, expires_in: expiresIn = 3600 } = data || {};
@@ -309,6 +311,7 @@ async function fetchFirestoreCollection(collectionPath, { tenantFilter } = {}) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        timeout: FIRESTORE_REQUEST_TIMEOUT_MS,
       });
 
       const fetched = Array.isArray(response.data.documents) ? response.data.documents : [];

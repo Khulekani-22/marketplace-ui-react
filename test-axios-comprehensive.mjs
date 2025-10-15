@@ -3,8 +3,10 @@ import axios from 'axios';
 
 console.log('🔧 Testing axios-Firestore integration comprehensively...\n');
 
+const API_BASE_URL = process.env.TEST_API_BASE_URL || 'http://localhost:5055';
+
 const api = axios.create({ 
-  baseURL: 'http://localhost:5173',
+  baseURL: API_BASE_URL,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
@@ -138,7 +140,7 @@ async function testAxiosConfig() {
   
   // Test basic connectivity
   try {
-    const response = await axios.get('http://localhost:5173/api/health', { timeout: 5000 });
+  const response = await axios.get(`${API_BASE_URL}/api/health`, { timeout: 5000 });
     console.log('✅ Basic connectivity: OK');
   } catch (error) {
     console.log('❌ Basic connectivity: FAILED');

@@ -42232,5 +42232,92 @@
       "status": 201,
       "durationMs": 12
     }
+  },
+  {
+    "id": "mgry1a5b-61muo8",
+    "timestamp": "2025-10-15T12:04:40.985Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/admin/users",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "member",
+      "tenantId": "vendor"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "d01d6fa5-cffe-4aca-9309-87e362ce488e",
+    "timestamp": "2025-10-15T12:04:41.006Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 15
+    }
+  },
+  {
+    "id": "mgryip28-eam7is",
+    "timestamp": "2025-10-15T12:18:13.317Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/listings-vendors-mine",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "member",
+      "tenantId": "vendor"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "73dfbec4-973c-4c7a-a15c-6f569260260b",
+    "timestamp": "2025-10-15T12:18:13.486Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "public",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 14
+    }
+  },
+  {
+    "id": "mgryjfht-f1siks",
+    "timestamp": "2025-10-15T12:18:41.580Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "member",
+      "tenantId": "vendor"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "997b272d-0207-4bb0-be41-7b7f1a29f925",
+    "timestamp": "2025-10-15T12:18:47.743Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "public",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 14
+    }
   }
 ]

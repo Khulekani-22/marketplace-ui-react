@@ -4,7 +4,7 @@ import axios from 'axios';
 console.log('🧪 Testing axios with Firestore backend...\n');
 
 const api = axios.create({ 
-  baseURL: 'http://localhost:5173',
+  baseURL: process.env.TEST_API_BASE_URL || 'http://localhost:5055',
   timeout: 10000
 });
 
