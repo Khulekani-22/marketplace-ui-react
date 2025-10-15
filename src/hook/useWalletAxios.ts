@@ -119,8 +119,10 @@ export function useWallet() {
     try {
       setLoading(true);
       
+      const normalizedEmail = typeof userEmail === 'string' ? userEmail.trim().toLowerCase() : '';
       const payload = {
-        userEmail,
+        email: normalizedEmail || undefined,
+        targetEmail: normalizedEmail || undefined,
         amount: parseFloat(String(amount)),
         description,
         reference: options.reference || null,

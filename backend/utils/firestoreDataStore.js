@@ -233,11 +233,11 @@ class FirestoreDataStore {
    */
   loadFromFile() {
     try {
-      const appDataPath = path.resolve(process.cwd(), 'backend', 'appData.json');
+      const appDataPath = path.resolve(__dirname, '../appData.json');
       
       if (!fs.existsSync(appDataPath)) {
         // Try src fallback
-        const srcPath = path.resolve(process.cwd(), 'src', 'data', 'appData.json');
+        const srcPath = path.resolve(__dirname, '../../src/data/appData.json');
         if (fs.existsSync(srcPath)) {
           const text = fs.readFileSync(srcPath, 'utf-8');
           return JSON.parse(text);
@@ -327,8 +327,8 @@ class FirestoreDataStore {
       }
 
       // Also save to file as backup
-      console.log('💾 Saving backup to file...');
-      const appDataPath = path.resolve(process.cwd(), 'backend', 'appData.json');
+    console.log('💾 Saving backup to file...');
+    const appDataPath = path.resolve(__dirname, '../appData.json');
       const text = JSON.stringify(data, null, 2);
       fs.writeFileSync(appDataPath + '.tmp', text);
       fs.renameSync(appDataPath + '.tmp', appDataPath);

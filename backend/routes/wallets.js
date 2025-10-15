@@ -39,6 +39,8 @@ const WALLET_VERSION = 1;
 const ELIGIBLE_ROLES = new Set(["vendor", "member", "startup"]);
 const ELIGIBLE_TENANTS = new Set(["vendor", "basic", "startup"]);
 
+const uuid = () => uuidv4();
+
 function normalizeRole(role) {
   if (typeof role !== "string") return "member";
   const trimmed = role.trim().toLowerCase();
@@ -357,14 +359,15 @@ router.get("/me", firebaseAuthRequired, async (req, res) => {
       return sendWalletResponse(res, { eligible: true, wallet: sanitizeWallet(existing) });
     }
 
-    let createdWallet = null;
-    await saveData((draft) => {
-      const { wallet, index } = ensureWallet(draft, { uid, email, role, tenantId }, { initialize: true });
-      persistWallet(draft, index, wallet);
-      createdWallet = wallet;
-      return draft;
-    });
-    return sendWalletResponse(res, { eligible: true, wallet: createdWallet });
+    const draft = structuredClone(snapshot);
+    const { wallet: ensuredWallet, index } = ensureWallet(
+      draft,
+      { uid, email, role, tenantId },
+      { initialize: true }
+    );
+    persistWallet(draft, index, ensuredWallet);
+    await saveData(draft);
+    return sendWalletResponse(res, { eligible: true, wallet: ensuredWallet });
   } catch (e) {
     const status = e?.statusCode || 500;
     return res.status(status).json({ status: "error", message: e?.message || "Failed to load wallet" });
@@ -390,27 +393,22 @@ router.post("/me/redeem", firebaseAuthRequired, async (req, res) => {
     };
     console.log("[WALLET] Redeem amount:", amount, "options:", options);
 
-    let resultWallet = null;
-    let transaction = null;
-    
-    await saveData((draft) => {
-      console.log("[WALLET] Before ensureWallet - wallets count:", draft.wallets?.length || 0);
-      const { wallet, index } = ensureWallet(draft, { uid, email, role, tenantId });
-      console.log("[WALLET] After ensureWallet - wallet index:", index, "wallet id:", wallet.id);
-      
-      const nextWallet = applyDebit(wallet, amount, options);
-      transaction = nextWallet.transactions[0];
-      console.log("[WALLET] After applyDebit - new balance:", nextWallet.balance, "transaction:", transaction?.id);
-      
-      persistWallet(draft, index, nextWallet);
-      console.log("[WALLET] After persistWallet - wallets count:", draft.wallets?.length || 0);
-      
-      resultWallet = nextWallet;
-      return draft;
-    });
+    const draft = structuredClone(snapshot);
+    console.log("[WALLET] Before ensureWallet - wallets count:", draft.wallets?.length || 0);
+    const { wallet, index } = ensureWallet(draft, { uid, email, role, tenantId });
+    console.log("[WALLET] After ensureWallet - wallet index:", index, "wallet id:", wallet.id);
 
-    console.log("[WALLET] Final result wallet balance:", resultWallet?.balance);
-    return res.json({ ok: true, wallet: sanitizeWallet(resultWallet), transaction });
+    const nextWallet = applyDebit(wallet, amount, options);
+    const transaction = nextWallet.transactions[0];
+    console.log("[WALLET] After applyDebit - new balance:", nextWallet.balance, "transaction:", transaction?.id);
+
+    persistWallet(draft, index, nextWallet);
+    console.log("[WALLET] After persistWallet - wallets count:", draft.wallets?.length || 0);
+
+    await saveData(draft);
+
+    console.log("[WALLET] Final result wallet balance:", nextWallet?.balance);
+    return res.json({ ok: true, wallet: sanitizeWallet(nextWallet), transaction });
   } catch (e) {
     console.error("[WALLET] Redeem error:", e);
     const status = e?.statusCode || 500;
@@ -440,18 +438,16 @@ router.post("/grant", firebaseAuthRequired, requireAdmin, async (req, res) => {
     const email = targetEmail || normalizeEmail(record.email);
     const uid = targetUid || record.uid || email;
 
-    let resultWallet = null;
-    let transaction = null;
-    await saveData((draft) => {
-      const { wallet, index } = ensureWallet(draft, { uid, email, role, tenantId }, { initialize: false });
-      const nextWallet = applyCredit(wallet, amount, { description, reference, metadata });
-      transaction = nextWallet.transactions[0];
-      persistWallet(draft, index, nextWallet);
-      resultWallet = nextWallet;
-      return draft;
-    });
+    const draft = structuredClone(incomingData);
+    const { wallet, index } = ensureWallet(draft, { uid, email, role, tenantId }, { initialize: false });
+    const nextWallet = applyCredit(wallet, amount, { description, reference, metadata });
+    const transaction = nextWallet.transactions[0];
+    persistWallet(draft, index, nextWallet);
 
-    return res.json({ ok: true, wallet: sanitizeWallet(resultWallet), transaction });
+    console.log('[WALLET] Saving grant draft type:', typeof draft, Array.isArray(draft));
+    await saveData(draft);
+
+    return res.json({ ok: true, wallet: sanitizeWallet(nextWallet), transaction });
   } catch (e) {
     const status = e?.statusCode || 500;
     return res.status(status).json({ status: "error", message: e?.message || "Failed to grant credits" });
@@ -698,22 +694,24 @@ router.post("/admin/debug/test-create", firebaseAuthRequired, requireAdmin, asyn
       return res.status(400).json({ status: "error", message: "Provide email or uid" });
     }
 
-    let createdWallet = null;
-    await saveData((draft) => {
-      const { wallet, index } = ensureWallet(draft, {
+    const snapshot = await getData();
+    const draft = structuredClone(snapshot);
+    const { wallet, index } = ensureWallet(
+      draft,
+      {
         uid: uid || email,
         email: normalizeEmail(email),
         role: normalizeRole(role || "member"),
         tenantId: normalizeTenant(tenantId || "public")
-      }, { initialize: true });
-      persistWallet(draft, index, wallet);
-      createdWallet = wallet;
-      return draft;
-    });
+      },
+      { initialize: true }
+    );
+    persistWallet(draft, index, wallet);
+    await saveData(draft);
 
     return res.json({
       ok: true,
-      wallet: sanitizeWallet(createdWallet),
+      wallet: sanitizeWallet(wallet),
       message: "Test wallet created successfully"
     });
   } catch (e) {
@@ -731,31 +729,31 @@ router.post("/admin/debug/test-transaction", firebaseAuthRequired, requireAdmin,
     }
 
     const transactionAmount = Number(amount) || 100;
-    let resultWallet = null;
-    let transaction = null;
-
-    await saveData((draft) => {
-      const { wallet, index } = ensureWallet(draft, {
+    const snapshot = await getData();
+    const draft = structuredClone(snapshot);
+    const { wallet, index } = ensureWallet(
+      draft,
+      {
         uid: uid || email,
         email: normalizeEmail(email),
         role: normalizeRole("member"),
         tenantId: normalizeTenant("public")
-      }, { initialize: true });
+      },
+      { initialize: true }
+    );
 
-      const nextWallet = applyDebit(wallet, transactionAmount, {
-        description: description || "Test wallet debit transaction",
-        reference: "debug-test"
-      });
-      
-      transaction = nextWallet.transactions[0];
-      persistWallet(draft, index, nextWallet);
-      resultWallet = nextWallet;
-      return draft;
+    const nextWallet = applyDebit(wallet, transactionAmount, {
+      description: description || "Test wallet debit transaction",
+      reference: "debug-test"
     });
+
+    const transaction = nextWallet.transactions[0];
+    persistWallet(draft, index, nextWallet);
+    await saveData(draft);
 
     return res.json({
       ok: true,
-      wallet: sanitizeWallet(resultWallet),
+      wallet: sanitizeWallet(nextWallet),
       transaction,
       message: `Test transaction of ${transactionAmount} credits successfully processed`
     });

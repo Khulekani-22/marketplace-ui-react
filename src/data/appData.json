@@ -10,7 +10,12 @@
       "customerName": "FinConnect",
       "price": 8500,
       "bookedAt": "2024-07-29T11:00:00Z",
-      "status": "completed"
+      "status": "completed",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 914000000
+      }
     },
     {
       "id": "iqEZWAsptu7ygSTQOAij",
@@ -22,7 +27,12 @@
       "customerName": "AfriTech",
       "price": 42000,
       "bookedAt": "2024-07-28T10:00:00Z",
-      "status": "pending"
+      "status": "pending",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 914000000
+      }
     }
   ],
   "cohorts": [
@@ -184,7 +194,12 @@
             }
           ]
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 914000000
+      }
     },
     {
       "id": "assupol",
@@ -354,7 +369,12 @@
             }
           ]
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 915000000
+      }
     },
     {
       "id": "aws",
@@ -414,7 +434,12 @@
             }
           ]
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 915000000
+      }
     },
     {
       "id": "huawei",
@@ -474,7 +499,12 @@
             }
           ]
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 915000000
+      }
     },
     {
       "id": "microsoft",
@@ -615,7 +645,12 @@
           "videoThumbnail": "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=1280&h=720&fit=crop",
           "id": "5"
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 915000000
+      }
     },
     {
       "id": "telkom",
@@ -675,7 +710,12 @@
             }
           ]
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 916000000
+      }
     },
     {
       "id": "wrseta",
@@ -816,7 +856,12 @@
             }
           ]
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 916000000
+      }
     }
   ],
   "events": [
@@ -831,7 +876,12 @@
       "locationUrl": "",
       "description": "Startup Huddle: From Start to Scale – Building a Strong Foundation, is a bold and new monthly series hosted at 22 On Sloane, where alumni and resident founders come together to share what they’re building, the challenges they’re facing, and get real-time feedback from their peers and ecosystem mentors.\n\n \n\nEach session features two entrepreneurs who take us behind the scenes of their startup journey — offering an unfiltered look into the ups and downs of building a business. Through live input and community discussion, the goal is to learn together, grow together, and build stronger foundations for our ventures.\n\nEach edition of Startup Huddle will feature a different theme — keeping the format fresh, relevant, and driven by the needs of our founder community.",
       "aiHint": "Business Networking Event",
-      "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/07/Website-Banner-StartUp-Huddles-01.png"
+      "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/07/Website-Banner-StartUp-Huddles-01.png",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 916000000
+      }
     },
     {
       "id": "e1",
@@ -844,7 +894,12 @@
       "locationUrl": "https://zoom.us/j/1234567890",
       "description": "Join our expert panel as they break down successful go-to-market strategies tailored for the unique challenges and opportunities within the African market. Learn about channel strategies, customer acquisition, and pricing.",
       "imageUrl": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=600&h=400&fit=crop",
-      "aiHint": "business webinar presentation"
+      "aiHint": "business webinar presentation",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 916000000
+      }
     },
     {
       "id": "e2",
@@ -857,7 +912,12 @@
       "locationUrl": "https://teams.microsoft.com/l/meetup-join/12345",
       "description": "See our powerful financial API in action. In this live demo, we will walk you through integrating FinConnect to handle KYC, process payments, and access banking data across multiple African countries seamlessly.",
       "imageUrl": "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=600&h=400&fit=crop",
-      "aiHint": "fintech demo screen"
+      "aiHint": "fintech demo screen",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 916000000
+      }
     },
     {
       "id": "e3",
@@ -870,7 +930,12 @@
       "locationUrl": "https://maps.google.com/?q=Workshop17+V%26A+Waterfront",
       "description": "An exclusive, in-person networking event for startup founders and investors in the Cape Town ecosystem. Build connections, share ideas, and discover collaboration opportunities over drinks and canapés.",
       "imageUrl": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=600&h=400&fit=crop",
-      "aiHint": "networking event people"
+      "aiHint": "networking event people",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 916000000
+      }
     },
     {
       "id": "e4",
@@ -883,7 +948,12 @@
       "locationUrl": "https://zoom.us/j/1234567890",
       "description": "Learn how to digitize your operations, manage inventory effectively, and expand your customer base with our all-in-one retail management platform. This webinar is perfect for small and medium-sized retailers.",
       "imageUrl": "https://images.unsplash.com/photo-1556742044-59795afe4d29?q=80&w=600&h=400&fit=crop",
-      "aiHint": "retail store technology"
+      "aiHint": "retail store technology",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 916000000
+      }
     }
   ],
   "forumThreads": [
@@ -926,7 +996,12 @@
           "date": "2024-07-23T11:00:00Z",
           "content": "This is incredibly helpful, thank you both! The idea of customer interviews for value-based tiers is something we hadn't prioritized. We'll definitely start there. Lekker."
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 916000000
+      }
     },
     {
       "id": "2",
@@ -949,7 +1024,12 @@
           "date": "2024-07-22T09:00:00Z",
           "content": "This is a common challenge. Look into identity verification platforms like Smile Identity or ThisIsMe. They have good coverage and can help you automate the process while staying compliant with local regulations. It's an investment, but it saves you massive headaches down the line."
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     },
     {
       "id": "3",
@@ -962,7 +1042,12 @@
       "date": "2024-07-20T11:00:00Z",
       "postCount": 0,
       "initialPost": "Hi Assupol cohort! I'm hosting a small, informal virtual meetup next week for founders in the InsurTech space to share learnings and network. If you're interested in joining, please send me a direct message for the details. Let's connect and grow together.",
-      "posts": []
+      "posts": [],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     },
     {
       "id": "JIpn5SCxg14mILddrpLj",
@@ -978,6 +1063,11 @@
       "date": {
         "_seconds": 1753440714,
         "_nanoseconds": 37000000
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
       }
     },
     {
@@ -994,6 +1084,11 @@
       "date": {
         "_seconds": 1753271592,
         "_nanoseconds": 2000000
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
       }
     },
     {
@@ -1010,6 +1105,11 @@
       "date": {
         "_seconds": 1753439135,
         "_nanoseconds": 862000000
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
       }
     }
   ],
@@ -1024,7 +1124,12 @@
       "salary": "R80,000 - R120,000 / month",
       "description": "We are looking for an experienced Frontend Engineer to join our team and help us build the future of payments in Africa. You will be responsible for building and maintaining our user-facing web applications.",
       "datePosted": "2024-07-20",
-      "aiHint": "fintech company logo"
+      "aiHint": "fintech company logo",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     },
     {
       "id": "2",
@@ -1035,7 +1140,12 @@
       "type": "Full-time",
       "description": "As a Product Manager at Flutterwave, you will own the strategy and roadmap for our mobile applications, working closely with engineering, design, and marketing to deliver world-class products.",
       "datePosted": "2024-07-18",
-      "aiHint": "tech company logo"
+      "aiHint": "tech company logo",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     },
     {
       "id": "3",
@@ -1047,7 +1157,12 @@
       "salary": "R450 - R650 / hour",
       "description": "Yoco is seeking a talented UX/UI designer for a 6-month contract to help us design intuitive and beautiful interfaces for our point-of-sale devices and merchant dashboard.",
       "datePosted": "2024-07-19",
-      "aiHint": "design agency logo"
+      "aiHint": "design agency logo",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     },
     {
       "id": "4",
@@ -1058,7 +1173,12 @@
       "type": "Internship",
       "description": "Gain hands-on experience in digital marketing with one of Africa's leading e-commerce platforms. This is a great opportunity for a recent graduate to learn and grow.",
       "datePosted": "2024-07-15",
-      "aiHint": "ecommerce logo"
+      "aiHint": "ecommerce logo",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     },
     {
       "id": "5",
@@ -1069,7 +1189,12 @@
       "type": "Full-time",
       "description": "We are looking for a Backend Developer with experience in Go to join our team. You will be working on the core services that power our 'pay-as-you-go' solar energy platform.",
       "datePosted": "2024-07-21",
-      "aiHint": "solar energy logo"
+      "aiHint": "solar energy logo",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     },
     {
       "id": "KImoLPVexY0OH5nMllEZ",
@@ -1081,7 +1206,12 @@
       "description": "Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing Testing",
       "logoUrl": "https://su20.org/SU20_LOGO_CONCEPTS_v4_Primary_logo.png",
       "datePosted": "2025-07-23",
-      "aiHint": "testing (pty) ltd logo"
+      "aiHint": "testing (pty) ltd logo",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     }
   ],
   "mentorshipSessions": [
@@ -1096,7 +1226,12 @@
       "sessionDate": "2024-09-10T10:00:00Z",
       "duration": 60,
       "topic": "Looking for advice on our rebranding strategy.",
-      "status": "pending"
+      "status": "pending",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     },
     {
       "id": "IeJZuIjaJl3P5TyqeomB",
@@ -1109,7 +1244,12 @@
       "sessionDate": "2024-09-12T14:00:00Z",
       "duration": 60,
       "topic": "Code review and architecture discussion for our new feature.",
-      "status": "confirmed"
+      "status": "confirmed",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     },
     {
       "id": "S7fXbqndXNTAMRHzKuPw",
@@ -1122,7 +1262,12 @@
       "sessionDate": "2024-09-10T10:00:00Z",
       "duration": 60,
       "topic": "Looking for advice on our rebranding strategy.",
-      "status": "pending"
+      "status": "pending",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
+      }
     }
   ],
   "messageThreads": [
@@ -1162,12 +1307,17 @@
           "date": "2025-07-25T10:49:59.690Z"
         }
       ],
+      "_source": "dataStore",
       "lastMessage": {
         "snippet": "Testing Testing Testing Testing Testing Testing Testing",
         "date": {
-          "_seconds": 1753440600,
-          "_nanoseconds": 1000000
+          "_nanoseconds": 1000000,
+          "_seconds": 1753440600
         }
+      },
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
       }
     },
     {
@@ -1207,6 +1357,11 @@
           "_seconds": 1753364462,
           "_nanoseconds": 906000000
         }
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
       }
     },
     {
@@ -1246,6 +1401,11 @@
           "_seconds": 1753351175,
           "_nanoseconds": 691000000
         }
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
       }
     },
     {
@@ -1285,6 +1445,11 @@
           "_seconds": 1753362634,
           "_nanoseconds": 613000000
         }
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 917000000
       }
     },
     {
@@ -1317,6 +1482,11 @@
       "metadata": {
         "sentVia": "admin-panel",
         "ipAddress": "192.168.1.1"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1350,6 +1520,11 @@
       "metadata": {
         "sentVia": "web",
         "serviceId": "1"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1384,6 +1559,11 @@
       "metadata": {
         "sentVia": "web",
         "serviceId": "1"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1417,6 +1597,11 @@
       "metadata": {
         "sentVia": "web",
         "organizationType": "mentor-network"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1450,6 +1635,11 @@
         "sentVia": "admin-panel",
         "targetAudience": "all",
         "announcementId": "ann-1728394200005"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1483,6 +1673,11 @@
       "metadata": {
         "sentVia": "web",
         "eventType": "startup-showcase"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1515,6 +1710,11 @@
         "ipAddress": "::1",
         "userAgent": "curl/8.7.1",
         "sentVia": "web"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1547,6 +1747,11 @@
         "ipAddress": "::1",
         "userAgent": "curl/8.7.1",
         "sentVia": "web"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1579,6 +1784,11 @@
         "ipAddress": "::1",
         "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
         "sentVia": "web"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1611,6 +1821,11 @@
         "ipAddress": "::1",
         "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
         "sentVia": "web"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1643,6 +1858,11 @@
         "ipAddress": "::1",
         "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
         "sentVia": "web"
+      },
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
       }
     },
     {
@@ -1704,7 +1924,12 @@
           "content": "You're welcome! Let me know if you have more questions after you've had a chance to think about it. The key is linking paid features directly to revenue-generating activities for your customers.",
           "date": "2024-07-22T15:00:00Z"
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 918000000
+      }
     },
     {
       "id": "msg2",
@@ -1765,7 +1990,12 @@
           "content": "Sounds great, looking forward to it!",
           "date": "2024-07-21T11:30:00Z"
         }
-      ]
+      ],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "msg3",
@@ -1795,7 +2025,12 @@
         "date": "2024-07-20T09:00:00Z"
       },
       "read": true,
-      "messages": []
+      "messages": [],
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "ng5XuTHboWo2vaHp8G89",
@@ -1832,14 +2067,19 @@
           "date": "2025-07-25T10:18:02.904Z"
         }
       ],
+      "read": true,
+      "_source": "dataStore",
       "lastMessage": {
         "snippet": "Hi there\n\nAs discussed at the startup huddle, ..........\n\n\nSincerely,\n\nSMME\n\n",
         "date": {
-          "_seconds": 1753438683,
-          "_nanoseconds": 114000000
+          "_nanoseconds": 114000000,
+          "_seconds": 1753438683
         }
       },
-      "read": true
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     }
   ],
   "services": [
@@ -1879,7 +2119,12 @@
           "content": "Highly recommend! The logo they designed for us is modern, memorable, and has received great feedback from our users."
         }
       ],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "2",
@@ -1908,7 +2153,12 @@
           "content": "The team at DevHouse is top-notch. They built a robust and scalable web app for us on time and on budget. Excellent communication throughout."
         }
       ],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "3",
@@ -1946,14 +2196,18 @@
           "content": "A very powerful CRM. There is a bit of a learning curve, but their customer support is fantastic and helped us get up to speed."
         }
       ],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "4",
       "title": "Financial Modeling & Pitch Deck",
       "category": "Business",
       "vendor": "22 On Sloane Programmes",
-      "vendorId": "62sc9vzsmmgqcqtql",
       "contactEmail": "ruthmaphosa2024@gmail.com",
       "price": 20000,
       "rating": 5,
@@ -1965,7 +2219,13 @@
       "isFeatured": false,
       "description": "Get investor-ready with a professional financial model and a compelling pitch deck. We help you tell your story with data, making it easier to secure funding.",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "vendorId": "62sc9vzsmmgqcqtql",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "5",
@@ -1984,7 +2244,12 @@
       "isFeatured": true,
       "description": "Navigate the complex legal landscape with confidence. Our experienced corporate lawyers provide expert advice on company registration, contracts, compliance, and more.",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "6",
@@ -2003,14 +2268,18 @@
       "isFeatured": false,
       "description": "Organize your projects, track progress, and collaborate with your team seamlessly. TaskMaster is the all-in-one solution for keeping your projects on time and on budget.",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "7",
       "title": "Social Media Marketing Campaign",
       "category": "Marketing",
       "vendor": "22 On Sloane Programmes",
-      "vendorId": "62sc9vzsmmgqcqtql",
       "contactEmail": "ruthmaphosa2024@gmail.com",
       "price": 12000,
       "rating": 4.9,
@@ -2022,14 +2291,19 @@
       "isFeatured": false,
       "description": "Let us create and manage a high-impact social media campaign for your brand. We handle everything from content creation and scheduling to community management and performance analytics.",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "vendorId": "62sc9vzsmmgqcqtql",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "8",
       "title": "Animated Explainer Video",
       "category": "Video & Animation",
       "vendor": "22 On Sloane Programmes",
-      "vendorId": "62sc9vzsmmgqcqtql",
       "contactEmail": "ruthmaphosa2024@gmail.com",
       "price": 18000,
       "rating": 4.8,
@@ -2041,14 +2315,19 @@
       "isFeatured": false,
       "description": "Simplify your complex ideas with a beautiful and engaging animated explainer video. Perfect for your homepage, social media, or investor presentations.",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "vendorId": "62sc9vzsmmgqcqtql",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "9",
       "title": "SEO Content Writing Package",
       "category": "Writing & Translation",
       "vendor": "22 On Sloane Programmes",
-      "vendorId": "62sc9vzsmmgqcqtql",
       "contactEmail": "ruthmaphosa2024@gmail.com",
       "price": 7500,
       "rating": 4.9,
@@ -2060,7 +2339,13 @@
       "isFeatured": true,
       "description": "Improve your search engine rankings and attract more organic traffic with our expert SEO content writing package. Includes keyword research, blog posts, and on-page optimization.",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "vendorId": "62sc9vzsmmgqcqtql",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "X6rF03vck1HIXfg4hbjy",
@@ -2098,7 +2383,12 @@
           "content": "Great app! Thanks "
         }
       ],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "memubqft-fcmcw1",
@@ -2127,7 +2417,12 @@
           "content": "The team at DevHouse is top-notch. They built a robust and scalable web app for us on time and on budget. Excellent communication throughout."
         }
       ],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "mepapax8-ibz1dv",
@@ -2146,7 +2441,12 @@
       "isFeatured": false,
       "description": "Testing feature - vendor submit a new listing for approval",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "meqwiou0-3q8ofl",
@@ -2165,7 +2465,12 @@
       "isFeatured": false,
       "description": "Testing",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "mewcr2ki-ocdatn",
@@ -2184,7 +2489,12 @@
       "isFeatured": false,
       "description": "Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing Testing New Saas Listing",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "mewl4bna-xil1yi",
@@ -2203,14 +2513,18 @@
       "isFeatured": false,
       "description": "Share your pitch deck and our expert team will give you pointers on how to improve it",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "mewl77g2-tidsnp",
       "title": "Pitch deck revision",
       "category": "Business",
       "vendor": "22 On Sloane Programmes",
-      "vendorId": "62sc9vzsmmgqcqtql",
       "contactEmail": "ruthmaphosa2024@gmail.com",
       "price": 1500,
       "rating": 0,
@@ -2222,7 +2536,13 @@
       "isFeatured": false,
       "description": "Our team of experts will anlayze and review your pitch deck",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "vendorId": "62sc9vzsmmgqcqtql",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "mf6s3ah0-wqqlk5",
@@ -2241,7 +2561,12 @@
       "isFeatured": false,
       "description": "Testing",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "mf6s58mu-616wi6",
@@ -2260,7 +2585,12 @@
       "isFeatured": false,
       "description": "Testing",
       "reviews": [],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     },
     {
       "id": "uTgKXEWI2SYqoK1DeEYU",
@@ -2296,7 +2626,12 @@
           "content": "Testing connection to db again"
         }
       ],
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 919000000
+      }
     }
   ],
   "leads": [
@@ -2311,7 +2646,12 @@
         "amount": "R2,300",
         "avatar": "/assets/images/vendors/studiokreative.png"
       },
-      "month": "September"
+      "month": "September",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "lead10",
@@ -2324,7 +2664,12 @@
         "amount": "R1,350",
         "avatar": "/assets/images/vendors/mentorhive.png"
       },
-      "month": "August"
+      "month": "August",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "lead2",
@@ -2337,7 +2682,12 @@
         "amount": "R3,750",
         "avatar": "/assets/images/vendors/smartlegal.png"
       },
-      "month": "January"
+      "month": "January",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "lead3",
@@ -2350,7 +2700,12 @@
         "amount": "R1,700",
         "avatar": "/assets/images/vendors/startuplaunch.png"
       },
-      "month": "February"
+      "month": "February",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "lead4",
@@ -2363,7 +2718,12 @@
         "amount": "R830",
         "avatar": "/assets/images/vendors/regiserve.png"
       },
-      "month": "March"
+      "month": "March",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "lead5",
@@ -2376,7 +2736,12 @@
         "amount": "R5,200",
         "avatar": "/assets/images/vendors/devify.png"
       },
-      "month": "April"
+      "month": "April",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "lead6",
@@ -2389,7 +2754,12 @@
         "amount": "R3,100",
         "avatar": "/assets/images/vendors/fingrow.png"
       },
-      "month": "May"
+      "month": "May",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "lead7",
@@ -2402,7 +2772,12 @@
         "amount": "R4,500",
         "avatar": "/assets/images/vendors/designboost.png"
       },
-      "month": "June"
+      "month": "June",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "lead8",
@@ -2415,7 +2790,12 @@
         "amount": "R11,500",
         "avatar": "/assets/images/vendors/codespark.png"
       },
-      "month": "July"
+      "month": "July",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "lead9",
@@ -2428,7 +2808,12 @@
         "amount": "R2,000",
         "avatar": "/assets/images/vendors/visionstart.png"
       },
-      "month": "December"
+      "month": "December",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     }
   ],
   "startups": [
@@ -2505,7 +2890,12 @@
         "status": "pending",
         "tenantId": "22onsloane"
       },
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
@@ -2568,7 +2958,12 @@
         "status": "active",
         "tenantId": "public"
       },
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "YfdOMCYYhHbfdsehSvMXEcutjHe2",
@@ -2631,7 +3026,12 @@
         "status": "active",
         "tenantId": "22onsloane"
       },
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "aiKIomLPB81DDGKIPmqG",
@@ -2652,7 +3052,12 @@
       "lastUpdated": "2025-09-09T13:37:45.763Z",
       "vendorId": "aiKIomLPB81DDGKIPmqG",
       "tenantId": "public",
-      "contactEmail": ""
+      "contactEmail": "",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
@@ -2715,7 +3120,12 @@
         "status": "active",
         "tenantId": "22onsloane"
       },
-      "tenantId": "public"
+      "tenantId": "public",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "s1",
@@ -2752,7 +3162,12 @@
       ],
       "followers": 1250,
       "tenantId": "public",
-      "contactEmail": ""
+      "contactEmail": "",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "s2",
@@ -2783,7 +3198,12 @@
       ],
       "followers": 850,
       "tenantId": "public",
-      "contactEmail": ""
+      "contactEmail": "",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 920000000
+      }
     },
     {
       "id": "s3",
@@ -2814,7 +3234,12 @@
       ],
       "followers": 480,
       "tenantId": "public",
-      "contactEmail": ""
+      "contactEmail": "",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 921000000
+      }
     },
     {
       "id": "s4",
@@ -2845,7 +3270,12 @@
       ],
       "followers": 920,
       "tenantId": "public",
-      "contactEmail": ""
+      "contactEmail": "",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 921000000
+      }
     },
     {
       "id": "s5",
@@ -2876,7 +3306,12 @@
       ],
       "followers": 2100,
       "tenantId": "public",
-      "contactEmail": ""
+      "contactEmail": "",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 921000000
+      }
     },
     {
       "id": "s6",
@@ -2907,7 +3342,12 @@
       ],
       "followers": 1800,
       "tenantId": "public",
-      "contactEmail": ""
+      "contactEmail": "",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 921000000
+      }
     },
     {
       "id": "s7",
@@ -2938,7 +3378,12 @@
       ],
       "followers": 1450,
       "tenantId": "public",
-      "contactEmail": ""
+      "contactEmail": "",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 921000000
+      }
     },
     {
       "id": "s8",
@@ -2969,7 +3414,12 @@
       ],
       "followers": 1600,
       "tenantId": "public",
-      "contactEmail": ""
+      "contactEmail": "",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 921000000
+      }
     },
     {
       "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
@@ -3034,12 +3484,17 @@
         "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
         "email": "khulekani@22onsloane.co"
       },
-      "tenantId": "22onsloane"
+      "tenantId": "22onsloane",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 921000000
+      }
     }
   ],
   "vendors": [
     {
-      "id": "62sc9vzsmmgqcqtql",
+      "id": "5aqihwtrjmgqcqtql",
       "vendorId": "62sc9vzsmmgqcqtql",
       "name": "22 On Sloane Programmes",
       "companyName": "22 On Sloane Programmes",
@@ -3077,7 +3532,56 @@
         "source": "startup-sync",
         "originalStartupData": true
       },
-      "tenantId": "public"
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 921000000
+      }
+    },
+    {
+      "id": "62sc9vzsmmgqcqtql",
+      "country": "South Africa",
+      "metadata": {
+        "source": "startup-sync",
+        "originalStartupData": true
+      },
+      "city": "Sandton",
+      "isVerified": false,
+      "companyName": "22 On Sloane Programmes",
+      "rating": 4.5,
+      "bio": "",
+      "vendorId": "62sc9vzsmmgqcqtql",
+      "availability": "Available",
+      "completedProjects": 0,
+      "skills": [
+        "Business",
+        "Marketing",
+        "Video & Animation",
+        "Writing & Translation"
+      ],
+      "createdAt": "2025-10-14T09:20:55.053Z",
+      "portfolio": [],
+      "email": "ruthmaphosa2024@gmail.com",
+      "updatedAt": "2025-10-14T09:20:55.054Z",
+      "website": "",
+      "address": "",
+      "totalEarnings": 0,
+      "languages": [
+        "English"
+      ],
+      "contactEmail": "ruthmaphosa2024@gmail.com",
+      "responseTime": "2 hours",
+      "avatar": "",
+      "certifications": [],
+      "phone": "+27763732884",
+      "name": "22 On Sloane Programmes",
+      "_source": "dataStore",
+      "hourlyRate": 500,
+      "status": "active",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 921000000
+      }
     },
     {
       "id": "duFghKRYhyRFUhlBRm66iMLKgh22",
@@ -3108,7 +3612,12 @@
       "registrationNo": "",
       "status": "active",
       "tenantId": "22onsloane",
-      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22"
+      "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 921000000
+      }
     },
     {
       "id": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
@@ -3140,7 +3649,12 @@
       "status": "active",
       "tenantId": "22onsloane",
       "vendorId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "email": "khulekani@22onsloane.co"
+      "email": "khulekani@22onsloane.co",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     }
   ],
   "companies": [
@@ -3174,7 +3688,12 @@
         "github": ""
       },
       "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "lastUpdated": "2025-08-28T11:17:06.926Z"
+      "lastUpdated": "2025-08-28T11:17:06.926Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     }
   ],
   "profiles": [
@@ -3208,7 +3727,12 @@
         "github": ""
       },
       "ownerUid": "duFghKRYhyRFUhlBRm66iMLKgh22",
-      "lastUpdated": "2025-08-24T12:53:36.536Z"
+      "lastUpdated": "2025-08-24T12:53:36.536Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     }
   ],
   "users": [
@@ -3221,7 +3745,12 @@
       "role": "member",
       "photoURL": "https://ui-avatars.com/api/?name=David+Chen&background=dc2626&color=fff",
       "createdAt": "2024-05-10T09:15:00Z",
-      "lastLoginAt": "2025-01-28T12:20:00Z"
+      "lastLoginAt": "2025-01-28T12:20:00Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "e9URqCt8SXXoT1snp8HU",
@@ -3232,7 +3761,12 @@
       "role": "admin",
       "photoURL": "https://ui-avatars.com/api/?name=Sloane+Digital+Team&background=7c3aed&color=fff",
       "createdAt": "2025-10-08T12:00:00Z",
-      "lastLoginAt": "2025-10-08T12:00:00Z"
+      "lastLoginAt": "2025-10-08T12:00:00Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "gavVUrrkS0R6payRggGB",
@@ -3243,18 +3777,28 @@
       "role": "member",
       "photoURL": "https://ui-avatars.com/api/?name=Sarah+Johnson&background=059669&color=fff",
       "createdAt": "2024-03-20T14:30:00Z",
-      "lastLoginAt": "2025-01-27T16:45:00Z"
+      "lastLoginAt": "2025-01-27T16:45:00Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "j2U2NdpdIQPMJoHrktB0",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "email": "khulekani@22onsloane.co",
-      "displayName": "Khulekani Magubane",
       "tenantId": "22onsloane",
       "role": "admin",
       "photoURL": "https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff",
       "createdAt": "2024-01-15T10:00:00Z",
-      "lastLoginAt": "2025-01-28T08:30:00Z"
+      "lastLoginAt": "2025-01-28T08:30:00Z",
+      "_source": "dataStore",
+      "displayName": "Khulekani Mncube",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "pIZEntVizq7x8bojlo0o",
@@ -3265,7 +3809,12 @@
       "role": "partner",
       "photoURL": "https://ui-avatars.com/api/?name=James+Williams&background=1e40af&color=fff",
       "createdAt": "2024-02-28T13:45:00Z",
-      "lastLoginAt": "2025-01-28T07:15:00Z"
+      "lastLoginAt": "2025-01-28T07:15:00Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "s7wu3H63nUoPhMSkxVn7",
@@ -3276,7 +3825,12 @@
       "role": "member",
       "photoURL": "https://ui-avatars.com/api/?name=Maria+Santos&background=7c2d12&color=fff",
       "createdAt": "2024-07-08T11:00:00Z",
-      "lastLoginAt": "2025-01-26T19:30:00Z"
+      "lastLoginAt": "2025-01-26T19:30:00Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "vruw5gkiH4S9xe6hqj8e",
@@ -3287,13 +3841,23 @@
       "role": "member",
       "photoURL": "https://ui-avatars.com/api/?name=Emily+Brown&background=7c3aed&color=fff",
       "createdAt": "2024-06-15T16:20:00Z",
-      "lastLoginAt": "2025-01-27T22:10:00Z"
+      "lastLoginAt": "2025-01-27T22:10:00Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     }
   ],
   "tenants": [
     {
       "id": "22onsloane",
-      "name": "22onsloane"
+      "name": "22onsloane",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     }
   ],
   "subscriptions": [
@@ -3305,7 +3869,12 @@
       "email": "22onsloanedigitalteam@gmail.com",
       "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "tenantId": "public",
-      "createdAt": "2025-09-17T11:51:09.146Z"
+      "createdAt": "2025-09-17T11:51:09.146Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "362e1ad5-c483-4161-9636-52f96c0ac244",
@@ -3316,7 +3885,12 @@
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "22onsloane",
       "createdAt": "2025-09-16T12:14:56.640Z",
-      "canceledAt": "2025-09-16T12:14:57.318Z"
+      "canceledAt": "2025-09-16T12:14:57.318Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "39ba4260-6251-47b7-93a6-f7d723ba58ab",
@@ -3326,7 +3900,12 @@
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "public",
-      "createdAt": "2025-09-05T01:38:39.738Z"
+      "createdAt": "2025-09-05T01:38:39.738Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "6384bfc6-3ef3-41f2-b512-75f0cf88b886",
@@ -3337,7 +3916,12 @@
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "22onsloane",
       "createdAt": "2025-09-16T12:14:58.448Z",
-      "canceledAt": "2025-09-16T12:15:02.004Z"
+      "canceledAt": "2025-09-16T12:15:02.004Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "824f8a3a-7899-4a9f-9ed3-dec0cfff81ce",
@@ -3347,7 +3931,12 @@
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "public",
-      "createdAt": "2025-09-05T01:54:32.154Z"
+      "createdAt": "2025-09-05T01:54:32.154Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "883d9f30-56e1-4146-9c41-a533ad9108a0",
@@ -3357,7 +3946,12 @@
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "public",
-      "createdAt": "2025-09-05T01:38:47.050Z"
+      "createdAt": "2025-09-05T01:38:47.050Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "bdd4925b-d58c-4645-a1ac-f9de429744f7",
@@ -3367,7 +3961,12 @@
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "22onsloane",
-      "createdAt": "2025-09-04T14:57:47.051Z"
+      "createdAt": "2025-09-04T14:57:47.051Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "c59b0c9f-bb46-4cde-8cd2-326718c8142b",
@@ -3377,7 +3976,12 @@
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "public",
-      "createdAt": "2025-09-05T01:38:45.359Z"
+      "createdAt": "2025-09-05T01:38:45.359Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "dab386aa-ad25-4a97-9b4e-bdda16ac4d12",
@@ -3388,7 +3992,12 @@
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "22onsloane",
       "createdAt": "2025-09-16T12:14:55.220Z",
-      "canceledAt": "2025-09-16T12:14:55.788Z"
+      "canceledAt": "2025-09-16T12:14:55.788Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "de63118a-f68b-4268-b798-ad9a7f49764d",
@@ -3398,7 +4007,12 @@
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "public",
-      "createdAt": "2025-09-05T01:38:43.410Z"
+      "createdAt": "2025-09-05T01:38:43.410Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "df0ef055-55f1-4498-afa2-be9594e7cf10",
@@ -3408,7 +4022,12 @@
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "22onsloane",
-      "createdAt": "2025-09-04T14:57:30.227Z"
+      "createdAt": "2025-09-04T14:57:30.227Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     },
     {
       "id": "e70c1ed0-ce80-4c15-af45-4e03d9e38bc1",
@@ -3418,10 +4037,78 @@
       "email": "khulekani@22onsloane.co",
       "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
       "tenantId": "22onsloane",
-      "createdAt": "2025-09-04T14:57:17.217Z"
+      "createdAt": "2025-09-04T14:57:17.217Z",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      }
     }
   ],
   "wallets": [
+    {
+      "id": "22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "role": "admin",
+      "tenantId": "22onsloane",
+      "_source": "dataStore",
+      "version": 1,
+      "email": "khulekani@22onsloane.co",
+      "startingBalance": 5000,
+      "lastUpdated": "2025-10-15T08:45:32.650Z",
+      "balance": 15000,
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      },
+      "transactions": [
+        {
+          "id": "f7c23553-bd7e-47be-ac1d-e23839aa2ca9",
+          "reference": null,
+          "createdAt": "2025-10-15T08:45:32.650Z",
+          "amount": 5000,
+          "metadata": null,
+          "description": "Test grant via script",
+          "_source": "dataStore",
+          "balanceAfter": 15000,
+          "type": "credit",
+          "_updatedAt": {
+            "_seconds": 1760518047,
+            "_nanoseconds": 922000000
+          }
+        },
+        {
+          "id": "aa217090-cf66-48b3-a716-ec72e464fe22",
+          "reference": null,
+          "createdAt": "2025-10-15T08:41:28.472Z",
+          "amount": 5000,
+          "metadata": null,
+          "description": "Test grant via script",
+          "_source": "dataStore",
+          "balanceAfter": 10000,
+          "type": "credit",
+          "_updatedAt": {
+            "_seconds": 1760518047,
+            "_nanoseconds": 922000000
+          }
+        },
+        {
+          "id": "f46b8695-9bf8-472f-b6d2-571bd2cf5bef",
+          "reference": null,
+          "createdAt": "2025-10-15T08:39:13.364Z",
+          "amount": 5000,
+          "metadata": null,
+          "description": "Test grant via script",
+          "_source": "dataStore",
+          "balanceAfter": 5000,
+          "type": "credit",
+          "_updatedAt": {
+            "_seconds": 1760518047,
+            "_nanoseconds": 922000000
+          }
+        }
+      ]
+    },
     {
       "id": "wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent",
       "userId": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
@@ -3439,14 +4126,110 @@
       "id": "wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent",
       "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
       "email": "khulekani@gecafrica.co",
-      "displayName": "Khulekani Magubane",
       "balance": 450,
       "totalEarned": 600,
       "totalSpent": 150,
       "createdAt": "2025-10-10T10:00:00.000Z",
       "updatedAt": "2025-10-13T14:00:00.000Z",
       "status": "active",
+      "displayName": "Khulekani Mncube",
       "transactions": []
+    },
+    {
+      "id": "vendor:zinhlesloane@gmail.com",
+      "lastUpdated": "2025-10-15T08:47:27.914Z",
+      "uid": "zinhlesloane@gmail.com",
+      "role": "member",
+      "balance": 50750,
+      "tenantId": "vendor",
+      "_source": "dataStore",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      },
+      "version": 1,
+      "email": "zinhlesloane@gmail.com",
+      "startingBalance": 200000,
+      "transactions": [
+        {
+          "id": "c75e80ac-a065-44d6-aa3d-e1454d4c874d",
+          "reference": null,
+          "createdAt": "2025-10-15T08:47:27.914Z",
+          "amount": 50000,
+          "metadata": {
+            "source": "admin-grant"
+          },
+          "description": "Admin credit",
+          "_source": "dataStore",
+          "balanceAfter": 50750,
+          "type": "credit",
+          "_updatedAt": {
+            "_seconds": 1760518047,
+            "_nanoseconds": 922000000
+          }
+        }
+      ]
+    },
+    {
+      "id": "wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent",
+      "createdAt": "2025-10-08T08:00:00.000Z",
+      "totalEarned": 750,
+      "totalSpent": 0,
+      "balance": 750,
+      "displayName": "Zinhle Sloane",
+      "_source": "dataStore",
+      "userId": "O8bBPBKniiWbuSBXrMgBGJMPfoO2",
+      "email": "zinhlesloane@gmail.com",
+      "status": "active",
+      "updatedAt": "2025-10-13T11:00:00.000Z",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      },
+      "transactions": []
+    },
+    {
+      "id": "wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent",
+      "createdAt": "2025-10-10T10:00:00.000Z",
+      "totalEarned": 600,
+      "totalSpent": 150,
+      "balance": 450,
+      "_source": "dataStore",
+      "userId": "WcdBgaT4hEMXb3DScC1OE8NDKJ62",
+      "email": "khulekani@gecafrica.co",
+      "status": "active",
+      "updatedAt": "2025-10-13T14:00:00.000Z",
+      "displayName": "Khulekani Mncube",
+      "_updatedAt": {
+        "_seconds": 1760518047,
+        "_nanoseconds": 922000000
+      },
+      "transactions": []
+    },
+    {
+      "id": "vendor:duFghKRYhyRFUhlBRm66iMLKgh22",
+      "version": 1,
+      "uid": "duFghKRYhyRFUhlBRm66iMLKgh22",
+      "email": "22onsloanedigitalteam@gmail.com",
+      "tenantId": "vendor",
+      "role": "admin",
+      "balance": 200000,
+      "startingBalance": 200000,
+      "transactions": [
+        {
+          "id": "ec0aa4d9-c35f-4d8e-ba53-e029779eefe3",
+          "type": "credit",
+          "amount": 200000,
+          "description": "Admin credit",
+          "reference": null,
+          "metadata": {
+            "source": "admin-grant"
+          },
+          "createdAt": "2025-10-15T08:48:46.033Z",
+          "balanceAfter": 200000
+        }
+      ],
+      "lastUpdated": "2025-10-15T08:48:46.033Z"
     }
   ]
 }
