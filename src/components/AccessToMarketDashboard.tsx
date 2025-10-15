@@ -199,18 +199,16 @@ const AccessToMarketDashboard = () => {
           </div>
         )}
 
-        {/* TrendingNFTsOne Component with controlled props */}
-        {!loading && (
-          <div className='col-12'>
-            <TrendingNFTsOne 
-              query={searchQuery}
-              onQueryChange={handleQueryChange}
-              category={selectedCategory}
-              onCategoryChange={handleCategoryChange}
-              onCategoriesChange={handleCategoriesChange}
-            />
-          </div>
-        )}
+        {/* TrendingNFTsOne Component with controlled props - Always show listings, profile data is optional */}
+        <div className='col-12'>
+          <TrendingNFTsOne 
+            query={searchQuery}
+            onQueryChange={handleQueryChange}
+            category={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+            onCategoriesChange={handleCategoriesChange}
+          />
+        </div>
 
         {/* Quick Actions for non-authenticated users */}
         {!auth.currentUser && (
