@@ -7,6 +7,7 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
+const admin = require("firebase-admin");
 require("dotenv").config();
 
 const FIRESTORE_BASE_URL = "https://firestore.googleapis.com/v1";
@@ -193,6 +194,94 @@ function normalizeFirestoreDocument(document) {
     ...mapped,
     tenantId,
   };
+}
+
+function normalizeTenantId(rawTenantId) {
+  if (!rawTenantId) return "public";
+  const normalized = String(rawTenantId).trim().toLowerCase();
+  if (!normalized) return "public";
+  if (normalized === "vendor" || normalized === "vendors") return "public";
+  return normalized;
+}
+
+function generateServiceId() {
+  return `svc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function buildServicePayload(input = {}, tenantId = "public") {
+  const timestamp = new Date().toISOString();
+  const base = Array.isArray(input) ? {} : { ...input };
+  const id = base.id || generateServiceId();
+
+  const payload = {
+    status: "active",
+    reviewCount: 0,
+    rating: 0,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    ...base,
+    id,
+    tenantId: normalizeTenantId(base.tenantId || tenantId),
+  };
+
+  if (!payload.createdAt) {
+    payload.createdAt = timestamp;
+  }
+
+  if (!payload.updatedAt) {
+    payload.updatedAt = timestamp;
+  }
+
+  if (!payload.status) {
+    payload.status = "active";
+  }
+
+  if (payload.vendor && typeof payload.vendor === "object" && !payload.vendorId) {
+    payload.vendorId = payload.vendor.id || payload.vendor.vendorId || payload.vendorId;
+  }
+
+  if (!payload.reviewCount || Number.isNaN(payload.reviewCount)) {
+    payload.reviewCount = 0;
+  }
+
+  if (!payload.rating || Number.isNaN(payload.rating)) {
+    payload.rating = 0;
+  }
+
+  if (!payload.slug && payload.title) {
+    payload.slug = payload.title
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+  }
+
+  return payload;
+}
+
+function upsertAppDataCollection(collectionName, item, idField = "id") {
+  try {
+    const data = getAppData();
+    if (!data || !collectionName || !item) return;
+    if (!Array.isArray(data[collectionName])) {
+      data[collectionName] = [];
+    }
+    const collection = data[collectionName];
+    const identifier = item[idField];
+    if (!identifier) {
+      collection.push(item);
+      return;
+    }
+    const index = collection.findIndex((entry) => entry && entry[idField] === identifier);
+    if (index >= 0) {
+      collection[index] = { ...collection[index], ...item };
+    } else {
+      collection.push(item);
+    }
+  } catch (error) {
+    console.warn(`⚠️ Failed to cache ${collectionName} in appData:`, error.message);
+  }
 }
 
 async function fetchFirestoreCollection(collectionPath, { tenantFilter } = {}) {
@@ -2400,6 +2489,40 @@ app.get("/api/data/services", async (req, res) => {
       res.json({ services, total: services.length, source: "file" });
     } catch (fallbackError) {
       res.status(500).json({ error: "Failed to load services", details: fallbackError.message || error.message });
+    }
+  }
+});
+
+app.post("/api/data/services", async (req, res) => {
+  const rawTenantId = req.headers["x-tenant-id"] || req.body?.tenantId || "public";
+  const tenantId = normalizeTenantId(rawTenantId);
+  const payload = buildServicePayload(req.body || {}, tenantId);
+
+  try {
+    const db = admin.firestore();
+    await db.collection("services").doc(payload.id).set(payload, { merge: true });
+    upsertAppDataCollection("services", payload);
+    res.status(201).json({ service: payload, id: payload.id, source: "firestore" });
+  } catch (error) {
+    console.error("/api/data/services Firestore create failed:", error.message);
+    try {
+      const data = getAppData();
+      const services = Array.isArray(data.services) ? data.services : [];
+      const existingIndex = services.findIndex((service) => service.id === payload.id);
+      if (existingIndex >= 0) {
+        services[existingIndex] = { ...services[existingIndex], ...payload };
+      } else {
+        services.push(payload);
+      }
+      data.services = services;
+      saveAppData(data);
+      res.status(201).json({ service: payload, id: payload.id, source: "file" });
+    } catch (fallbackError) {
+      console.error("/api/data/services local fallback failed:", fallbackError.message);
+      res.status(500).json({
+        error: "Failed to save service listing",
+        details: fallbackError.message || error.message,
+      });
     }
   }
 });
