@@ -25,7 +25,7 @@ console.log(`Creating token for: ${email} (${uid})`);
 const customToken = await getAuth().createCustomToken(uid);
 
 // Sign in with custom token to get ID token
-const apiKey = 'AIzaSyBFdVgRqgq8dQgIqCTgXHwYJ9bpXnJwX_I'; // From firebase config
+const apiKey = 'AIzaSyDFzUfv1enm5_lucOMz4tWh26GJfIG751M'; // From firebase config
 const signInResponse = await fetch(
   `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${apiKey}`,
   {

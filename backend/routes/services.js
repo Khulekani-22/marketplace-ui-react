@@ -174,6 +174,10 @@ router.get("/mine", firebaseAuthRequired, async (req, res) => {
     })
     .map((b) => ({ ...b }));
 
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+
   res.json({
     tenantId: normalizeTenantId(tenantId),
     vendor: vendorRecord
