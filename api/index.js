@@ -2502,7 +2502,11 @@ app.post("/api/data/services", async (req, res) => {
     const db = admin.firestore();
     await db.collection("services").doc(payload.id).set(payload, { merge: true });
     upsertAppDataCollection("services", payload);
-    res.status(201).json({ service: payload, id: payload.id, source: "firestore" });
+    const responseService = {
+      ...payload,
+      source: payload.source || "firestore",
+    };
+    res.status(201).json(responseService);
   } catch (error) {
     console.error("/api/data/services Firestore create failed:", error.message);
     try {
@@ -2516,7 +2520,11 @@ app.post("/api/data/services", async (req, res) => {
       }
       data.services = services;
       saveAppData(data);
-      res.status(201).json({ service: payload, id: payload.id, source: "file" });
+      const responseService = {
+        ...payload,
+        source: payload.source || "file",
+      };
+      res.status(201).json(responseService);
     } catch (fallbackError) {
       console.error("/api/data/services local fallback failed:", fallbackError.message);
       res.status(500).json({
