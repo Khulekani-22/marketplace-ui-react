@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
 import { auth } from "../firebase.js";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
 import HeroBanner from "../components/HeroBanner";
@@ -214,8 +214,10 @@ function MasterLayoutInner({ children }) {
       await writeAuditLog({ action: "LOGOUT", userEmail, userId });
     } catch {}
     try {
-      await auth.signOut?.();
-    } catch {}
+      await signOut(auth);
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
     sessionStorage.removeItem("tenantId");
     sessionStorage.removeItem("role");
     sessionStorage.removeItem("userEmail");
