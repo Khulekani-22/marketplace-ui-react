@@ -340,8 +340,10 @@ router.put("/service/cancel", firebaseAuthRequired, async (req, res) => {
   const email = normalizeEmail(req.user?.email || "");
   const uid = req.user?.uid || "";
   if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
-  let updated = null;
-  saveData((data) => {
+  
+  try {
+    // Get current data from Firestore
+    const data = await getData();
     const list = Array.isArray(data.subscriptions) ? data.subscriptions : [];
     
     // Find subscription with multiple fallback strategies
@@ -382,17 +384,24 @@ router.put("/service/cancel", firebaseAuthRequired, async (req, res) => {
       });
     }
     
-    if (idx >= 0) {
-      const record = list[idx];
-      record.canceledAt = new Date().toISOString();
-      updated = record;
-      markBookingStatus({ data, subscription: record, serviceId, customerEmail: record?.email || email, status: "canceled" });
+    if (idx < 0) {
+      return res.status(404).json({ status: "error", message: "Subscription not found" });
     }
+    
+    // Update the subscription
+    const record = list[idx];
+    record.canceledAt = new Date().toISOString();
+    markBookingStatus({ data, subscription: record, serviceId, customerEmail: record?.email || email, status: "canceled" });
     data.subscriptions = list;
-    return data;
-  });
-  if (!updated) return res.status(404).json({ status: "error", message: "Subscription not found" });
-  res.json(updated);
+    
+    // Save updated data to Firestore
+    await saveData(data);
+    
+    res.json(record);
+  } catch (error) {
+    console.error('[SUBSCRIPTION] Cancel error:', error);
+    res.status(500).json({ status: "error", message: error.message || "Failed to cancel subscription" });
+  }
 });
 
 export default router;
