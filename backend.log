@@ -1712,3 +1712,576 @@ Snapshots dir:     /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/
   email: 'khulekani@22onsloane.co'
 }
 [0mGET /api/messages?t=1760616093601 [33m429[0m 1.995 ms - 88[0m
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760616244306 [33m429[0m 4.491 ms - 88[0m
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+🔐 isAdminForTenant check: {
+  email: 'khulekani@22onsloane.co',
+  requestTenant: '22onsloane',
+  userFromReq: {
+    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+    email: 'khulekani@22onsloane.co',
+    roles: []
+  },
+  tenantFromReq: { id: '22onsloane' }
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+[0mGET /api/messages?t=1760616244306 [32m200[0m 4.090 ms - 118[0m
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 6 forumThreads
+📥 Loaded 19 messageThreads
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 20 services
+📥 Loaded 19 messageThreads
+📥 Loaded 10 leads
+📥 Loaded 20 services
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 10 leads
+📥 Loaded 1 companies
+📥 Loaded 14 startups
+📥 Loaded 1 profiles
+📥 Loaded 4 vendors
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 9 wallets
+📥 Loaded 1 tenants
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+📥 Loaded 12 subscriptions
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+📥 Loaded 9 wallets
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+🔐 Found user: {
+  email: 'khulekani@22onsloane.co',
+  tenantId: '22onsloane',
+  role: 'admin'
+}
+🔐 Admin check: {
+  role: 'admin',
+  userTenant: '22onsloane',
+  targetTenant: '22onsloane',
+  isAdmin: true,
+  tenantMatch: true
+}
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760616364303 [33m429[0m 9.329 ms - 88[0m
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+📥 Loaded 9 wallets
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/lms/live [32m200[0m 1382.722 ms - 117788[0m
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760616364303 [33m429[0m 2.169 ms - 88[0m
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760616484300 [33m429[0m 7.337 ms - 88[0m
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+🔐 isAdminForTenant check: {
+  email: 'khulekani@22onsloane.co',
+  requestTenant: '22onsloane',
+  userFromReq: {
+    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+    email: 'khulekani@22onsloane.co',
+    roles: []
+  },
+  tenantFromReq: { id: '22onsloane' }
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+[0mGET /api/messages?t=1760616485632 [32m200[0m 3.486 ms - 118[0m
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+🔑 Firebase Auth Check: { path: '/api/me', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+[Messages] Manual refresh requested, reloaded from disk
+🔐 isAdminForTenant check: {
+  email: 'khulekani@22onsloane.co',
+  requestTenant: '22onsloane',
+  userFromReq: {
+    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+    email: 'khulekani@22onsloane.co',
+    roles: []
+  },
+  tenantFromReq: { id: '22onsloane' }
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+[0mGET /api/messages?t=1760616486552&force=1 [32m200[0m 0.734 ms - 117[0m
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+🔑 Firebase Auth Check: { path: '/me', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+🔑 Firebase Auth Check: { path: '/me', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 5 events
+📥 Loaded 5 events
+📥 Loaded 5 events
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 6 forumThreads
+📥 Loaded 6 forumThreads
+📥 Loaded 6 forumThreads
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 6 jobs
+📥 Loaded 6 jobs
+📥 Loaded 6 jobs
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 19 messageThreads
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 19 messageThreads
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 19 messageThreads
+📥 Loaded 19 messageThreads
+📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 19 messageThreads
+📥 Loaded 19 messageThreads
+📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 20 services
+📥 Loaded 10 leads
+📥 Loaded 20 services
+📥 Loaded 20 services
+📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 20 services
+📥 Loaded 20 services
+📥 Loaded 10 leads
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 10 leads
+📥 Loaded 10 leads
+📥 Loaded 20 services
+📥 Loaded 10 leads
+📥 Loaded 10 leads
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 14 startups
+📥 Loaded 14 startups
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 4 vendors
+📥 Loaded 1 companies
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 1 companies
+📥 Loaded 4 vendors
+📥 Loaded 1 companies
+📥 Loaded 1 companies
+📥 Loaded 1 companies
+📥 Loaded 4 vendors
+📥 Loaded 1 profiles
+📥 Loaded 1 companies
+📥 Loaded 4 vendors
+📥 Loaded 1 profiles
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 1 profiles
+📥 Loaded 1 profiles
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 1 companies
+📥 Loaded 7 users
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 7 users
+📥 Loaded 7 users
+📥 Loaded 1 profiles
+📥 Loaded 1 tenants
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 1 tenants
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 1 tenants
+📥 Loaded 7 users
+📥 Loaded 7 users
+📥 Loaded 12 subscriptions
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+📥 Loaded 12 subscriptions
+📥 Loaded 1 tenants
+📥 Loaded 9 wallets
+📥 Loaded 12 subscriptions
+📥 Loaded 9 wallets
+📥 Loaded 12 subscriptions
+📥 Loaded 12 subscriptions
+📥 Loaded 9 wallets
+📥 Loaded 9 wallets
+📥 Loaded 9 wallets
+📥 Loaded 12 subscriptions
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+📥 Loaded 9 wallets
+📥 Loaded 9 wallets
+📥 Loaded 9 wallets
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+📥 Loaded 9 wallets
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+🔐 Found user: {
+  email: 'khulekani@22onsloane.co',
+  tenantId: '22onsloane',
+  role: 'admin'
+}
+🔐 Admin check: {
+  role: 'admin',
+  userTenant: '22onsloane',
+  targetTenant: '22onsloane',
+  isAdmin: true,
+  tenantMatch: true
+}
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+🔐 Found user: {
+  email: 'khulekani@22onsloane.co',
+  tenantId: '22onsloane',
+  role: 'admin'
+}
+🔐 Admin check: {
+  role: 'admin',
+  userTenant: '22onsloane',
+  targetTenant: '22onsloane',
+  isAdmin: true,
+  tenantMatch: true
+}
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/lms/live [32m200[0m 558.648 ms - 117788[0m
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+📋 /api/me - User lookup: {
+  email: 'khulekani@22onsloane.co',
+  foundInDB: true,
+  role: 'admin',
+  tenantId: '22onsloane',
+  foundUserData: {
+    id: 'j2U2NdpdIQPMJoHrktB0',
+    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+    email: 'khulekani@22onsloane.co',
+    tenantId: '22onsloane',
+    role: 'admin',
+    photoURL: 'https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff',
+    createdAt: '2024-01-15T10:00:00Z',
+    lastLoginAt: '2025-01-28T08:30:00Z',
+    _source: 'dataStore',
+    displayName: 'Khulekani Mncube',
+    _updatedAt: Timestamp { _seconds: 1760613062, _nanoseconds: 821000000 }
+  },
+  requestTenant: '22onsloane'
+}
+[0mGET /api/me [36m304[0m 566.942 ms - -[0m
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/tenants [32m200[0m 574.205 ms - 125[0m
+🔑 Firebase Auth Check: { path: '/api/me', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+[dataStore] ✅ Successfully loaded from Firestore
+📋 /api/me - User lookup: {
+  email: 'khulekani@22onsloane.co',
+  foundInDB: true,
+  role: 'admin',
+  tenantId: '22onsloane',
+  foundUserData: {
+    id: 'j2U2NdpdIQPMJoHrktB0',
+    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+    email: 'khulekani@22onsloane.co',
+    tenantId: '22onsloane',
+    role: 'admin',
+    photoURL: 'https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff',
+    createdAt: '2024-01-15T10:00:00Z',
+    lastLoginAt: '2025-01-28T08:30:00Z',
+    _source: 'dataStore',
+    displayName: 'Khulekani Mncube',
+    _updatedAt: Timestamp { _seconds: 1760613062, _nanoseconds: 821000000 }
+  },
+  requestTenant: '22onsloane'
+}
+[0mGET /api/me [36m304[0m 2.007 ms - -[0m
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/wallets/me [36m304[0m 575.123 ms - -[0m
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/lms/live [32m200[0m 590.538 ms - 117788[0m
+[0mPOST /api/audit-logs [32m201[0m 26.194 ms - 293[0m
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/data/vendors [36m304[0m 0.524 ms - -[0m
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760616606407 [33m429[0m 5.881 ms - 88[0m
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760616606407 [33m429[0m 2.582 ms - 88[0m
+🔑 Firebase Auth Check: { path: '/service', method: 'POST', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mPOST /api/subscriptions/service [32m201[0m 9.696 ms - 4[0m
+file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/utils/hybridDataStore.js:30
+    throw new Error('Invalid data parameter: must be an object');
+          ^
+
+Error: Invalid data parameter: must be an object
+    at saveData (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/utils/hybridDataStore.js:30:11)
+    at file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/routes/subscriptions.js:202:5
+    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
+    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/route.js:149:13)
+    at firebaseAuthRequired (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/middleware/authFirebase.js:61:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Node.js v24.4.0
