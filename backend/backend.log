@@ -3,229 +3,138 @@
 SCDM backend running on http://127.0.0.1:5055
 Live appData.json: /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/appData.json
 Snapshots dir:     /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/secrets/lms_snapshots
-[Replicator] appData.json -> src/data replicated at 2025-10-14T09:16:38.261Z
-[0mGET /api/health [32m200[0m 2.414 ms - 47[0m
-[0mGET /api/startups [33m404[0m 0.340 ms - 46[0m
-API Error: Error: Not allowed by CORS
-    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
-    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
-    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
-    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
-    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
-    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
-    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
-    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
-[0mGET /api/startups [33m404[0m 0.156 ms - 46[0m
-API Error: Error: Not allowed by CORS
-    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
-    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
-    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
-    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
-    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
-    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
-    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
-    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
+[Replicator] appData.json -> src/data replicated at 2025-10-16T09:59:00.624Z
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+📥 Loaded 9 wallets
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/lms/live [32m200[0m 1150.926 ms - 117536[0m
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+📥 Loaded 9 wallets
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/lms/live [32m200[0m 463.403 ms - 117536[0m
 🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
 🔑 Firebase Auth Success: {
   uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
   email: 'khulekani@22onsloane.co'
 }
-[dataStore] Attempting to load from Firestore...
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
 📡 Loading data from Firestore...
 🔐 isAdminForTenant check: {
   email: 'khulekani@22onsloane.co',
-  requestTenant: 'public',
+  requestTenant: '22onsloane',
   userFromReq: {
     uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
     email: 'khulekani@22onsloane.co',
     roles: []
   },
-  tenantFromReq: { id: 'public' }
+  tenantFromReq: { id: '22onsloane' }
 }
-[dataStore] Attempting to load from Firestore...
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
 📡 Loading data from Firestore...
-[0mGET /api/messages?t=1760433508434 [32m200[0m 309.410 ms - 114[0m
+[0mGET /api/messages?t=1760608791185 [32m200[0m 282.490 ms - 118[0m
 📥 Loaded 2 bookings
 📥 Loaded 2 bookings
 📥 Loaded 7 cohorts
-📥 Loaded 5 events
-📥 Loaded 6 forumThreads
 📥 Loaded 7 cohorts
 📥 Loaded 5 events
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
 📥 Loaded 6 forumThreads
 📥 Loaded 6 jobs
-📥 Loaded 3 mentorshipSessions
 📥 Loaded 6 jobs
 📥 Loaded 3 mentorshipSessions
+📥 Loaded 3 mentorshipSessions
 📥 Loaded 19 messageThreads
-📥 Loaded 19 services
 📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 20 services
 📥 Loaded 10 leads
-📥 Loaded 19 services
-📥 Loaded 14 startups
 📥 Loaded 10 leads
-📥 Loaded 2 vendors
 📥 Loaded 14 startups
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 4 vendors
 📥 Loaded 1 companies
-📥 Loaded 2 vendors
-📥 Loaded 1 profiles
 📥 Loaded 1 companies
-📥 Loaded 7 users
 📥 Loaded 1 profiles
-📥 Loaded 1 tenants
+📥 Loaded 1 profiles
 📥 Loaded 7 users
-📥 Loaded 12 subscriptions
+📥 Loaded 7 users
 📥 Loaded 1 tenants
-📥 Loaded 2 wallets
+📥 Loaded 1 tenants
 📥 Loaded 12 subscriptions
+📥 Loaded 12 subscriptions
+📥 Loaded 9 wallets
+📥 Loaded 9 wallets
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
 💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
-📥 Loaded 2 wallets
-💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
-✅ All data loaded from Firestore
-[dataStore] ✅ Successfully loaded from Firestore
-🔐 Found user: {
-  email: 'khulekani@22onsloane.co',
-  tenantId: '22onsloane',
-  role: 'admin'
-}
-🔐 Admin check: {
-  role: 'admin',
-  userTenant: '22onsloane',
-  targetTenant: 'public',
-  isAdmin: true,
-  tenantMatch: false
-}
 💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
 💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
-✅ All data loaded from Firestore
-[dataStore] ✅ Successfully loaded from Firestore
-🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
-🔑 Firebase Auth Success: {
-  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
-  email: 'khulekani@22onsloane.co'
-}
-[0mGET /api/messages?t=1760433556491 [33m429[0m 4.334 ms - 88[0m
-🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
-🔑 Firebase Auth Success: {
-  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
-  email: 'khulekani@22onsloane.co'
-}
-[0mGET /api/messages?t=1760433556491 [33m429[0m 1.939 ms - 88[0m
-[0mGET /api/lms/live [32m200[0m 3.457 ms - 87919[0m
-[0mGET /api/lms/live [32m200[0m 3.584 ms - 87919[0m
-API Error: Error: Not allowed by CORS
-    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
-    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
-    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
-    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
-    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
-    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
-    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
-    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
-API Error: Error: Not allowed by CORS
-    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
-    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
-    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
-    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
-    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
-    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
-    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
-    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
-[Replicator] appData.json -> src/data replicated at 2025-10-14T09:21:38.267Z
-API Error: Error: Not allowed by CORS
-    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
-    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
-    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
-    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
-    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
-    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
-    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
-    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
-API Error: Error: Not allowed by CORS
-    at origin (file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/server.js:64:23)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:219:13
-    at optionsCallback (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:199:9)
-    at corsMiddleware (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/cors/lib/index.js:204:7)
-    at Layer.handle [as handle_request] (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/layer.js:95:5)
-    at trim_prefix (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:328:13)
-    at /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:286:9
-    at router.process_params (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:346:12)
-    at next (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/express/lib/router/index.js:280:10)
-    at jsonParser (/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/node_modules/body-parser/lib/types/json.js:113:7)
-🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
-🔑 Firebase Auth Success: {
-  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
-  email: 'khulekani@22onsloane.co'
-}
-[0mGET /api/messages?t=1760433748435 [33m429[0m 6.088 ms - 88[0m
-🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
-🔑 Firebase Auth Success: {
-  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
-  email: 'khulekani@22onsloane.co'
-}
-[dataStore] Attempting to load from Firestore...
-📡 Loading data from Firestore...
-🔐 isAdminForTenant check: {
-  email: 'khulekani@22onsloane.co',
-  requestTenant: 'public',
-  userFromReq: {
-    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
-    email: 'khulekani@22onsloane.co',
-    roles: []
-  },
-  tenantFromReq: { id: 'public' }
-}
-[dataStore] Attempting to load from Firestore...
-📡 Loading data from Firestore...
-[0mGET /api/messages?t=1760433748435 [32m200[0m 1.401 ms - 114[0m
-📥 Loaded 2 bookings
-📥 Loaded 2 bookings
-📥 Loaded 7 cohorts
-📥 Loaded 5 events
-📥 Loaded 6 forumThreads
-📥 Loaded 6 jobs
-📥 Loaded 3 mentorshipSessions
-📥 Loaded 7 cohorts
-📥 Loaded 5 events
-📥 Loaded 6 forumThreads
-📥 Loaded 6 jobs
-📥 Loaded 19 messageThreads
-📥 Loaded 3 mentorshipSessions
-📥 Loaded 19 services
-📥 Loaded 10 leads
-📥 Loaded 14 startups
-📥 Loaded 3 vendors
-📥 Loaded 1 companies
-📥 Loaded 1 profiles
-📥 Loaded 7 users
-📥 Loaded 1 tenants
-📥 Loaded 19 messageThreads
-📥 Loaded 12 subscriptions
-📥 Loaded 19 services
-📥 Loaded 2 wallets
-📥 Loaded 10 leads
-💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
-📥 Loaded 14 startups
 💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
-✅ All data loaded from Firestore
-[dataStore] ✅ Successfully loaded from Firestore
-📥 Loaded 3 vendors
-📥 Loaded 1 companies
-📥 Loaded 1 profiles
-📥 Loaded 7 users
-📥 Loaded 1 tenants
-📥 Loaded 12 subscriptions
-📥 Loaded 2 wallets
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
 💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
 💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
 ✅ All data loaded from Firestore
@@ -238,13 +147,410 @@ API Error: Error: Not allowed by CORS
 🔐 Admin check: {
   role: 'admin',
   userTenant: '22onsloane',
-  targetTenant: 'public',
+  targetTenant: '22onsloane',
   isAdmin: true,
-  tenantMatch: false
+  tenantMatch: true
 }
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+🔑 Firebase Auth Check: { path: '/my', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+🔑 Firebase Auth Check: { path: '/me', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+🔑 Firebase Auth Check: { path: '/me', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 6 jobs
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 19 messageThreads
+📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 20 services
+📥 Loaded 10 leads
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 4 vendors
+📥 Loaded 1 companies
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+📥 Loaded 12 subscriptions
+📥 Loaded 9 wallets
+📥 Loaded 9 wallets
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/wallets/me [36m304[0m 520.149 ms - -[0m
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/subscriptions/my [36m304[0m 524.923 ms - -[0m
 🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
 🔑 Firebase Auth Success: {
   uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
   email: 'khulekani@22onsloane.co'
 }
-[0mGET /api/messages?t=1760433796493 [33m429[0m 6.054 ms - 88[0m
+[0mGET /api/messages?t=1760608877442 [33m429[0m 3.355 ms - 88[0m
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+🔑 Firebase Auth Check: { path: '/api/me', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+[Messages] Manual refresh requested, reloaded from disk
+🔐 isAdminForTenant check: {
+  email: 'khulekani@22onsloane.co',
+  requestTenant: '22onsloane',
+  userFromReq: {
+    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+    email: 'khulekani@22onsloane.co',
+    roles: []
+  },
+  tenantFromReq: { id: '22onsloane' }
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+[0mGET /api/messages?t=1760608878064&force=1 [32m200[0m 1.015 ms - 117[0m
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+🔑 Firebase Auth Check: { path: '/me', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+🔑 Firebase Auth Check: { path: '/me', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+📡 Loading data from Firestore...
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 2 bookings
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 5 events
+📥 Loaded 5 events
+📥 Loaded 7 cohorts
+📥 Loaded 7 cohorts
+📥 Loaded 6 forumThreads
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 5 events
+📥 Loaded 5 events
+📥 Loaded 5 events
+📥 Loaded 6 jobs
+📥 Loaded 5 events
+📥 Loaded 6 forumThreads
+📥 Loaded 6 jobs
+📥 Loaded 6 forumThreads
+📥 Loaded 6 forumThreads
+📥 Loaded 6 forumThreads
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 6 forumThreads
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 6 jobs
+📥 Loaded 6 jobs
+📥 Loaded 6 jobs
+📥 Loaded 6 jobs
+📥 Loaded 6 jobs
+📥 Loaded 19 messageThreads
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 19 messageThreads
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 3 mentorshipSessions
+📥 Loaded 20 services
+📥 Loaded 19 messageThreads
+📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 19 messageThreads
+📥 Loaded 10 leads
+📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 19 messageThreads
+📥 Loaded 20 services
+📥 Loaded 10 leads
+📥 Loaded 20 services
+📥 Loaded 14 startups
+📥 Loaded 20 services
+📥 Loaded 10 leads
+📥 Loaded 20 services
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 10 leads
+📥 Loaded 4 vendors
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 10 leads
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 14 startups
+📥 Loaded 1 companies
+📥 Loaded 4 vendors
+📥 Loaded 14 startups
+📥 Loaded 14 startups
+📥 Loaded 4 vendors
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 1 companies
+📥 Loaded 4 vendors
+📥 Loaded 4 vendors
+📥 Loaded 4 vendors
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 1 profiles
+📥 Loaded 1 companies
+📥 Loaded 1 companies
+📥 Loaded 1 companies
+📥 Loaded 1 profiles
+📥 Loaded 1 tenants
+📥 Loaded 7 users
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 1 profiles
+📥 Loaded 1 profiles
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+📥 Loaded 1 tenants
+📥 Loaded 7 users
+📥 Loaded 7 users
+📥 Loaded 7 users
+📥 Loaded 1 tenants
+📥 Loaded 9 wallets
+📥 Loaded 12 subscriptions
+📥 Loaded 12 subscriptions
+📥 Loaded 1 tenants
+📥 Loaded 1 tenants
+📥 Loaded 1 tenants
+📥 Loaded 12 subscriptions
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+📥 Loaded 9 wallets
+📥 Loaded 9 wallets
+📥 Loaded 12 subscriptions
+📥 Loaded 12 subscriptions
+📥 Loaded 12 subscriptions
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+📥 Loaded 9 wallets
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+📥 Loaded 9 wallets
+📥 Loaded 9 wallets
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+📥 Loaded 9 wallets
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 3 transactions for wallet 22onsloane:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 5 transactions for wallet vendor:93cUbdo4BkXnVQrXQBgJVDapYdS2
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 1 transactions for wallet vendor:duFghKRYhyRFUhlBRm66iMLKgh22
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+💳 Loaded 14 transactions for wallet vendor:tAsFySNxnsW4a7L43wMRVLkJAqE3
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/lms/live [32m200[0m 623.316 ms - 117536[0m
+💳 Loaded 1 transactions for wallet vendor:zinhlesloane@gmail.com
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/tenants [36m304[0m 625.624 ms - -[0m
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/lms/live [32m200[0m 629.113 ms - 117536[0m
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+🔐 Found user: {
+  email: 'khulekani@22onsloane.co',
+  tenantId: '22onsloane',
+  role: 'admin'
+}
+🔐 Admin check: {
+  role: 'admin',
+  userTenant: '22onsloane',
+  targetTenant: '22onsloane',
+  isAdmin: true,
+  tenantMatch: true
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/data/vendors [36m304[0m 0.631 ms - -[0m
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+[0mGET /api/wallets/me [36m304[0m 668.581 ms - -[0m
+💳 Loaded 0 transactions for wallet wallet_WcdBgaT4hEMXb3DScC1OE8NDKJ62_persistent
+✅ All data loaded from Firestore
+[dataStore] ✅ Successfully loaded from Firestore
+📋 /api/me - User lookup: {
+  email: 'khulekani@22onsloane.co',
+  foundInDB: true,
+  role: 'admin',
+  tenantId: '22onsloane',
+  foundUserData: {
+    id: 'j2U2NdpdIQPMJoHrktB0',
+    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+    email: 'khulekani@22onsloane.co',
+    tenantId: '22onsloane',
+    role: 'admin',
+    photoURL: 'https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff',
+    createdAt: '2024-01-15T10:00:00Z',
+    lastLoginAt: '2025-01-28T08:30:00Z',
+    _source: 'dataStore',
+    displayName: 'Khulekani Mncube',
+    _updatedAt: Timestamp { _seconds: 1760518126, _nanoseconds: 38000000 }
+  },
+  requestTenant: '22onsloane'
+}
+[0mGET /api/me [36m304[0m 676.311 ms - -[0m
+[0mPOST /api/audit-logs [32m201[0m 21.850 ms - 293[0m
+🔑 Firebase Auth Check: { path: '/api/me', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[dataStore] Loading from Firestore (FIRESTORE-ONLY MODE)...
+[dataStore] ✅ Successfully loaded from Firestore
+📋 /api/me - User lookup: {
+  email: 'khulekani@22onsloane.co',
+  foundInDB: true,
+  role: 'admin',
+  tenantId: '22onsloane',
+  foundUserData: {
+    id: 'j2U2NdpdIQPMJoHrktB0',
+    uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+    email: 'khulekani@22onsloane.co',
+    tenantId: '22onsloane',
+    role: 'admin',
+    photoURL: 'https://ui-avatars.com/api/?name=Khulekani+Magubane&background=7c3aed&color=fff',
+    createdAt: '2024-01-15T10:00:00Z',
+    lastLoginAt: '2025-01-28T08:30:00Z',
+    _source: 'dataStore',
+    displayName: 'Khulekani Mncube',
+    _updatedAt: Timestamp { _seconds: 1760518126, _nanoseconds: 38000000 }
+  },
+  requestTenant: '22onsloane'
+}
+[0mGET /api/me [36m304[0m 1.343 ms - -[0m
+🔑 Firebase Auth Check: { path: '/', method: 'GET', hasAuth: true, tokenLength: 950 }
+🔑 Firebase Auth Success: {
+  uid: 'tAsFySNxnsW4a7L43wMRVLkJAqE3',
+  email: 'khulekani@22onsloane.co'
+}
+[0mGET /api/messages?t=1760608877442 [33m429[0m 1.620 ms - 88[0m

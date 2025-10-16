@@ -43185,5 +43185,92 @@
       "status": 201,
       "durationMs": 10
     }
+  },
+  {
+    "id": "mgt8emc7-m2zlbu",
+    "timestamp": "2025-10-16T09:42:45.640Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "member",
+      "tenantId": "vendor"
+    },
+    "tenantId": "public"
+  },
+  {
+    "id": "05db9abc-bbef-465e-8a0b-cb07b365acc5",
+    "timestamp": "2025-10-16T09:42:45.673Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "public",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 19
+    }
+  },
+  {
+    "id": "mgt8qbw2-l9zrq0",
+    "timestamp": "2025-10-16T09:51:51.969Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "6f4c9dc6-75af-400d-a619-f485433a7418",
+    "timestamp": "2025-10-16T09:51:52.020Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 34
+    }
+  },
+  {
+    "id": "mgt92h7e-h0a0z3",
+    "timestamp": "2025-10-16T10:01:18.719Z",
+    "action": "PAGE_VIEW",
+    "userId": null,
+    "userEmail": "khulekani@22onsloane.co",
+    "targetType": "route",
+    "targetId": "/dashboard",
+    "ip": "127.0.0.1",
+    "metadata": {
+      "role": "admin",
+      "tenantId": "22onsloane"
+    },
+    "tenantId": "22onsloane"
+  },
+  {
+    "id": "a7c57901-fb19-4f92-9358-95248fb6c682",
+    "timestamp": "2025-10-16T10:01:18.767Z",
+    "action": "POST /api/audit-logs",
+    "userEmail": null,
+    "tenantId": "22onsloane",
+    "targetType": "api",
+    "targetId": null,
+    "ip": "127.0.0.1",
+    "metadata": {
+      "status": 201,
+      "durationMs": 21
+    }
   }
 ]
