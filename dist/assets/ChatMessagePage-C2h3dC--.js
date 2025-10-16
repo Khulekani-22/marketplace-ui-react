@@ -1,0 +1,1 @@
+import{j as s,M as t}from"./index-DgAHpWmH.js";import{B as r}from"./Breadcrumb-Dt1H-3v0.js";import{M as e}from"./MessagingSystem-DVyYinm2.js";import"./vendor-DW3XjTa1.js";import"./firebase-ARhtPVQA.js";import"./utils-B2rxisVD.js";const a=()=>s.jsx(e,{}),g=()=>s.jsx(s.Fragment,{children:s.jsxs(t,{children:[s.jsx(r,{title:"Chat Message"}),s.jsx(a,{})]})});export{g as default};
