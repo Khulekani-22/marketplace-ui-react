@@ -13,8 +13,32 @@
       "status": "completed",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 813000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 925000000
+      }
+    },
+    {
+      "id": "a0dc3b25-b628-4523-bd9b-7ec89248aba8",
+      "vendorEmail": "ruthmaphosa2024@gmail.com",
+      "scheduledDate": "2025-10-24",
+      "vendorId": "62sc9vzsmmgqcqtql",
+      "vendorName": "22 On Sloane Programmes",
+      "customerName": "khulekani",
+      "scheduledSlot": "12:00",
+      "serviceTitle": "Social Media Marketing Campaign",
+      "price": 12000,
+      "customerEmail": "khulekani@22onsloane.co",
+      "customerId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "tenantId": "public",
+      "_source": "dataStore",
+      "serviceId": "7",
+      "subscriptionId": "98b8eca0-43bf-4034-9bc3-6dfb8a091031",
+      "bookedAt": "2025-10-16T14:10:38.712Z",
+      "status": "scheduled",
+      "updatedAt": "2025-10-16T14:10:38.713Z",
+      "_updatedAt": {
+        "_seconds": 1760623838,
+        "_nanoseconds": 925000000
       }
     },
     {
@@ -30,28 +54,9 @@
       "status": "pending",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 814000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 925000000
       }
-    },
-    {
-      "id": "a0dc3b25-b628-4523-bd9b-7ec89248aba8",
-      "subscriptionId": "98b8eca0-43bf-4034-9bc3-6dfb8a091031",
-      "serviceId": "7",
-      "serviceTitle": "Social Media Marketing Campaign",
-      "vendorId": "62sc9vzsmmgqcqtql",
-      "vendorName": "22 On Sloane Programmes",
-      "vendorEmail": "ruthmaphosa2024@gmail.com",
-      "customerId": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "customerName": "khulekani",
-      "customerEmail": "khulekani@22onsloane.co",
-      "tenantId": "public",
-      "price": 12000,
-      "scheduledDate": "2025-10-24",
-      "scheduledSlot": "12:00",
-      "bookedAt": "2025-10-16T14:10:38.712Z",
-      "status": "scheduled",
-      "updatedAt": "2025-10-16T14:10:38.713Z"
     }
   ],
   "cohorts": [
@@ -216,8 +221,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 814000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 925000000
       }
     },
     {
@@ -391,8 +396,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 815000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 925000000
       }
     },
     {
@@ -456,8 +461,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 816000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 925000000
       }
     },
     {
@@ -521,8 +526,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 816000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 925000000
       }
     },
     {
@@ -667,8 +672,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 816000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 925000000
       }
     },
     {
@@ -732,8 +737,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 816000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -878,8 +883,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     }
   ],
@@ -898,8 +903,8 @@
       "imageUrl": "https://www.22onsloane.co/wp-content/uploads/2025/07/Website-Banner-StartUp-Huddles-01.png",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -916,8 +921,8 @@
       "aiHint": "business webinar presentation",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -934,8 +939,8 @@
       "aiHint": "fintech demo screen",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -952,8 +957,8 @@
       "aiHint": "networking event people",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -970,8 +975,8 @@
       "aiHint": "retail store technology",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     }
   ],
@@ -1018,8 +1023,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1046,8 +1051,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1064,8 +1069,8 @@
       "posts": [],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1085,8 +1090,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1106,8 +1111,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1127,8 +1132,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 817000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     }
   ],
@@ -1146,8 +1151,8 @@
       "aiHint": "fintech company logo",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1162,8 +1167,8 @@
       "aiHint": "tech company logo",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1179,8 +1184,8 @@
       "aiHint": "design agency logo",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1195,8 +1200,8 @@
       "aiHint": "ecommerce logo",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1211,8 +1216,8 @@
       "aiHint": "solar energy logo",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1228,8 +1233,8 @@
       "aiHint": "testing (pty) ltd logo",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     }
   ],
@@ -1248,8 +1253,8 @@
       "status": "pending",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1266,8 +1271,8 @@
       "status": "confirmed",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1284,8 +1289,8 @@
       "status": "pending",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     }
   ],
@@ -1335,8 +1340,8 @@
         }
       },
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1379,8 +1384,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1423,8 +1428,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1467,8 +1472,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1504,8 +1509,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1542,8 +1547,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1581,8 +1586,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1619,8 +1624,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1657,8 +1662,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1695,8 +1700,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 926000000
       }
     },
     {
@@ -1732,8 +1737,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -1769,8 +1774,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -1806,8 +1811,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -1843,8 +1848,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -1880,8 +1885,8 @@
       },
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -1946,8 +1951,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 818000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2012,8 +2017,8 @@
       ],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2047,8 +2052,8 @@
       "messages": [],
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2096,8 +2101,8 @@
         }
       },
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     }
   ],
@@ -2141,8 +2146,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2175,8 +2180,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2218,8 +2223,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2242,8 +2247,8 @@
       "vendorId": "62sc9vzsmmgqcqtql",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2266,8 +2271,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2290,8 +2295,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2314,8 +2319,8 @@
       "vendorId": "62sc9vzsmmgqcqtql",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2338,8 +2343,8 @@
       "vendorId": "62sc9vzsmmgqcqtql",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2362,8 +2367,8 @@
       "vendorId": "62sc9vzsmmgqcqtql",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2405,8 +2410,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2439,8 +2444,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2463,8 +2468,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2487,8 +2492,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2511,8 +2516,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2535,8 +2540,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2559,8 +2564,8 @@
       "vendorId": "62sc9vzsmmgqcqtql",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2583,8 +2588,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2607,8 +2612,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2639,8 +2644,8 @@
       "status": "pending",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2680,8 +2685,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     }
   ],
@@ -2700,8 +2705,8 @@
       "month": "September",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2718,8 +2723,8 @@
       "month": "August",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2736,8 +2741,8 @@
       "month": "January",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2754,8 +2759,8 @@
       "month": "February",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2772,8 +2777,8 @@
       "month": "March",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2790,8 +2795,8 @@
       "month": "April",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2808,8 +2813,8 @@
       "month": "May",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2826,8 +2831,8 @@
       "month": "June",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2844,8 +2849,8 @@
       "month": "July",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 819000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -2862,8 +2867,8 @@
       "month": "December",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     }
   ],
@@ -2944,8 +2949,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 927000000
       }
     },
     {
@@ -3012,8 +3017,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3080,8 +3085,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3106,8 +3111,8 @@
       "contactEmail": "",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3174,8 +3179,8 @@
       "tenantId": "public",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3216,8 +3221,8 @@
       "contactEmail": "",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3252,8 +3257,8 @@
       "contactEmail": "",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3288,8 +3293,8 @@
       "contactEmail": "",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3324,8 +3329,8 @@
       "contactEmail": "",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3360,8 +3365,8 @@
       "contactEmail": "",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3396,8 +3401,8 @@
       "contactEmail": "",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3432,8 +3437,8 @@
       "contactEmail": "",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3468,8 +3473,8 @@
       "contactEmail": "",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3538,8 +3543,8 @@
       "tenantId": "22onsloane",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     }
   ],
@@ -3586,8 +3591,8 @@
       "_source": "dataStore",
       "tenantId": "public",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3632,8 +3637,8 @@
       "status": "active",
       "tenantId": "public",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3668,8 +3673,8 @@
       "vendorId": "duFghKRYhyRFUhlBRm66iMLKgh22",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 820000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3705,8 +3710,8 @@
       "email": "khulekani@22onsloane.co",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     }
   ],
@@ -3744,8 +3749,8 @@
       "lastUpdated": "2025-08-28T11:17:06.926Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     }
   ],
@@ -3783,8 +3788,8 @@
       "lastUpdated": "2025-08-24T12:53:36.536Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     }
   ],
@@ -3801,8 +3806,8 @@
       "lastLoginAt": "2025-01-28T12:20:00Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3817,8 +3822,8 @@
       "lastLoginAt": "2025-10-08T12:00:00Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3833,8 +3838,8 @@
       "lastLoginAt": "2025-01-27T16:45:00Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3849,8 +3854,8 @@
       "_source": "dataStore",
       "displayName": "Khulekani Mncube",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3865,8 +3870,8 @@
       "lastLoginAt": "2025-01-28T07:15:00Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3881,8 +3886,8 @@
       "lastLoginAt": "2025-01-26T19:30:00Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3897,8 +3902,8 @@
       "lastLoginAt": "2025-01-27T22:10:00Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     }
   ],
@@ -3908,8 +3913,8 @@
       "name": "22onsloane",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     }
   ],
@@ -3925,8 +3930,8 @@
       "createdAt": "2025-09-17T11:51:09.146Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3941,8 +3946,8 @@
       "canceledAt": "2025-09-16T12:14:57.318Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3956,8 +3961,8 @@
       "createdAt": "2025-09-05T01:38:39.738Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3972,8 +3977,8 @@
       "canceledAt": "2025-09-16T12:15:02.004Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -3987,8 +3992,8 @@
       "createdAt": "2025-09-05T01:54:32.154Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -4002,8 +4007,25 @@
       "createdAt": "2025-09-05T01:38:47.050Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
+      }
+    },
+    {
+      "id": "98b8eca0-43bf-4034-9bc3-6dfb8a091031",
+      "createdAt": "2025-10-16T14:10:38.712Z",
+      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
+      "scheduledSlot": "12:00",
+      "tenantId": "public",
+      "scheduledDate": "2025-10-24",
+      "vendorId": "62sc9vzsmmgqcqtql",
+      "_source": "dataStore",
+      "serviceId": "7",
+      "type": "service",
+      "email": "khulekani@22onsloane.co",
+      "_updatedAt": {
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -4017,8 +4039,8 @@
       "createdAt": "2025-09-04T14:57:47.051Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -4032,8 +4054,8 @@
       "createdAt": "2025-09-05T01:38:45.359Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -4048,8 +4070,8 @@
       "canceledAt": "2025-09-16T12:14:55.788Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -4063,8 +4085,8 @@
       "createdAt": "2025-09-05T01:38:43.410Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -4078,8 +4100,8 @@
       "createdAt": "2025-09-04T14:57:30.227Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
     },
     {
@@ -4093,21 +4115,9 @@
       "createdAt": "2025-09-04T14:57:17.217Z",
       "_source": "dataStore",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       }
-    },
-    {
-      "id": "98b8eca0-43bf-4034-9bc3-6dfb8a091031",
-      "type": "service",
-      "serviceId": "7",
-      "vendorId": "62sc9vzsmmgqcqtql",
-      "email": "khulekani@22onsloane.co",
-      "uid": "tAsFySNxnsW4a7L43wMRVLkJAqE3",
-      "tenantId": "public",
-      "createdAt": "2025-10-16T14:10:38.712Z",
-      "scheduledDate": "2025-10-24",
-      "scheduledSlot": "12:00"
     }
   ],
   "wallets": [
@@ -4118,25 +4128,37 @@
       "email": "khulekani@22onsloane.co",
       "tenantId": "22onsloane",
       "role": "admin",
-      "balance": 3000,
+      "balance": 203000,
       "startingBalance": 5000,
       "transactions": [
+        {
+          "id": "7cbdd170-f1bd-4b92-a960-653de63c6375",
+          "type": "credit",
+          "amount": 200000,
+          "description": "Admin credit",
+          "reference": null,
+          "metadata": {
+            "source": "admin-grant"
+          },
+          "createdAt": "2025-10-16T14:11:10.927Z",
+          "balanceAfter": 203000
+        },
         {
           "id": "f367baa4-d26f-4a3e-9212-cc7f11646c8f",
           "type": "debit",
           "amount": 12000,
           "description": "Listing booking: Social Media Marketing Campaign",
+          "balanceAfter": 3000,
+          "createdAt": "2025-10-16T14:10:38.924Z",
           "reference": "listing-7",
           "metadata": {
-            "serviceId": "7",
-            "vendor": "22 On Sloane Programmes",
-            "category": "Marketing",
-            "scheduledDate": "2025-10-24",
             "scheduledSlot": "12:00",
-            "source": "dashboard-trending-booking"
-          },
-          "createdAt": "2025-10-16T14:10:38.924Z",
-          "balanceAfter": 3000
+            "vendor": "22 On Sloane Programmes",
+            "scheduledDate": "2025-10-24",
+            "source": "dashboard-trending-booking",
+            "category": "Marketing",
+            "serviceId": "7"
+          }
         },
         {
           "id": "f7c23553-bd7e-47be-ac1d-e23839aa2ca9",
@@ -4169,7 +4191,7 @@
           "metadata": null
         }
       ],
-      "lastUpdated": "2025-10-16T14:10:38.924Z"
+      "lastUpdated": "2025-10-16T14:11:10.927Z"
     },
     {
       "id": "wallet_O8bBPBKniiWbuSBXrMgBGJMPfoO2_persistent",
@@ -4209,8 +4231,8 @@
       "startingBalance": 200000,
       "lastUpdated": "2025-10-15T14:38:31.451Z",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 928000000
       },
       "transactions": [
         {
@@ -4227,8 +4249,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 928000000
           }
         },
         {
@@ -4245,8 +4267,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 928000000
           }
         },
         {
@@ -4263,8 +4285,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4281,8 +4303,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4299,8 +4321,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         }
       ]
@@ -4317,8 +4339,8 @@
       "email": "22onsloanedigitalteam@gmail.com",
       "startingBalance": 200000,
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 929000000
       },
       "transactions": [
         {
@@ -4334,8 +4356,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         }
       ]
@@ -4352,8 +4374,8 @@
       "startingBalance": 200000,
       "lastUpdated": "2025-10-15T14:54:24.685Z",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 929000000
       },
       "transactions": [
         {
@@ -4370,8 +4392,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4388,8 +4410,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4406,8 +4428,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4424,8 +4446,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4442,8 +4464,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4460,8 +4482,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4478,8 +4500,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4496,8 +4518,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4514,8 +4536,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4532,8 +4554,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4550,8 +4572,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4568,8 +4590,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4586,8 +4608,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         },
         {
@@ -4604,8 +4626,8 @@
           "balanceAfter": 200000,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         }
       ]
@@ -4622,8 +4644,8 @@
       "email": "zinhlesloane@gmail.com",
       "startingBalance": 200000,
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 929000000
       },
       "transactions": [
         {
@@ -4639,8 +4661,8 @@
           "balanceAfter": 50750,
           "type": "credit",
           "_updatedAt": {
-            "_seconds": 1760613062,
-            "_nanoseconds": 821000000
+            "_seconds": 1760623838,
+            "_nanoseconds": 929000000
           }
         }
       ]
@@ -4658,8 +4680,8 @@
       "status": "active",
       "updatedAt": "2025-10-13T11:00:00.000Z",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 929000000
       },
       "transactions": []
     },
@@ -4676,8 +4698,8 @@
       "updatedAt": "2025-10-13T14:00:00.000Z",
       "displayName": "Khulekani Mncube",
       "_updatedAt": {
-        "_seconds": 1760613062,
-        "_nanoseconds": 821000000
+        "_seconds": 1760623838,
+        "_nanoseconds": 929000000
       },
       "transactions": []
     }

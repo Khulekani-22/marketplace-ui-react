@@ -48,8 +48,9 @@ const DEFAULT_ORIGINS = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "https://marketplace-ui-react-vcl-main-oct.vercel.app",
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
+  "https://www.22onsloanecapital.co/",
+  "http://localhost:5055",
+  "http://127.0.0.1:5055",
 ];
 const ENV_ORIGINS = (process.env.CORS_ORIGIN || "")
   .split(",")
