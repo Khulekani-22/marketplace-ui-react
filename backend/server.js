@@ -297,10 +297,11 @@ async function initLmsStorage() {
 
 const lmsRouter = express.Router();
 
-// Read live appData.json
+// Read live data from Firestore (not from appData.json file)
 lmsRouter.get("/live", async (_req, res, next) => {
   try {
-    const json = await readJson(APP_DATA);
+    // Use getData() which reads from Firestore via hybridDataStore
+    const json = await getData();
     res.set("Cache-Control", "no-store");
     res.json(json);
   } catch (e) {
