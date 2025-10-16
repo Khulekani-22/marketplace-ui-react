@@ -199,19 +199,19 @@ router.post("/service", firebaseAuthRequired, async (req, res) => {
   let serviceIsBookable = false;
   let targetTenantId = tenantScope;
   try {
-    saveData((data) => {
-      data.subscriptions = Array.isArray(data.subscriptions) ? data.subscriptions : [];
-      const services = Array.isArray(data.services) ? data.services : [];
-      const svc = services.find((s) => String(s.id) === serviceId);
-      if (!svc) {
-        throw Object.assign(new Error("Service listing not found"), { statusCode: 404 });
-      }
-      targetTenantId = normalizeTenantId(svc.tenantId || tenantScope);
-      const vendorId = svc ? String(svc.vendorId || svc.id || "") : "";
-      serviceIsBookable = isServiceListing(svc);
+    const data = await getData();
+    data.subscriptions = Array.isArray(data.subscriptions) ? data.subscriptions : [];
+    const services = Array.isArray(data.services) ? data.services : [];
+    const svc = services.find((s) => String(s.id) === serviceId);
+    if (!svc) {
+      throw Object.assign(new Error("Service listing not found"), { statusCode: 404 });
+    }
+    targetTenantId = normalizeTenantId(svc.tenantId || tenantScope);
+    const vendorId = svc ? String(svc.vendorId || svc.id || "") : "";
+    serviceIsBookable = isServiceListing(svc);
 
-      if (serviceIsBookable) {
-        if (!isValidDate(requestedDate)) {
+    if (serviceIsBookable) {
+      if (!isValidDate(requestedDate)) {
         throw Object.assign(new Error("Invalid or missing scheduledDate"), { statusCode: 400 });
       }
       if (!isValidSlot(requestedSlot)) {
@@ -220,21 +220,21 @@ router.post("/service", firebaseAuthRequired, async (req, res) => {
     }
 
     // Idempotent/reactivation: unique key by (tenantId, email, type=service, serviceId)
-      const exists = data.subscriptions.find((x) => {
-        const scope = normalizeTenantId(x.tenantId);
-        const matchTenant = scope === targetTenantId || scope === "public";
-        return matchTenant && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId;
-      });
-      const nowIso = new Date().toISOString();
-      if (exists) {
-        if (exists.canceledAt) {
-          exists.canceledAt = undefined;
-          exists.createdAt = nowIso;
-        }
-        exists.tenantId = targetTenantId;
-        if (serviceIsBookable) {
-          exists.scheduledDate = requestedDate;
-          exists.scheduledSlot = requestedSlot;
+    const exists = data.subscriptions.find((x) => {
+      const scope = normalizeTenantId(x.tenantId);
+      const matchTenant = scope === targetTenantId || scope === "public";
+      return matchTenant && (x.email || "").toLowerCase() === email && (x.type || "service") === "service" && String(x.serviceId || "") === serviceId;
+    });
+    const nowIso = new Date().toISOString();
+    if (exists) {
+      if (exists.canceledAt) {
+        exists.canceledAt = undefined;
+        exists.createdAt = nowIso;
+      }
+      exists.tenantId = targetTenantId;
+      if (serviceIsBookable) {
+        exists.scheduledDate = requestedDate;
+        exists.scheduledSlot = requestedSlot;
       }
       created = exists;
       if (serviceIsBookable) {
@@ -249,9 +249,7 @@ router.post("/service", firebaseAuthRequired, async (req, res) => {
           status: "scheduled",
         });
       }
-      return data;
-    }
-
+    } else {
       const obj = {
         id: uuid(),
         type: "service",
@@ -262,27 +260,29 @@ router.post("/service", firebaseAuthRequired, async (req, res) => {
         tenantId: targetTenantId,
         createdAt: nowIso,
       };
-    if (serviceIsBookable) {
-      obj.scheduledDate = requestedDate;
-      obj.scheduledSlot = requestedSlot;
-    }
-    data.subscriptions.push(obj);
-    created = obj;
+      if (serviceIsBookable) {
+        obj.scheduledDate = requestedDate;
+        obj.scheduledSlot = requestedSlot;
+      }
+      data.subscriptions.push(obj);
+      created = obj;
 
-    if (serviceIsBookable) {
-      upsertBooking({
-        data,
-        subscription: obj,
-        service: svc,
-        scheduledDate: requestedDate,
-        scheduledSlot: requestedSlot,
-        customerName: displayName,
-        bookedAt: nowIso,
-        status: "scheduled",
-      });
+      if (serviceIsBookable) {
+        upsertBooking({
+          data,
+          subscription: obj,
+          service: svc,
+          scheduledDate: requestedDate,
+          scheduledSlot: requestedSlot,
+          customerName: displayName,
+          bookedAt: nowIso,
+          status: "scheduled",
+        });
+      }
     }
-      return data;
-    });
+    
+    // Save updated data to Firestore
+    await saveData(data);
   } catch (err) {
     const statusCode = err?.statusCode || err?.status || 500;
     const message = err?.message || "Failed to create subscription";
@@ -304,8 +304,8 @@ router.delete("/service", firebaseAuthRequired, async (req, res) => {
   const uid = req.user?.uid || "";
   if (!serviceId) return res.status(400).json({ status: "error", message: "Missing serviceId" });
 
-  let removed = false;
-  saveData((data) => {
+  try {
+    const data = await getData();
     const before = Array.isArray(data.subscriptions) ? data.subscriptions : [];
     let matches = before.filter((entry) => {
       if (!entry || (entry.type || "service") !== "service") return false;
@@ -320,17 +320,22 @@ router.delete("/service", firebaseAuthRequired, async (req, res) => {
       matches = before.filter((entry) => (entry?.type || "service") === "service" && String(entry?.serviceId || "") === serviceId);
     }
     const after = before.filter((x) => !matches.includes(x));
-    removed = after.length !== before.length;
+    const removed = after.length !== before.length;
     data.subscriptions = after;
     if (removed) {
       matches.forEach((sub) => {
         markBookingStatus({ data, subscription: sub, serviceId, customerEmail: sub?.email || email, status: "canceled" });
       });
     }
-    return data;
-  });
-  if (!removed) return res.status(404).json({ status: "error", message: "Subscription not found" });
-  res.status(204).send();
+    
+    await saveData(data);
+    
+    if (!removed) return res.status(404).json({ status: "error", message: "Subscription not found" });
+    res.status(204).send();
+  } catch (error) {
+    console.error('[SUBSCRIPTION] Delete error:', error);
+    res.status(500).json({ status: "error", message: error.message || "Failed to delete subscription" });
+  }
 });
 
 // Cancel (soft) a subscription to preserve revenue history
