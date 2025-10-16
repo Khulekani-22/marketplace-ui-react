@@ -26,11 +26,15 @@ function unwrapPrivateKey(key) {
 function loadServiceAccount() {
   if (serviceAccountCache) return serviceAccountCache;
 
+  // Try environment variables first (Vercel recommended approach)
   const envClientEmail = process.env.GOOGLE_CLIENT_EMAIL || process.env.FIREBASE_CLIENT_EMAIL;
   const envPrivateKey = unwrapPrivateKey(process.env.GOOGLE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY);
   const envProjectId = process.env.GOOGLE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
   if (envClientEmail && envPrivateKey) {
+    console.log("🔑 Loading Firebase credentials from environment variables");
+    console.log(`   Project: ${envProjectId || 'not set'}`);
+    console.log(`   Client Email: ${envClientEmail.substring(0, 20)}...`);
     serviceAccountCache = {
       client_email: envClientEmail,
       private_key: envPrivateKey,
@@ -39,6 +43,9 @@ function loadServiceAccount() {
     return serviceAccountCache;
   }
 
+  console.log("🔍 Environment variables not found, trying service account files...");
+
+  // Fall back to service account file
   const candidatePaths = [
     path.join(__dirname, "serviceAccountKey.json"),
     path.join(__dirname, "secrets", "sloane-hub-service-account.json"),
@@ -50,9 +57,12 @@ function loadServiceAccount() {
   for (const filePath of candidatePaths) {
     try {
       if (fs.existsSync(filePath)) {
+        console.log(`✅ Found service account at: ${filePath}`);
         const raw = fs.readFileSync(filePath, "utf8");
         serviceAccountCache = JSON.parse(raw);
         serviceAccountCache.private_key = unwrapPrivateKey(serviceAccountCache.private_key);
+        console.log(`   Project: ${serviceAccountCache.project_id}`);
+        console.log(`   Client Email: ${serviceAccountCache.client_email?.substring(0, 20)}...`);
         return serviceAccountCache;
       }
     } catch (error) {
@@ -60,6 +70,12 @@ function loadServiceAccount() {
     }
   }
 
+  console.error("❌ No Firebase service account found!");
+  console.error("   Please set environment variables:");
+  console.error("   - FIREBASE_PRIVATE_KEY");
+  console.error("   - FIREBASE_CLIENT_EMAIL");
+  console.error("   - FIREBASE_PROJECT_ID");
+  console.error("   Or include serviceAccountKey.json in the api/ folder");
   return null;
 }
 
@@ -698,11 +714,21 @@ const mockTenants = [
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
+  const serviceAccount = loadServiceAccount();
+  const hasCredentials = !!serviceAccount;
+  
   res.json({ 
     status: "ok", 
     timestamp: new Date().toISOString(),
     message: "Sloane Hub API is running on Vercel",
-    environment: process.env.NODE_ENV || "development"
+    environment: process.env.NODE_ENV || "development",
+    firebase: {
+      configured: hasCredentials,
+      projectId: serviceAccount?.project_id || "not-configured",
+      credentialSource: serviceAccount ? 
+        (process.env.FIREBASE_CLIENT_EMAIL ? "environment-variables" : "service-account-file") : 
+        "none"
+    }
   });
 });
 
