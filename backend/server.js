@@ -19,7 +19,7 @@ import tenantsRouter from "./routes/tenants.js";
 import subscriptionsRouter from "./routes/subscriptions.js";
 import usersRouter from "./routes/users.js";
 import adminRouter from "./routes/admin.js";
-import { getData } from "./utils/hybridDataStore.js";
+import { getData, saveData } from "./utils/hybridDataStore.js";
 import auditLogsRouter from "./routes/auditLogs.js";
 import assistantRouter from "./routes/assistant.js";
 import messagesRouter from "./routes/messages.js";
@@ -252,12 +252,13 @@ async function initLmsStorage() {
       startups: [],
       wallets: [],
     };
-    await writeJson(APP_DATA, empty);
+    // Initialize Firestore with empty data structure if needed
+    await saveData(empty);
   }
 
   // Normalize critical fields so reads/writes agree across the app
   try {
-    const data = await readJson(APP_DATA);
+    const data = await getData();
     let changed = false;
     const asArray = (x) => (Array.isArray(x) ? x : []);
     data.services = asArray(data.services).map((s) => {
@@ -289,7 +290,7 @@ async function initLmsStorage() {
       if (JSON.stringify(orig) !== JSON.stringify(norm)) changed = true;
       return norm;
     });
-    if (changed) await writeJson(APP_DATA, data);
+    if (changed) await saveData(data);
   } catch {}
 }
 
@@ -318,7 +319,7 @@ lmsRouter.put("/publish", firebaseAuthRequired, requireAdmin, async (req, res, n
 
     // Preserve security-critical tables (users) and merge tenants instead of overwriting
     let existing = {};
-    try { existing = await readJson(APP_DATA); } catch {}
+    try { existing = await getData(); } catch {}
 
     const merged = { ...existing, ...data };
     // Always keep existing users (role assignments) from the server
@@ -333,12 +334,12 @@ lmsRouter.put("/publish", firebaseAuthRequired, requireAdmin, async (req, res, n
     });
     merged.tenants = Array.from(tenMap.values());
 
-    await writeJson(APP_DATA, merged);
+    await saveData(merged);
     // also replicate to src/data for front-end fallback
     await replicateToSrc(merged);
     const counts = summarize(merged);
     console.log(
-      `[LMS] Published live appData.json -> cohorts:${counts.cohorts}, courses:${counts.courses}, lessons:${counts.lessons}`
+      `[LMS] Published live data to Firestore -> cohorts:${counts.cohorts}, courses:${counts.courses}, lessons:${counts.lessons}, services:${counts.services || 0}`
     );
     res.json({ ok: true, counts });
   } catch (e) {
@@ -422,7 +423,7 @@ lmsRouter.post("/restore/:id", firebaseAuthRequired, requireAdmin, async (req, r
 
     const snapData = await readJson(snapPath);
     let existing = {};
-    try { existing = await readJson(APP_DATA); } catch {}
+    try { existing = await getData(); } catch {}
 
     const merged = { ...existing, ...snapData };
     // Preserve server users; merge tenants
@@ -436,9 +437,9 @@ lmsRouter.post("/restore/:id", firebaseAuthRequired, requireAdmin, async (req, r
     });
     merged.tenants = Array.from(tenMap.values());
 
-    await writeJson(APP_DATA, merged);
+    await saveData(merged);
     await replicateToSrc(merged);
-    console.log(`[LMS] Restored checkpoint id=${id} -> live (preserved users + tenants)`);
+    console.log(`[LMS] Restored checkpoint id=${id} -> Firestore (preserved users + tenants)`);
     res.json({ ok: true });
   } catch (e) {
     next(e);

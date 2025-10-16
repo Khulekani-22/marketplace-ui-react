@@ -27,7 +27,7 @@ const persistCachedThreads = (items: any[]) => {
   } catch {}
 };
 
-const AUTO_POLL_INTERVAL_MS = 4 * 60 * 1000;
+const AUTO_POLL_INTERVAL_MS = 2 * 60 * 1000; // Poll every 2 minutes
 const VENDOR_PROFILE_KEY = "vendor_profile_v3";
 
 const normalize = (value?: string | null) =>
@@ -252,7 +252,7 @@ export function MessagesProvider({ children }) {
     }).catch(() => {
       setLoading(false);  // Still mark as complete even on error
     });
-    // soft poll every 4 minutes to respect rate limiting
+    // Poll every 2 minutes to check for new messages
     pollRef.current = setInterval(() => {
       refresh({ silent: true }).catch(() => void 0);
     }, AUTO_POLL_INTERVAL_MS);
