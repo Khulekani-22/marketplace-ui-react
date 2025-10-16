@@ -53,40 +53,40 @@ router.post("/wallet/add-credits", async (req, res, next) => {
     };
 
     // Update wallet and save transaction
-    const result = await saveData((data) => {
-      // Initialize wallets array if it doesn't exist
-      if (!Array.isArray(data.wallets)) {
-        data.wallets = [];
-      }
+    const data = await getData();
+    
+    // Initialize wallets array if it doesn't exist
+    if (!Array.isArray(data.wallets)) {
+      data.wallets = [];
+    }
 
-      // Initialize wallet transactions array if it doesn't exist
-      if (!Array.isArray(data.walletTransactions)) {
-        data.walletTransactions = [];
-      }
+    // Initialize wallet transactions array if it doesn't exist
+    if (!Array.isArray(data.walletTransactions)) {
+      data.walletTransactions = [];
+    }
 
-      // Find or create user wallet
-      let wallet = data.wallets.find(w => w.userId === userId);
-      if (!wallet) {
-        wallet = {
-          userId,
-          userEmail,
-          balance: 0,
-          tenantId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        data.wallets.push(wallet);
-      }
+    // Find or create user wallet
+    let wallet = data.wallets.find(w => w.userId === userId);
+    if (!wallet) {
+      wallet = {
+        userId,
+        userEmail,
+        balance: 0,
+        tenantId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      data.wallets.push(wallet);
+    }
 
-      // Update wallet balance
-      wallet.balance = (wallet.balance || 0) + creditAmount;
-      wallet.updatedAt = new Date().toISOString();
+    // Update wallet balance
+    wallet.balance = (wallet.balance || 0) + creditAmount;
+    wallet.updatedAt = new Date().toISOString();
 
-      // Add transaction record
-      data.walletTransactions.push(transaction);
+    // Add transaction record
+    data.walletTransactions.push(transaction);
 
-      return data;
-    });
+    await saveData(data);
 
     // Log the action for audit
     console.log(`💰 Admin ${adminEmail} added ${creditAmount} credits to ${userEmail} (${description})`);
@@ -143,49 +143,47 @@ router.post("/wallet/bulk-credits", async (req, res, next) => {
     const bulkId = uuid(); // Group transactions with same bulk ID
 
     // Process bulk credit allocation
-    await saveData((data) => {
-      if (!Array.isArray(data.wallets)) data.wallets = [];
-      if (!Array.isArray(data.walletTransactions)) data.walletTransactions = [];
+    if (!Array.isArray(data.wallets)) data.wallets = [];
+    if (!Array.isArray(data.walletTransactions)) data.walletTransactions = [];
 
-      validUserIds.forEach((userId) => {
-        const user = eligible.find((u) => u.id === userId || u.uid === userId) || {};
-        const userEmail = user.email || `user-${userId}`;
+    validUserIds.forEach((userId) => {
+      const user = eligible.find((u) => u.id === userId || u.uid === userId) || {};
+      const userEmail = user.email || `user-${userId}`;
 
-        const transaction = {
-          id: uuid(),
-          bulkId,
+      const transaction = {
+        id: uuid(),
+        bulkId,
+        userId,
+        userEmail,
+        type: "credit",
+        subType: type,
+        amount: creditAmount,
+        description: `${description} (Bulk allocation)`,
+        adminEmail,
+        tenantId,
+        createdAt: new Date().toISOString(),
+      };
+
+      let wallet = data.wallets.find((w) => w.userId === userId);
+      if (!wallet) {
+        wallet = {
           userId,
           userEmail,
-          type: "credit",
-          subType: type,
-          amount: creditAmount,
-          description: `${description} (Bulk allocation)`,
-          adminEmail,
+          balance: 0,
           tenantId,
           createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
+        data.wallets.push(wallet);
+      }
+      wallet.balance = (wallet.balance || 0) + creditAmount;
+      wallet.updatedAt = new Date().toISOString();
 
-        let wallet = data.wallets.find((w) => w.userId === userId);
-        if (!wallet) {
-          wallet = {
-            userId,
-            userEmail,
-            balance: 0,
-            tenantId,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-          data.wallets.push(wallet);
-        }
-        wallet.balance = (wallet.balance || 0) + creditAmount;
-        wallet.updatedAt = new Date().toISOString();
-
-        data.walletTransactions.push(transaction);
-        transactions.push(transaction);
-      });
-
-      return data;
+      data.walletTransactions.push(transaction);
+      transactions.push(transaction);
     });
+
+    await saveData(data);
 
     console.log(`💰 Admin ${adminEmail} bulk added ${creditAmount} credits to ${validUserIds.length} users (${description})`);
 
@@ -337,80 +335,79 @@ router.get("/wallet/users", async (req, res) => {
  */
 router.post("/wallet/normalize-appdata", async (req, res, next) => {
   try {
-    const result = await saveData((data) => {
-      data.users = Array.isArray(data.users) ? data.users : [];
-      data.vendors = Array.isArray(data.vendors) ? data.vendors : [];
-      data.startups = Array.isArray(data.startups) ? data.startups : [];
-      data.wallets = Array.isArray(data.wallets) ? data.wallets : [];
+    const data = await getData();
+    data.users = Array.isArray(data.users) ? data.users : [];
+    data.vendors = Array.isArray(data.vendors) ? data.vendors : [];
+    data.startups = Array.isArray(data.startups) ? data.startups : [];
+    data.wallets = Array.isArray(data.wallets) ? data.wallets : [];
 
-      const byUid = new Map();
-      const byEmail = new Map();
-      // seed existing users
-      for (const u of data.users) {
-        const uid = (u.uid || u.id || "").toString();
-        const email = (u.email || "").toLowerCase();
-        if (uid) byUid.set(uid, u);
-        if (email) byEmail.set(email, u);
+    const byUid = new Map();
+    const byEmail = new Map();
+    // seed existing users
+    for (const u of data.users) {
+      const uid = (u.uid || u.id || "").toString();
+      const email = (u.email || "").toLowerCase();
+      if (uid) byUid.set(uid, u);
+      if (email) byEmail.set(email, u);
+    }
+
+    function upsertUser({ uid, email, name, role, tenantId }) {
+      const keyUser = (uid && byUid.get(uid)) || (email && byEmail.get(email)) || null;
+      const id = uid || email || name || "";
+      const patch = {
+        id: keyUser?.id || id,
+        uid: uid || keyUser?.uid || null,
+        email: email || keyUser?.email || null,
+        displayName: name || keyUser?.displayName || null,
+        role: (role || keyUser?.role || "member").toLowerCase(),
+        tenantId: (tenantId || keyUser?.tenantId || "vendor").toLowerCase(),
+      };
+      if (keyUser) {
+        Object.assign(keyUser, patch);
+        return keyUser;
       }
+      data.users.push(patch);
+      if (patch.uid) byUid.set(patch.uid, patch);
+      if (patch.email) byEmail.set(patch.email, patch);
+      return patch;
+    }
 
-      function upsertUser({ uid, email, name, role, tenantId }) {
-        const keyUser = (uid && byUid.get(uid)) || (email && byEmail.get(email)) || null;
-        const id = uid || email || name || "";
-        const patch = {
-          id: keyUser?.id || id,
-          uid: uid || keyUser?.uid || null,
-          email: email || keyUser?.email || null,
-          displayName: name || keyUser?.displayName || null,
-          role: (role || keyUser?.role || "member").toLowerCase(),
-          tenantId: (tenantId || keyUser?.tenantId || "vendor").toLowerCase(),
-        };
-        if (keyUser) {
-          Object.assign(keyUser, patch);
-          return keyUser;
-        }
-        data.users.push(patch);
-        if (patch.uid) byUid.set(patch.uid, patch);
-        if (patch.email) byEmail.set(patch.email, patch);
-        return patch;
+    // Vendors -> vendor role, tenant = vendor (unless specified)
+    for (const v of data.vendors) {
+      const uid = v.ownerUid || null;
+      const email = (v.contactEmail || v.email || "").toLowerCase();
+      const name = v.name || v.companyName || email.split("@")[0] || "";
+      const tenant = (v.tenantId || v.raw?.tenantId || "vendor").toLowerCase();
+      upsertUser({ uid, email, name, role: "vendor", tenantId: tenant === "public" ? "vendor" : tenant });
+    }
+
+    // Startups -> startup role, tenant = basic (unless specified)
+    for (const s of data.startups) {
+      const uid = s.ownerUid || s.uid || null;
+      const email = (s.contactEmail || s.email || "").toLowerCase();
+      const name = s.name || s.companyName || email.split("@")[0] || "";
+      const tenant = (s.tenantId || "basic").toLowerCase();
+      upsertUser({ uid, email, name, role: "startup", tenantId: tenant });
+    }
+
+    // Align wallets: prefer ownerUid (user.uid) as userId; fallback to email
+    for (const w of data.wallets) {
+      const byId = w.userId ? byUid.get(String(w.userId)) : null;
+      if (byId) continue; // already good
+      const email = (w.userEmail || "").toLowerCase();
+      const user = (email && byEmail.get(email)) || null;
+      if (user && user.uid) {
+        w.userId = user.uid; // align to uid
+        w.userEmail = user.email || w.userEmail || null;
+      } else if (user) {
+        w.userId = user.id || w.userId; // use id/email if no uid
+        w.userEmail = user.email || w.userEmail || null;
       }
+    }
 
-      // Vendors -> vendor role, tenant = vendor (unless specified)
-      for (const v of data.vendors) {
-        const uid = v.ownerUid || null;
-        const email = (v.contactEmail || v.email || "").toLowerCase();
-        const name = v.name || v.companyName || email.split("@")[0] || "";
-        const tenant = (v.tenantId || v.raw?.tenantId || "vendor").toLowerCase();
-        upsertUser({ uid, email, name, role: "vendor", tenantId: tenant === "public" ? "vendor" : tenant });
-      }
+    await saveData(data);
 
-      // Startups -> startup role, tenant = basic (unless specified)
-      for (const s of data.startups) {
-        const uid = s.ownerUid || s.uid || null;
-        const email = (s.contactEmail || s.email || "").toLowerCase();
-        const name = s.name || s.companyName || email.split("@")[0] || "";
-        const tenant = (s.tenantId || "basic").toLowerCase();
-        upsertUser({ uid, email, name, role: "startup", tenantId: tenant });
-      }
-
-      // Align wallets: prefer ownerUid (user.uid) as userId; fallback to email
-      for (const w of data.wallets) {
-        const byId = w.userId ? byUid.get(String(w.userId)) : null;
-        if (byId) continue; // already good
-        const email = (w.userEmail || "").toLowerCase();
-        const user = (email && byEmail.get(email)) || null;
-        if (user && user.uid) {
-          w.userId = user.uid; // align to uid
-          w.userEmail = user.email || w.userEmail || null;
-        } else if (user) {
-          w.userId = user.id || w.userId; // use id/email if no uid
-          w.userEmail = user.email || w.userEmail || null;
-        }
-      }
-
-      return data;
-    });
-
-    res.json({ ok: true, users: (result.users || []).length, wallets: (result.wallets || []).length });
+    res.json({ ok: true, users: (data.users || []).length, wallets: (data.wallets || []).length });
   } catch (error) {
     console.error("normalize-appdata failed:", error);
     next(error);
@@ -448,29 +445,28 @@ router.post("/wallet/sync-firebase-users", async (req, res, next) => {
       pageToken = resp.pageToken;
     } while (pageToken);
 
-    const updated = await saveData((data) => {
-      const list = Array.isArray(data.users) ? data.users : [];
-      const byEmail = new Map(list.map((u) => [String((u.email || "").toLowerCase()), u]));
+    const data = await getData();
+    const list = Array.isArray(data.users) ? data.users : [];
+    const byEmail = new Map(list.map((u) => [String((u.email || "").toLowerCase()), u]));
 
-      for (const u of collected) {
-        if (!u.email) continue;
-        const existing = byEmail.get(u.email);
-        const role = promote.has(u.email) ? "vendor" : (existing?.role || defaultRole);
-        const tenantId = promote.has(u.email) ? "vendor" : (existing?.tenantId || defaultTenant);
-        const payload = { email: u.email, uid: u.uid, role, tenantId };
-        if (existing) {
-          Object.assign(existing, payload);
-        } else {
-          list.push(payload);
-          byEmail.set(u.email, payload);
-        }
+    for (const u of collected) {
+      if (!u.email) continue;
+      const existing = byEmail.get(u.email);
+      const role = promote.has(u.email) ? "vendor" : (existing?.role || defaultRole);
+      const tenantId = promote.has(u.email) ? "vendor" : (existing?.tenantId || defaultTenant);
+      const payload = { email: u.email, uid: u.uid, role, tenantId };
+      if (existing) {
+        Object.assign(existing, payload);
+      } else {
+        list.push(payload);
+        byEmail.set(u.email, payload);
       }
+    }
 
-      data.users = list;
-      return data;
-    });
+    data.users = list;
+    await saveData(data);
 
-    res.json({ ok: true, users: updated.users?.length || 0, synced: collected.length });
+    res.json({ ok: true, users: data.users?.length || 0, synced: collected.length });
   } catch (error) {
     console.error("sync-firebase-users failed:", error);
     next(error);

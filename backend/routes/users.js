@@ -84,24 +84,24 @@ router.post("/", firebaseAuthRequired, isAdminForTenant, async (req, res) => {
     return res.status(403).json({ error: "Only admins can grant admin roles" });
   }
   
-  const updated = await saveData((data) => {
-    const list = Array.isArray(data.users) ? data.users : [];
-    const idx = list.findIndex((u) => normalizeEmail(u.email) === norm);
-    const next = { email: norm, tenantId, role, ...(uid ? { uid } : {}) };
-    if (idx >= 0) list[idx] = { ...list[idx], ...next };
-    else list.push(next);
-    data.users = list;
-    // also ensure tenant list exists if moving off public
-    if (tenantId && tenantId !== "public") {
-      const tenants = Array.isArray(data.tenants) ? data.tenants : [];
-      if (!tenants.find((t) => t.id === tenantId)) {
-        tenants.push({ id: tenantId, name: tenantId });
-      }
-      data.tenants = tenants;
+  const data = await getData();
+  const list = Array.isArray(data.users) ? data.users : [];
+  const idx = list.findIndex((u) => normalizeEmail(u.email) === norm);
+  const next = { email: norm, tenantId, role, ...(uid ? { uid } : {}) };
+  if (idx >= 0) list[idx] = { ...list[idx], ...next };
+  else list.push(next);
+  data.users = list;
+  // also ensure tenant list exists if moving off public
+  if (tenantId && tenantId !== "public") {
+    const tenants = Array.isArray(data.tenants) ? data.tenants : [];
+    if (!tenants.find((t) => t.id === tenantId)) {
+      tenants.push({ id: tenantId, name: tenantId });
     }
-    return data;
-  });
-  res.json({ ok: true, users: updated.users });
+    data.tenants = tenants;
+  }
+  await saveData(data);
+
+  res.json({ ok: true, users: data.users });
 });
 
 // Upgrade a public user to a private tenant and grant admin role
@@ -110,19 +110,20 @@ router.post("/upgrade", async (req, res) => {
   const norm = normalizeEmail(email);
   const tenantId = (newTenantId || "").trim();
   if (!norm || !tenantId) return res.status(400).json({ error: "Missing email or newTenantId" });
-  const updated = await saveData((data) => {
-    const list = Array.isArray(data.users) ? data.users : [];
-    const idx = list.findIndex((u) => normalizeEmail(u.email) === norm);
-    const next = { email: norm, tenantId, role: "admin" };
-    if (idx >= 0) list[idx] = { ...list[idx], ...next };
-    else list.push(next);
-    data.users = list;
-    const tenants = Array.isArray(data.tenants) ? data.tenants : [];
-    if (!tenants.find((t) => t.id === tenantId)) tenants.push({ id: tenantId, name: tenantId });
-    data.tenants = tenants;
-    return data;
-  });
-  res.json({ ok: true, users: updated.users });
+  
+  const data = await getData();
+  const list = Array.isArray(data.users) ? data.users : [];
+  const idx = list.findIndex((u) => normalizeEmail(u.email) === norm);
+  const next = { email: norm, tenantId, role: "admin" };
+  if (idx >= 0) list[idx] = { ...list[idx], ...next };
+  else list.push(next);
+  data.users = list;
+  const tenants = Array.isArray(data.tenants) ? data.tenants : [];
+  if (!tenants.find((t) => t.id === tenantId)) tenants.push({ id: tenantId, name: tenantId });
+  data.tenants = tenants;
+  await saveData(data);
+
+  res.json({ ok: true, users: data.users });
 });
 
 // Bulk replace users list (admin only, backs the "Save All Changes" action)
@@ -135,22 +136,21 @@ router.put("/bulk", firebaseAuthRequired, async (req, res) => {
     const incoming = Array.isArray(req.body?.users) ? req.body.users : [];
     const sanitized = sanitizeUsersPayload(incoming);
 
-    const updated = await saveData((data) => {
-      data.users = sanitized;
-      const tenants = Array.isArray(data.tenants) ? [...data.tenants] : [];
-      const known = new Set(tenants.map((t) => (t && typeof t === "object" ? t.id : t)).filter(Boolean));
-      sanitized.forEach((u) => {
-        const id = u.tenantId || "public";
-        if (id && id !== "public" && !known.has(id)) {
-          tenants.push({ id, name: id });
-          known.add(id);
-        }
-      });
-      data.tenants = tenants;
-      return data;
+    const data = await getData();
+    data.users = sanitized;
+    const tenants = Array.isArray(data.tenants) ? [...data.tenants] : [];
+    const known = new Set(tenants.map((t) => (t && typeof t === "object" ? t.id : t)).filter(Boolean));
+    sanitized.forEach((u) => {
+      const id = u.tenantId || "public";
+      if (id && id !== "public" && !known.has(id)) {
+        tenants.push({ id, name: id });
+        known.add(id);
+      }
     });
+    data.tenants = tenants;
+    await saveData(data);
 
-    res.json({ ok: true, users: updated.users });
+    res.json({ ok: true, users: data.users });
   } catch (e) {
     res.status(500).json({ status: "error", message: e?.message || "Failed to save users" });
   }
@@ -182,12 +182,11 @@ router.delete("/", firebaseAuthRequired, async (req, res) => {
     if (!email) return res.status(400).json({ status: "error", message: "Missing email" });
 
     // Remove role mapping from data store
-    const updated = await saveData((data) => {
-      const list = Array.isArray(data.users) ? data.users : [];
-      const next = list.filter((u) => normalizeEmail(u.email) !== email);
-      data.users = next;
-      return data;
-    });
+    const data = await getData();
+    const list = Array.isArray(data.users) ? data.users : [];
+    const next = list.filter((u) => normalizeEmail(u.email) !== email);
+    data.users = next;
+    await saveData(data);
 
     // Best-effort deletion in Firebase Auth
     try {
@@ -197,7 +196,7 @@ router.delete("/", firebaseAuthRequired, async (req, res) => {
       // ignore if user not found or deletion fails
     }
 
-    res.json({ ok: true, users: updated.users });
+    res.json({ ok: true, users: data.users });
   } catch (e) {
     res.status(500).json({ status: "error", message: e?.message || "Failed to delete user" });
   }

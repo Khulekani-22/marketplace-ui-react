@@ -49,7 +49,7 @@ router.get("/", async (req, res) => {
 });
 
 // Create or upsert startup for current tenant
-router.post("/", firebaseAuthRequired, (req, res, next) => {
+router.post("/", firebaseAuthRequired, async (req, res, next) => {
   try {
     const parsed = StartupSchema.parse(req.body);
     const id = parsed.id || uuid();
@@ -59,43 +59,43 @@ router.post("/", firebaseAuthRequired, (req, res, next) => {
 
     let updated = false;
     let result = null;
-    saveData((data) => {
-      data.startups = data.startups || [];
-      const idx = data.startups.findIndex((s) => {
-        const sameTenant = (s.tenantId ?? "public") === tenantId;
-        if (!sameTenant) return false;
-        const sEmail = (s.contactEmail || s.email || "").toLowerCase();
-        return (
-          s.id === id ||
-          (!!ownerUid && s.ownerUid === ownerUid) ||
-          (!!contactEmail && sEmail === contactEmail)
-        );
-      });
-      if (idx !== -1) {
-        const existingId = data.startups[idx].id || id;
-        data.startups[idx] = {
-          ...data.startups[idx],
-          ...parsed,
-          id: existingId,
-          tenantId,
-          ...(ownerUid ? { ownerUid } : {}),
-          ...(contactEmail ? { contactEmail } : {}),
-        };
-        updated = true;
-        result = data.startups[idx];
-      } else {
-        const obj = {
-          ...parsed,
-          id,
-          tenantId,
-          ...(ownerUid ? { ownerUid } : {}),
-          ...(contactEmail ? { contactEmail } : {}),
-        };
-        data.startups.push(obj);
-        result = obj;
-      }
-      return data;
+    
+    const data = await getData();
+    data.startups = data.startups || [];
+    const idx = data.startups.findIndex((s) => {
+      const sameTenant = (s.tenantId ?? "public") === tenantId;
+      if (!sameTenant) return false;
+      const sEmail = (s.contactEmail || s.email || "").toLowerCase();
+      return (
+        s.id === id ||
+        (!!ownerUid && s.ownerUid === ownerUid) ||
+        (!!contactEmail && sEmail === contactEmail)
+      );
     });
+    if (idx !== -1) {
+      const existingId = data.startups[idx].id || id;
+      data.startups[idx] = {
+        ...data.startups[idx],
+        ...parsed,
+        id: existingId,
+        tenantId,
+        ...(ownerUid ? { ownerUid } : {}),
+        ...(contactEmail ? { contactEmail } : {}),
+      };
+      updated = true;
+      result = data.startups[idx];
+    } else {
+      const obj = {
+        ...parsed,
+        id,
+        tenantId,
+        ...(ownerUid ? { ownerUid } : {}),
+        ...(contactEmail ? { contactEmail } : {}),
+      };
+      data.startups.push(obj);
+      result = obj;
+    }
+    await saveData(data);
 
     res.status(updated ? 200 : 201).json(result);
   } catch (e) {
@@ -104,22 +104,21 @@ router.post("/", firebaseAuthRequired, (req, res, next) => {
 });
 
 // Update startup by id for current tenant
-router.put("/:id", firebaseAuthRequired, (req, res, next) => {
+router.put("/:id", firebaseAuthRequired, async (req, res, next) => {
   try {
     const id = req.params.id;
     const tenantId = req.tenant.id;
     const partial = StartupSchema.partial().parse(req.body);
 
     let updated = null;
-    saveData((data) => {
-      data.startups = data.startups || [];
-      const idx = data.startups.findIndex((s) => s.id === id && (s.tenantId ?? "public") === tenantId);
-      if (idx !== -1) {
-        data.startups[idx] = { ...data.startups[idx], ...partial };
-        updated = data.startups[idx];
-      }
-      return data;
-    });
+    const data = await getData();
+    data.startups = data.startups || [];
+    const idx = data.startups.findIndex((s) => s.id === id && (s.tenantId ?? "public") === tenantId);
+    if (idx !== -1) {
+      data.startups[idx] = { ...data.startups[idx], ...partial };
+      updated = data.startups[idx];
+    }
+    await saveData(data);
 
     if (!updated) return res.status(404).json({ status: "error", message: "Not found" });
     res.json(updated);
