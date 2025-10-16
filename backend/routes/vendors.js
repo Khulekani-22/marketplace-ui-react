@@ -77,7 +77,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", firebaseAuthRequired, (req, res, next) => {
+router.post("/", firebaseAuthRequired, async (req, res, next) => {
   try {
     const parsed = VendorSchema.parse(req.body);
     const id = parsed.id || uuid();
@@ -87,44 +87,44 @@ router.post("/", firebaseAuthRequired, (req, res, next) => {
 
     let updated = false;
     let result = null;
-    saveData((data) => {
-      data.vendors = data.vendors || [];
-      const idx = data.vendors.findIndex((v) => {
-        const sameTenant = (v.tenantId ?? "public") === tenantId;
-        if (!sameTenant) return false;
-        const vEmail = (v.contactEmail || v.email || "").toLowerCase();
-        return (
-          v.id === id ||
-          (!!ownerUid && v.ownerUid === ownerUid) ||
-          (!!contactEmail && vEmail === contactEmail)
-        );
-      });
-      if (idx !== -1) {
-        // Upsert: merge into existing vendor
-        const existingId = data.vendors[idx].id || id;
-        data.vendors[idx] = {
-          ...data.vendors[idx],
-          ...parsed,
-          id: existingId,
-          tenantId,
-          ...(ownerUid ? { ownerUid } : {}),
-          ...(contactEmail ? { contactEmail } : {}),
-        };
-        updated = true;
-        result = data.vendors[idx];
-      } else {
-        const obj = {
-          ...parsed,
-          id,
-          tenantId,
-          ...(ownerUid ? { ownerUid } : {}),
-          ...(contactEmail ? { contactEmail } : {}),
-        };
-        data.vendors.push(obj);
-        result = obj;
-      }
-      return data;
+    
+    const data = await getData();
+    data.vendors = data.vendors || [];
+    const idx = data.vendors.findIndex((v) => {
+      const sameTenant = (v.tenantId ?? "public") === tenantId;
+      if (!sameTenant) return false;
+      const vEmail = (v.contactEmail || v.email || "").toLowerCase();
+      return (
+        v.id === id ||
+        (!!ownerUid && v.ownerUid === ownerUid) ||
+        (!!contactEmail && vEmail === contactEmail)
+      );
     });
+    if (idx !== -1) {
+      // Upsert: merge into existing vendor
+      const existingId = data.vendors[idx].id || id;
+      data.vendors[idx] = {
+        ...data.vendors[idx],
+        ...parsed,
+        id: existingId,
+        tenantId,
+        ...(ownerUid ? { ownerUid } : {}),
+        ...(contactEmail ? { contactEmail } : {}),
+      };
+      updated = true;
+      result = data.vendors[idx];
+    } else {
+      const obj = {
+        ...parsed,
+        id,
+        tenantId,
+        ...(ownerUid ? { ownerUid } : {}),
+        ...(contactEmail ? { contactEmail } : {}),
+      };
+      data.vendors.push(obj);
+      result = obj;
+    }
+    await saveData(data);
 
     res.status(updated ? 200 : 201).json(result);
   } catch (e) {
@@ -132,24 +132,23 @@ router.post("/", firebaseAuthRequired, (req, res, next) => {
   }
 });
 
-router.put("/:id", firebaseAuthRequired, (req, res, next) => {
+router.put("/:id", firebaseAuthRequired, async (req, res, next) => {
   try {
     const id = req.params.id;
     const tenantId = req.tenant.id;
     const partial = VendorSchema.partial().parse(req.body);
 
     let updated = null;
-    saveData((data) => {
-      data.vendors = data.vendors || [];
-      const idx = data.vendors.findIndex(
-        (v) => v.id === id && (v.tenantId ?? "public") === tenantId
-      );
-      if (idx !== -1) {
-        data.vendors[idx] = { ...data.vendors[idx], ...partial };
-        updated = data.vendors[idx];
-      }
-      return data;
-    });
+    const data = await getData();
+    data.vendors = data.vendors || [];
+    const idx = data.vendors.findIndex(
+      (v) => v.id === id && (v.tenantId ?? "public") === tenantId
+    );
+    if (idx !== -1) {
+      data.vendors[idx] = { ...data.vendors[idx], ...partial };
+      updated = data.vendors[idx];
+    }
+    await saveData(data);
 
     if (!updated) return res.status(404).json({ status: "error", message: "Not found" });
     res.json(updated);
@@ -162,14 +161,15 @@ router.delete("/:id", firebaseAuthRequired, async (req, res) => {
   const id = req.params.id;
   const tenantId = req.tenant.id;
   let removed = false;
-  saveData((data) => {
-    data.vendors = (data.vendors || []).filter((v) => {
-      const match = v.id === id && (v.tenantId ?? "public") === tenantId;
-      if (match) removed = true;
-      return !match;
-    });
-    return data;
+  
+  const data = await getData();
+  data.vendors = (data.vendors || []).filter((v) => {
+    const match = v.id === id && (v.tenantId ?? "public") === tenantId;
+    if (match) removed = true;
+    return !match;
   });
+  await saveData(data);
+
   if (!removed) return res.status(404).json({ status: "error", message: "Not found" });
   res.status(204).send();
 });
@@ -201,6 +201,142 @@ router.post("/rename-id", firebaseAuthRequired, async (req, res) => {
   }
 
   const result = { tenantId, matched: false, changes: { startups: 0, vendors: 0, services: 0, subscriptions: 0, bookings: 0, threads: 0 } };
+
+  try {
+    const data = await getData();
+    // Resolve email for convenience matching in services without vendorId (optional)
+    let vendorEmail = emailParam || "";
+
+    // Update startups directory (primary vendor directory)
+    const startups = Array.isArray(data.startups) ? data.startups : [];
+    startups.forEach((v, i) => {
+      const sameTenant = (v.tenantId ?? "public") === tenantId;
+      if (!sameTenant) return;
+      const vid = String(v.vendorId || v.id || "");
+      const isMatch = (!!ownerUid && String(v.ownerUid || "") === ownerUid) || (!!oldId && vid === oldId);
+      if (isMatch) {
+        result.matched = true;
+        vendorEmail = (v.contactEmail || v.email || "").toLowerCase();
+        const prev = startups[i];
+        startups[i] = { ...prev, id: newId, vendorId: newId };
+        result.changes.startups += 1;
+      }
+    });
+    data.startups = startups;
+
+    // If not matched in startups, try other pools (vendors/companies/profiles) within tenant
+    if (!result.matched) {
+      const pools = [
+        Array.isArray(data.vendors) ? data.vendors : [],
+        Array.isArray(data.companies) ? data.companies : [],
+        Array.isArray(data.profiles) ? data.profiles : [],
+      ];
+      let found = null;
+      for (const arr of pools) {
+        const hit = arr.find((v) => {
+          const sameTenant = (v.tenantId ?? "public") === tenantId;
+          if (!sameTenant) return false;
+          const vid = String(v.vendorId || v.id || "");
+          const vEmail = (v.contactEmail || v.email || "").toLowerCase();
+          return (!!ownerUid && String(v.ownerUid || "") === ownerUid) || (!!oldId && vid === oldId) || (!!vendorEmail && vEmail === vendorEmail);
+        });
+        if (hit) { found = hit; break; }
+      }
+      if (found || vendorEmail) {
+        const e = (found?.contactEmail || found?.email || vendorEmail || "").toLowerCase();
+        vendorEmail = e;
+        const name = found?.companyName || found?.name || (e ? e.split("@")[0] : "Vendor");
+        startups.push({
+          ...(found || {}),
+          id: newId,
+          vendorId: newId,
+          contactEmail: e,
+          tenantId,
+        });
+        data.startups = startups;
+        result.matched = true;
+        result.changes.startups += 1;
+      }
+    }
+
+    // Update vendors collection (if used)
+    const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+    vendors.forEach((v, i) => {
+      const sameTenant = (v.tenantId ?? "public") === tenantId;
+      if (!sameTenant) return;
+      const vid = String(v.vendorId || v.id || "");
+      const isMatch = (!!ownerUid && String(v.ownerUid || "") === ownerUid) || (!!oldId && vid === oldId);
+      if (isMatch) {
+        const prev = vendors[i];
+        vendors[i] = { ...prev, id: newId };
+        result.changes.vendors += 1;
+      }
+    });
+    data.vendors = vendors;
+
+    // Update services (listings)
+    const services = Array.isArray(data.services) ? data.services : [];
+    services.forEach((s, i) => {
+      const sameTenant = (s.tenantId ?? "public") === tenantId;
+      if (!sameTenant) return;
+      const sid = String(s.vendorId || "");
+      if ((oldId && sid === oldId) || (!sid && vendorEmail && (s.contactEmail || "").toLowerCase() === vendorEmail)) {
+        services[i] = { ...s, vendorId: newId };
+        result.changes.services += 1;
+      }
+    });
+    data.services = services;
+
+    // Update subscriptions convenience vendorId
+    const subscriptions = Array.isArray(data.subscriptions) ? data.subscriptions : [];
+    subscriptions.forEach((x) => {
+      const sameTenant = (x.tenantId ?? "public") === tenantId;
+      if (!sameTenant) return;
+      if (String(x.vendorId || "") === oldId) { x.vendorId = newId; result.changes.subscriptions += 1; }
+    });
+    data.subscriptions = subscriptions;
+
+    // Update bookings vendorId
+    const bookings = Array.isArray(data.bookings) ? data.bookings : [];
+    bookings.forEach((b) => {
+      const sameTenant = (b.tenantId ?? "public") === tenantId;
+      if (!sameTenant) return;
+      if (String(b.vendorId || "") === oldId) { b.vendorId = newId; result.changes.bookings += 1; }
+    });
+    data.bookings = bookings;
+
+    // Update message threads: participantIds, participants.id, context.vendorId, messages[].senderId
+    const threads = Array.isArray(data.messageThreads) ? data.messageThreads : [];
+    const from = `vendor:${oldId}`;
+    const to = `vendor:${newId}`;
+    threads.forEach((t, idx) => {
+      const sameTenant = (t.tenantId ?? "public") === tenantId;
+      if (!sameTenant) return;
+      let touched = false;
+      if (t.context && String(t.context.vendorId || "") === oldId) {
+        t.context.vendorId = newId; touched = true;
+      }
+      if (Array.isArray(t.participantIds)) {
+        const nextIds = t.participantIds.map((id) => (id === from ? to : id));
+        if (nextIds.join("|") !== t.participantIds.join("|")) { t.participantIds = Array.from(new Set(nextIds)); touched = true; }
+      }
+      if (Array.isArray(t.participants)) {
+        t.participants = t.participants.map((p) => (p?.id === from ? { ...p, id: to } : p));
+      }
+      if (Array.isArray(t.messages)) {
+        t.messages = t.messages.map((m) => (m?.senderId === from ? { ...m, senderId: to } : m));
+      }
+      if (touched) { threads[idx] = t; result.changes.threads += 1; }
+    });
+    data.messageThreads = threads;
+
+    await saveData(data);
+
+    if (!result.matched) return res.status(404).json({ status: "error", message: "Vendor not found for given ownerUid/oldId in tenant and no email provided" });
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    res.status(500).json({ status: "error", message: e?.message || "Failed to rename vendor id" });
+  }
 
   try {
     saveData((data) => {
@@ -343,7 +479,7 @@ router.post("/rename-id", firebaseAuthRequired, async (req, res) => {
 // ---- Migration: upgrade all startups -> vendors (idempotent) ----
 // POST /api/data/vendors/migrate-startups
 // Uses same matching rules as POST (by id OR ownerUid OR contactEmail within tenant)
-router.post("/migrate-startups", firebaseAuthRequired, (req, res, next) => {
+router.post("/migrate-startups", firebaseAuthRequired, async (req, res, next) => {
   try {
     const tenantId = req.tenant.id;
     const result = { scanned: 0, created: 0, updated: 0 };
@@ -398,33 +534,32 @@ router.post("/migrate-startups", firebaseAuthRequired, (req, res, next) => {
       };
     }
 
-    saveData((data) => {
-      data.vendors = data.vendors || [];
-      const startups = Array.isArray(data.startups) ? data.startups : [];
-      result.scanned = startups.length;
+    const data = await getData();
+    data.vendors = data.vendors || [];
+    const startups = Array.isArray(data.startups) ? data.startups : [];
+    result.scanned = startups.length;
 
-      startups.forEach((s) => {
-        const v = toVendor(s);
-        const email = v.contactEmail;
-        const matchIdx = data.vendors.findIndex((it) => {
-          const sameTenant = (it.tenantId ?? "public") === (v.tenantId ?? tenantId);
-          if (!sameTenant) return false;
-          const itEmail = (it.contactEmail || it.email || "").toLowerCase();
-          return it.id === v.id || (v.ownerUid && it.ownerUid === v.ownerUid) || (!!email && itEmail === email);
-        });
-        if (matchIdx !== -1) {
-          data.vendors[matchIdx] = { ...data.vendors[matchIdx], ...v, id: data.vendors[matchIdx].id || v.id };
-          result.updated++;
-        } else {
-          data.vendors.push(v);
-          result.created++;
-        }
+    startups.forEach((s) => {
+      const v = toVendor(s);
+      const email = v.contactEmail;
+      const matchIdx = data.vendors.findIndex((it) => {
+        const sameTenant = (it.tenantId ?? "public") === (v.tenantId ?? tenantId);
+        if (!sameTenant) return false;
+        const itEmail = (it.contactEmail || it.email || "").toLowerCase();
+        return it.id === v.id || (v.ownerUid && it.ownerUid === v.ownerUid) || (!!email && itEmail === email);
       });
-
-      // Clear startups after migration
-      data.startups = [];
-      return data;
+      if (matchIdx !== -1) {
+        data.vendors[matchIdx] = { ...data.vendors[matchIdx], ...v, id: data.vendors[matchIdx].id || v.id };
+        result.updated++;
+      } else {
+        data.vendors.push(v);
+        result.created++;
+      }
     });
+
+    // Clear startups after migration
+    data.startups = [];
+    await saveData(data);
 
     res.json({ ok: true, ...result });
   } catch (e) {
