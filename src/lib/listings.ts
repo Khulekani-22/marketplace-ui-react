@@ -2,6 +2,7 @@ import { api } from "./api";
 
 interface FetchMineOptions {
   signal?: AbortSignal;
+  refresh?: boolean;
 }
 
 interface ListingsResponse {
@@ -13,8 +14,9 @@ interface ListingsResponse {
 
 export async function fetchMyVendorListings(options: FetchMineOptions = {}): Promise<ListingsResponse> {
   try {
-    const { signal } = options;
-    const { data } = await api.get("/api/data/services/mine", { signal } as any);
+    const { signal, refresh = false } = options;
+    const params = refresh ? { refresh: 'true' } : {};
+    const { data } = await api.get("/api/data/services/mine", { signal, params } as any);
     const listings = Array.isArray(data?.listings) ? data.listings : [];
     const bookings = Array.isArray(data?.bookings) ? data.bookings : [];
     const vendor = data?.vendor || null;

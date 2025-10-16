@@ -236,7 +236,7 @@ export default function VendorMyListings() {
   }, [vendor, navigate]);
 
   const loadListings = useCallback(
-    async ({ signal, silent }: { signal?: AbortSignal; silent?: boolean } = {}) => {
+    async ({ signal, silent, refresh }: { signal?: AbortSignal; silent?: boolean; refresh?: boolean } = {}) => {
       const markBusy = (val: boolean) => {
         if (silent) setRefreshing(val);
         else setLoading(val);
@@ -265,7 +265,7 @@ export default function VendorMyListings() {
           return;
         }
 
-        const { listings, bookings } = await fetchMyVendorListings({ signal });
+        const { listings, bookings } = await fetchMyVendorListings({ signal, refresh });
         if (signal?.aborted) return;
         const normalizedListings = Array.isArray(listings) ? listings : [];
         const normalizedBookings = Array.isArray(bookings) ? bookings : [];
@@ -297,7 +297,7 @@ export default function VendorMyListings() {
 
   const handleRefresh = useCallback(async () => {
     setErr("");
-    await loadListings({ silent: true });
+    await loadListings({ silent: true, refresh: true });
   }, [loadListings]);
 
   const counts = useMemo(() => {

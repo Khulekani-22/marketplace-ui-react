@@ -122,7 +122,9 @@ router.get("/", async (req, res) => {
 router.get("/mine", firebaseAuthRequired, async (req, res) => {
   try {
     const tenantId = req.tenant.id;
-    const data = await getData();
+    // Force reload from Firestore when refresh=true query parameter is present
+    const forceReload = req.query.refresh === 'true';
+    const data = await getData(forceReload);
   const services = Array.isArray(data?.services) ? data.services : [];
   const bookings = Array.isArray(data?.bookings) ? data.bookings : [];
   const vendorRecord = findVendorRecord(data, tenantId, req.user || {});
