@@ -323,6 +323,5 @@ export async function autoCreateMissingProfile(ownerUid, email, sourceType = 've
 export {
   syncStartupToVendor,
   syncVendorToStartup,
-  bidirectionalSync,
   SYNC_FIELDS,
 };
