@@ -9,11 +9,11 @@
   },
   "rewrites": [
     {
-      "source": "/backend/(.*)",
+      "source": "/api/(.*)",
       "destination": "/api/server.js"
     },
     {
-      "source": "/api/(.*)",
+      "source": "/backend/(.*)",
       "destination": "/api/server.js"
     },
     {
