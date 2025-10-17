@@ -6,7 +6,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import fs from "fs";
 import { promises as fsp } from "fs";
 
@@ -40,6 +40,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const DEFAULT_PORT = 5055;
 const PORT = Number(process.env.PORT || DEFAULT_PORT);
+
+let initPromise = null;
+let serverPromise = null;
+let replicatorStarted = false;
 
 /* ------------------------ Core security & parsing ------------------------ */
 app.use(helmet());
@@ -514,61 +518,86 @@ async function listenWithPort(port) {
   });
 }
 
-(async function start() {
-  try {
-    await initLmsStorage();
-    // Start background replicator from backend/appData.json -> src/data/appData.json every 1 minute
-    (function startAppDataReplicator() {
-      const TARGET = APP_DATA_SRC;
-      if (!TARGET || TARGET === APP_DATA) {
-        // Nothing to replicate to or same file path; skip.
-        return;
-      }
-      let lastMtime = 0;
-      async function tick() {
-        try {
-          const st = await fsp.stat(APP_DATA);
-          const mt = st.mtimeMs || st.mtime?.getTime?.() || 0;
-          if (mt > lastMtime) {
-            // Ensure destination directory exists
-            await fsp.mkdir(path.dirname(TARGET), { recursive: true });
-            // Copy bytes atomically via temp file then rename
-            const content = await fsp.readFile(APP_DATA, "utf8");
-            await fsp.writeFile(TARGET + ".tmp", content, "utf8");
-            await fsp.rename(TARGET + ".tmp", TARGET);
-            lastMtime = mt;
-            console.log(`[Replicator] appData.json -> src/data replicated at ${new Date().toISOString()}`);
-          }
-        } catch (e) {
-          console.warn("[Replicator] Failed to replicate appData:", e?.message || e);
-        }
-      }
-      // Kick once immediately, then every minute
-      tick();
-      setInterval(tick, 60 * 1000);
+async function ensureInitialized() {
+  if (!initPromise) {
+    initPromise = (async () => {
+      await initLmsStorage();
+      return true;
     })();
-    // Try ports in order: requested/5055, then 5001, then 5500
-    const tried = new Set();
-    const ports = [PORT, 5001, 5500].filter((p, i, arr) => arr.indexOf(p) === i);
-    let started = false;
-    for (const p of ports) {
-      try {
-        if (tried.has(p)) continue;
-        await listenWithPort(p);
-        started = true;
-        break;
-      } catch (err) {
-        tried.add(p);
-        if (err?.code === "EADDRINUSE") {
-          console.warn(`Port ${p} in use. Trying next...`);
-          continue;
-        }
-        throw err;
-      }
-    }
-    if (!started) throw new Error("No available port among [5055, 5001, 5500]");
-  } catch (e) {
-    console.error("Failed to start backend:", e);
-    process.exit(1);
   }
-})();
+  return initPromise;
+}
+
+function startAppDataReplicator() {
+  if (replicatorStarted) return;
+  const TARGET = APP_DATA_SRC;
+  if (!TARGET || TARGET === APP_DATA) {
+    return;
+  }
+  replicatorStarted = true;
+  let lastMtime = 0;
+  async function tick() {
+    try {
+      const st = await fsp.stat(APP_DATA);
+      const mt = st.mtimeMs || st.mtime?.getTime?.() || 0;
+      if (mt > lastMtime) {
+        await fsp.mkdir(path.dirname(TARGET), { recursive: true });
+        const content = await fsp.readFile(APP_DATA, "utf8");
+        await fsp.writeFile(TARGET + ".tmp", content, "utf8");
+        await fsp.rename(TARGET + ".tmp", TARGET);
+        lastMtime = mt;
+        console.log(`[Replicator] appData.json -> src/data replicated at ${new Date().toISOString()}`);
+      }
+    } catch (e) {
+      console.warn("[Replicator] Failed to replicate appData:", e?.message || e);
+    }
+  }
+  tick();
+  setInterval(tick, 60 * 1000);
+}
+
+export async function startServer() {
+  if (!serverPromise) {
+    serverPromise = (async () => {
+      await ensureInitialized();
+      startAppDataReplicator();
+
+      const tried = new Set();
+      const ports = [PORT, 5001, 5500].filter((p, i, arr) => arr.indexOf(p) === i);
+      for (const p of ports) {
+        try {
+          if (tried.has(p)) continue;
+          const instance = await listenWithPort(p);
+          return instance;
+        } catch (err) {
+          tried.add(p);
+          if (err?.code === "EADDRINUSE") {
+            console.warn(`Port ${p} in use. Trying next...`);
+            continue;
+          }
+          throw err;
+        }
+      }
+      throw new Error("No available port among [5055, 5001, 5500]");
+    })().catch((error) => {
+      serverPromise = null;
+      throw error;
+    });
+  }
+  return serverPromise;
+}
+
+export async function ensureBackendReady() {
+  await ensureInitialized();
+}
+
+const executedFile = process.argv[1] ? pathToFileURL(process.argv[1]).href : null;
+if (executedFile && executedFile === import.meta.url) {
+  startServer().catch((error) => {
+    console.error("Failed to start backend:", error);
+    process.exit(1);
+  });
+}
+
+export { app };
+export default app;
