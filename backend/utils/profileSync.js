@@ -320,7 +320,7 @@ export async function autoCreateMissingProfile(ownerUid, email, sourceType = 've
   }
 }
 
-export default {
+export {
   syncStartupToVendor,
   syncVendorToStartup,
   bidirectionalSync,
