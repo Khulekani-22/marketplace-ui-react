@@ -6,6 +6,7 @@
   "packageManager": "npm@10.7.0",
   "scripts": {
     "prebuild": "node -e \"require('fs').accessSync('node_modules/vite/dist/node/cli.js')\"",
+    "start": "node backend/server.js",
     "dev": "vite --host localhost",
     "backend": "node backend/server.js",
     "backend:pm2": "pm2 start ecosystem.config.cjs",
