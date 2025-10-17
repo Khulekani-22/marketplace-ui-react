@@ -228,7 +228,7 @@ function MasterLayoutInner({ children }) {
   // Access flags
   const isBasic = !isAdmin && tenantId === "basic";
   // Show wallet/subscriptions to startup, vendor, admin users (wallet-eligible roles)
-  const showWalletLink = ["vendor", "startup", "admin", "member"].includes(tenantId) || isBasic;
+  const showWalletLink = ["vendor", "startup", "admin", "member"].includes(tenantId) || isBasic || isAdmin;
 
   // Debug current state in render
   console.log("🏗️ MasterLayout Render State:", {
