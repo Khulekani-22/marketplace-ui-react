@@ -43,7 +43,11 @@ export default function StartupProfilePage() {
       const email = (user?.email || "").toLowerCase();
       if (!email) return;
       try {
-        const list = await api.get(API_BASE).then((r) => r.data || []);
+        const response = await api.get(API_BASE);
+        const list = Array.isArray(response.data) 
+          ? response.data 
+          : (response.data?.items || []);
+        
         const mine = list.find(
           (s) => (s.ownerUid && s.ownerUid === user.uid) || ((s.contactEmail || s.email || "").toLowerCase() === email)
         );
@@ -68,7 +72,11 @@ export default function StartupProfilePage() {
         }
         // Also check if vendor profile already exists for this user
         try {
-          const vendors = await api.get("/api/data/vendors").then((r) => r.data || []);
+          const vendorResponse = await api.get("/api/data/vendors");
+          const vendors = Array.isArray(vendorResponse.data) 
+            ? vendorResponse.data 
+            : (vendorResponse.data?.items || []);
+          
           const match = vendors.find(
             (v) => (v.ownerUid && v.ownerUid === user.uid) || ((v.contactEmail || v.email || "").toLowerCase() === email)
           );
