@@ -21,9 +21,19 @@ async function loadBackendApp() {
   return app;
 }
 
+
 module.exports = async function handler(req, res) {
-  const app = await loadBackendApp();
-  return app(req, res);
+  try {
+    const app = await loadBackendApp();
+    return app(req, res);
+  } catch (error) {
+    console.error("[Vercel Serverless Handler] Crash:", error);
+    res.status(500).json({
+      error: "Serverless handler crashed",
+      message: error.message,
+      stack: error.stack,
+    });
+  }
 };
 
 module.exports.getApp = loadBackendApp;
