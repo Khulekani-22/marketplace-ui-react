@@ -3,6 +3,7 @@ import { v4 as uuid } from "uuid";
 import { getData, saveData } from "../utils/hybridDataStore.js";
 import { StartupSchema } from "../utils/validators.js";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
+import { syncStartupToVendor } from "../utils/profileSync.js";
 
 const router = Router();
 
@@ -96,6 +97,16 @@ router.post("/", firebaseAuthRequired, async (req, res, next) => {
       result = obj;
     }
     await saveData(data);
+
+    // Auto-sync startup data to vendor profile if exists
+    if (result && (ownerUid || contactEmail)) {
+      const syncResult = await syncStartupToVendor(result);
+      if (syncResult.synced) {
+        console.log('[Startups] Auto-synced to vendor:', syncResult.vendorId);
+        result.syncedToVendor = true;
+        result.lastSyncedAt = syncResult.timestamp;
+      }
+    }
 
     res.status(updated ? 200 : 201).json(result);
   } catch (e) {

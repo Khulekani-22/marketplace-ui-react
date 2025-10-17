@@ -4,6 +4,7 @@ import { getData, saveData } from "../utils/hybridDataStore.js";
 import { isAdminForTenant } from "../middleware/isAdmin.js";
 import { VendorSchema } from "../utils/validators.js";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
+import { syncVendorToStartup } from "../utils/profileSync.js";
 
 const { Router } = express;
 const router = Router();
@@ -125,6 +126,16 @@ router.post("/", firebaseAuthRequired, async (req, res, next) => {
       result = obj;
     }
     await saveData(data);
+
+    // Auto-sync vendor data to startup profile if exists
+    if (result && (ownerUid || contactEmail)) {
+      const syncResult = await syncVendorToStartup(result);
+      if (syncResult.synced) {
+        console.log('[Vendors] Auto-synced to startup:', syncResult.startupId);
+        result.syncedToStartup = true;
+        result.lastSyncedAt = syncResult.timestamp;
+      }
+    }
 
     res.status(updated ? 200 : 201).json(result);
   } catch (e) {

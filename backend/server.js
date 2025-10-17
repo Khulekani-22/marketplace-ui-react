@@ -25,6 +25,7 @@ import assistantRouter from "./routes/assistant.js";
 import messagesRouter from "./routes/messages.js";
 import walletsRouter from "./routes/wallets.js";
 import integrityRouter from "./routes/integrity.js";
+import syncRouter from "./routes/sync.js";
 import { tenantContext } from "./middleware/tenantContext.js";
 import { jwtAuthOptional } from "./middleware/authJWT.js";
 import { firebaseAuthRequired } from "./middleware/authFirebase.js";
@@ -480,6 +481,7 @@ app.use("/api/assistant", assistantRouter);
 app.use("/api/messages", messagesRouter);
 app.use("/api/wallets", walletsRouter);
 app.use("/api/integrity", integrityRouter);
+app.use("/api/sync", syncRouter);
 
 /* --------------------------------- 404 ----------------------------------- */
 app.use((req, res) => {
