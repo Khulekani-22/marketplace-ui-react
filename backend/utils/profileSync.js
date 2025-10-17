@@ -324,6 +324,5 @@ export {
   syncStartupToVendor,
   syncVendorToStartup,
   bidirectionalSync,
-  autoCreateMissingProfile,
   SYNC_FIELDS,
 };
