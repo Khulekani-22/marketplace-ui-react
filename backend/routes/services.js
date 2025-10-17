@@ -152,6 +152,14 @@ router.get("/mine", firebaseAuthRequired, async (req, res) => {
     })
     .map((s) => ({ ...s }));
 
+  console.log(`📋 [/mine] User: ${userEmail}, VendorId: ${vendorId}, UID: ${uid}`);
+  console.log(`📋 [/mine] Total services: ${services.length}, Filtered listings: ${listings.length}`);
+  if (listings.length === 0) {
+    console.log(`📋 [/mine] No listings found. Vendor record:`, vendorRecord);
+    console.log(`📋 [/mine] Filter criteria: vendorId=${vendorId}, uid=${uid}, email=${vendorEmail}, name=${vendorNameLc}`);
+    console.log(`📋 [/mine] Sample service vendorIds:`, services.slice(0, 3).map(s => s?.vendorId));
+  }
+
   const listingIds = new Set();
   listings.forEach((s) => {
     [s?.id, s?.serviceId, s?.vendorId]

@@ -163,6 +163,35 @@ router.get("/my", firebaseAuthRequired, async (req, res) => {
   res.json(items);
 });
 
+// List current user's bookings
+router.get("/bookings/mine", firebaseAuthRequired, async (req, res) => {
+  try {
+    const email = (req.user?.email || "").toLowerCase();
+    const uid = req.user?.uid || "";
+    const data = await getData();
+    const bookings = Array.isArray(data.bookings) ? data.bookings : [];
+    
+    // Filter bookings for current user by email or UID
+    const userBookings = bookings.filter((b) => {
+      const bookingEmail = (b.customerEmail || "").toLowerCase();
+      const bookingUid = String(b.customerId || "");
+      return (bookingEmail === email || (uid && bookingUid === uid)) && !b.canceledAt;
+    });
+    
+    // Sort by most recent first
+    const sorted = userBookings.sort((a, b) => {
+      const dateA = Date.parse(b.bookedAt || b.createdAt || "");
+      const dateB = Date.parse(a.bookedAt || a.createdAt || "");
+      return dateA - dateB;
+    });
+    
+    res.json({ bookings: sorted, total: sorted.length });
+  } catch (error) {
+    console.error('[BOOKINGS] Error fetching user bookings:', error);
+    res.status(500).json({ status: "error", message: "Failed to fetch bookings" });
+  }
+});
+
 // List subscribers for a specific service/listing (tenant-scoped)
 // Returns minimal info: id, email, uid, createdAt. Requires auth.
 router.get("/service/:id", firebaseAuthRequired, async (req, res) => {
