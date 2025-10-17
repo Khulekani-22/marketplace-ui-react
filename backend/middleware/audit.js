@@ -1,36 +1,5 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT = path.resolve(__dirname, "..");
-const DATA_FILE = path.join(ROOT, "auditData.json");
-
-function ensureFileSync() {
-  try {
-    fs.accessSync(DATA_FILE, fs.constants.F_OK);
-  } catch {
-    fs.writeFileSync(DATA_FILE, "[]\n", "utf8");
-  }
-}
-
-function readAllSync() {
-  ensureFileSync();
-  try {
-    const txt = fs.readFileSync(DATA_FILE, "utf8");
-    const json = JSON.parse(txt);
-    return Array.isArray(json) ? json : (json.items || []);
-  } catch {
-    return [];
-  }
-}
-
-function writeAllSync(items) {
-  const tmp = DATA_FILE + ".tmp";
-  fs.writeFileSync(tmp, JSON.stringify(items, null, 2), "utf8");
-  fs.renameSync(tmp, DATA_FILE);
-}
+import { firestore } from '../services/firestore.js';
 
 function nowIso() { return new Date().toISOString(); }
 function norm(x){ return (x||"").toString().trim(); }
@@ -78,15 +47,16 @@ export function auditMutations(req, res, next) {
     return entry;
   }
 
-  res.on("finish", () => {
+
+  res.on("finish", async () => {
     try {
       const status = res.statusCode || 0;
       const entry = buildEntry(status);
-      const all = readAllSync();
-      all.push(entry);
-      writeAllSync(all);
-    } catch {
+      // Write audit log to Firestore
+      await firestore.collection('auditLogs').add(entry);
+    } catch (err) {
       // best-effort; never block response
+      console.error('[Audit] Failed to write audit log to Firestore:', err);
     }
   });
 
