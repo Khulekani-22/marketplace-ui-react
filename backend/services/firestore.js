@@ -1,6 +1,7 @@
 // backend/services/firestore.js
 // Firestore admin SDK setup for server-side (Node.js) use
-import { initializeApp, applicationDefault, cert } from 'firebase-admin/app';
+
+import { initializeApp, cert, getApps, getApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
 // Load service account from environment variable
@@ -9,11 +10,14 @@ if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
 }
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-// Only initialize once
-if (!global._firebaseAdminApp) {
-  global._firebaseAdminApp = initializeApp({
+// Robust singleton pattern for serverless
+let app;
+if (!getApps().length) {
+  app = initializeApp({
     credential: cert(serviceAccount),
   });
+} else {
+  app = getApp();
 }
 
-export const firestore = getFirestore();
+export const firestore = getFirestore(app);
