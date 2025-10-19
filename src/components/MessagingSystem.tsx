@@ -41,6 +41,8 @@ interface ContactSummary {
   lastMessageAt?: string;
   unreadCount?: number;
   thread: ThreadSummary;
+  isInbox?: boolean;
+  isSent?: boolean;
 }
 
 interface ConversationMessage {
@@ -103,7 +105,7 @@ function normalizeMessagesFromThread(thread: any, fallbackContext?: Record<strin
       timestamp,
     };
   });
-  normalized.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  normalized.sort((a: ConversationMessage, b: ConversationMessage) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   return normalized;
 }
 
@@ -208,6 +210,7 @@ function normalizeNewThread(item: any): ThreadSummary {
 const MessagingSystem = () => {
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [contacts, setContacts] = useState<ContactSummary[]>([]);
+  const [viewBox, setViewBox] = useState<'inbox' | 'sent'>('inbox');
   const [selectedContact, setSelectedContact] = useState<ContactSummary | null>(null);
   const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
   const [currentSession, setCurrentSession] = useState<SessionInfo | null>(() => {
@@ -266,6 +269,17 @@ const MessagingSystem = () => {
       return threadList
         .map((thread) => {
           const participants = thread.participants || [];
+          // For inbox, show threads where current user is a recipient
+          // For sent, show threads where current user is sender
+          let isSent = false;
+          let isInbox = false;
+          participants.forEach((p) => {
+            if ((p.email || '').toLowerCase() === sessionEmail) {
+              isInbox = true;
+            } else {
+              isSent = true;
+            }
+          });
           let counterpart = participants.find(
             (participant) => (participant?.email || '').toLowerCase() !== sessionEmail
           );
@@ -297,6 +311,8 @@ const MessagingSystem = () => {
             lastMessageAt: thread.lastMessageAt,
             unreadCount: thread.unreadCount,
             thread,
+            isInbox,
+            isSent,
           };
         })
         .sort((a, b) => {
@@ -375,7 +391,7 @@ const MessagingSystem = () => {
           const rawConversation = Array.isArray(response.data?.conversation) ? response.data.conversation : [];
           const normalized = rawConversation
             .map(normalizeLegacyMessage)
-            .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+            .sort((a: ConversationMessage, b: ConversationMessage) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
           setConversationMessages(normalized);
         } catch (error) {
           console.error('Error fetching legacy conversation:', error);
@@ -383,7 +399,7 @@ const MessagingSystem = () => {
           const fallback = Array.isArray(contact.thread.raw)
             ? contact.thread.raw.map(normalizeLegacyMessage)
             : [];
-          fallback.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+          fallback.sort((a: ConversationMessage, b: ConversationMessage) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
           setConversationMessages(fallback);
         }
       }
@@ -538,6 +554,21 @@ const MessagingSystem = () => {
             </div>
           </div>
         </div>
+        {/* Inbox/Sent Tabs */}
+        <div className='d-flex justify-content-center my-2'>
+          <button
+            className={`btn btn-sm ${viewBox === 'inbox' ? 'btn-primary' : 'btn-outline-primary'} mx-1`}
+            onClick={() => setViewBox('inbox')}
+          >
+            Inbox
+          </button>
+          <button
+            className={`btn btn-sm ${viewBox === 'sent' ? 'btn-primary' : 'btn-outline-primary'} mx-1`}
+            onClick={() => setViewBox('sent')}
+          >
+            Sent
+          </button>
+        </div>
 
         <div className='chat-search'>
           <form>
@@ -547,39 +578,43 @@ const MessagingSystem = () => {
         </div>
 
         <div className='chat-all-list'>
-          {contacts.map((contact) => {
-            const lastMessage = getLastMessageForContact(contact);
-            const unreadCount = getUnreadCount(contact);
-            const lastSnippet = lastMessage ? truncate(lastMessage.content, 30) : 'No messages yet';
-            const lastTimestamp = lastMessage ? formatTime(lastMessage.timestamp) : '';
+          {contacts
+            .filter(contact =>
+              viewBox === 'inbox' ? contact.isInbox : contact.isSent
+            )
+            .map((contact) => {
+              const lastMessage = getLastMessageForContact(contact);
+              const unreadCount = getUnreadCount(contact);
+              const lastSnippet = lastMessage ? truncate(lastMessage.content, 30) : 'No messages yet';
+              const lastTimestamp = lastMessage ? formatTime(lastMessage.timestamp) : '';
 
-            return (
-              <div
-                key={contact.id}
-                className={`chat-sidebar-single ${selectedContact?.id === contact.id ? 'active' : ''}`}
-                onClick={() => {
-                  void selectContact(contact);
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className='img'>
-                  <img src={contact.avatar} alt={contact.name} />
+              return (
+                <div
+                  key={contact.id}
+                  className={`chat-sidebar-single ${selectedContact?.id === contact.id ? 'active' : ''}`}
+                  onClick={() => {
+                    void selectContact(contact);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className='img'>
+                    <img src={contact.avatar} alt={contact.name} />
+                  </div>
+                  <div className='info'>
+                    <h6 className='text-sm mb-1'>{contact.name}</h6>
+                    <p className='mb-0 text-xs'>{lastSnippet}</p>
+                  </div>
+                  <div className='action text-end'>
+                    <p className='mb-0 text-neutral-400 text-xs lh-1'>{lastTimestamp}</p>
+                    {unreadCount > 0 && (
+                      <span className='w-16-px h-16-px text-xs rounded-circle bg-warning-main text-white d-inline-flex align-items-center justify-content-center'>
+                        {unreadCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className='info'>
-                  <h6 className='text-sm mb-1'>{contact.name}</h6>
-                  <p className='mb-0 text-xs'>{lastSnippet}</p>
-                </div>
-                <div className='action text-end'>
-                  <p className='mb-0 text-neutral-400 text-xs lh-1'>{lastTimestamp}</p>
-                  {unreadCount > 0 && (
-                    <span className='w-16-px h-16-px text-xs rounded-circle bg-warning-main text-white d-inline-flex align-items-center justify-content-center'>
-                      {unreadCount}
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
 
