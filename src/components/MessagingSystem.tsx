@@ -269,17 +269,20 @@ const MessagingSystem = () => {
       return threadList
         .map((thread) => {
           const participants = thread.participants || [];
-          // For inbox, show threads where current user is a recipient
-          // For sent, show threads where current user is sender
-          let isSent = false;
-          let isInbox = false;
-          participants.forEach((p) => {
-            if ((p.email || '').toLowerCase() === sessionEmail) {
-              isInbox = true;
-            } else {
-              isSent = true;
-            }
-          });
+          // Find the last message in the thread
+          let lastSenderEmail = '';
+          if (thread.raw && Array.isArray(thread.raw.messages) && thread.raw.messages.length > 0) {
+            const lastMsg = thread.raw.messages[thread.raw.messages.length - 1];
+            lastSenderEmail = (lastMsg.senderEmail || lastMsg.email || '').toLowerCase();
+          } else if (Array.isArray(thread.raw)) {
+            // legacy
+            const lastMsg = thread.raw[thread.raw.length - 1];
+            lastSenderEmail = (lastMsg?.from?.email || '').toLowerCase();
+          }
+          // For inbox, show threads where current user is a participant but not last sender
+          // For sent, show threads where current user is the last sender
+          const isSent = lastSenderEmail === sessionEmail;
+          const isInbox = !isSent && participants.some((p) => (p.email || '').toLowerCase() === sessionEmail);
           let counterpart = participants.find(
             (participant) => (participant?.email || '').toLowerCase() !== sessionEmail
           );
