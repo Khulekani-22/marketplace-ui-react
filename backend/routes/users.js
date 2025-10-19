@@ -241,3 +241,27 @@ router.get("/all", firebaseAuthRequired, async (req, res) => {
 });
 
 export default router;
+
+// Admin-only: batch lookup Firebase UIDs by email
+router.post("/batch-lookup", firebaseAuthRequired, async (req, res) => {
+  try {
+    if (!isAdminRequest(req)) return res.status(403).json({ status: "error", message: "Forbidden" });
+    const emails = Array.isArray(req.body?.emails) ? req.body.emails : [];
+    if (!emails.length) return res.status(400).json({ status: "error", message: "Missing emails array" });
+    // Normalize and dedupe emails
+    const normEmails = Array.from(new Set(emails.map(e => (e || "").trim().toLowerCase()).filter(Boolean)));
+    // Batch lookup UIDs
+    const results = [];
+    for (const email of normEmails) {
+      try {
+        const user = await admin.auth().getUserByEmail(email);
+        results.push({ email, uid: user.uid, displayName: user.displayName || "" });
+      } catch (err) {
+        results.push({ email, error: err?.message || "User not found" });
+      }
+    }
+    res.json({ items: results, count: results.length });
+  } catch (e) {
+    res.status(500).json({ status: "error", message: e?.message || "Batch lookup failed" });
+  }
+});
