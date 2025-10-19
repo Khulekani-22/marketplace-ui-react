@@ -326,12 +326,6 @@ class FirestoreDataStore {
         await this.saveToFirestore(data);
       }
 
-      // Also save to file as backup
-    console.log('💾 Saving backup to file...');
-    const appDataPath = path.resolve(__dirname, '../appData.json');
-      const text = JSON.stringify(data, null, 2);
-      fs.writeFileSync(appDataPath + '.tmp', text);
-      fs.renameSync(appDataPath + '.tmp', appDataPath);
 
       // Update cache
       this.cache = data;
