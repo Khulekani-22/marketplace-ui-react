@@ -659,6 +659,6 @@ const MessagingSystem = () => {
       </div>
     </div>
   );
-};
+}; 
 
 export default MessagingSystem;
