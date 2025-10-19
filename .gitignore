@@ -5,3 +5,4 @@ backend/.env
 *serviceAccount*.json
 secrets/sloane-hub-service-account.json
 .vercel
+.env*.local

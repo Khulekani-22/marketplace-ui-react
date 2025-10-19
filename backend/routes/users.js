@@ -57,7 +57,49 @@ function sanitizeUsersPayload(list = []) {
   return Array.from(seen.values());
 }
 
-// List all user role mappings
+// GET /api/users/all-contacts
+// Returns all users, vendors, and startups for autocomplete
+router.get('/all-contacts', firebaseAuthRequired, async (req, res) => {
+  try {
+    const data = await getData();
+    // Collect users
+    const users = Array.isArray(data.users) ? data.users.map(u => ({
+      email: u.email,
+      name: u.displayName || u.name || u.email,
+      role: u.role || 'member',
+      type: 'user',
+      tenantId: u.tenantId || 'public',
+    })) : [];
+    // Collect vendors
+    const vendors = Array.isArray(data.vendors) ? data.vendors.map(v => ({
+      email: v.contactEmail || v.email,
+      name: v.name || v.companyName || v.contactEmail || v.email,
+      role: v.role || 'vendor',
+      type: 'vendor',
+      tenantId: v.tenantId || 'vendor',
+    })) : [];
+    // Collect startups
+    const startups = Array.isArray(data.startups) ? data.startups.map(s => ({
+      email: s.contactEmail || s.email,
+      name: s.name || s.companyName || s.contactEmail || s.email,
+      role: s.role || 'startup',
+      type: 'startup',
+      tenantId: s.tenantId || 'startup',
+    })) : [];
+    // Merge and deduplicate by email
+    const all = [...users, ...vendors, ...startups];
+    const seen = new Map();
+    for (const entry of all) {
+      if (!entry.email) continue;
+      const key = entry.email.toLowerCase();
+      if (!seen.has(key)) seen.set(key, entry);
+    }
+    res.json({ items: Array.from(seen.values()) });
+  } catch (error) {
+    console.error('Error fetching all contacts:', error);
+    res.status(500).json({ error: 'Failed to fetch contacts' });
+  }
+});
 router.get("/", async (_req, res) => {
   const data = await getData();
   res.json(collectUsers(data));

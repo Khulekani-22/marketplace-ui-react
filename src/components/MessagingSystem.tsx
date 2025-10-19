@@ -220,6 +220,28 @@ const MessagingSystem = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [newMessage, setNewMessage] = useState('');
+  const [showComposeModal, setShowComposeModal] = useState(false);
+  const [composeRecipient, setComposeRecipient] = useState('');
+  const [composeContent, setComposeContent] = useState('');
+  const [composeSending, setComposeSending] = useState(false);
+  type ContactEntry = {
+    email: string;
+    name: string;
+    role: string;
+    type: string;
+    tenantId?: string;
+  };
+  const [allContacts, setAllContacts] = useState<ContactEntry[]>([]);
+  const [recipientQuery, setRecipientQuery] = useState('');
+  const [recipientDropdownOpen, setRecipientDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (showComposeModal) {
+      api.get('/api/users/all-contacts')
+        .then(res => setAllContacts(res.data.items || []))
+        .catch(() => setAllContacts([]));
+    }
+  }, [showComposeModal]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -426,7 +448,7 @@ const MessagingSystem = () => {
     if (Array.isArray(contact.thread.raw)) {
       const normalized = contact.thread.raw
         .map(normalizeLegacyMessage)
-        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        .sort((a: ConversationMessage, b: ConversationMessage) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
       return normalized.length ? normalized[normalized.length - 1] : null;
     }
     return null;
@@ -484,7 +506,14 @@ const MessagingSystem = () => {
             <h6 className='text-md mb-0'>{currentUserName}</h6>
             <p className='mb-0 text-capitalize'>{currentUserStatus}</p>
           </div>
-          <div className='action'>
+          <div className='action d-flex flex-column align-items-end'>
+            <button
+              type='button'
+              className='btn btn-primary btn-sm mb-2'
+              onClick={() => setShowComposeModal(true)}
+            >
+              <Icon icon='mdi:plus' /> Compose
+            </button>
             <div className='btn-group'>
               <button
                 type='button'
@@ -557,96 +586,15 @@ const MessagingSystem = () => {
       <div className='chat-main card'>
         {selectedContact ? (
           <>
+            {/* ...existing code for selected contact and messages... */}
             <div className='chat-sidebar-single active'>
-              <div className='img'>
-                <img src={selectedContact.avatar} alt={selectedContact.name} />
-              </div>
-              <div className='info'>
-                <h6 className='text-md mb-0'>{selectedContact.name}</h6>
-                <p className='mb-0 text-capitalize'>{selectedContact.status}</p>
-              </div>
-              <div className='action d-inline-flex align-items-center gap-3'>
-                <button type='button' className='text-xl text-primary-light'>
-                  <Icon icon='mi:call' />
-                </button>
-                <button type='button' className='text-xl text-primary-light'>
-                  <Icon icon='fluent:video-32-regular' />
-                </button>
-                <div className='btn-group'>
-                  <button
-                    type='button'
-                    className='text-primary-light text-xl'
-                    data-bs-toggle='dropdown'
-                    data-bs-display='static'
-                    aria-expanded='false'
-                  >
-                    <Icon icon='tabler:dots-vertical' />
-                  </button>
-                  <ul className='dropdown-menu dropdown-menu-lg-end border'>
-                    <li>
-                      <button
-                        className='dropdown-item rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2'
-                        type='button'
-                      >
-                        <Icon icon='mdi:clear-circle-outline' />
-                        Clear All
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+              {/* ...existing code... */}
             </div>
-
             <div className='chat-message-list' style={{ maxHeight: '400px', overflowY: 'auto' }}>
-              {conversationMessages.map((message) => {
-                const fromCurrentUser = isFromCurrentUser(message);
-                const avatar = message.senderAvatar || placeholderAvatar(message.senderName || 'User');
-                return (
-                  <div key={message.id} className={`chat-single-message ${fromCurrentUser ? 'right' : 'left'}`}>
-                    {!fromCurrentUser && (
-                      <img
-                        src={avatar}
-                        alt={message.senderName || 'Contact'}
-                        className='avatar-lg object-fit-cover rounded-circle'
-                      />
-                    )}
-                    <div className='chat-message-content'>
-                      <p className='mb-3'>{message.content}</p>
-                      <p className='chat-time mb-0'>
-                        <span>{formatTime(message.timestamp)}</span>
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
+              {/* ...existing code... */}
             </div>
-
             <form className='chat-message-box' onSubmit={handleSendMessage}>
-              <input
-                type='text'
-                name='chatMessage'
-                placeholder='Write message'
-                value={newMessage}
-                onChange={(event) => setNewMessage(event.target.value)}
-                disabled={sending}
-              />
-              <div className='chat-message-box-action'>
-                <button type='button' className='text-xl'>
-                  <Icon icon='ph:link' />
-                </button>
-                <button type='button' className='text-xl'>
-                  <Icon icon='solar:gallery-linear' />
-                </button>
-                <button
-                  type='submit'
-                  className='btn btn-sm btn-primary-600 radius-8 d-inline-flex align-items-center gap-1'
-                  disabled={sending || !newMessage.trim()}
-                >
-                  {sending ? 'Sending...' : 'Send'}
-                  <Icon icon='f7:paperplane' />
-                </button>
-              </div>
+              {/* ...existing code... */}
             </form>
           </>
         ) : (
@@ -654,6 +602,116 @@ const MessagingSystem = () => {
             <Icon icon='fluent:chat-48-regular' className='text-primary' style={{ fontSize: '4rem' }} />
             <h5 className='mt-3 mb-2'>Select a conversation</h5>
             <p className='text-muted'>Choose a contact from the sidebar to start messaging</p>
+          </div>
+        )}
+        {/* Compose Message Modal */}
+        {showComposeModal && (
+          <div className='modal-backdrop show' style={{ zIndex: 1050 }}>
+            <div className='modal d-block' tabIndex={-1} role='dialog' style={{ zIndex: 1060 }}>
+              <div className='modal-dialog modal-dialog-centered' role='document'>
+                <div className='modal-content'>
+                  <div className='modal-header'>
+                    <h5 className='modal-title'>Compose New Message</h5>
+                    <button type='button' className='btn-close' aria-label='Close' onClick={() => setShowComposeModal(false)} />
+                  </div>
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!composeRecipient.trim() || !composeContent.trim()) return;
+                      setComposeSending(true);
+                      try {
+                        await api.post('/api/messages', {
+                          to: composeRecipient.trim(),
+                          subject: `Message from ${currentUserName}`,
+                          content: composeContent.trim(),
+                          priority: 'normal',
+                        });
+                        setComposeRecipient('');
+                        setComposeContent('');
+                        setShowComposeModal(false);
+                        toast.success('Message sent');
+                        await loadThreads({ silent: true });
+                      } catch (error: any) {
+                        toast.error(error?.response?.data?.message || 'Failed to send message');
+                      } finally {
+                        setComposeSending(false);
+                      }
+                    }}
+                  >
+                    <div className='modal-body'>
+                      <div className='mb-3'>
+                        <label className='form-label'>Recipient Email</label>
+                        <div style={{ position: 'relative' }}>
+                          <input
+                            type='email'
+                            className='form-control'
+                            value={composeRecipient}
+                            onChange={e => {
+                              setComposeRecipient(e.target.value);
+                              setRecipientQuery(e.target.value);
+                              setRecipientDropdownOpen(true);
+                            }}
+                            onFocus={() => setRecipientDropdownOpen(true)}
+                            onBlur={() => setTimeout(() => setRecipientDropdownOpen(false), 150)}
+                            autoComplete='off'
+                            required
+                          />
+                          {recipientDropdownOpen && recipientQuery.trim() && (
+                            <div style={{ position: 'absolute', zIndex: 100, top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', maxHeight: 200, overflowY: 'auto', borderRadius: 4 }}>
+                              {allContacts
+                                .filter(c =>
+                                  c.email && c.email.toLowerCase().includes(recipientQuery.toLowerCase()) ||
+                                  c.name && c.name.toLowerCase().includes(recipientQuery.toLowerCase())
+                                )
+                                .slice(0, 10)
+                                .map((c, idx) => (
+                                  <div
+                                    key={c.email + idx}
+                                    style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                                    onMouseDown={() => {
+                                      setComposeRecipient(c.email);
+                                      setRecipientQuery(c.email);
+                                      setRecipientDropdownOpen(false);
+                                    }}
+                                  >
+                                    <span style={{ fontWeight: 500 }}>{c.name}</span>
+                                    <span style={{ color: '#888', marginLeft: 8 }}>{c.email}</span>
+                                    <span style={{ color: '#aaa', marginLeft: 8, fontSize: '0.9em' }}>({c.role})</span>
+                                  </div>
+                                ))}
+                              {allContacts.filter(c =>
+                                c.email && c.email.toLowerCase().includes(recipientQuery.toLowerCase()) ||
+                                c.name && c.name.toLowerCase().includes(recipientQuery.toLowerCase())
+                              ).length === 0 && (
+                                <div style={{ padding: '8px 12px', color: '#888' }}>No matches found</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className='mb-3'>
+                        <label className='form-label'>Message</label>
+                        <textarea
+                          className='form-control'
+                          rows={4}
+                          value={composeContent}
+                          onChange={(e) => setComposeContent(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className='modal-footer'>
+                      <button type='button' className='btn btn-secondary' onClick={() => setShowComposeModal(false)}>
+                        Cancel
+                      </button>
+                      <button type='submit' className='btn btn-primary' disabled={composeSending || !composeRecipient.trim() || !composeContent.trim()}>
+                        {composeSending ? 'Sending...' : 'Send'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
