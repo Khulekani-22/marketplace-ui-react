@@ -269,20 +269,23 @@ const MessagingSystem = () => {
       return threadList
         .map((thread) => {
           const participants = thread.participants || [];
-          // Find the last message in the thread
-          let lastSenderEmail = '';
-          if (thread.raw && Array.isArray(thread.raw.messages) && thread.raw.messages.length > 0) {
-            const lastMsg = thread.raw.messages[thread.raw.messages.length - 1];
-            lastSenderEmail = (lastMsg.senderEmail || lastMsg.email || '').toLowerCase();
+          // For sent, check if ANY message in the thread was sent by the current user
+          let hasSent = false;
+          if (thread.raw && Array.isArray(thread.raw.messages)) {
+            hasSent = thread.raw.messages.some((msg: any) => {
+              const sender = (msg.senderEmail || msg.email || '').toLowerCase();
+              return sender === sessionEmail;
+            });
           } else if (Array.isArray(thread.raw)) {
             // legacy
-            const lastMsg = thread.raw[thread.raw.length - 1];
-            lastSenderEmail = (lastMsg?.from?.email || '').toLowerCase();
+            hasSent = thread.raw.some((msg: any) => {
+              const sender = (msg?.from?.email || '').toLowerCase();
+              return sender === sessionEmail;
+            });
           }
-          // For inbox, show threads where current user is a participant but not last sender
-          // For sent, show threads where current user is the last sender
-          const isSent = lastSenderEmail === sessionEmail;
-          const isInbox = !isSent && participants.some((p) => (p.email || '').toLowerCase() === sessionEmail);
+          // For inbox, show threads where current user is a participant but not the only sender
+          const isSent = hasSent;
+          const isInbox = participants.some((p) => (p.email || '').toLowerCase() === sessionEmail);
           let counterpart = participants.find(
             (participant) => (participant?.email || '').toLowerCase() !== sessionEmail
           );
