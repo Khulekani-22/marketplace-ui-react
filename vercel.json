@@ -4,7 +4,8 @@
   "functions": {
     "api/server.js": {
       "maxDuration": 30,
-  "includeFiles": "backend/**,secrets/sloane-hub-service-account.json"
+      "includeFiles": "backend/**,secrets/sloane-hub-service-account.json",
+      "excludeFiles": "backend/node_modules/**"
     }
   },
   "rewrites": [

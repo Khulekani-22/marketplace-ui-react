@@ -19,6 +19,7 @@ import tenantsRouter from "./routes/tenants.js";
 import subscriptionsRouter from "./routes/subscriptions.js";
 import usersRouter from "./routes/users.js";
 import adminRouter from "./routes/admin.js";
+import paymentRoutes from "./routes/payments.js";
 import { getData, saveData } from "./utils/hybridDataStore.js";
 import auditLogsRouter from "./routes/auditLogs.js";
 import assistantRouter from "./routes/assistant.js";
@@ -38,6 +39,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+// Attach payment routes (serverless-compatible)
+app.use("/api/payments", paymentRoutes);
 const DEFAULT_PORT = 5055;
 const PORT = Number(process.env.PORT || DEFAULT_PORT);
 
