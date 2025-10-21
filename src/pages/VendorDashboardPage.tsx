@@ -60,6 +60,7 @@ export default function VendorDashboardPage() {
 		const [loading, setLoading] = useState(false);
 		const [myListings, setMyListings] = useState<Listing[]>([]);
 		const [wallet, setWallet] = useState<number>(0);
+		const [stats, setStats] = useState<any>(null);
 		const { appData } = useAppSync();
 
 		// --- Calendar helpers directly after state ---
@@ -78,27 +79,24 @@ export default function VendorDashboardPage() {
 			});
 		}
 
-	// Fetch bookings, listings, and wallet
-	useEffect(() => {
-		(async () => {
-			if (!vendorId) return;
-			setLoading(true);
-			try {
-				// Bookings
-				const bookingsResp = await api.get(`/api/bookings/vendor/${encodeURIComponent(vendorId)}`);
-				setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
-				// Listings
-				const listingsResp = await api.get(`/api/listings/vendor/${encodeURIComponent(vendorId)}`);
-				setMyListings(Array.isArray(listingsResp.data?.listings) ? listingsResp.data.listings : []);
-				// Wallet
-				const walletResp = await api.get(`/api/wallet/${encodeURIComponent(vendorId)}`);
-				setWallet(Number(walletResp.data?.balance || 0));
-			} catch (e) {
-				setErr("Failed to load dashboard data");
-			}
-			setLoading(false);
-		})();
-	}, [vendorId]);
+       // Fetch vendor dashboard stats (bookings, listings, wallet, etc.)
+       useEffect(() => {
+	       (async () => {
+		       if (!vendorId) return;
+		       setLoading(true);
+		       try {
+			       const statsResp = await api.get(`/api/vendors/${encodeURIComponent(vendorId)}/stats`);
+			       const statsData = statsResp.data || {};
+			       setStats(statsData);
+			       setBookings(Array.isArray(statsData?.listings) ? [] : Array.isArray(statsData?.bookingStats?.bookings) ? statsData.bookingStats.bookings : []);
+			       setMyListings(Array.isArray(statsData?.listings) ? statsData.listings : []);
+			       setWallet(Number(statsData?.bookingStats?.revenue || 0));
+		       } catch (e) {
+			       setErr("Failed to load dashboard data");
+		       }
+		       setLoading(false);
+	       })();
+       }, [vendorId]);
 
 	// Metrics
 	const metrics = useMemo(() => {
