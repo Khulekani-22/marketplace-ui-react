@@ -10,8 +10,10 @@ import {
   where, 
   orderBy, 
   limit,
+  startAfter,
   onSnapshot,
-  writeBatch
+  writeBatch,
+  getCountFromServer
 } from 'firebase/firestore';
 import { db } from './firebase.js';
 
@@ -158,65 +160,182 @@ class FirestoreService {
   }
 
   /**
-   * Get services with filtering and pagination
+   * Get services with server-side filtering and cursor-friendly pagination.
+   * Falls back to limited client filtering for free-text search while avoiding
+   * reading the entire collection. Returns `hasMore` and `nextCursor` so callers
+   * can request additional batches without repeating the initial work.
    */
   async getServices({ 
-    category = null, 
-    vendor = null, 
-    minPrice = null, 
-    maxPrice = null, 
+    category = null,
+    vendor = null,
+    minPrice = null,
+    maxPrice = null,
     featured = null,
     search = null,
+    tenantId = null,
     page = 1,
-    pageSize = 20
+    pageSize = 20,
+    cursor = null,
+    sortBy = null,
+    includeTotal = true
   } = {}) {
     try {
-      const conditions = [];
+      const servicesRef = collection(db, 'services');
+      const whereConstraints = [];
 
       if (category) {
-        conditions.push({ field: 'category', operator: '==', value: category });
+        whereConstraints.push(where('category', '==', category));
       }
 
       if (vendor) {
-        conditions.push({ field: 'vendor', operator: '==', value: vendor });
+        whereConstraints.push(where('vendor', '==', vendor));
+      }
+
+      if (tenantId) {
+        const tenantFilter = tenantId === 'vendor' ? 'public' : tenantId;
+        whereConstraints.push(where('tenantId', '==', tenantFilter));
       }
 
       if (featured !== null) {
-        conditions.push({ field: 'featured', operator: '==', value: featured });
+        whereConstraints.push(where('featured', '==', Boolean(featured)));
       }
 
-      // Note: Firestore doesn't support range queries with other filters easily
-      // For price filtering, we'll fetch all and filter client-side (not ideal for large datasets)
-      let services = await this.queryCollection('services', conditions);
+      const numericMin = minPrice !== null ? Number(minPrice) : null;
+      const numericMax = maxPrice !== null ? Number(maxPrice) : null;
+      const usePriceRange = numericMin !== null || numericMax !== null;
 
-      // Client-side filtering for complex conditions
-      if (minPrice !== null) {
-        services = services.filter(s => Number(s.price) >= Number(minPrice));
+      if (numericMin !== null) {
+        whereConstraints.push(where('price', '>=', numericMin));
       }
 
-      if (maxPrice !== null) {
-        services = services.filter(s => Number(s.price) <= Number(maxPrice));
+      if (numericMax !== null) {
+        whereConstraints.push(where('price', '<=', numericMax));
       }
 
-      if (search) {
-        const searchLower = search.toLowerCase();
-        services = services.filter(s => 
-          s.title?.toLowerCase().includes(searchLower) ||
-          s.description?.toLowerCase().includes(searchLower) ||
-          s.vendor?.toLowerCase().includes(searchLower)
-        );
+      const defaultSortField = usePriceRange ? 'price' : 'createdAt';
+      const sortField = usePriceRange ? 'price' : (sortBy?.field || defaultSortField);
+      const sortDirection = sortBy?.direction || (usePriceRange ? 'asc' : 'desc');
+      const normalizedDirection = sortDirection === 'asc' ? 'asc' : 'desc';
+      const orderConstraints = [orderBy(sortField, normalizedDirection)];
+
+      const normalizedPageSize = Math.max(1, Number(pageSize) || 20);
+      const normalizedPage = Math.max(1, Number(page) || 1);
+      const fetchLimit = normalizedPageSize + 1;
+      const MAX_BATCHES = 10; // Prevent unbounded scans
+
+      const searchTerm = typeof search === 'string' && search.trim()
+        ? search.trim().toLowerCase()
+        : null;
+
+      const skipOffset = cursor ? 0 : (normalizedPage - 1) * normalizedPageSize;
+      const targetMatchCount = skipOffset + normalizedPageSize;
+
+      let cursorSnapshot = null;
+      if (cursor) {
+        if (typeof cursor === 'object' && cursor.id) {
+          cursorSnapshot = cursor;
+        } else if (typeof cursor === 'string') {
+          const existing = await getDoc(doc(db, 'services', cursor));
+          if (existing.exists()) {
+            cursorSnapshot = existing;
+          } else {
+            console.warn(`[FirestoreService] Invalid cursor received: ${cursor}`);
+          }
+        }
       }
 
-      // Pagination
-      const total = services.length;
-      const start = (page - 1) * pageSize;
-      const paginatedServices = services.slice(start, start + pageSize);
+      const countPromise = includeTotal && !searchTerm
+        ? getCountFromServer(query(servicesRef, ...whereConstraints)).catch((err) => {
+            console.warn('[FirestoreService] Count query failed', err);
+            return null;
+          })
+        : null;
+
+      const matchingDocs = [];
+      let lastProcessedDoc = cursorSnapshot;
+      let batches = 0;
+      let sawMoreDocs = false;
+      let currentCursor = cursorSnapshot;
+
+      while (matchingDocs.length < targetMatchCount && batches < MAX_BATCHES) {
+        batches += 1;
+        const constraints = [...whereConstraints, ...orderConstraints];
+        if (currentCursor) {
+          constraints.push(startAfter(currentCursor));
+        }
+        constraints.push(limit(fetchLimit));
+
+        const snapshot = await getDocs(query(servicesRef, ...constraints));
+        if (snapshot.empty) {
+          break;
+        }
+
+        const docs = snapshot.docs;
+        const hasMoreInBatch = docs.length === fetchLimit;
+        sawMoreDocs = sawMoreDocs || hasMoreInBatch;
+
+        docs.forEach((docSnap) => {
+          const data = {
+            id: docSnap.id,
+            ...docSnap.data()
+          };
+
+          if (searchTerm) {
+            const haystack = [data.title, data.description, data.vendor, data.category]
+              .filter(Boolean)
+              .map((val) => String(val).toLowerCase());
+            const match = haystack.some((entry) => entry.includes(searchTerm));
+            if (!match) {
+              return;
+            }
+          }
+
+          matchingDocs.push({ doc: docSnap, data });
+        });
+
+        lastProcessedDoc = docs[docs.length - 1];
+        currentCursor = lastProcessedDoc;
+
+        if (!hasMoreInBatch) {
+          break;
+        }
+      }
+
+      if (matchingDocs.length > targetMatchCount) {
+        sawMoreDocs = true;
+      }
+
+      if (batches >= MAX_BATCHES && currentCursor) {
+        sawMoreDocs = true;
+      }
+
+      const pageDocs = matchingDocs.slice(skipOffset, skipOffset + normalizedPageSize);
+
+      const lastReturnedDoc = pageDocs.length ? pageDocs[pageDocs.length - 1].doc : lastProcessedDoc;
+      const hasMore = Boolean(
+        (matchingDocs.length > skipOffset + normalizedPageSize) ||
+        (sawMoreDocs && lastProcessedDoc)
+      );
+      const nextCursorValue = hasMore && lastReturnedDoc ? lastReturnedDoc.id : null;
+
+      let total = pageDocs.length;
+      if (countPromise) {
+        const countSnapshot = await countPromise;
+        if (countSnapshot) {
+          const aggregateData = countSnapshot.data();
+          if (aggregateData && typeof aggregateData.count === 'number') {
+            total = aggregateData.count;
+          }
+        }
+      }
 
       return {
-        page: Number(page),
-        pageSize: Number(pageSize),
+        page: normalizedPage,
+        pageSize: normalizedPageSize,
         total,
-        items: paginatedServices
+        items: pageDocs.map((entry) => entry.data),
+        hasMore,
+        nextCursor: nextCursorValue
       };
     } catch (error) {
       console.error('Error fetching services:', error);

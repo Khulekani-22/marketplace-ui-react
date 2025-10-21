@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { hasFullAccess, normalizeRole } from "../utils/roles";
 
 const LS_APP_DATA_KEY = "sl_app_data_cache_v1";
+const SYNC_FRESHNESS_MS = 60 * 1000; // 1 minute cache window
 
 function safeParse(raw: string | null) {
   if (!raw) return null;
@@ -50,7 +51,7 @@ const initialAppData = (() => {
 export function AppSyncProvider({ children }) {
   const location = useLocation();
   const [appData, setAppData] = useState<any>(initialAppData);
-  const [appDataLoading, setAppDataLoading] = useState(false);
+  const [appDataLoading, setAppDataLoading] = useState(() => !initialAppData);
   const [appDataError, setAppDataError] = useState("");
   const [role, setRole] = useState(() => normalizeRole(sessionStorage.getItem("role")));
 
@@ -62,6 +63,8 @@ export function AppSyncProvider({ children }) {
   const [tenantId, setTenantId] = useState(() => normalizeTenant(sessionStorage.getItem("tenantId")));
   const [lastSyncAt, setLastSyncAt] = useState(0);
   const isSyncingRef = useRef(false);
+  const syncPromiseRef = useRef<Promise<void> | null>(null);
+  const lastSyncRef = useRef(0);
 
   const isAdmin = hasFullAccess(role);
 
@@ -77,20 +80,28 @@ export function AppSyncProvider({ children }) {
       const nextTenant = normalizeTenant(data?.tenantId);
       const email = data?.email || user.email || null;
       const uid = data?.uid || user.uid || null;
-      sessionStorage.setItem("role", nextRole);
-      sessionStorage.setItem("tenantId", nextTenant);
-      if (email) sessionStorage.setItem("userEmail", email);
-      else sessionStorage.removeItem("userEmail");
-      if (uid) sessionStorage.setItem("userId", uid);
-      else sessionStorage.removeItem("userId");
+      try {
+        sessionStorage.setItem("role", nextRole);
+        sessionStorage.setItem("tenantId", nextTenant);
+        if (email) sessionStorage.setItem("userEmail", email);
+        else sessionStorage.removeItem("userEmail");
+        if (uid) sessionStorage.setItem("userId", uid);
+        else sessionStorage.removeItem("userId");
+      } catch {
+        /* storage unavailable */
+      }
       setRole(nextRole);
       setTenantId(nextTenant);
     } catch {
       if (!auth.currentUser) {
-        sessionStorage.removeItem("role");
-        sessionStorage.removeItem("tenantId");
-        sessionStorage.removeItem("userEmail");
-        sessionStorage.removeItem("userId");
+        try {
+          sessionStorage.removeItem("role");
+          sessionStorage.removeItem("tenantId");
+          sessionStorage.removeItem("userEmail");
+          sessionStorage.removeItem("userId");
+        } catch {
+          /* storage unavailable */
+        }
         setRole("member");
         setTenantId("vendor");
       }
@@ -98,8 +109,6 @@ export function AppSyncProvider({ children }) {
   }, [normalizeTenant]);
 
   const refreshAppData = useCallback(async () => {
-    setAppDataLoading(true);
-    setAppDataError("");
     try {
       const { data } = await api.get("/api/lms/live", {
         suppressToast: true,
@@ -108,71 +117,119 @@ export function AppSyncProvider({ children }) {
       const next = data || null;
       setAppData(next);
       writeCachedAppData(next);
+      setAppDataError("");
+      return true;
     } catch (e) {
-      // API failed: try to use cached data, but don't fallback to bundled JSON
+      const err: any = e;
       const cached = readCachedAppData();
+      setAppData((prev) => {
+        if (prev) return prev;
+        if (cached) return cached;
+        return null;
+      });
       if (cached) {
-        setAppData(cached);
         console.warn('[AppSync] Using cached data, API unavailable');
       } else {
-        setAppData(null);
         console.error('[AppSync] No data available - API failed and no cache');
       }
-      const err: any = e;
       const isNetwork = err?.code === "ERR_NETWORK";
       if (!isNetwork) {
         setAppDataError(
           err?.response?.data?.message || err?.message || "Failed to load app data from API"
         );
       }
-    } finally {
-      setAppDataLoading(false);
+      return false;
     }
   }, []);
 
-  const syncNow = useCallback(async () => {
-    if (isSyncingRef.current) return;
-    isSyncingRef.current = true;
-    try {
-      await refreshRole();
-      await refreshAppData();
-      setLastSyncAt(Date.now());
-      try {
-        await writeAuditLog({
-          action: "PAGE_VIEW",
-          userEmail: auth.currentUser?.email || sessionStorage.getItem("userEmail") || null,
-          targetType: "route",
-          targetId: location.pathname,
-          metadata: {
-            role: sessionStorage.getItem("role") || role,
-            tenantId: normalizeTenant(sessionStorage.getItem("tenantId")) || tenantId,
-          },
-        });
-      } catch {}
-    } finally {
-      isSyncingRef.current = false;
-    }
-  }, [location.pathname, refreshAppData, refreshRole, role, tenantId, normalizeTenant]);
+  const syncNow = useCallback(
+    async (options: { force?: boolean; background?: boolean; reason?: string; targetPath?: string } = {}) => {
+      const { force = false, background = false, targetPath, reason } = options;
 
-  // Sync on route change as requested
+      const now = Date.now();
+      const age = now - lastSyncRef.current;
+      if (!force && appData && age < SYNC_FRESHNESS_MS) {
+        return syncPromiseRef.current ?? Promise.resolve();
+      }
+
+      if (isSyncingRef.current && syncPromiseRef.current) {
+        return syncPromiseRef.current;
+      }
+
+      const shouldShowLoading = !background || !appData;
+      if (shouldShowLoading) setAppDataLoading(true);
+      if (!background) setAppDataError("");
+      isSyncingRef.current = true;
+
+      const job = (async () => {
+        try {
+          await Promise.all([refreshRole(), refreshAppData()]);
+          const stamp = Date.now();
+          lastSyncRef.current = stamp;
+          setLastSyncAt(stamp);
+          try {
+            const storedRole = (() => {
+              try { return sessionStorage.getItem("role"); } catch { return null; }
+            })();
+            const storedTenant = (() => {
+              try { return sessionStorage.getItem("tenantId"); } catch { return null; }
+            })();
+            const storedEmail = (() => {
+              try { return sessionStorage.getItem("userEmail"); } catch { return null; }
+            })();
+            await writeAuditLog({
+              action: "PAGE_VIEW",
+              userEmail: auth.currentUser?.email || storedEmail || null,
+              targetType: "route",
+              targetId: targetPath || location.pathname,
+              metadata: {
+                role: storedRole || role,
+                tenantId: normalizeTenant(storedTenant) || tenantId,
+                reason: reason || "auto",
+              },
+            });
+          } catch {}
+        } finally {
+          isSyncingRef.current = false;
+          if (shouldShowLoading) setAppDataLoading(false);
+          syncPromiseRef.current = null;
+        }
+      })();
+
+      syncPromiseRef.current = job;
+      return job;
+    },
+    [appData, location.pathname, normalizeTenant, refreshAppData, refreshRole, role, tenantId]
+  );
+
+  // Sync on route change with background refresh when data already cached
   useEffect(() => {
-    syncNow();
-  }, [syncNow]);
+    syncNow({ background: Boolean(appData), reason: "route-change" });
+  }, [location.pathname, appData, syncNow]);
 
   // Also sync immediately on sign-in (axios API-first via api client with token)
   useEffect(() => {
     const unsub = onIdTokenChanged(auth, async (user) => {
       if (user) {
-        try { await syncNow(); } catch {}
+        try { await syncNow({ force: true, reason: "auth-change" }); } catch {}
       } else {
         // On sign-out: clear role/appData (UI may still use local fallback where needed)
         setRole(sessionStorage.getItem("role") || "member");
         setTenantId(normalizeTenant(sessionStorage.getItem("tenantId")));
         setAppData(null);
+        setAppDataLoading(() => !initialAppData);
+        setAppDataError("");
+        setLastSyncAt(0);
+        lastSyncRef.current = 0;
+        syncPromiseRef.current = null;
       }
     });
     return () => unsub();
   }, [syncNow, normalizeTenant]);
+
+  useEffect(() => {
+    lastSyncRef.current = lastSyncAt;
+  }, [lastSyncAt]);
 
   const value = useMemo(
     () => ({ appData, appDataLoading, appDataError, role, tenantId, isAdmin, lastSyncAt, syncNow }),

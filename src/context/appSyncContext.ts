@@ -8,5 +8,5 @@ export const AppSyncContext = createContext({
   tenantId: "vendor",
   isAdmin: false,
   lastSyncAt: 0,
-  syncNow: async () => {},
+  syncNow: async (_options?: { force?: boolean; background?: boolean; reason?: string; targetPath?: string }) => {},
 });

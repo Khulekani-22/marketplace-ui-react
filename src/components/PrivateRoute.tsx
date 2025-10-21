@@ -2,31 +2,28 @@
 import { useEffect, useRef, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { auth } from "../firebase.js";
-import { onAuthStateChanged } from "firebase/auth";
+import { useAuth } from "../context/AuthContext.tsx";
 
 export default function PrivateRoute({ children }) {
-  const [user, setUser] = useState<typeof auth.currentUser | undefined>(undefined); // undefined = loading
+  const { user, loading } = useAuth();
   const location = useLocation();
 
   const [lostSession, setLostSession] = useState(false);
   const prevUserRef = useRef<typeof auth.currentUser>(auth.currentUser);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, (u) => {
-      const prev = prevUserRef.current;
-      let manualLogout = false;
-      try { manualLogout = sessionStorage.getItem("sl_manual_logout") === "1"; } catch { manualLogout = false; }
-      const justLostSession = Boolean(prev && !u && !manualLogout);
-      setLostSession(justLostSession);
-      if (!u) {
-        try { sessionStorage.removeItem("sl_manual_logout"); } catch {}
-      }
-      setUser(u || null);
-      prevUserRef.current = u;
-    });
-  }, []);
+    const prev = prevUserRef.current;
+    let manualLogout = false;
+    try { manualLogout = sessionStorage.getItem("sl_manual_logout") === "1"; } catch { manualLogout = false; }
+    const justLostSession = Boolean(prev && !user && !manualLogout);
+    setLostSession(justLostSession);
+    if (!user) {
+      try { sessionStorage.removeItem("sl_manual_logout"); } catch {}
+    }
+    prevUserRef.current = user as any;
+  }, [user]);
 
-  if (user === undefined) return null; // or spinner
+  if (loading) return null; // or spinner when auth pending
   return user ? children : (
     <Navigate
       to="/login"

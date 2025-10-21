@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { auth } from '../firebase.js';
 import { api } from '../lib/api';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext.tsx';
 
 /**
  * Wallet types (matching backend structure)
@@ -47,6 +47,7 @@ export interface WalletResponse {
  * Replaces direct Firestore operations with backend routes
  */
 export function useWallet() {
+  const { user } = useAuth();
   const [wallet, setWallet] = useState<WalletRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [eligible, setEligible] = useState(false);
@@ -55,7 +56,7 @@ export function useWallet() {
   const fetchWallet = useCallback(async () => {
     try {
       // Skip if not authenticated
-      if (!auth.currentUser) {
+      if (!user) {
         console.log('⏭️ Skipping wallet fetch - user not authenticated');
         setLoading(false);
         setEligible(false);
@@ -86,7 +87,7 @@ export function useWallet() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const redeemCredits = useCallback(async (amount: number, options: RedeemOptions = {}): Promise<WalletResponse> => {
     try {
@@ -166,23 +167,18 @@ export function useWallet() {
     fetchWallet();
   }, [fetchWallet]);
 
-  // Listen for auth state changes and refresh wallet
+  // React to auth state changes via context
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        // User logged in, fetch wallet
-        fetchWallet();
-      } else {
-        // User logged out, clear wallet
-        setLoading(false);
-        setEligible(false);
-        setWallet(null);
-        setError(null);
-      }
-    });
+    if (!user) {
+      setLoading(false);
+      setEligible(false);
+      setWallet(null);
+      setError(null);
+      return;
+    }
 
-    return () => unsubscribe();
-  }, [fetchWallet]);
+    fetchWallet();
+  }, [user, fetchWallet]);
 
   return {
     wallet,

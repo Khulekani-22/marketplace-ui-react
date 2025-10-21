@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 import App from "./App.jsx";
 import { VendorProvider } from "./context/VendorContext";
 import { MessagesProvider } from "./context/MessagesContext.tsx";
+import { AuthProvider } from "./context/AuthContext.tsx";
 
 console.log('🚀 Main.jsx is loading...');
 
@@ -48,11 +49,13 @@ createRoot(rootEl).render(
   // <React.StrictMode> can be re-enabled if desired
   <BrowserRouter>
     <ToastContainer position="top-right" autoClose={4000} newestOnTop closeOnClick pauseOnFocusLoss={false} />
-    <VendorProvider>
-      <MessagesProvider>
-        <App />
-      </MessagesProvider>
-    </VendorProvider>
+    <AuthProvider>
+      <VendorProvider>
+        <MessagesProvider>
+          <App />
+        </MessagesProvider>
+      </VendorProvider>
+    </AuthProvider>
   </BrowserRouter>
 );
 
