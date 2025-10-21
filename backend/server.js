@@ -32,7 +32,6 @@ import { jwtAuthOptional } from "./middleware/authJWT.js";
 import { firebaseAuthRequired } from "./middleware/authFirebase.js";
 import { requireAdmin } from "./middleware/isAdmin.js";
 import { auditMutations } from "./middleware/audit.js";
-import bookingsRouter from "./routes/bookings.js";
 
 dotenv.config();
 
@@ -42,7 +41,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 // Attach payment routes (serverless-compatible)
 app.use("/api/payments", paymentRoutes);
-app.use("/api/bookings", bookingsRouter);
 const DEFAULT_PORT = 5055;
 const PORT = Number(process.env.PORT || DEFAULT_PORT);
 

@@ -1,8 +1,25 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { api } from "../lib/api";
 import useReactApexChart from "../hook/useReactApexChart";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
+
+interface Booking {
+  id: string;
+  serviceId: string;
+  serviceTitle?: string;
+  vendorName?: string;
+  vendor?: string;
+  scheduledDate?: string;
+  scheduledSlot?: string;
+  status?: string;
+  price?: number;
+  bookedAt?: string;
+  imageUrl?: string;
+  meetingLink?: string;
+}
 
 const MarketplaceDetailsLayer = () => {
   let { timeSeriesChartSeries, timeSeriesChartOptions } = useReactApexChart();
@@ -11,9 +28,66 @@ const MarketplaceDetailsLayer = () => {
     setIsStarred(!isStarred);
   };
 
+  // Booking details state
+  const [booking, setBooking] = useState<Booking | null>(null);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+
+  // Helper to get query param
+  function getQueryParam(name: string): string | null {
+    const params = new URLSearchParams(location.search);
+    return params.get(name);
+  }
+
+  useEffect(() => {
+    const serviceId = getQueryParam("id");
+    if (!serviceId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    api.get("/api/subscriptions/bookings/mine")
+      .then(({ data }) => {
+        if (Array.isArray(data?.bookings)) {
+          const found = data.bookings.find((b: Booking) => String(b.serviceId) === String(serviceId));
+          setBooking(found || null);
+        } else {
+          setBooking(null);
+        }
+      })
+      .catch(() => setBooking(null))
+      .finally(() => setLoading(false));
+  }, [location.search]);
+
   return (
     <>
       <div className='row gy-4'>
+        {/* Booking details section */}
+        <div className='col-12 mb-4'>
+          {loading ? (
+            <div className='alert alert-info'>Loading booking details…</div>
+          ) : booking ? (
+            <div className='card shadow-sm p-3 mb-3'>
+              <h5 className='mb-2'>Booking Details</h5>
+              <div className='mb-2'><strong>Service:</strong> {booking.serviceTitle || booking.serviceId}</div>
+              <div className='mb-2'><strong>Vendor:</strong> {booking.vendorName || booking.vendor || "—"}</div>
+              <div className='mb-2'><strong>Date:</strong> {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : "—"}</div>
+              <div className='mb-2'><strong>Time Slot:</strong> {booking.scheduledSlot || "—"}</div>
+              <div className='mb-2'><strong>Status:</strong> {booking.status || "—"}</div>
+              <div className='mb-2'><strong>Price:</strong> R {Number(booking.price || 0).toLocaleString()}</div>
+              {booking.meetingLink ? (
+                <div className='mb-2'>
+                  <strong>Meeting Link:</strong> <a href={booking.meetingLink} target='_blank' rel='noopener noreferrer'>{booking.meetingLink}</a>
+                  <button className='btn btn-sm btn-outline-secondary ms-2' onClick={() => booking.meetingLink && navigator.clipboard.writeText(booking.meetingLink)}>Copy Link</button>
+                </div>
+              ) : (
+                <div className='mb-2'><strong>Meeting Link:</strong> <span className='text-muted'>Not available yet</span></div>
+              )}
+            </div>
+          ) : (
+            <div className='alert alert-warning'>No booking found for this service.</div>
+          )}
+        </div>
         <div className='col-xxl-9 col-lg-8'>
           <div className='card h-100 p-0 radius-12'>
             <div className='card-body px-24 py-32'>

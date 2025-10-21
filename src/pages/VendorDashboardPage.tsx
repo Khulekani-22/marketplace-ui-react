@@ -5,6 +5,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Modal } from "react-bootstrap";
 import MasterLayout from "../masterLayout/MasterLayout";
 import { useVendor } from "../context/useVendor";
+import { useWallet } from "../hook/useWalletAxios";
 import { api } from "../lib/api";
 import { useAppSync } from "../context/useAppSync";
 import { Link } from "react-router-dom";
@@ -59,8 +60,8 @@ export default function VendorDashboardPage() {
 		const [err, setErr] = useState("");
 		const [loading, setLoading] = useState(false);
 		const [myListings, setMyListings] = useState<Listing[]>([]);
-		const [wallet, setWallet] = useState<number>(0);
 		const [stats, setStats] = useState<any>(null);
+		const { wallet, loading: walletLoading, eligible: walletEligible, error: walletError } = useWallet();
 		const { appData } = useAppSync();
 
 		// --- Calendar helpers directly after state ---
@@ -87,67 +88,66 @@ export default function VendorDashboardPage() {
        const [bookingsLoading, setBookingsLoading] = useState(false);
        const [bookingsError, setBookingsError] = useState("");
 
-       useEffect(() => {
-	       if (!vendorId) return;
+	   useEffect(() => {
+		   if (!vendorId) return;
 
-	       setStatsLoading(true);
-	       setListingsLoading(true);
-	       setBookingsLoading(true);
-	       setStatsError("");
-	       setListingsError("");
-	       setBookingsError("");
+		   setStatsLoading(true);
+		   setListingsLoading(true);
+		   setBookingsLoading(true);
+		   setStatsError("");
+		   setListingsError("");
+		   setBookingsError("");
 
-	       // Stats
-	       api.get(`/api/vendors/${encodeURIComponent(vendorId)}/stats`)
-		       .then((statsResp) => {
-			       setStats(statsResp.data || {});
-			       setWallet(Number(statsResp.data?.bookingStats?.revenue || 0));
-		       })
-		       .catch(() => {
-			       setStatsError("Failed to load stats");
-		       })
-		       .finally(() => setStatsLoading(false));
+		   // Stats
+		   api.get(`/api/vendors/${encodeURIComponent(vendorId)}/stats`)
+			   .then((statsResp) => {
+				   setStats(statsResp.data || {});
+			   })
+			   .catch(() => {
+				   setStatsError("Failed to load stats");
+			   })
+			   .finally(() => setStatsLoading(false));
 
-	       // Listings
-	       api.get(`/api/listings/vendor/${encodeURIComponent(vendorId)}`)
-		       .then((listingsResp) => {
-			       setMyListings(Array.isArray(listingsResp.data?.listings) ? listingsResp.data.listings : []);
-		       })
-		       .catch(() => {
-			       setListingsError("Failed to load listings");
-			       setMyListings([]);
-		       })
-		       .finally(() => setListingsLoading(false));
+		   // Listings
+		   api.get(`/api/listings/vendor/${encodeURIComponent(vendorId)}`)
+			   .then((listingsResp) => {
+				   setMyListings(Array.isArray(listingsResp.data?.listings) ? listingsResp.data.listings : []);
+			   })
+			   .catch(() => {
+				   setListingsError("Failed to load listings");
+				   setMyListings([]);
+			   })
+			   .finally(() => setListingsLoading(false));
 
-	       // Bookings
-	       api.get(`/api/bookings/vendor/${encodeURIComponent(vendorId)}`)
-		       .then((bookingsResp) => {
-			       setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
-		       })
-		       .catch(() => {
-			       // fallback: try /api/subscriptions/bookings/mine
-			       api.get(`/api/subscriptions/bookings/mine`)
-				       .then((bookingsResp) => {
-					       setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
-				       })
-				       .catch(() => {
-					       setBookingsError("Failed to load bookings");
-					       setBookings([]);
-				       })
-				       .finally(() => setBookingsLoading(false));
-		       })
-		       .finally(() => setBookingsLoading(false));
-       }, [vendorId]);
+		   // Bookings
+		   api.get(`/api/bookings/vendor/${encodeURIComponent(vendorId)}`)
+			   .then((bookingsResp) => {
+				   setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
+			   })
+			   .catch(() => {
+				   // fallback: try /api/subscriptions/bookings/mine
+				   api.get(`/api/subscriptions/bookings/mine`)
+					   .then((bookingsResp) => {
+						   setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
+					   })
+					   .catch(() => {
+						   setBookingsError("Failed to load bookings");
+						   setBookings([]);
+					   })
+					   .finally(() => setBookingsLoading(false));
+			   })
+			   .finally(() => setBookingsLoading(false));
+	   }, [vendorId]);
 
 	// Metrics
 	const metrics = useMemo(() => {
 		return [
 			{ label: "Total Listings", value: myListings.length, icon: "bi bi-collection" },
 			{ label: "Total Bookings", value: bookings.length, icon: "bi bi-calendar-check" },
-			{ label: "Wallet Balance", value: `R${wallet.toLocaleString()}`, icon: "bi bi-wallet2" },
+			{ label: "Wallet Balance", value: walletEligible && wallet ? `R${Number(wallet.balance).toLocaleString()}` : walletLoading ? "Loading…" : walletError ? "Error" : "—", icon: "bi bi-wallet2" },
 			{ label: "Avg. Rating", value: myListings.length ? (myListings.reduce((acc, l) => acc + (l.rating || 0), 0) / myListings.length).toFixed(2) : "—", icon: "bi bi-star-fill" },
 		];
-	}, [myListings, bookings, wallet]);
+	}, [myListings, bookings, wallet, walletEligible, walletLoading, walletError]);
 
 	// Bookings by service
 	const bookingsByService = useMemo(() => {
@@ -181,6 +181,21 @@ export default function VendorDashboardPage() {
 				{err && <div className="alert alert-danger">{err}</div>}
 
 
+						{/* Wallet eligibility and error display */}
+						{walletEligible && wallet && (
+							<div className="alert alert-primary d-flex justify-content-between align-items-center mb-3">
+								<span>
+									<strong>My Wallet:</strong> {Number(wallet.balance).toLocaleString()} credits available.
+								</span>
+								<Link className="btn btn-sm btn-outline-light" to="/wallet">View wallet</Link>
+							</div>
+						)}
+						{!walletEligible && (
+							<div className="alert alert-warning mb-3">My Wallet is only available to startup, vendor, and admin accounts.</div>
+						)}
+						{walletError && (
+							<div className="alert alert-danger mb-3">Failed to load wallet: {String(walletError)}</div>
+						)}
 						{/* Metrics Row */}
 						<div className="row g-3 mb-4">
 							{metrics.map((m, idx) => (
