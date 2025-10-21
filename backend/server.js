@@ -40,6 +40,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+// Disable automatic ETag generation so dynamic responses (like subscriptions)
+// are never served with a 304 that strips the JSON body Vercel users expect.
+app.set("etag", false);
 // Attach payment routes (serverless-compatible)
 app.use("/api/payments", paymentRoutes);
 app.use("/api/bookings", bookingsRouter);
