@@ -98,8 +98,7 @@ const TrendingNFTsOne = ({
   const [busy, setBusy] = useState(false);
   const [subs, setSubs] = useState(() => new Set()); // serviceId set
   const [bookings, setBookings] = useState({}); // serviceId -> { date, slot }
-  const [bookingModal, setBookingModal] = useState({ open: false, id: null, date: "", slot: "", error: "" });
-  const [paymentModal, setPaymentModal] = useState({ open: false, id: null, type: '', date: '', slot: '', error: '' });
+  const [unifiedModal, setUnifiedModal] = useState({ open: false, id: null, date: '', slot: '', payment: 'credits', voucherCode: '', sponsoredGroup: '', error: '' });
   const [bookingBusy, setBookingBusy] = useState(false);
   const navigate = useNavigate();
   const { appData } = useAppSync();
@@ -355,32 +354,74 @@ const TrendingNFTsOne = ({
     }
     const id = service?.id;
     const existing = bookings[String(id)] || {};
-    setBookingModal({ open: true, id, date: existing.date || '', slot: existing.slot || '', error: '' });
-    // Open payment modal after booking modal is confirmed
+    setUnifiedModal({ open: true, id, date: existing.date || '', slot: existing.slot || '', payment: 'credits', voucherCode: '', sponsoredGroup: '', error: '' });
   }
-  function closeBooking() {
-    setBookingModal({ open: false, id: null, date: '', slot: '', error: '' });
+  function closeUnifiedModal() {
+    setUnifiedModal({ open: false, id: null, date: '', slot: '', payment: 'credits', voucherCode: '', sponsoredGroup: '', error: '' });
   }
-  function setBookingField(field, value) {
-    setBookingModal((prev) => ({ ...prev, [field]: value, error: field === 'date' || field === 'slot' ? '' : prev.error }));
+  function setUnifiedField(field, value) {
+    setUnifiedModal((prev) => ({ ...prev, [field]: value, error: field === 'date' || field === 'slot' ? '' : prev.error }));
   }
-  async function confirmBooking() {
-    const { id, date, slot } = bookingModal;
+  async function confirmUnifiedBooking() {
+    const { id, date, slot, payment, voucherCode, sponsoredGroup } = unifiedModal;
     if (!id) return;
     if (!date) {
-      setBookingModal((prev) => ({ ...prev, error: 'Please choose a date.' }));
+      setUnifiedModal((prev) => ({ ...prev, error: 'Please choose a date.' }));
       return;
     }
     if (!slot) {
-      setBookingModal((prev) => ({ ...prev, error: 'Please choose a time slot.' }));
+      setUnifiedModal((prev) => ({ ...prev, error: 'Please choose a time slot.' }));
       return;
     }
-
     const list = servicesRef.current || services;
     const service = (list || []).find((entry) => String(entry.id) === String(id)) || null;
     const price = Number(service?.price || 0) || 0;
-    // Instead of direct booking, open payment modal
-    setPaymentModal({ open: true, id, type: 'booking', date, slot, error: '' });
+    try {
+      // Payment logic
+      if (payment === 'credits') {
+        if (walletLoading) throw new Error('Checking wallet, please try again in a moment.');
+        if (!walletEligible) throw new Error('My Wallet is only available to startup, vendor, and admin accounts.');
+        if (!wallet) throw new Error('We could not load your wallet. Please try again.');
+        if (wallet.balance < price) throw new Error(`You need ${formatCredits(price - wallet.balance)} more credits to book this session.`);
+        // Proceed with booking and deduct credits
+        await subscribeToService(String(id), { scheduledDate: date, scheduledSlot: slot });
+        const result = await redeemCredits(price, {
+          description: `Listing booking: ${service?.title || 'Marketplace service'}`,
+          reference: `listing-${service?.id || 'unknown'}`,
+          metadata: {
+            serviceId: service?.id || null,
+            vendor: service?.vendor || null,
+            category: service?.category || null,
+            scheduledDate: date,
+            scheduledSlot: slot,
+            source: 'dashboard-trending-booking',
+          },
+        });
+        if (!result.success) throw new Error(result.error || 'Unable to redeem wallet credits; booking canceled.');
+        setTimeout(() => refresh().catch(() => void 0), 100);
+        setToastType('success');
+        setToast(`Booking confirmed! Remaining balance: ${formatCredits(result.wallet?.balance || 0)} credits.`);
+      } else if (payment === 'voucher') {
+        if (!voucherCode) throw new Error('Voucher code required.');
+        // Simulate voucher redemption (replace with actual API call if needed)
+        await subscribeToService(String(id), { scheduledDate: date, scheduledSlot: slot });
+        setToastType('success');
+        setToast('Voucher redeemed and booking confirmed!');
+      } else if (payment === 'sponsored') {
+        if (!sponsoredGroup) throw new Error('Select a sponsorship group.');
+        await subscribeToService(String(id), { scheduledDate: date, scheduledSlot: slot });
+        setToastType('success');
+        setToast('Sponsorship applied and booking confirmed!');
+      } else {
+        throw new Error('Payment method not supported yet.');
+      }
+      setSubs((prev) => new Set([...Array.from(prev), String(id)]));
+      setBookings((prev) => ({ ...prev, [String(id)]: { date, slot } }));
+      setTimeout(() => setToast(''), 2500);
+      closeUnifiedModal();
+    } catch (e) {
+      setUnifiedModal((prev) => ({ ...prev, error: e.message || 'Failed to book session' }));
+    }
   }
   function setStar(id, n) { setField(id, "rating", n); }
   function renderStars(n) {
@@ -451,15 +492,90 @@ const TrendingNFTsOne = ({
 
   return (
     <div className="col-12">
-      {/* Payment Options Modal for booking/subscription */}
-      {paymentModal.open && (
-        <PaymentModal
-          show={paymentModal.open}
-          onHide={() => setPaymentModal({ ...paymentModal, open: false })}
-          userId={auth.currentUser?.uid || ''}
-          userBalance={{ credits: wallet?.balance || 0, zar: wallet?.zar || 0 }}
-        />
-      )}
+      {/* Unified Booking/Payment Modal */}
+      {unifiedModal.open && (() => {
+        const svc = services.find((s) => s.id === unifiedModal.id);
+        if (!svc) return null;
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const minDate = `${yyyy}-${mm}-${dd}`;
+        const baseId = String(unifiedModal.id ?? '');
+        const dateInputId = `booking-date-${baseId}`;
+        const slotInputId = `booking-slot-${baseId}`;
+        const modalPrice = Math.max(0, Number(svc?.price || 0) || 0);
+        const modalHasWallet = walletEligible && !!wallet;
+        const modalWalletBalance = modalHasWallet ? Number(wallet?.balance || 0) : 0;
+        const modalWalletShortfall = modalPrice > 0 ? Math.max(0, modalPrice - modalWalletBalance) : 0;
+        return (
+          <div className="position-fixed top-0 start-0 w-100 h-100" style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1076 }} onClick={(e) => { if (e.target === e.currentTarget) closeUnifiedModal(); }}>
+            <div className="card shadow-lg" style={{ maxWidth: 600, margin: '10vh auto', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div className="card-header d-flex align-items-center justify-content-between">
+                <h6 className="mb-0">Book session: {svc.title}</h6>
+                <button type="button" className="btn btn-sm btn-outline-secondary" onClick={closeUnifiedModal}>Close</button>
+              </div>
+              <div className="card-body">
+                <div className="text-secondary small mb-3">One-hour slots available between 8:00 AM and 5:00 PM.</div>
+                {modalPrice > 0 && (
+                  <div className="alert alert-info py-2" role="status">
+                    <div className="fw-semibold">Wallet summary</div>
+                    <div className="small">Cost: R {formatCredits(modalPrice)} · Balance: R {formatCredits(modalWalletBalance)}</div>
+                    {walletLoading && !wallet && (<div className="small text-secondary">Checking wallet balance…</div>)}
+                    {!walletLoading && (!modalHasWallet || modalWalletShortfall > 0) && (
+                      <div className="small text-danger mt-1">
+                        {modalHasWallet ? `You need ${formatCredits(modalWalletShortfall)} more credits to book this session.` : 'Wallet credits required. Visit the wallet page to request top-up.'}
+                      </div>
+                    )}
+                    {!walletLoading && modalHasWallet && modalWalletShortfall === 0 && (<div className="small text-success mt-1">This booking will draw from your wallet credits automatically.</div>)}
+                  </div>
+                )}
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold" htmlFor={dateInputId}>Choose a date</label>
+                  <input id={dateInputId} type="date" className="form-control" value={unifiedModal.date} min={minDate} onChange={(e) => setUnifiedField('date', e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold" htmlFor={slotInputId}>Choose a time slot</label>
+                  <select id={slotInputId} className="form-select" value={unifiedModal.slot} onChange={(e) => setUnifiedField('slot', e.target.value)}>
+                    <option value="">Select a slot</option>
+                    {bookingSlots.map((slot) => (<option key={slot.value} value={slot.value}>{slot.label}</option>))}
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Payment Method</label>
+                  <div className="d-flex gap-2">
+                    <button type="button" className={`btn btn-sm ${unifiedModal.payment === 'credits' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setUnifiedField('payment', 'credits')}>Kumii Credits</button>
+                    <button type="button" className={`btn btn-sm ${unifiedModal.payment === 'voucher' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setUnifiedField('payment', 'voucher')}>Voucher</button>
+                    <button type="button" className={`btn btn-sm ${unifiedModal.payment === 'sponsored' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setUnifiedField('payment', 'sponsored')}>Sponsored</button>
+                  </div>
+                </div>
+                {unifiedModal.payment === 'voucher' && (
+                  <div className="mb-3">
+                    <label className="form-label small fw-semibold">Voucher Code</label>
+                    <input type="text" className="form-control" value={unifiedModal.voucherCode} onChange={(e) => setUnifiedField('voucherCode', e.target.value)} placeholder="Enter voucher code" />
+                  </div>
+                )}
+                {unifiedModal.payment === 'sponsored' && (
+                  <div className="mb-3">
+                    <label className="form-label small fw-semibold">Sponsorship Group</label>
+                    <select className="form-select" value={unifiedModal.sponsoredGroup} onChange={(e) => setUnifiedField('sponsoredGroup', e.target.value)}>
+                      <option value="">Select group</option>
+                      <option value="aws">AWS Cohort</option>
+                      <option value="ms">Microsoft Cohort</option>
+                      <option value="ab">African Bank Cohort</option>
+                    </select>
+                  </div>
+                )}
+                {unifiedModal.error && (<div className="alert alert-danger py-2" role="alert">{unifiedModal.error}</div>)}
+                <div className="d-flex justify-content-end gap-2">
+                  <button type="button" className="btn btn-outline-secondary" onClick={closeUnifiedModal}>Close</button>
+                  <button type="button" className="btn btn-primary" onClick={confirmUnifiedBooking}>Confirm booking</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
       <div className="mb-16 mt-8 d-flex flex-wrap justify-content-between align-items-center gap-12">
         <h6 className="mb-0">All Listings</h6>
         <div className="d-flex flex-wrap align-items-center gap-12">
