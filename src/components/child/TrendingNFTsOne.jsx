@@ -6,6 +6,7 @@ import { api } from "../../lib/api";
 import { useAppSync } from "../../context/useAppSync";
 import { useWallet } from "../../hook/useWalletAxios";
 import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../../lib/subscriptions";
+import PaymentModal from "../PaymentModal";
 
 // Normalize any legacy keys so the card always has the fields your UI expects
 const normalize = (s) => ({
@@ -98,6 +99,7 @@ const TrendingNFTsOne = ({
   const [subs, setSubs] = useState(() => new Set()); // serviceId set
   const [bookings, setBookings] = useState({}); // serviceId -> { date, slot }
   const [bookingModal, setBookingModal] = useState({ open: false, id: null, date: "", slot: "", error: "" });
+  const [paymentModal, setPaymentModal] = useState({ open: false, id: null, type: '', date: '', slot: '', error: '' });
   const [bookingBusy, setBookingBusy] = useState(false);
   const navigate = useNavigate();
   const { appData } = useAppSync();
@@ -354,6 +356,7 @@ const TrendingNFTsOne = ({
     const id = service?.id;
     const existing = bookings[String(id)] || {};
     setBookingModal({ open: true, id, date: existing.date || '', slot: existing.slot || '', error: '' });
+    // Open payment modal after booking modal is confirmed
   }
   function closeBooking() {
     setBookingModal({ open: false, id: null, date: '', slot: '', error: '' });
@@ -376,67 +379,8 @@ const TrendingNFTsOne = ({
     const list = servicesRef.current || services;
     const service = (list || []).find((entry) => String(entry.id) === String(id)) || null;
     const price = Number(service?.price || 0) || 0;
-
-    if (price > 0) {
-      if (walletLoading) {
-        setBookingModal((prev) => ({ ...prev, error: 'Checking wallet, please try again in a moment.' }));
-        return;
-      }
-      if (!walletEligible) {
-        setBookingModal((prev) => ({ ...prev, error: 'My Wallet is only available to startup, vendor, and admin accounts.' }));
-        return;
-      }
-      if (!wallet) {
-        setBookingModal((prev) => ({ ...prev, error: 'We could not load your wallet. Please try again.' }));
-        return;
-      }
-      if (wallet.balance < price) {
-        const shortfall = price - wallet.balance;
-        setBookingModal((prev) => ({ ...prev, error: `You need ${formatCredits(shortfall)} more credits to book this session.` }));
-        return;
-      }
-    }
-
-    setBookingBusy(true);
-    try {
-      const payload = { scheduledDate: date, scheduledSlot: slot };
-      await subscribeToService(String(id), payload);
-      if (price > 0) {
-        const result = await redeemCredits(price, {
-          description: `Listing booking: ${service?.title || 'Marketplace service'}`,
-          reference: `listing-${service?.id || 'unknown'}`,
-          metadata: {
-            serviceId: service?.id || null,
-            vendor: service?.vendor || null,
-            category: service?.category || null,
-            scheduledDate: date,
-            scheduledSlot: slot,
-            source: 'dashboard-trending-booking',
-          },
-        });
-        if (!result.success) {
-          await unsubscribeFromService(String(id));
-          setBookingModal((prev) => ({ ...prev, error: result.error || 'Unable to redeem wallet credits; booking canceled.' }));
-          return;
-        }
-        // Refresh wallet to ensure UI shows updated balance
-        setTimeout(() => refresh().catch(() => void 0), 100);
-        setToastType('success');
-        setToast(`Voucher applied! Remaining balance: ${formatCredits(result.wallet?.balance || 0)} credits.`);
-      } else {
-        setToastType('success');
-        setToast(`Session booked for ${formatBookingDate(date)} at ${slotLabelMap[slot] || slot}.`);
-      }
-      setSubs((prev) => new Set([...Array.from(prev), String(id)]));
-      setBookings((prev) => ({ ...prev, [String(id)]: { date, slot } }));
-      setTimeout(() => setToast(''), 2500);
-      closeBooking();
-    } catch (e) {
-      const msg = e?.response?.data?.message || e?.message || 'Failed to book session';
-      setBookingModal((prev) => ({ ...prev, error: msg }));
-    } finally {
-      setBookingBusy(false);
-    }
+    // Instead of direct booking, open payment modal
+    setPaymentModal({ open: true, id, type: 'booking', date, slot, error: '' });
   }
   function setStar(id, n) { setField(id, "rating", n); }
   function renderStars(n) {
@@ -507,6 +451,15 @@ const TrendingNFTsOne = ({
 
   return (
     <div className="col-12">
+      {/* Payment Options Modal for booking/subscription */}
+      {paymentModal.open && (
+        <PaymentModal
+          show={paymentModal.open}
+          onHide={() => setPaymentModal({ ...paymentModal, open: false })}
+          userId={auth.currentUser?.uid || ''}
+          userBalance={{ credits: wallet?.balance || 0, zar: wallet?.zar || 0 }}
+        />
+      )}
       <div className="mb-16 mt-8 d-flex flex-wrap justify-content-between align-items-center gap-12">
         <h6 className="mb-0">All Listings</h6>
         <div className="d-flex flex-wrap align-items-center gap-12">

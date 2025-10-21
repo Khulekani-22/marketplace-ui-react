@@ -1,6 +1,8 @@
 // src/components/AdminWalletCreditsLayerNew.tsx
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Icon } from "@iconify/react";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
 import { Link } from "react-router-dom";
 import { api, bootstrapSession } from "../lib/api";
 import { toast } from "react-toastify";
@@ -34,6 +36,17 @@ interface WalletTransaction {
 }
 
 export default function AdminWalletCreditsLayer() {
+  // State for admin voucher/sponsorship modals
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [voucherUser, setVoucherUser] = useState<User | null>(null);
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [voucherError, setVoucherError] = useState("");
+  const [showSponsorModal, setShowSponsorModal] = useState(false);
+  const [sponsorUser, setSponsorUser] = useState<User | null>(null);
+  const [sponsorGroup, setSponsorGroup] = useState("");
+  const [sponsorLoading, setSponsorLoading] = useState(false);
+  const [sponsorError, setSponsorError] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -449,6 +462,26 @@ export default function AdminWalletCreditsLayer() {
                             >
                               <Icon icon="mdi:wallet-plus" />
                             </button>
+                            <button
+                              className="btn btn-outline-success"
+                              onClick={() => {
+                                setVoucherUser(user);
+                                setShowVoucherModal(true);
+                              }}
+                              title="Apply voucher for this user"
+                            >
+                              <Icon icon="mdi:ticket-percent" />
+                            </button>
+                            <button
+                              className="btn btn-outline-warning"
+                              onClick={() => {
+                                setSponsorUser(user);
+                                setShowSponsorModal(true);
+                              }}
+                              title="Apply sponsorship for this user"
+                            >
+                              <Icon icon="mdi:account-group" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -599,6 +632,99 @@ export default function AdminWalletCreditsLayer() {
           </div>
         </div>
       </div>
-    </div>
+    {/* Voucher Modal */}
+    <Modal show={showVoucherModal} onHide={() => setShowVoucherModal(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>Apply Voucher for {voucherUser ? (voucherUser.name || voucherUser.email) : "User"}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="mb-3">
+          <label className="form-label">Voucher Code</label>
+          <input
+            type="text"
+            className="form-control"
+            value={voucherCode}
+            onChange={e => setVoucherCode(e.target.value)}
+            placeholder="Enter voucher code"
+          />
+        </div>
+        {voucherError && <div className="alert alert-danger py-2">{voucherError}</div>}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => setShowVoucherModal(false)}>Cancel</Button>
+        <Button
+          variant="success"
+          disabled={voucherLoading || !voucherCode}
+          onClick={async () => {
+            setVoucherLoading(true);
+            setVoucherError("");
+            try {
+              const res = await api.post("/api/admin/apply-voucher", {
+                userId: voucherUser?.uid,
+                voucherCode
+              });
+              toast.success("Voucher applied successfully");
+              setShowVoucherModal(false);
+              setVoucherCode("");
+              await loadData();
+            } catch (err) {
+              setVoucherError((err as any)?.response?.data?.message || (err as any)?.message || "Failed to apply voucher");
+            } finally {
+              setVoucherLoading(false);
+            }
+          }}
+        >
+          {voucherLoading ? "Applying..." : "Apply Voucher"}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+
+    {/* Sponsorship Modal */}
+    <Modal show={showSponsorModal} onHide={() => setShowSponsorModal(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>Apply Sponsorship for {sponsorUser ? (sponsorUser.name || sponsorUser.email) : "User"}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="mb-3">
+          <label className="form-label">Sponsorship Group</label>
+          <input
+            type="text"
+            className="form-control"
+            value={sponsorGroup}
+            onChange={e => setSponsorGroup(e.target.value)}
+            placeholder="Enter sponsorship group name"
+          />
+        </div>
+        {sponsorError && <div className="alert alert-danger py-2">{sponsorError}</div>}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => setShowSponsorModal(false)}>Cancel</Button>
+        <Button
+          variant="warning"
+          disabled={sponsorLoading || !sponsorGroup}
+          onClick={async () => {
+            setSponsorLoading(true);
+            setSponsorError("");
+            try {
+              const res = await api.post("/api/admin/apply-sponsorship", {
+                userId: sponsorUser?.uid,
+                group: sponsorGroup
+              });
+              toast.success("Sponsorship applied successfully");
+              setShowSponsorModal(false);
+              setSponsorGroup("");
+              await loadData();
+            } catch (err) {
+              setSponsorError((err as any)?.response?.data?.message || (err as any)?.message || "Failed to apply sponsorship");
+            } finally {
+              setSponsorLoading(false);
+            }
+          }}
+        >
+          {sponsorLoading ? "Applying..." : "Apply Sponsorship"}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  </div>
   );
 }
