@@ -91,6 +91,16 @@ function markBookingStatus({ data, subscription, serviceId, customerEmail, statu
 const { Router } = express;
 const router = Router();
 
+// Ensure subscription responses are never cached so clients avoid 304s that
+// strip the JSON body needed to display active subscriptions.
+router.use((req, res, next) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  res.set("Surrogate-Control", "no-store");
+  next();
+});
+
 function normalizeTenantId(value) {
   const raw = (value || "public").toString().trim();
   return raw === "vendor" ? "public" : raw;
