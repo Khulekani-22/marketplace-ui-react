@@ -79,18 +79,41 @@ export default function VendorDashboardPage() {
 			});
 		}
 
-       // Fetch vendor dashboard stats (bookings, listings, wallet, etc.)
+       // Fetch vendor dashboard stats (summary), bookings, and listings
        useEffect(() => {
 	       (async () => {
 		       if (!vendorId) return;
 		       setLoading(true);
 		       try {
+			       // Summary stats
 			       const statsResp = await api.get(`/api/vendors/${encodeURIComponent(vendorId)}/stats`);
-			       const statsData = statsResp.data || {};
-			       setStats(statsData);
-			       setBookings(Array.isArray(statsData?.listings) ? [] : Array.isArray(statsData?.bookingStats?.bookings) ? statsData.bookingStats.bookings : []);
-			       setMyListings(Array.isArray(statsData?.listings) ? statsData.listings : []);
-			       setWallet(Number(statsData?.bookingStats?.revenue || 0));
+			       setStats(statsResp.data || {});
+
+			       // Listings
+			       let listingsResp;
+			       try {
+				       listingsResp = await api.get(`/api/listings/vendor/${encodeURIComponent(vendorId)}`);
+			       } catch {
+				       listingsResp = { data: { listings: [] } };
+			       }
+			       setMyListings(Array.isArray(listingsResp.data?.listings) ? listingsResp.data.listings : []);
+
+			       // Bookings
+			       let bookingsResp;
+			       try {
+				       bookingsResp = await api.get(`/api/bookings/vendor/${encodeURIComponent(vendorId)}`);
+			       } catch {
+				       // fallback: try /api/subscriptions/bookings/mine
+				       try {
+					       bookingsResp = await api.get(`/api/subscriptions/bookings/mine`);
+				       } catch {
+					       bookingsResp = { data: { bookings: [] } };
+				       }
+			       }
+			       setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
+
+			       // Wallet (from stats, fallback 0)
+			       setWallet(Number(statsResp.data?.bookingStats?.revenue || 0));
 		       } catch (e) {
 			       setErr("Failed to load dashboard data");
 		       }
