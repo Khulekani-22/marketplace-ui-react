@@ -531,51 +531,52 @@ export default function MySubscriptionsPage() {
                                 </button>
                               </div>
                             </div>
-      {/* Details Modal */}
-      <Modal show={detailsModal.open} onHide={() => setDetailsModal({ open: false, service: null })} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Listing Details</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {detailsModal.service && (
-            <>
-              <h5>{detailsModal.service.title}</h5>
-              <div className="mb-2 text-muted">{detailsModal.service.vendor}</div>
-              <div className="mb-2">Category: {detailsModal.service.category}</div>
-              <div className="mb-2">Price: R {Number(detailsModal.service.price || 0).toLocaleString()}</div>
-              <div className="mb-2">Rating: {renderStars(Number(detailsModal.service.rating || 0))} {Number(detailsModal.service.rating || 0).toFixed(1)}</div>
-              <div className="mb-2">{detailsModal.service.description}</div>
-              {/* Add tags, contact, etc. if available */}
-            </>
-          )}
-        </Modal.Body>
-      </Modal>
+  {/* Details Modal - move outside map */}
+  {/* Review Modal - move outside map */}
+    {/* Render modals once at the root, not inside map */}
+    <Modal show={detailsModal.open} onHide={() => setDetailsModal({ open: false, service: null })} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Listing Details</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {detailsModal.service && (
+          <>
+            <h5>{detailsModal.service.title}</h5>
+            <div className="mb-2 text-muted">{detailsModal.service.vendor}</div>
+            <div className="mb-2">Category: {detailsModal.service.category}</div>
+            <div className="mb-2">Price: R {Number(detailsModal.service.price || 0).toLocaleString()}</div>
+            <div className="mb-2">Rating: {renderStars(Number(detailsModal.service.rating || 0))} {Number(detailsModal.service.rating || 0).toFixed(1)}</div>
+            <div className="mb-2">{detailsModal.service.description}</div>
+            {/* Add tags, contact, etc. if available */}
+          </>
+        )}
+      </Modal.Body>
+    </Modal>
 
-      {/* Review Modal */}
-      <Modal show={reviewModal.open} onHide={() => setReviewModal({ open: false, service: null, rating: 0, comment: '', busy: false, error: '' })} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Review Listing</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {reviewModal.service && (
-            <>
-              <div className="mb-2">{reviewModal.service.title}</div>
-              <div className="mb-3">
-                {[1,2,3,4,5].map((n) => (
-                  <button key={n} type="button" onClick={() => setReviewModal((prev) => ({ ...prev, rating: n }))} className="btn btn-link p-0 me-1" aria-label={`Rate ${n} stars`}>
-                    <span style={{ fontSize: 24, color: reviewModal.rating >= n ? "#f5a623" : "#ccc" }}>★</span>
-                  </button>
-                ))}
-              </div>
-              <textarea className="form-control mb-3" rows={3} placeholder="Write a quick comment (optional)" value={reviewModal.comment} onChange={(e) => setReviewModal((prev) => ({ ...prev, comment: e.target.value }))} />
-              {reviewModal.error && <div className="alert alert-danger py-2">{reviewModal.error}</div>}
-              <button className="btn btn-primary" disabled={reviewModal.busy || reviewModal.rating < 1} onClick={submitReview}>
-                {reviewModal.busy ? 'Submitting…' : 'Submit review'}
-              </button>
-            </>
-          )}
-        </Modal.Body>
-      </Modal>
+    <Modal show={reviewModal.open} onHide={() => setReviewModal({ open: false, service: null, rating: 0, comment: '', busy: false, error: '' })} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Review Listing</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {reviewModal.service && (
+          <>
+            <div className="mb-2">{reviewModal.service.title}</div>
+            <div className="mb-3">
+              {[1,2,3,4,5].map((n) => (
+                <button key={n} type="button" onClick={() => setReviewModal((prev) => ({ ...prev, rating: n }))} className="btn btn-link p-0 me-1" aria-label={`Rate ${n} stars`}>
+                  <span style={{ fontSize: 24, color: reviewModal.rating >= n ? "#f5a623" : "#ccc" }}>★</span>
+                </button>
+              ))}
+            </div>
+            <textarea className="form-control mb-3" rows={3} placeholder="Write a quick comment (optional)" value={reviewModal.comment} onChange={(e) => setReviewModal((prev) => ({ ...prev, comment: e.target.value }))} />
+            {reviewModal.error && <div className="alert alert-danger py-2">{reviewModal.error}</div>}
+            <button className="btn btn-primary" disabled={reviewModal.busy || reviewModal.rating < 1} onClick={submitReview}>
+              {reviewModal.busy ? 'Submitting…' : 'Submit review'}
+            </button>
+          </>
+        )}
+      </Modal.Body>
+    </Modal>
                           </div>
                         </div>
                       </div>
