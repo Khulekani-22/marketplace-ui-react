@@ -1,3 +1,62 @@
+// NotificationBell: Firestore-powered notification dropdown
+function NotificationBell() {
+  const { notifications, unreadCount, markAsRead } = useNotifications();
+  return (
+    <div className="dropdown">
+      <button
+        className="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center position-relative"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        aria-label="Open notifications"
+      >
+        <Icon icon="iconoir:bell" className="text-primary-light text-xl" />
+        {unreadCount > 0 && (
+          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {Math.min(99, unreadCount)}
+          </span>
+        )}
+      </button>
+      <div className="dropdown-menu to-top dropdown-menu-lg p-0">
+        <div className="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+          <div>
+            <h6 className="text-lg text-primary-light fw-semibold mb-0">Notifications</h6>
+          </div>
+          <span className="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
+            {unreadCount}
+          </span>
+        </div>
+        <div className="list-group list-group-flush px-2">
+          {notifications.length === 0 && (
+            <div className="text-center text-muted small py-2">No notifications</div>
+          )}
+          {notifications.slice(0, 5).map((n) => (
+            <div
+              key={n.id}
+              className={`list-group-item list-group-item-action d-flex align-items-start gap-2 ${n.read ? '' : 'bg-primary-50'}`}
+              style={{ cursor: 'pointer' }}
+              onClick={() => markAsRead(n.id)}
+            >
+              <div className={`badge ${n.read ? 'text-bg-light' : 'text-bg-primary'}`} style={{ alignSelf: 'center' }}>
+                {n.read ? 'read' : 'new'}
+              </div>
+              <div>
+                <div className="fw-semibold text-truncate" style={{ maxWidth: 260 }}>{n.title || 'Notification'}</div>
+                <div className="small text-muted text-truncate" style={{ maxWidth: 260 }}>{n.message}</div>
+                <div className="small text-secondary-light">{n.createdAt.toLocaleString()}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="text-center py-12 px-16">
+          <Link to="/notification" className="text-primary-600 fw-semibold text-md">
+            See all notifications
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 // src/MasterLayout/MasterLayout.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
