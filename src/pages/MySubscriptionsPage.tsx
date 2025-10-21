@@ -5,6 +5,7 @@ import { auth } from "../firebase.js";
 import { useAppSync } from "../context/useAppSync";
 import { fetchMySubscriptions, unsubscribeFromService } from "../lib/subscriptions";
 import { api } from "../lib/api";
+import { Modal } from 'react-bootstrap';
 
 // Type definitions
 interface Service {
@@ -50,7 +51,44 @@ interface BusyMap {
   [key: string]: boolean;
 }
 
+// Helper for rendering stars
+function renderStars(n: number) {
+  return (
+    <span>
+      {[1,2,3,4,5].map(i => (
+        <span key={i} style={{ color: n >= i ? "#f5a623" : "#ccc", fontSize: 16 }}>★</span>
+      ))}
+    </span>
+  );
+}
+
 export default function MySubscriptionsPage() {
+  const [detailsModal, setDetailsModal] = useState<{ open: boolean, service: Service | null }>({ open: false, service: null });
+  const [reviewModal, setReviewModal] = useState<{ open: boolean, service: Service | null, rating: number, comment: string, busy: boolean, error: string }>({ open: false, service: null, rating: 0, comment: '', busy: false, error: '' });
+  // Submit review handler
+  async function submitReview() {
+    if (!reviewModal.service) return;
+    if (reviewModal.rating < 1 || reviewModal.rating > 5) {
+      setReviewModal((prev) => ({ ...prev, error: "Please select a star rating (1–5)." }));
+      return;
+    }
+    setReviewModal((prev) => ({ ...prev, busy: true, error: '' }));
+    try {
+      await api.post(`/api/data/services/${encodeURIComponent(reviewModal.service.id)}/reviews`, {
+        rating: reviewModal.rating,
+        comment: reviewModal.comment,
+        author: auth.currentUser?.displayName || auth.currentUser?.email || "Guest",
+        authorEmail: auth.currentUser?.email || "",
+        title: reviewModal.service.title || "",
+        vendor: reviewModal.service.vendor || "",
+        contactEmail: reviewModal.service.vendor || ""
+      });
+      setReviewModal({ open: false, service: null, rating: 0, comment: '', busy: false, error: '' });
+      alert("Review submitted. Thank you!");
+    } catch (e: any) {
+      setReviewModal((prev) => ({ ...prev, error: e?.response?.data?.message || e?.message || "Failed to submit review", busy: false }));
+    }
+  }
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<Service[]>([]); // services enriched
   const [bookings, setBookings] = useState<Booking[]>([]); // bookings
@@ -467,24 +505,77 @@ export default function MySubscriptionsPage() {
                                   </div>
                                 )}
                               </div>
-                              <button 
-                                className="btn btn-sm btn-outline-danger" 
-                                onClick={() => handleUnsubscribe(s.id)} 
-                                disabled={!!busyMap[String(s.id)]}
-                              >
-                                {busyMap[String(s.id)] ? (
-                                  <>
-                                    <span className="spinner-border spinner-border-sm me-1" role="status"></span>
-                                    Removing…
-                                  </>
-                                ) : (
-                                  <>
-                                    <i className="ri-close-circle-line me-1"></i>
-                                    Unsubscribe
-                                  </>
-                                )}
-                              </button>
+                              <div className="d-flex gap-2">
+                                <button className="btn btn-sm btn-outline-primary" onClick={() => setDetailsModal({ open: true, service: s })}>
+                                  <i className="ri-eye-line me-1"></i>View Details
+                                </button>
+                                <button className="btn btn-sm btn-outline-success" onClick={() => setReviewModal({ open: true, service: s, rating: 0, comment: '', busy: false, error: '' })}>
+                                  <i className="ri-star-line me-1"></i>Review
+                                </button>
+                                <button 
+                                  className="btn btn-sm btn-outline-danger" 
+                                  onClick={() => handleUnsubscribe(s.id)} 
+                                  disabled={!!busyMap[String(s.id)]}
+                                >
+                                  {busyMap[String(s.id)] ? (
+                                    <>
+                                      <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                                      Removing…
+                                    </>
+                                  ) : (
+                                    <>
+                                      <i className="ri-close-circle-line me-1"></i>
+                                      Unsubscribe
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             </div>
+      {/* Details Modal */}
+      <Modal show={detailsModal.open} onHide={() => setDetailsModal({ open: false, service: null })} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Listing Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {detailsModal.service && (
+            <>
+              <h5>{detailsModal.service.title}</h5>
+              <div className="mb-2 text-muted">{detailsModal.service.vendor}</div>
+              <div className="mb-2">Category: {detailsModal.service.category}</div>
+              <div className="mb-2">Price: R {Number(detailsModal.service.price || 0).toLocaleString()}</div>
+              <div className="mb-2">Rating: {renderStars(Number(detailsModal.service.rating || 0))} {Number(detailsModal.service.rating || 0).toFixed(1)}</div>
+              <div className="mb-2">{detailsModal.service.description}</div>
+              {/* Add tags, contact, etc. if available */}
+            </>
+          )}
+        </Modal.Body>
+      </Modal>
+
+      {/* Review Modal */}
+      <Modal show={reviewModal.open} onHide={() => setReviewModal({ open: false, service: null, rating: 0, comment: '', busy: false, error: '' })} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Review Listing</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {reviewModal.service && (
+            <>
+              <div className="mb-2">{reviewModal.service.title}</div>
+              <div className="mb-3">
+                {[1,2,3,4,5].map((n) => (
+                  <button key={n} type="button" onClick={() => setReviewModal((prev) => ({ ...prev, rating: n }))} className="btn btn-link p-0 me-1" aria-label={`Rate ${n} stars`}>
+                    <span style={{ fontSize: 24, color: reviewModal.rating >= n ? "#f5a623" : "#ccc" }}>★</span>
+                  </button>
+                ))}
+              </div>
+              <textarea className="form-control mb-3" rows={3} placeholder="Write a quick comment (optional)" value={reviewModal.comment} onChange={(e) => setReviewModal((prev) => ({ ...prev, comment: e.target.value }))} />
+              {reviewModal.error && <div className="alert alert-danger py-2">{reviewModal.error}</div>}
+              <button className="btn btn-primary" disabled={reviewModal.busy || reviewModal.rating < 1} onClick={submitReview}>
+                {reviewModal.busy ? 'Submitting…' : 'Submit review'}
+              </button>
+            </>
+          )}
+        </Modal.Body>
+      </Modal>
                           </div>
                         </div>
                       </div>
