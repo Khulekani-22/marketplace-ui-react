@@ -79,46 +79,64 @@ export default function VendorDashboardPage() {
 			});
 		}
 
-       // Fetch vendor dashboard stats (summary), bookings, and listings
+       // Improved: Parallelize API requests, granular loading/error states
+       const [statsLoading, setStatsLoading] = useState(false);
+       const [statsError, setStatsError] = useState("");
+       const [listingsLoading, setListingsLoading] = useState(false);
+       const [listingsError, setListingsError] = useState("");
+       const [bookingsLoading, setBookingsLoading] = useState(false);
+       const [bookingsError, setBookingsError] = useState("");
+
        useEffect(() => {
-	       (async () => {
-		       if (!vendorId) return;
-		       setLoading(true);
-		       try {
-			       // Summary stats
-			       const statsResp = await api.get(`/api/vendors/${encodeURIComponent(vendorId)}/stats`);
+	       if (!vendorId) return;
+
+	       setStatsLoading(true);
+	       setListingsLoading(true);
+	       setBookingsLoading(true);
+	       setStatsError("");
+	       setListingsError("");
+	       setBookingsError("");
+
+	       // Stats
+	       api.get(`/api/vendors/${encodeURIComponent(vendorId)}/stats`)
+		       .then((statsResp) => {
 			       setStats(statsResp.data || {});
-
-			       // Listings
-			       let listingsResp;
-			       try {
-				       listingsResp = await api.get(`/api/listings/vendor/${encodeURIComponent(vendorId)}`);
-			       } catch {
-				       listingsResp = { data: { listings: [] } };
-			       }
-			       setMyListings(Array.isArray(listingsResp.data?.listings) ? listingsResp.data.listings : []);
-
-			       // Bookings
-			       let bookingsResp;
-			       try {
-				       bookingsResp = await api.get(`/api/bookings/vendor/${encodeURIComponent(vendorId)}`);
-			       } catch {
-				       // fallback: try /api/subscriptions/bookings/mine
-				       try {
-					       bookingsResp = await api.get(`/api/subscriptions/bookings/mine`);
-				       } catch {
-					       bookingsResp = { data: { bookings: [] } };
-				       }
-			       }
-			       setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
-
-			       // Wallet (from stats, fallback 0)
 			       setWallet(Number(statsResp.data?.bookingStats?.revenue || 0));
-		       } catch (e) {
-			       setErr("Failed to load dashboard data");
-		       }
-		       setLoading(false);
-	       })();
+		       })
+		       .catch(() => {
+			       setStatsError("Failed to load stats");
+		       })
+		       .finally(() => setStatsLoading(false));
+
+	       // Listings
+	       api.get(`/api/listings/vendor/${encodeURIComponent(vendorId)}`)
+		       .then((listingsResp) => {
+			       setMyListings(Array.isArray(listingsResp.data?.listings) ? listingsResp.data.listings : []);
+		       })
+		       .catch(() => {
+			       setListingsError("Failed to load listings");
+			       setMyListings([]);
+		       })
+		       .finally(() => setListingsLoading(false));
+
+	       // Bookings
+	       api.get(`/api/bookings/vendor/${encodeURIComponent(vendorId)}`)
+		       .then((bookingsResp) => {
+			       setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
+		       })
+		       .catch(() => {
+			       // fallback: try /api/subscriptions/bookings/mine
+			       api.get(`/api/subscriptions/bookings/mine`)
+				       .then((bookingsResp) => {
+					       setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
+				       })
+				       .catch(() => {
+					       setBookingsError("Failed to load bookings");
+					       setBookings([]);
+				       })
+				       .finally(() => setBookingsLoading(false));
+		       })
+		       .finally(() => setBookingsLoading(false));
        }, [vendorId]);
 
 	// Metrics
