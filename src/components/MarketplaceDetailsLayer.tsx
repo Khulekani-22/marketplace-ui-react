@@ -5,6 +5,8 @@ import { api } from "../lib/api";
 import useReactApexChart from "../hook/useReactApexChart";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
+import firestoreService from "../services/firestoreService";
+import { auth } from "../firebase";
 
 interface Booking {
   id: string;
@@ -30,6 +32,14 @@ const MarketplaceDetailsLayer = () => {
 
   // Booking details state
   const [booking, setBooking] = useState<Booking | null>(null);
+  // Booking notes state
+  const [notes, setNotes] = useState<string>("");
+  const [notesSaved, setNotesSaved] = useState(false);
+  // Service details and reviews state
+  const [service, setService] = useState<any>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
+  // Other vendor services state
+  const [otherServices, setOtherServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
@@ -46,18 +56,87 @@ const MarketplaceDetailsLayer = () => {
       return;
     }
     setLoading(true);
+    // Fetch booking
     api.get("/api/subscriptions/bookings/mine")
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (Array.isArray(data?.bookings)) {
           const found = data.bookings.find((b: Booking) => String(b.serviceId) === String(serviceId));
           setBooking(found || null);
+          // Load notes from Firestore
+          if (found && auth.currentUser) {
+            const userId = auth.currentUser.uid;
+            const noteDocId = `${found.id}_${userId}`;
+            const noteDoc = await firestoreService.getDocument("bookingNotes", noteDocId);
+            setNotes((noteDoc && typeof noteDoc === "object" && "notes" in noteDoc) ? (noteDoc.notes as string) : "");
+          } else {
+            setNotes("");
+          }
+          // Fetch service details and reviews
+          if (found) {
+            api.get(`/api/data/services/${encodeURIComponent(found.serviceId)}`)
+              .then(({ data: svcDetail }) => {
+                setService(svcDetail?.service || null);
+                const vendorId = svcDetail?.service?.vendorId;
+                // Fetch two other services from the same vendor
+                if (vendorId) {
+                  api.get(`/api/data/services`, { params: { vendor: vendorId, pageSize: 3 } })
+                    .then(({ data: svcList }) => {
+                      // Exclude current service
+                      const others = Array.isArray(svcList?.items)
+                        ? svcList.items.filter((s: any) => String(s.id) !== String(found.serviceId)).slice(0, 2)
+                        : [];
+                      setOtherServices(others);
+                    })
+                    .catch(() => setOtherServices([]));
+                } else {
+                  setOtherServices([]);
+                }
+              })
+              .catch(() => {
+                setService(null);
+                setOtherServices([]);
+              });
+            api.get(`/api/data/services/${encodeURIComponent(found.serviceId)}/reviews`)
+              .then(({ data }) => setReviews(Array.isArray(data?.reviews) ? data.reviews : []))
+              .catch(() => setReviews([]));
+          } else {
+            setOtherServices([]);
+          }
         } else {
           setBooking(null);
+          setOtherServices([]);
         }
       })
-      .catch(() => setBooking(null))
+      .catch(() => {
+        setBooking(null);
+        setOtherServices([]);
+      })
       .finally(() => setLoading(false));
   }, [location.search]);
+
+  function handleNotesSave() {
+    if (!booking || !auth.currentUser) return;
+    const userId = auth.currentUser.uid;
+    const noteDocId = `${booking.id}_${userId}`;
+    firestoreService.updateDocument("bookingNotes", noteDocId, {
+      bookingId: booking.id,
+      userId,
+      notes,
+      updatedAt: new Date(),
+    }).catch(async () => {
+      // If doc doesn't exist, create it
+      await firestoreService.addDocument("bookingNotes", {
+        bookingId: booking.id,
+        userId,
+        notes,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        id: noteDocId,
+      });
+    });
+    setNotesSaved(true);
+    setTimeout(() => setNotesSaved(false), 1500);
+  }
 
   return (
     <>
@@ -67,23 +146,84 @@ const MarketplaceDetailsLayer = () => {
           {loading ? (
             <div className='alert alert-info'>Loading booking details…</div>
           ) : booking ? (
-            <div className='card shadow-sm p-3 mb-3'>
-              <h5 className='mb-2'>Booking Details</h5>
-              <div className='mb-2'><strong>Service:</strong> {booking.serviceTitle || booking.serviceId}</div>
-              <div className='mb-2'><strong>Vendor:</strong> {booking.vendorName || booking.vendor || "—"}</div>
-              <div className='mb-2'><strong>Date:</strong> {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : "—"}</div>
-              <div className='mb-2'><strong>Time Slot:</strong> {booking.scheduledSlot || "—"}</div>
-              <div className='mb-2'><strong>Status:</strong> {booking.status || "—"}</div>
-              <div className='mb-2'><strong>Price:</strong> R {Number(booking.price || 0).toLocaleString()}</div>
-              {booking.meetingLink ? (
-                <div className='mb-2'>
-                  <strong>Meeting Link:</strong> <a href={booking.meetingLink} target='_blank' rel='noopener noreferrer'>{booking.meetingLink}</a>
-                  <button className='btn btn-sm btn-outline-secondary ms-2' onClick={() => booking.meetingLink && navigator.clipboard.writeText(booking.meetingLink)}>Copy Link</button>
+            <>
+              <div className='card shadow-sm p-3 mb-3'>
+                <h5 className='mb-2'>Booking Details</h5>
+                <div className='mb-2'><strong>Service:</strong> {booking.serviceTitle || booking.serviceId}</div>
+                <div className='mb-2'><strong>Vendor:</strong> {booking.vendorName || booking.vendor || "—"}</div>
+                <div className='mb-2'><strong>Date:</strong> {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : "—"}</div>
+                <div className='mb-2'><strong>Time Slot:</strong> {booking.scheduledSlot || "—"}</div>
+                <div className='mb-2'><strong>Status:</strong> {booking.status || "—"}</div>
+                <div className='mb-2'><strong>Price:</strong> R {Number(booking.price || 0).toLocaleString()}</div>
+                {booking.meetingLink ? (
+                  <div className='mb-2'>
+                    <strong>Meeting Link:</strong> <a href={booking.meetingLink} target='_blank' rel='noopener noreferrer'>{booking.meetingLink}</a>
+                    <button className='btn btn-sm btn-outline-secondary ms-2' onClick={() => booking.meetingLink && navigator.clipboard.writeText(booking.meetingLink)}>Copy Link</button>
+                  </div>
+                ) : (
+                  <div className='mb-2'><strong>Meeting Link:</strong> <span className='text-muted'>Not available yet</span></div>
+                )}
+                {/* Booking Notes Section */}
+                <div className='mb-2 mt-3'>
+                  <strong>Session Notes / Questions:</strong>
+                  <textarea
+                    className='form-control mt-2 mb-2'
+                    rows={3}
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                    placeholder='Add notes or questions for your session…'
+                    disabled={loading}
+                  />
+                  <button className='btn btn-sm btn-primary' onClick={handleNotesSave} disabled={loading || !booking}>
+                    Save Notes
+                  </button>
+                  {notesSaved && <span className='ms-2 text-success'>Notes saved!</span>}
                 </div>
-              ) : (
-                <div className='mb-2'><strong>Meeting Link:</strong> <span className='text-muted'>Not available yet</span></div>
+              </div>
+              {/* Service Details Section */}
+              {service && (
+                <div className='card shadow-sm p-3 mb-3'>
+                  <h5 className='mb-2'>Service Details</h5>
+                  <div className='mb-2'><strong>Title:</strong> {service.title}</div>
+                  <div className='mb-2'><strong>Description:</strong> {service.description}</div>
+                  <div className='mb-2'><strong>Category:</strong> {service.category}</div>
+                  <div className='mb-2'><strong>Vendor:</strong> {service.vendor}</div>
+                  <div className='mb-2'><strong>Price:</strong> R {Number(service.price || 0).toLocaleString()}</div>
+                  <div className='mb-2'><strong>Rating:</strong> {Number(service.rating || 0).toFixed(1)}</div>
+                </div>
               )}
-            </div>
+              {/* Reviews Section */}
+              <div className='card shadow-sm p-3 mb-3'>
+                <h5 className='mb-2'>Reviews</h5>
+                {reviews.length === 0 ? (
+                  <div className='text-muted'>No reviews yet.</div>
+                ) : (
+                  <ul className='list-unstyled mb-0'>
+                    {reviews.slice(0, 5).map((r, idx) => (
+                      <li key={idx} className='mb-2'>
+                        <strong>{r.author || "Anonymous"}</strong>: {r.comment || "No comment"}
+                        <span className='ms-2 text-warning'>★ {Number(r.rating || 0).toFixed(1)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+                {/* Other Services from Vendor Section */}
+                {otherServices.length > 0 && (
+                  <div className='card shadow-sm p-3 mb-3'>
+                    <h5 className='mb-2'>Other Services from this Vendor</h5>
+                    <ul className='list-unstyled mb-0'>
+                      {otherServices.map((svc: any, idx: number) => (
+                        <li key={svc.id || idx} className='mb-2'>
+                          <strong>{svc.title}</strong> — {svc.category}
+                          <span className='ms-2'>R {Number(svc.price || 0).toLocaleString()}</span>
+                          <Link to={`/marketplace-details?id=${svc.id}`} className='ms-2 btn btn-sm btn-outline-primary'>View</Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+            </>
           ) : (
             <div className='alert alert-warning'>No booking found for this service.</div>
           )}
@@ -174,7 +314,26 @@ const MarketplaceDetailsLayer = () => {
                     className='apexcharts-tooltip-style-1'
                   />
                   <ReactApexChart
-                    options={timeSeriesChartOptions}
+                    options={{
+                      ...timeSeriesChartOptions,
+                      chart: {
+                        ...timeSeriesChartOptions.chart,
+                        type: "area" as const,
+                        zoom: {
+                          ...timeSeriesChartOptions.chart?.zoom,
+                          type: "x" as const,
+                        },
+                      },
+                      stroke: {
+                        ...timeSeriesChartOptions.stroke,
+                        curve: "smooth" as const,
+                        lineCap: "round" as const,
+                      },
+                      xaxis: {
+                        ...timeSeriesChartOptions.xaxis,
+                        type: "category" as const,
+                      },
+                    }}
                     series={timeSeriesChartSeries}
                     type='area'
                     height={350}

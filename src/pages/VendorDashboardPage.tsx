@@ -240,55 +240,7 @@ export default function VendorDashboardPage() {
 							</div>
 						</div>
 
-				{/* Listings Overview */}
-				<div className="card mb-4">
-					<div className="card-header d-flex justify-content-between align-items-center">
-						<h6 className="mb-0">My Listings</h6>
-						<Link to="/listings-vendors-mine" className="btn btn-sm btn-outline-primary">Manage Listings</Link>
-					</div>
-					<div className="card-body p-0">
-						{!myListings.length && <div className="p-3 text-muted">No listings yet.</div>}
-						{!!myListings.length && (
-							<div className="table-responsive">
-								<table className="table align-middle mb-0">
-									<thead>
-										<tr>
-											<th style={{ width: 72 }}></th>
-											<th>Title</th>
-											<th>Category</th>
-											<th>Price</th>
-											<th>Status</th>
-											<th>Bookings</th>
-											<th>Rating</th>
-										</tr>
-									</thead>
-									<tbody>
-										{myListings.map((i, idx) => {
-											const serviceKey = String(i.id || i.vendorId || "");
-											return (
-												<tr key={serviceKey || idx}>
-													<td>
-														<img
-															src={i.imageUrl || "/assets/images/placeholder-4x3.png"}
-															alt=""
-															style={{ width: 64, height: 40, objectFit: "cover", borderRadius: 6 }}
-														/>
-													</td>
-													<td className="fw-semibold">{i.title}</td>
-													<td>{i.category || "—"}</td>
-													<td>R{Number(i.price || 0).toLocaleString()}</td>
-													<td><span className={`badge text-bg-${(i.status || "pending").toLowerCase() === "approved" ? "success" : (i.status || "pending").toLowerCase() === "pending" ? "warning" : "danger"}`}>{i.status || "pending"}</span></td>
-													<td>{bookingsByService[serviceKey] || 0}</td>
-													<td>{typeof i.rating === "number" ? i.rating.toFixed(1) : "—"}</td>
-												</tr>
-											);
-										})}
-									</tbody>
-								</table>
-							</div>
-						)}
-					</div>
-				</div>
+
 
 				{/* Bookings Management */}
 				<div className="card mb-4">
@@ -361,6 +313,56 @@ export default function VendorDashboardPage() {
 						</button>
 					</Modal.Body>
 				</Modal>
+
+        				{/* Listings Overview */}
+				<div className="card mb-4">
+					<div className="card-header d-flex justify-content-between align-items-center">
+						<h6 className="mb-0">My Listings</h6>
+						<Link to="/listings-vendors-mine" className="btn btn-sm btn-outline-primary">Manage Listings</Link>
+					</div>
+					<div className="card-body p-0">
+						{!myListings.length && <div className="p-3 text-muted">No listings yet.</div>}
+						{!!myListings.length && (
+							<div className="table-responsive">
+								<table className="table align-middle mb-0">
+									<thead>
+										<tr>
+											<th style={{ width: 72 }}></th>
+											<th>Title</th>
+											<th>Category</th>
+											<th>Price</th>
+											<th>Status</th>
+											<th>Bookings</th>
+											<th>Rating</th>
+										</tr>
+									</thead>
+									<tbody>
+										{myListings.map((i, idx) => {
+											const serviceKey = String(i.id || i.vendorId || "");
+											return (
+												<tr key={serviceKey || idx}>
+													<td>
+														<img
+															src={i.imageUrl || "/assets/images/placeholder-4x3.png"}
+															alt=""
+															style={{ width: 64, height: 40, objectFit: "cover", borderRadius: 6 }}
+														/>
+													</td>
+													<td className="fw-semibold">{i.title}</td>
+													<td>{i.category || "—"}</td>
+													<td>R{Number(i.price || 0).toLocaleString()}</td>
+													<td><span className={`badge text-bg-${(i.status || "pending").toLowerCase() === "approved" ? "success" : (i.status || "pending").toLowerCase() === "pending" ? "warning" : "danger"}`}>{i.status || "pending"}</span></td>
+													<td>{bookingsByService[serviceKey] || 0}</td>
+													<td>{typeof i.rating === "number" ? i.rating.toFixed(1) : "—"}</td>
+												</tr>
+											);
+										})}
+									</tbody>
+								</table>
+							</div>
+						)}
+					</div>
+				</div>
 
 			</div>
 		</MasterLayout>
