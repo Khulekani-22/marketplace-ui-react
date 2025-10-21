@@ -207,10 +207,16 @@ function normalizeNewThread(item: any): ThreadSummary {
   return thread;
 }
 
-const MessagingSystem = () => {
+interface MessagingSystemProps {
+  userEmail?: string;
+  userName?: string;
+}
+
+const MessagingSystem: React.FC<MessagingSystemProps> = ({ userEmail, userName }) => {
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [contacts, setContacts] = useState<ContactSummary[]>([]);
   const [viewBox, setViewBox] = useState<'inbox' | 'sent'>('inbox');
+  // If userEmail is provided, auto-select that contact for direct chat
   const [selectedContact, setSelectedContact] = useState<ContactSummary | null>(null);
   const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
   const [currentSession, setCurrentSession] = useState<SessionInfo | null>(() => {
@@ -262,6 +268,44 @@ const MessagingSystem = () => {
         // leave existing session info (likely unauthenticated)
       });
   }, []);
+
+  // If userEmail is provided, auto-select the contact for direct chat
+  useEffect(() => {
+    if (userEmail && contacts.length) {
+      const found = contacts.find(c => c.email && c.email.toLowerCase() === userEmail.toLowerCase());
+      if (found) {
+        setSelectedContact(found);
+      } else {
+        // If not found, create a temporary contact for direct chat
+        setSelectedContact({
+          id: `direct:${userEmail}`,
+          threadId: '',
+          name: userName || userEmail,
+          email: userEmail,
+          avatar: placeholderAvatar(userName || userEmail),
+          status: 'Direct Message',
+          type: 'thread',
+          lastMessageSnippet: '',
+          lastMessageAt: undefined,
+          unreadCount: 0,
+          thread: {
+            id: '',
+            kind: 'thread',
+            subject: userName || userEmail,
+            lastMessageSnippet: '',
+            participants: [
+              { name: userName || userEmail, email: userEmail },
+              { name: (currentSession && typeof currentSession === 'object' && 'name' in currentSession && typeof (currentSession as any).name === 'string') ? (currentSession as any).name : '', email: currentSession?.email || undefined }
+            ],
+            context: {},
+            raw: {},
+          },
+          isInbox: true,
+          isSent: false,
+        });
+      }
+    }
+  }, [userEmail, userName, contacts, currentSession]);
 
   const buildContacts = useCallback(
     (threadList: ThreadSummary[]): ContactSummary[] => {

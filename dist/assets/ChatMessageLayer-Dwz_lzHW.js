@@ -1,0 +1,1 @@
+import{j as a}from"./index-DJJlGgdb.js";import{M as r}from"./MessagingSystem-5XRDExYG.js";const o=({userEmail:e,userName:s})=>a.jsxDEV(r,{userEmail:e,userName:s},void 0,!1,{fileName:"/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/src/components/ChatMessageLayer.tsx",lineNumber:10,columnNumber:10},void 0);export{o as C};

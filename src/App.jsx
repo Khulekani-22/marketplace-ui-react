@@ -5,6 +5,7 @@ import RouteScrollToTop from "./helper/RouteScrollToTop";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import { AppSyncProvider } from "./context/AppSyncContext.tsx";
 import { WalletProvider } from "./context/WalletContext.tsx";
+import { NotificationsProvider } from "./context/NotificationsContext";
 import LoginForm from "./components/LoginForm.tsx";
 import PrivateRoute from "./components/PrivateRoute.tsx";
 import AdminRoute from "./components/AdminRoute.tsx";
@@ -148,7 +149,8 @@ function App() {
         <Suspense fallback={<Fallback />}>
           <AppSyncProvider>
             <WalletProvider>
-              <Routes>
+              <NotificationsProvider>
+                <Routes>
               {/* auth */}
               <Route path="/login" element={<LoginForm />} />
 
@@ -374,8 +376,9 @@ function App() {
               {/* 404 */}
               <Route path="*" element={<ErrorPage />} />
             </Routes>
-          </WalletProvider>
-        </AppSyncProvider>
+              </NotificationsProvider>
+            </WalletProvider>
+          </AppSyncProvider>
       </Suspense>
     </ErrorBoundary>
     </>
