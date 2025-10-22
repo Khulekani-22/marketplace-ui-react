@@ -118,15 +118,20 @@ export default function AdminUsersPage() {
           role: u.role || "member",
         }))
       );
-      // Fetch feature privileges for each user
-      for (const u of list) {
-        const e = (u.email || "").toLowerCase();
-        try {
-          const { data: pv } = await api.get(`/api/users/${encodeURIComponent(e)}/privileges`);
-          setPrivileges((prev) => ({ ...prev, [e]: pv.featurePrivileges || {} }));
-        } catch {
-          setPrivileges((prev) => ({ ...prev, [e]: {} }));
+      // Batch fetch feature privileges for all users
+      const emails = list.map((u) => (u.email || "").toLowerCase()).filter(Boolean);
+      try {
+        const { data } = await api.post("/api/users/batch-privileges", { emails });
+        if (data && typeof data.privileges === "object") {
+          setPrivileges(data.privileges);
         }
+      } catch {
+        // fallback: set empty privileges for all
+        setPrivileges((prev) => {
+          const out = { ...prev };
+          emails.forEach((e) => { out[e] = {}; });
+          return out;
+        });
       }
 
       // Also fetch vendors in current tenant to know who already has a vendor profile

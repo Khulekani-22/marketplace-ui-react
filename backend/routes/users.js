@@ -1,3 +1,21 @@
+// Batch fetch feature privileges for multiple users
+router.post("/batch-privileges", firebaseAuthRequired, async (req, res) => {
+  try {
+    if (!isAdminRequest(req)) return res.status(403).json({ status: "error", message: "Forbidden" });
+    const emails = Array.isArray(req.body?.emails) ? req.body.emails : [];
+    if (!emails.length) return res.status(400).json({ status: "error", message: "Missing emails array" });
+    const normEmails = Array.from(new Set(emails.map(e => (e || "").trim().toLowerCase()).filter(Boolean)));
+    const data = await getData();
+    const out = {};
+    for (const email of normEmails) {
+      const user = (Array.isArray(data.users) ? data.users : []).find(u => normalizeEmail(u.email) === email);
+      out[email] = user?.featurePrivileges || {};
+    }
+    res.json({ privileges: out });
+  } catch (e) {
+    res.status(500).json({ status: "error", message: e?.message || "Batch privilege fetch failed" });
+  }
+});
 import { Router } from "express";
 import admin from "firebase-admin";
 import express from "express";
