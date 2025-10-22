@@ -16,6 +16,7 @@ router.post("/batch-privileges", firebaseAuthRequired, async (req, res) => {
     res.status(500).json({ status: "error", message: e?.message || "Batch privilege fetch failed" });
   }
 });
+
 import { Router } from "express";
 import admin from "firebase-admin";
 import express from "express";

@@ -110,12 +110,13 @@ export default function AdminUsersPage() {
     try {
       const { data } = await api.get("/api/users");
       const list = Array.isArray(data) ? data : [];
-      // Basic normalization
+      // Only show Onboard Admins users (role === 'admin')
+      const admins = list.filter((u) => (u.role || "member").toLowerCase() === "admin");
       setUsers(
-        list.map((u) => ({
+        admins.map((u) => ({
           email: (u.email || "").toLowerCase(),
           tenantId: !u.tenantId || u.tenantId === "public" ? "vendor" : u.tenantId,
-          role: u.role || "member",
+          role: u.role || "admin",
         }))
       );
       // Batch fetch feature privileges for all users
