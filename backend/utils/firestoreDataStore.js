@@ -6,6 +6,54 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function normalizeTenantId(id) {
+  if (!id) return 'public';
+  const value = String(id).toLowerCase();
+  return value === 'vendor' ? 'public' : value;
+}
+
+function chunkArray(list, size) {
+  const chunks = [];
+  if (!Array.isArray(list) || size <= 0) return chunks;
+  for (let i = 0; i < list.length; i += size) {
+    chunks.push(list.slice(i, i + size));
+  }
+  return chunks;
+}
+
+function convertTimestamp(value) {
+  if (!value) return value;
+  if (value instanceof admin.firestore.Timestamp) {
+    return value.toDate().toISOString();
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  return value;
+}
+
+function serializeDocument(doc) {
+  if (!doc) return null;
+  const data = doc.data();
+  if (!data || typeof data !== 'object') {
+    return { id: doc.id };
+  }
+
+  const output = { id: doc.id };
+  for (const [key, value] of Object.entries(data)) {
+    if (Array.isArray(value)) {
+      output[key] = value.map((entry) => convertTimestamp(entry));
+      continue;
+    }
+    if (value && typeof value === 'object' && typeof value.toDate === 'function') {
+      output[key] = convertTimestamp(value);
+      continue;
+    }
+    output[key] = value;
+  }
+  return output;
+}
+
 /**
  * Firestore Data Store
  * Drop-in replacement for the file-based dataStore.js
@@ -226,6 +274,274 @@ class FirestoreDataStore {
       console.error('❌ Failed to save to Firestore:', error);
       throw error;
     }
+  }
+
+  normalizeTenant(id) {
+    return normalizeTenantId(id);
+  }
+
+  async queryServicesOptimized({
+    tenantId,
+    category,
+    vendor,
+    featured,
+    minPrice,
+    maxPrice,
+    page = 1,
+    pageSize = 20,
+  } = {}) {
+    if (!this.initialized) {
+      throw new Error('Firestore not initialized');
+    }
+
+    const normalizedTenant = this.normalizeTenant(tenantId);
+    let queryRef = this.db.collection('services').where('tenantId', '==', normalizedTenant);
+
+    if (category) {
+      queryRef = queryRef.where('category', '==', category);
+    }
+    if (vendor) {
+      queryRef = queryRef.where('vendor', '==', vendor);
+    }
+    if (typeof featured === 'boolean') {
+      queryRef = queryRef.where('featured', '==', featured);
+    }
+
+    const numericMin = Number(minPrice);
+    const numericMax = Number(maxPrice);
+    const hasMin = !Number.isNaN(numericMin);
+    const hasMax = !Number.isNaN(numericMax);
+
+    if (hasMin) {
+      queryRef = queryRef.where('price', '>=', numericMin);
+    }
+    if (hasMax) {
+      queryRef = queryRef.where('price', '<=', numericMax);
+    }
+
+    const usePriceOrder = hasMin || hasMax;
+    const orderField = usePriceOrder ? 'price' : 'createdAt';
+    const direction = usePriceOrder ? 'ASC' : 'DESC';
+
+    let orderedQuery = queryRef.orderBy(orderField, direction.toLowerCase());
+
+    const safePageSize = Math.max(1, Math.min(Number(pageSize) || 20, 100));
+    const safePage = Math.max(1, Number(page) || 1);
+    const offset = (safePage - 1) * safePageSize;
+
+    if (offset > 0) {
+      orderedQuery = orderedQuery.offset(offset);
+    }
+
+    orderedQuery = orderedQuery.limit(safePageSize);
+
+    const [snapshot, countSnapshot] = await Promise.all([
+      orderedQuery.get(),
+      queryRef.count().get().catch(() => null),
+    ]);
+
+    const items = snapshot.docs.map((doc) => serializeDocument(doc));
+    const total = countSnapshot ? countSnapshot.data().count : items.length + offset;
+
+    return {
+      page: safePage,
+      pageSize: safePageSize,
+      total,
+      items,
+    };
+  }
+
+  async getVendorServices({
+    tenantId,
+    vendorId,
+    ownerUid,
+    emails = [],
+    limit = 100,
+  } = {}) {
+    if (!this.initialized) {
+      throw new Error('Firestore not initialized');
+    }
+
+    const normalizedTenant = this.normalizeTenant(tenantId);
+    const servicesRef = this.db.collection('services');
+    const uniqueEmails = Array.from(new Set((emails || []).filter(Boolean).map((e) => e.toLowerCase())));
+    const queries = [];
+
+    if (vendorId) {
+      queries.push(
+        servicesRef
+          .where('tenantId', '==', normalizedTenant)
+          .where('vendorId', '==', vendorId)
+          .orderBy('createdAt', 'desc')
+          .limit(limit)
+      );
+    }
+
+    if (ownerUid) {
+      queries.push(
+        servicesRef
+          .where('tenantId', '==', normalizedTenant)
+          .where('ownerUid', '==', ownerUid)
+          .orderBy('createdAt', 'desc')
+          .limit(limit)
+      );
+    }
+
+    uniqueEmails.forEach((email) => {
+      queries.push(
+        servicesRef
+          .where('tenantId', '==', normalizedTenant)
+          .where('contactEmail', '==', email)
+          .orderBy('createdAt', 'desc')
+          .limit(limit)
+      );
+    });
+
+    const results = await Promise.all(
+      queries.map((q) =>
+        q
+          .get()
+          .then((snap) => snap.docs)
+          .catch((err) => {
+            console.warn('[FirestoreDataStore] vendor services query failed', err.message);
+            return [];
+          })
+      )
+    );
+
+    const map = new Map();
+    results.flat().forEach((doc) => {
+      if (!doc) return;
+      map.set(doc.id, serializeDocument(doc));
+    });
+
+    return Array.from(map.values());
+  }
+
+  async getVendorBookings({
+    tenantId,
+    serviceIds = [],
+    vendorId,
+    emails = [],
+    limit = 100,
+  } = {}) {
+    if (!this.initialized) {
+      throw new Error('Firestore not initialized');
+    }
+
+    const normalizedTenant = this.normalizeTenant(tenantId);
+    const bookingsRef = this.db.collection('bookings');
+    const uniqueServiceIds = Array.from(new Set((serviceIds || []).filter(Boolean).map((id) => String(id))));
+    const uniqueEmails = Array.from(new Set((emails || []).filter(Boolean).map((e) => e.toLowerCase())));
+
+    const queries = [];
+
+    if (vendorId) {
+      queries.push(
+        bookingsRef
+          .where('tenantId', '==', normalizedTenant)
+          .where('vendorId', '==', vendorId)
+          .orderBy('createdAt', 'desc')
+          .limit(limit)
+      );
+    }
+
+    uniqueEmails.forEach((email) => {
+      queries.push(
+        bookingsRef
+          .where('tenantId', '==', normalizedTenant)
+          .where('vendorEmail', '==', email)
+          .orderBy('createdAt', 'desc')
+          .limit(limit)
+      );
+    });
+
+    chunkArray(uniqueServiceIds, 10).forEach((chunk) => {
+      queries.push(
+        bookingsRef
+          .where('tenantId', '==', normalizedTenant)
+          .where('serviceId', 'in', chunk)
+          .orderBy('createdAt', 'desc')
+          .limit(limit)
+      );
+    });
+
+    const results = await Promise.all(
+      queries.map((q) =>
+        q
+          .get()
+          .then((snap) => snap.docs)
+          .catch((err) => {
+            console.warn('[FirestoreDataStore] vendor bookings query failed', err.message);
+            return [];
+          })
+      )
+    );
+
+    const map = new Map();
+    results.flat().forEach((doc) => {
+      if (!doc) return;
+      map.set(doc.id, serializeDocument(doc));
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      const ta = Date.parse(a.createdAt || a.scheduledDate || '') || 0;
+      const tb = Date.parse(b.createdAt || b.scheduledDate || '') || 0;
+      return tb - ta;
+    });
+  }
+
+  async findVendorProfile({ tenantId, uid, email } = {}) {
+    if (!this.initialized) {
+      throw new Error('Firestore not initialized');
+    }
+
+    const normalizedTenant = this.normalizeTenant(tenantId);
+    const emailLc = (email || '').toLowerCase();
+    const collections = ['vendors', 'startups', 'companies', 'profiles'];
+
+    const matchDoc = async (snapshot) => {
+      if (!snapshot || snapshot.empty) return null;
+      for (const doc of snapshot.docs) {
+        const data = doc.data() || {};
+        const docTenant = normalizeTenantId(data.tenantId);
+        if (
+          docTenant === normalizedTenant ||
+          !data.tenantId ||
+          normalizedTenant === 'public'
+        ) {
+          return serializeDocument(doc);
+        }
+      }
+      return null;
+    };
+
+    for (const collectionName of collections) {
+      const ref = this.db.collection(collectionName);
+      const queries = [];
+
+      if (uid) {
+        queries.push(ref.where('ownerUid', '==', uid).limit(1));
+        queries.push(ref.where('uid', '==', uid).limit(1));
+        queries.push(ref.where('id', '==', uid).limit(1));
+      }
+      if (emailLc) {
+        queries.push(ref.where('contactEmail', '==', emailLc).limit(1));
+        queries.push(ref.where('email', '==', emailLc).limit(1));
+      }
+
+      for (const q of queries) {
+        try {
+          const snapshot = await q.get();
+          const match = await matchDoc(snapshot);
+          if (match) return match;
+        } catch (err) {
+          console.warn(`[FirestoreDataStore] vendor profile lookup failed (${collectionName})`, err?.message || err);
+        }
+      }
+    }
+
+    return null;
   }
 
   /**

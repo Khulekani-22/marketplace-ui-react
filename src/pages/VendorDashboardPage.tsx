@@ -1,12 +1,13 @@
 import ChatMessageLayer from '../components/ChatMessageLayer';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Modal } from "react-bootstrap";
 import MasterLayout from "../masterLayout/MasterLayout";
 import { useVendor } from "../context/useVendor";
 import { useWallet } from "../hook/useWalletAxios";
 import { api } from "../lib/api";
+import { fetchMyVendorListings } from "../lib/listings";
 import { useAppSync } from "../context/useAppSync";
 import { Link } from "react-router-dom";
 import firestoreService from "../services/firestoreService";
@@ -48,6 +49,12 @@ interface Vendor {
 	walletBalance?: number;
 }
 
+interface LoadMineOptions {
+	signal?: AbortSignal;
+	refresh?: boolean;
+	silent?: boolean;
+}
+
 export default function VendorDashboardPage() {
 	// Chat modal state
 	const [chatModal, setChatModal] = useState<{ open: boolean, userEmail?: string, userName?: string }>({ open: false });
@@ -57,14 +64,12 @@ export default function VendorDashboardPage() {
 		// --- State declarations at top ---
 		const { vendor } = useVendor?.() || { vendor: null };
 		const typedVendor: Vendor | null = vendor as Vendor | null;
-		const vendorId = typedVendor?.vendorId || typedVendor?.id || typedVendor?.ownerUid || typedVendor?.email || "me";
 		const [bookings, setBookings] = useState<Booking[]>([]);
 		const [bookingNotes, setBookingNotes] = useState<Record<string, string>>({});
 		const [bookingNotesLoading, setBookingNotesLoading] = useState(false);
 		const [bookingNotesError, setBookingNotesError] = useState("");
 		const [meetingModal, setMeetingModal] = useState<{ open: boolean, booking: Booking | null, link: string, busy: boolean, error: string }>({ open: false, booking: null, link: '', busy: false, error: '' });
 		const [err, setErr] = useState("");
-		const [loading, setLoading] = useState(false);
 		const [myListings, setMyListings] = useState<Listing[]>([]);
 		const [stats, setStats] = useState<any>(null);
 		const { wallet, loading: walletLoading, eligible: walletEligible, error: walletError } = useWallet();
@@ -86,64 +91,94 @@ export default function VendorDashboardPage() {
 			});
 		}
 
-       // Improved: Parallelize API requests, granular loading/error states
-       const [statsLoading, setStatsLoading] = useState(false);
-       const [statsError, setStatsError] = useState("");
-       const [listingsLoading, setListingsLoading] = useState(false);
-       const [listingsError, setListingsError] = useState("");
-       const [bookingsLoading, setBookingsLoading] = useState(false);
-       const [bookingsError, setBookingsError] = useState("");
+		// Loading and error states for dashboard fetches
+		const [, setStatsLoading] = useState(false);
+		const [, setStatsError] = useState("");
+		const [, setListingsLoading] = useState(false);
+		const [, setListingsError] = useState("");
+		const [, setBookingsLoading] = useState(false);
+		const [, setBookingsError] = useState("");
 
-	   useEffect(() => {
-		   if (!vendorId) return;
+		const loadMineData = useCallback(async ({ signal, refresh = false, silent = false }: LoadMineOptions = {}) => {
+			const setBusy = (val: boolean) => {
+				if (!silent) {
+					setListingsLoading(val);
+					setBookingsLoading(val);
+				}
+			};
 
-		   setStatsLoading(true);
-		   setListingsLoading(true);
-		   setBookingsLoading(true);
-		   setStatsError("");
-		   setListingsError("");
-		   setBookingsError("");
+			setBusy(true);
+			setErr("");
+			setListingsError("");
+			setBookingsError("");
 
-		   // Stats
-		   api.get(`/api/vendors/${encodeURIComponent(vendorId)}/stats`)
-			   .then((statsResp) => {
-				   setStats(statsResp.data || {});
-			   })
-			   .catch(() => {
-				   setStatsError("Failed to load stats");
-			   })
-			   .finally(() => setStatsLoading(false));
+			if (!typedVendor) {
+				setMyListings([]);
+				setBookings([]);
+				setBusy(false);
+				return;
+			}
 
-		   // Listings
-		   api.get(`/api/listings/vendor/${encodeURIComponent(vendorId)}`)
-			   .then((listingsResp) => {
-				   setMyListings(Array.isArray(listingsResp.data?.listings) ? listingsResp.data.listings : []);
-			   })
-			   .catch(() => {
-				   setListingsError("Failed to load listings");
-				   setMyListings([]);
-			   })
-			   .finally(() => setListingsLoading(false));
+			try {
+				const { listings, bookings: mineBookings } = await fetchMyVendorListings({ signal, refresh });
+				if (signal?.aborted) return;
+				setMyListings(Array.isArray(listings) ? listings : []);
+				setBookings(Array.isArray(mineBookings) ? mineBookings : []);
+			} catch (error: any) {
+				if (signal?.aborted) return;
+				const message = error?.response?.data?.message || error?.message || "Failed to load listings";
+				setErr(message);
+				setListingsError(message);
+				setBookingsError("Failed to load bookings");
+				setMyListings([]);
+				setBookings([]);
+			} finally {
+				if (!signal?.aborted) {
+					setBusy(false);
+				}
+			}
+		}, [typedVendor]);
 
-		   // Bookings
-		   api.get(`/api/bookings/vendor/${encodeURIComponent(vendorId)}`)
-			   .then((bookingsResp) => {
-				   setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
-			   })
-			   .catch(() => {
-				   // fallback: try /api/subscriptions/bookings/mine
-				   api.get(`/api/subscriptions/bookings/mine`)
-					   .then((bookingsResp) => {
-						   setBookings(Array.isArray(bookingsResp.data?.bookings) ? bookingsResp.data.bookings : []);
-					   })
-					   .catch(() => {
-						   setBookingsError("Failed to load bookings");
-						   setBookings([]);
-					   })
-					   .finally(() => setBookingsLoading(false));
-			   })
-			   .finally(() => setBookingsLoading(false));
-	   }, [vendorId]);
+		useEffect(() => {
+			if (!typedVendor) {
+				setStats(null);
+				setStatsLoading(false);
+				return;
+			}
+
+			const statsTarget = typedVendor.vendorId || typedVendor.id || typedVendor.ownerUid || typedVendor.email;
+			if (!statsTarget) {
+				setStats(null);
+				setStatsLoading(false);
+				return;
+			}
+
+			const controller = new AbortController();
+			setStatsLoading(true);
+			setStatsError("");
+
+			api.get(`/api/vendors/${encodeURIComponent(statsTarget)}/stats`, { signal: controller.signal })
+				.then((statsResp) => {
+					setStats(statsResp.data || {});
+				})
+				.catch(() => {
+					if (controller.signal.aborted) return;
+					setStatsError("Failed to load stats");
+				})
+				.finally(() => {
+					if (!controller.signal.aborted) {
+						setStatsLoading(false);
+					}
+				});
+
+			return () => controller.abort();
+		}, [typedVendor]);
+
+		useEffect(() => {
+			const controller = new AbortController();
+			loadMineData({ signal: controller.signal });
+			return () => controller.abort();
+		}, [loadMineData]);
 
 	   useEffect(() => {
 		   let isCancelled = false;
@@ -235,9 +270,7 @@ export default function VendorDashboardPage() {
 			try {
 				await api.post(`/api/bookings/${encodeURIComponent(meetingModal.booking.id)}/meeting-link`, { link: meetingModal.link });
 				setMeetingModal({ open: false, booking: null, link: '', busy: false, error: '' });
-				// Refresh bookings
-				const resp = await api.get(`/api/bookings/vendor/${encodeURIComponent(vendorId)}`);
-				setBookings(Array.isArray(resp.data?.bookings) ? resp.data.bookings : []);
+				await loadMineData({ refresh: true, silent: true });
 			} catch (e: any) {
 				setMeetingModal((prev) => ({ ...prev, error: e?.message || 'Failed to save link', busy: false }));
 			}

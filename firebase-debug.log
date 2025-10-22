@@ -1,0 +1,39 @@
+[debug] [2025-10-22T11:28:06.444Z] ----------------------------------------------------------------------
+[debug] [2025-10-22T11:28:06.449Z] Command:       /opt/homebrew/Cellar/node/24.4.0/bin/node /opt/homebrew/bin/firebase login
+[debug] [2025-10-22T11:28:06.449Z] CLI Version:   14.11.0
+[debug] [2025-10-22T11:28:06.449Z] Platform:      darwin
+[debug] [2025-10-22T11:28:06.449Z] Node Version:  v24.4.0
+[debug] [2025-10-22T11:28:06.449Z] Time:          Wed Oct 22 2025 13:28:06 GMT+0200 (South Africa Standard Time)
+[debug] [2025-10-22T11:28:06.449Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-10-22T11:28:06.450Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[info] i  The Firebase CLI’s MCP server feature can optionally make use of Gemini in Firebase. Learn more about Gemini in Firebase and how it uses your data: https://firebase.google.com/docs/gemini-in-firebase#how-gemini-in-firebase-uses-your-data 
+[debug] [2025-10-22T11:28:06.983Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2025-10-22T11:28:06.984Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[info] 
+[info] i  Firebase optionally collects CLI and Emulator Suite usage and error reporting information to help improve our products. Data is collected in accordance with Google's privacy policy (https://policies.google.com/privacy) and is not used to identify you. 
+[info] 
+[info] i  To change your the preference at any time, run `firebase logout` and `firebase login` again. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://accounts.google.com/o/oauth2/auth?client_id=563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com&scope=email%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloudplatformprojects.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffirebase%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&response_type=code&state=699810261&redirect_uri=http%3A%2F%2Flocalhost%3A9005
+[info] 
+[info] Waiting for authentication...
+[debug] [2025-10-22T12:10:26.993Z] ----------------------------------------------------------------------
+[debug] [2025-10-22T12:10:26.997Z] Command:       /opt/homebrew/Cellar/node/24.4.0/bin/node /opt/homebrew/bin/firebase login
+[debug] [2025-10-22T12:10:26.997Z] CLI Version:   14.11.0
+[debug] [2025-10-22T12:10:26.997Z] Platform:      darwin
+[debug] [2025-10-22T12:10:26.997Z] Node Version:  v24.4.0
+[debug] [2025-10-22T12:10:26.997Z] Time:          Wed Oct 22 2025 14:10:26 GMT+0200 (South Africa Standard Time)
+[debug] [2025-10-22T12:10:26.997Z] ----------------------------------------------------------------------
+[debug] 
+[info] i  The Firebase CLI’s MCP server feature can optionally make use of Gemini in Firebase. Learn more about Gemini in Firebase and how it uses your data: https://firebase.google.com/docs/gemini-in-firebase#how-gemini-in-firebase-uses-your-data 
+[info] 
+[info] i  Firebase optionally collects CLI and Emulator Suite usage and error reporting information to help improve our products. Data is collected in accordance with Google's privacy policy (https://policies.google.com/privacy) and is not used to identify you. 
+[info] 
+[info] i  To change your the preference at any time, run `firebase logout` and `firebase login` again. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://accounts.google.com/o/oauth2/auth?client_id=563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com&scope=email%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloudplatformprojects.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffirebase%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&response_type=code&state=1027818942&redirect_uri=http%3A%2F%2Flocalhost%3A9005
+[info] 
+[info] Waiting for authentication...

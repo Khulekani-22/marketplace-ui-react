@@ -1,6 +1,7 @@
 import express from "express";
 import { v4 as uuidv4 } from "uuid";
 import { getData, saveData } from "../utils/hybridDataStore.js";
+import firestoreDataStore from "../utils/firestoreDataStore.js";
 import { ServiceSchema } from "../utils/validators.js";
 import { firebaseAuthRequired } from "../middleware/authFirebase.js";
 
@@ -88,31 +89,66 @@ router.get("/", async (req, res) => {
       pageSize = 20,
     } = req.query;
 
-    const { services = [] } = await getData();
-  const tenantId = req.tenant.id;
+    const tenantId = req.tenant.id;
+    const hasSearch = typeof q === "string" && q.trim().length > 0;
+    const featuredFlag = typeof featured === "string" && featured.trim() !== ""
+      ? featured === "true"
+      : undefined;
 
-  let rows = services.filter(
-    (s) => (s.tenantId ?? "public") === tenantId || (tenantId === "public" && !s.tenantId)
-  );
+    if (!hasSearch) {
+      try {
+        const result = await firestoreDataStore.queryServicesOptimized({
+          tenantId,
+          category,
+          vendor,
+          featured: featuredFlag,
+          minPrice,
+          maxPrice,
+          page,
+          pageSize,
+        });
 
-  if (q) {
-    const needle = String(q).toLowerCase();
-    rows = rows.filter(
-      (s) =>
-        s.title?.toLowerCase().includes(needle) ||
-        s.category?.toLowerCase().includes(needle) ||
-        s.vendor?.toLowerCase().includes(needle) ||
-        s.tags?.some((t) => t.toLowerCase().includes(needle))
+        const scopedItems = result.items.filter((s) =>
+          sameTenant(s?.tenantId, tenantId)
+        );
+
+        res.json({
+          page: result.page,
+          pageSize: result.pageSize,
+          total: result.total,
+          items: scopedItems,
+        });
+        return;
+      } catch (err) {
+        console.warn("[services] Firestore index-backed query failed, falling back to cache", err?.message || err);
+      }
+    }
+
+    const forceReload = req.query.refresh === "true";
+    const { services = [] } = await getData(forceReload);
+
+    let rows = services.filter(
+      (s) => (s.tenantId ?? "public") === tenantId || (tenantId === "public" && !s.tenantId)
     );
-  }
-  if (category) rows = rows.filter((s) => s.category === category);
-  if (vendor) rows = rows.filter((s) => s.vendor === vendor);
-  if (featured === "true") rows = rows.filter((s) => s.isFeatured === true);
 
-  const min = Number(minPrice);
-  const max = Number(maxPrice);
-  if (!Number.isNaN(min)) rows = rows.filter((s) => Number(s.price) >= min);
-  if (!Number.isNaN(max)) rows = rows.filter((s) => Number(s.price) <= max);
+    if (q) {
+      const needle = String(q).toLowerCase();
+      rows = rows.filter(
+        (s) =>
+          s.title?.toLowerCase().includes(needle) ||
+          s.category?.toLowerCase().includes(needle) ||
+          s.vendor?.toLowerCase().includes(needle) ||
+          s.tags?.some((t) => t.toLowerCase().includes(needle))
+      );
+    }
+    if (category) rows = rows.filter((s) => s.category === category);
+    if (vendor) rows = rows.filter((s) => s.vendor === vendor);
+    if (featured === "true") rows = rows.filter((s) => s.isFeatured === true);
+
+    const min = Number(minPrice);
+    const max = Number(maxPrice);
+    if (!Number.isNaN(min)) rows = rows.filter((s) => Number(s.price) >= min);
+    if (!Number.isNaN(max)) rows = rows.filter((s) => Number(s.price) <= max);
 
     const p = Math.max(1, parseInt(page));
     const ps = Math.min(100, Math.max(1, parseInt(pageSize)));
@@ -130,87 +166,130 @@ router.get("/", async (req, res) => {
 router.get("/mine", firebaseAuthRequired, async (req, res) => {
   try {
     const tenantId = req.tenant.id;
-    // Force reload from Firestore when refresh=true query parameter is present
     const forceReload = req.query.refresh === 'true';
-    const data = await getData(forceReload);
-  const services = Array.isArray(data?.services) ? data.services : [];
-  const bookings = Array.isArray(data?.bookings) ? data.bookings : [];
-  const vendorRecord = findVendorRecord(data, tenantId, req.user || {});
-  const userEmail = normalizeEmail(req.user?.email);
-  const vendorId = vendorRecord?.vendorId || vendorRecord?.id || "";
-  const vendorEmail = normalizeEmail(vendorRecord?.contactEmail || vendorRecord?.email) || userEmail;
-  const vendorNameRaw =
-    vendorRecord?.name || vendorRecord?.companyName || vendorRecord?.vendor || (userEmail ? userEmail.split("@")[0] : "");
-  const vendorNameLc = (vendorNameRaw || "").toString().trim().toLowerCase();
-  const uid = (req.user?.uid || "").toString();
+    const userEmail = normalizeEmail(req.user?.email);
+    const uid = (req.user?.uid || '').toString();
 
-  const listings = services
-    .filter((s) => {
-      if (!sameTenant(s?.tenantId, tenantId)) return false;
-      const sid = (s?.vendorId || "").toString();
-      const ownerUid = (s?.ownerUid || s?.ownerId || "").toString();
-      const svcEmail = normalizeEmail(s?.contactEmail || s?.email);
-      const svcName = (s?.vendor || "").toString().trim().toLowerCase();
-      return (
-        (!!vendorId && !!sid && sid === vendorId) ||
-        (!!uid && !!ownerUid && ownerUid === uid) ||
-        (!!vendorEmail && !!svcEmail && svcEmail === vendorEmail) ||
-        (!sid && !!vendorNameLc && !!svcName && svcName === vendorNameLc)
-      );
-    })
-    .map((s) => ({ ...s }));
+    let vendorRecord = null;
+    let fallbackData = null;
 
-  console.log(`📋 [/mine] User: ${userEmail}, VendorId: ${vendorId}, UID: ${uid}`);
-  console.log(`📋 [/mine] Total services: ${services.length}, Filtered listings: ${listings.length}`);
-  if (listings.length === 0) {
-    console.log(`📋 [/mine] No listings found. Vendor record:`, vendorRecord);
-    console.log(`📋 [/mine] Filter criteria: vendorId=${vendorId}, uid=${uid}, email=${vendorEmail}, name=${vendorNameLc}`);
-    console.log(`📋 [/mine] Sample service vendorIds:`, services.slice(0, 3).map(s => s?.vendorId));
-  }
+    const ensureFallbackData = async () => {
+      if (!fallbackData) {
+        fallbackData = await getData(forceReload);
+      }
+      return fallbackData;
+    };
 
-  const listingIds = new Set();
-  listings.forEach((s) => {
-    [s?.id, s?.serviceId, s?.vendorId]
-      .map((v) => (v ?? "").toString())
-      .filter((v) => !!v && v !== "undefined")
-      .forEach((v) => listingIds.add(v));
-  });
+    try {
+      vendorRecord = await firestoreDataStore.findVendorProfile({
+        tenantId,
+        uid,
+        email: userEmail,
+      });
+    } catch (err) {
+      console.warn('[services] Vendor profile lookup via Firestore failed', err?.message || err);
+    }
 
-  const bookingsForVendor = bookings
-    .filter((b) => {
-      if (!sameTenant(b?.tenantId, tenantId)) return false;
-      const sid = (b?.serviceId || "").toString();
-      const bid = (b?.vendorId || "").toString();
-      const bEmail = normalizeEmail(b?.vendorEmail);
-      const bName = (b?.vendorName || "").toString().trim().toLowerCase();
-      return (
-        (!!sid && listingIds.has(sid)) ||
-        (!!vendorId && !!bid && bid === vendorId) ||
-        (!!vendorEmail && !!bEmail && bEmail === vendorEmail) ||
-        (!!vendorNameLc && !!bName && bName === vendorNameLc)
-      );
-    })
-    .map((b) => ({ ...b }));
+    if (!vendorRecord) {
+      const data = await ensureFallbackData();
+      vendorRecord = findVendorRecord(data, tenantId, req.user || {}) || null;
+    }
 
-  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-  res.set("Pragma", "no-cache");
-  res.set("Expires", "0");
+    const vendorId = vendorRecord?.vendorId || vendorRecord?.id || '';
+    const vendorEmail = normalizeEmail(vendorRecord?.contactEmail || vendorRecord?.email) || userEmail;
+    const vendorNameRaw =
+      vendorRecord?.name || vendorRecord?.companyName || vendorRecord?.vendor || (userEmail ? userEmail.split('@')[0] : '');
+    const vendorNameLc = (vendorNameRaw || '').toString().trim().toLowerCase();
 
-  res.json({
-    tenantId: normalizeTenantId(tenantId),
-    vendor: vendorRecord
-      ? {
-          id: vendorRecord.id || vendorRecord.vendorId || "",
-          vendorId: vendorId || "",
-          name: vendorNameRaw || "",
-          email: vendorEmail,
-        }
-      : {
-          id: "",
-          vendorId: vendorId || "",
-          name: vendorNameRaw || "",
-          email: vendorEmail,
-        },
+    let listings = [];
+    let bookingsForVendor = [];
+
+    try {
+      listings = await firestoreDataStore.getVendorServices({
+        tenantId,
+        vendorId,
+        ownerUid: uid,
+        emails: [vendorEmail, userEmail].filter(Boolean),
+      });
+
+      listings = listings.filter((s) => sameTenant(s?.tenantId, tenantId));
+
+      const serviceIds = listings
+        .map((s) => s?.id || s?.serviceId)
+        .filter(Boolean);
+
+      bookingsForVendor = await firestoreDataStore.getVendorBookings({
+        tenantId,
+        serviceIds,
+        vendorId,
+        emails: [vendorEmail, userEmail].filter(Boolean),
+      });
+    } catch (err) {
+      console.warn('[services] Optimized vendor listing query failed, using cache fallback', err?.message || err);
+      const data = await ensureFallbackData();
+      const services = Array.isArray(data?.services) ? data.services : [];
+      const bookings = Array.isArray(data?.bookings) ? data.bookings : [];
+
+      listings = services
+        .filter((s) => {
+          if (!sameTenant(s?.tenantId, tenantId)) return false;
+          const sid = (s?.vendorId || '').toString();
+          const ownerUid = (s?.ownerUid || s?.ownerId || '').toString();
+          const svcEmail = normalizeEmail(s?.contactEmail || s?.email);
+          const svcName = (s?.vendor || '').toString().trim().toLowerCase();
+          return (
+            (!!vendorId && !!sid && sid === vendorId) ||
+            (!!uid && !!ownerUid && ownerUid === uid) ||
+            (!!vendorEmail && !!svcEmail && svcEmail === vendorEmail) ||
+            (!sid && !!vendorNameLc && !!svcName && svcName === vendorNameLc)
+          );
+        })
+        .map((s) => ({ ...s }));
+
+      const listingIds = new Set();
+      listings.forEach((s) => {
+        [s?.id, s?.serviceId, s?.vendorId]
+          .map((v) => (v ?? '').toString())
+          .filter((v) => !!v && v !== 'undefined')
+          .forEach((v) => listingIds.add(v));
+      });
+
+      bookingsForVendor = bookings
+        .filter((b) => {
+          if (!sameTenant(b?.tenantId, tenantId)) return false;
+          const sid = (b?.serviceId || '').toString();
+          const bid = (b?.vendorId || '').toString();
+          const bEmail = normalizeEmail(b?.vendorEmail);
+          const bName = (b?.vendorName || '').toString().trim().toLowerCase();
+          return (
+            (!!sid && listingIds.has(sid)) ||
+            (!!vendorId && !!bid && bid === vendorId) ||
+            (!!vendorEmail && !!bEmail && bEmail === vendorEmail) ||
+            (!!vendorNameLc && !!bName && bName === vendorNameLc)
+          );
+        })
+        .map((b) => ({ ...b }));
+    }
+
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
+    res.json({
+      tenantId: normalizeTenantId(tenantId),
+      vendor: vendorRecord
+        ? {
+            id: vendorRecord.id || vendorRecord.vendorId || '',
+            vendorId: vendorId || '',
+            name: vendorNameRaw || '',
+            email: vendorEmail,
+          }
+        : {
+            id: '',
+            vendorId: vendorId || '',
+            name: vendorNameRaw || '',
+            email: vendorEmail,
+          },
       listings,
       bookings: bookingsForVendor,
     });
