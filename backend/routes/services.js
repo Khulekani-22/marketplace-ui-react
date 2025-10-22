@@ -16,7 +16,15 @@ function normalizeTenantId(id) {
 function sameTenant(tenantValue, tenantScope) {
   const a = normalizeTenantId(tenantValue);
   const b = normalizeTenantId(tenantScope);
-  return a === b || (!tenantValue && b === "public");
+  if (a === "public") {
+    // Public (or unset) data is globally visible across tenants
+    return true;
+  }
+  if (b === "public") {
+    // Public tenant should only see public records
+    return a === "public" || !tenantValue;
+  }
+  return a === b;
 }
 
 function normalizeEmail(value) {
