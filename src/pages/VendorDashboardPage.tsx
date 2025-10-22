@@ -9,6 +9,7 @@ import { useWallet } from "../hook/useWalletAxios";
 import { api } from "../lib/api";
 import { useAppSync } from "../context/useAppSync";
 import { Link } from "react-router-dom";
+import firestoreService from "../services/firestoreService";
 
 interface Booking {
 	id: string;
@@ -16,6 +17,8 @@ interface Booking {
 	serviceTitle?: string;
 	userName?: string;
 	userEmail?: string;
+	customerId?: string;
+	customerEmail?: string;
 	scheduledDate?: string;
 	scheduledSlot?: string;
 	meetingLink?: string;
@@ -56,6 +59,9 @@ export default function VendorDashboardPage() {
 		const typedVendor: Vendor | null = vendor as Vendor | null;
 		const vendorId = typedVendor?.vendorId || typedVendor?.id || typedVendor?.ownerUid || typedVendor?.email || "me";
 		const [bookings, setBookings] = useState<Booking[]>([]);
+		const [bookingNotes, setBookingNotes] = useState<Record<string, string>>({});
+		const [bookingNotesLoading, setBookingNotesLoading] = useState(false);
+		const [bookingNotesError, setBookingNotesError] = useState("");
 		const [meetingModal, setMeetingModal] = useState<{ open: boolean, booking: Booking | null, link: string, busy: boolean, error: string }>({ open: false, booking: null, link: '', busy: false, error: '' });
 		const [err, setErr] = useState("");
 		const [loading, setLoading] = useState(false);
@@ -138,6 +144,69 @@ export default function VendorDashboardPage() {
 			   })
 			   .finally(() => setBookingsLoading(false));
 	   }, [vendorId]);
+
+	   useEffect(() => {
+		   let isCancelled = false;
+		   if (!bookings.length) {
+			   setBookingNotes({});
+			   setBookingNotesLoading(false);
+			   setBookingNotesError("");
+			   return () => {
+				   isCancelled = true;
+			   };
+		   }
+
+		   async function loadNotes() {
+			   setBookingNotes({});
+			   setBookingNotesLoading(true);
+			   setBookingNotesError("");
+			   try {
+				   const results = await Promise.all(
+					   bookings
+						   .filter((booking) => !!booking.id)
+						   .map(async (booking) => {
+							   try {
+								   const docs = await firestoreService.queryCollection(
+									   "bookingNotes",
+									   [{ field: "bookingId", operator: "==", value: booking.id }],
+									   null,
+									   1
+								   );
+								   const firstDoc = Array.isArray(docs) ? docs[0] : null;
+								   const note = firstDoc && typeof firstDoc.notes === "string" ? firstDoc.notes : "";
+								   return [booking.id as string, note] as [string, string];
+							   } catch (innerError) {
+								   console.error(`[BOOKING_NOTES] Failed to load notes for booking ${booking.id}`, innerError);
+								   return [booking.id as string, ""] as [string, string];
+							   }
+						   })
+				   );
+				   if (isCancelled) return;
+				   const noteMap: Record<string, string> = {};
+				   results.forEach((entry) => {
+					   if (!entry) return;
+					   const [bookingId, note] = entry;
+					   noteMap[bookingId] = note;
+				   });
+				   setBookingNotes(noteMap);
+			   } catch (error) {
+				   if (isCancelled) return;
+				   console.error("[BOOKING_NOTES] Failed to load booking notes", error);
+				   setBookingNotesError("Failed to load notes");
+				   setBookingNotes({});
+			   } finally {
+				   if (!isCancelled) {
+					   setBookingNotesLoading(false);
+				   }
+			   }
+		   }
+
+		   loadNotes();
+
+		   return () => {
+			   isCancelled = true;
+		   };
+	   }, [bookings]);
 
 	// Metrics
 	const metrics = useMemo(() => {
@@ -249,6 +318,7 @@ export default function VendorDashboardPage() {
 						<span className="badge text-bg-secondary">Total: {bookings.length}</span>
 					</div>
 					<div className="card-body p-0">
+						{bookingNotesError && <div className="px-3 py-2 text-warning">{bookingNotesError}</div>}
 						{!bookings.length && <div className="p-3 text-muted">No bookings yet. Once customers reserve sessions, they will appear here.</div>}
 						{!!bookings.length && (
 							<div className="table-responsive">
@@ -259,6 +329,7 @@ export default function VendorDashboardPage() {
 											<th>User</th>
 											<th>Date</th>
 											<th>Slot</th>
+											<th>Session Notes</th>
 											<th>Meeting Link</th>
 											<th></th>
 										</tr>
@@ -270,6 +341,20 @@ export default function VendorDashboardPage() {
 																	<td>{b.userName || b.userEmail || "—"}</td>
 																	<td>{b.scheduledDate || "—"}</td>
 																	<td>{b.scheduledSlot || "—"}</td>
+																	<td style={{ minWidth: 200, maxWidth: 280 }}>
+																		{(() => {
+																			const bookingId = b.id ? String(b.id) : "";
+																			const note = bookingId ? bookingNotes[bookingId] : "";
+																			if (bookingNotesLoading && !note) {
+																				return <span className="text-muted">Loading…</span>;
+																			}
+																			return note ? (
+																				<span className="small d-block" style={{ whiteSpace: "pre-wrap" }}>{note}</span>
+																			) : (
+																				<span className="text-muted">—</span>
+																			);
+																		})()}
+																	</td>
 																	<td>{b.meetingLink ? <a href={b.meetingLink} target="_blank" rel="noopener noreferrer">Join</a> : <span className="text-muted">None</span>}</td>
 																	<td className="d-flex gap-2">
 																		<button className="btn btn-sm btn-outline-primary" onClick={() => setMeetingModal({ open: true, booking: b, link: b.meetingLink || '', busy: false, error: '' })}>

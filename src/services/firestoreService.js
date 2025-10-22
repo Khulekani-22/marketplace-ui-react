@@ -15,7 +15,7 @@ import {
   writeBatch,
   getCountFromServer
 } from 'firebase/firestore';
-import { db } from './firebase.js';
+import { db } from '../firebase';
 
 /**
  * Firestore Service for Frontend
