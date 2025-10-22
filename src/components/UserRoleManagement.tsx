@@ -975,27 +975,46 @@ export default function AdminUsersPage() {
                             </button>
                           </div>
                         </td>
-                        <td>
-                          <div className="d-flex flex-wrap gap-2">
-                            {FEATURE_LIST.map((f) => (
-                              <label key={f.key} className="form-check form-switch">
-                                <input
-                                  type="checkbox"
-                                  className="form-check-input"
-                                  checked={!!privileges[u.email]?.[f.key]}
-                                  disabled={!!privBusy[u.email]}
-                                  onChange={(e) => updateFeaturePrivilege(u.email, f.key, e.target.checked)}
-                                />
-                                <span className="form-check-label small">{f.label}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </td>
+                        {/* Feature toggles moved to matrix table below */}
                       </tr>
                     );
                   })}
               </tbody>
             </table>
+        {/* Feature Access Matrix Table */}
+        <div className="mt-32">
+          <h6 className="mb-2">Feature Access Matrix</h6>
+          <div className="table-responsive scroll-sm">
+            <table className="table bordered-table sm-table mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  {FEATURE_LIST.map((f) => (
+                    <th key={f.key} style={{minWidth:120}}>{f.label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((u) => (
+                  <tr key={u.email}>
+                    <td>{u.email}</td>
+                    {FEATURE_LIST.map((f) => (
+                      <td key={f.key} className="text-center">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={!!privileges[u.email]?.[f.key]}
+                          disabled={!!privBusy[u.email]}
+                          onChange={(e) => updateFeaturePrivilege(u.email, f.key, e.target.checked)}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
           </div>
 
           {/* Admin onboarding: search platform users */}
