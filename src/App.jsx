@@ -70,7 +70,7 @@ const NotificationPage = React.lazy(() => import("./pages/NotificationPage.tsx")
 const PaginationPage = React.lazy(() => import("./pages/PaginationPage.tsx"));
 const PaymentGatewayPage = React.lazy(() => import("./pages/PaymentGatewayPage.tsx"));
 const PieChartPage = React.lazy(() => import("./pages/PieChartPage.tsx"));
-const PortfolioPage = React.lazy(() => import("./pages/PortfolioPage.tsx));
+const PortfolioPage = React.lazy(() => import("./pages/PortfolioPage.tsx"));
 const PricingPage = React.lazy(() => import("./pages/PricingPage.tsx"));
 const ProgressPage = React.lazy(() => import("./pages/ProgressPage.tsx"));
 const RadioPage = React.lazy(() => import("./pages/RadioPage.tsx"));
