@@ -150,7 +150,7 @@ function App() {
                   <Route path="/login" element={<LoginForm />} />
 
                   {/* protected */}
-                  <Route path="/dashboard" element={<VendorRoute><Dashboard /></VendorRoute>} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route
                     path="/lms-admin"
                     element={
@@ -318,6 +318,18 @@ function App() {
                       </AdminRoute>
                     }
                   />
+// ...existing code...
+const AdminRtoRpoPage = React.lazy(() => import("./pages/AdminRtoRpoPage.jsx"));
+// ...existing code...
+
+                  <Route
+                    path="/admin/rto-rpo"
+                    element={
+                      <AdminRoute>
+                        <AdminRtoRpoPage />
+                      </AdminRoute>
+                    }
+                  />
                   <Route
                     path="/listings-vendors"
                     element={
@@ -332,7 +344,9 @@ function App() {
                     path="/vendor-home"
                     element={
                       <VendorRoute>
-                        <VendorDashboardPage />
+                        <Suspense fallback={<Fallback />}>
+                          <VendorDashboardPage />
+                        </Suspense>
                       </VendorRoute>
                     }
                   />
