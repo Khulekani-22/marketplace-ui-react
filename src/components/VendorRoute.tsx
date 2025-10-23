@@ -61,5 +61,10 @@ export default function VendorRoute({ children }) {
   if (!state.authed) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
-  return state.allowed ? children : <Navigate to="/profile-startup" replace />;
+  // Wrap allowed children in VendorProvider for context
+  if (state.allowed) {
+    const { VendorProvider } = require("../context/VendorContext.tsx");
+    return <VendorProvider>{children}</VendorProvider>;
+  }
+  return <Navigate to="/profile-startup" replace />;
 }

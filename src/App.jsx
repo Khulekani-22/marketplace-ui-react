@@ -153,10 +153,10 @@ function App() {
               <NotificationsProvider>
                 <Routes>
                   {/* auth */}
-                  <Route path="/login" element={<LoginForm />} />
+                  <Route path="/login" element={<VendorProvider><LoginForm /></VendorProvider>} />
 
                   {/* protected */}
-                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<VendorRoute><Dashboard /></VendorRoute>} />
                   <Route
                     path="/lms-admin"
                     element={
@@ -279,9 +279,15 @@ function App() {
                   <Route
                     path="/audit-logs"
                     element={
-                      <AdminRoute>
-                        <AuditLogsPage />
-                      </AdminRoute>
+                      <AppSyncProvider>
+                        <WalletProvider>
+                          <NotificationsProvider>
+                            <AdminRoute>
+                              <AuditLogsPage />
+                            </AdminRoute>
+                          </NotificationsProvider>
+                        </WalletProvider>
+                      </AppSyncProvider>
                     }
                   />
                   <Route
