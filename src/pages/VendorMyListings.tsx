@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMessages } from "../context/useMessages";
 import MasterLayout from "../masterLayout/MasterLayout.jsx";
 import { useVendor } from "../context/useVendor";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { fetchMyVendorListings } from "../lib/listings";
 
@@ -108,9 +109,6 @@ export default function VendorMyListings() {
   const { refresh: refreshMessages, syncMessagesToLive } = useMessages();
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
 
-  const [items, setItems] = useState<Listing[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [err, setErr] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>({ 
@@ -166,17 +164,9 @@ export default function VendorMyListings() {
     if (!newListingFromNav) return;
     navListingRef.current = newListingFromNav;
     const newId = String(newListingFromNav?.id || newListingFromNav?.serviceId || "");
-    setItems((prev) => {
-      if (!prev) return [newListingFromNav];
-      const exists = prev.some((i) => String(i?.id || i?.serviceId) === newId);
-      if (exists) return prev;
-      return [newListingFromNav, ...prev];
-    });
     persistPending([
       newListingFromNav,
-      ...pendingLocal.filter(
-        (i) => String(i?.id || i?.serviceId || "") !== newId
-      ),
+      ...pendingLocal.filter((i: Listing) => String(i?.id || i?.serviceId || "") !== newId),
     ]);
     setErr("");
     navigate(
@@ -189,8 +179,8 @@ export default function VendorMyListings() {
   }, [newListingFromNav, navigate, location.pathname, location.search, persistPending, pendingLocal]);
 
   const mergeLocalListings = useCallback(
-    (listings: Listing[]) => {
-      const base = Array.isArray(listings) ? [...listings] : [];
+    (listings: Listing[]): Listing[] => {
+      const base: Listing[] = Array.isArray(listings) ? [...listings] : [];
       const seen = new Set(base.map(listingId).filter(Boolean));
 
       const navListing = navListingRef.current;
@@ -206,7 +196,7 @@ export default function VendorMyListings() {
 
       if (pendingLocal.length) {
         const remaining: Listing[] = [];
-        pendingLocal.forEach((entry) => {
+        pendingLocal.forEach((entry: Listing) => {
           const pid = listingId(entry);
           if (!pid) return;
           if (seen.has(pid)) {
@@ -235,74 +225,45 @@ export default function VendorMyListings() {
     }
   }, [vendor, navigate]);
 
-  const loadListings = useCallback(
-    async ({ signal, silent, refresh }: { signal?: AbortSignal; silent?: boolean; refresh?: boolean } = {}) => {
-      const markBusy = (val: boolean) => {
-        if (silent) setRefreshing(val);
-        else setLoading(val);
+  // React Query: fetch listings and bookings
+  const { data, isLoading, error: queryError, refetch } = useQuery<{ listings: Listing[]; bookings: Booking[] }>(
+    [
+      "vendorListings",
+      activeVendor?.vendorId || activeVendor?.email || activeVendor?.id || "",
+      tenantId,
+    ],
+    async () => {
+      if (!activeVendor) return { listings: [], bookings: [] };
+      // Only fetch required fields
+      const { listings, bookings } = await fetchMyVendorListings({});
+      const normalizedListings = Array.isArray(listings) ? listings : [];
+      const normalizedBookings = Array.isArray(bookings) ? bookings : [];
+      return {
+        listings: mergeLocalListings(normalizedListings),
+        bookings: normalizedBookings,
       };
-
-      markBusy(true);
-      setErr("");
-
-      let activeVendorRef: any = vendor;
-      try {
-        if (signal?.aborted) return;
-        if (vendorLoading && !vendor) return;
-
-        if (!vendor) {
-          setItems([]);
-          setBookings([]);
-          return;
-        }
-
-        const ensured = ensureVendorId ? await (ensureVendorId as any)() : vendor;
-        if (signal?.aborted) return;
-        activeVendorRef = ensured || vendor;
-        if (!activeVendorRef) {
-          setItems([]);
-          setBookings([]);
-          return;
-        }
-
-        const { listings, bookings } = await fetchMyVendorListings({ signal, refresh });
-        if (signal?.aborted) return;
-        const normalizedListings = Array.isArray(listings) ? listings : [];
-        const normalizedBookings = Array.isArray(bookings) ? bookings : [];
-        const mergedListings = mergeLocalListings(normalizedListings);
-        setItems(mergedListings);
-        setBookings(normalizedBookings);
-      } catch (e: any) {
-        if (signal?.aborted) return;
-        const code = e?.code;
-        if (code === "ERR_NETWORK") {
-          setErr("Network error – showing cached drafts.");
-        } else {
-          setErr(e?.response?.data?.message || e?.message || "Failed to load listings");
-        }
-      } finally {
-        markBusy(false);
-      }
     },
-    [ensureVendorId, mergeLocalListings, vendor, vendorLoading]
+    {
+      enabled: !!activeVendor,
+      staleTime: 1000 * 60 * 2, // 2 minutes
+      onError: (e: any) => setErr(e?.message || "Failed to load listings"),
+    }
   );
 
-  useEffect(() => {
-    const controller = new AbortController();
-    loadListings({ signal: controller.signal });
-    return () => {
-      controller.abort();
-    };
-  }, [loadListings]);
+  const items: Listing[] = data?.listings || [];
+  const bookings: Booking[] = data?.bookings || [];
+  const loading = isLoading;
 
   const handleRefresh = useCallback(async () => {
     setErr("");
-    await loadListings({ silent: true, refresh: true });
-  }, [loadListings]);
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { approved: 0, pending: 0, rejected: 0 };
-    items.forEach((i) => {
+    items.forEach((i: Listing) => {
       const status = (i.status || "pending").toLowerCase();
       c[status] = (c[status] || 0) + 1;
     });
@@ -311,7 +272,7 @@ export default function VendorMyListings() {
 
   const bookingsByService = useMemo(() => {
     const map: Record<string, number> = {};
-    bookings.forEach((b) => {
+    bookings.forEach((b: Booking) => {
       const sid = String(b.serviceId || "");
       if (!sid) return;
       map[sid] = (map[sid] || 0) + 1;
@@ -320,8 +281,8 @@ export default function VendorMyListings() {
   }, [bookings]);
 
   const serviceLookup = useMemo(() => {
-    const map: Record<string, any> = {};
-    items.forEach((s) => {
+    const map: Record<string, Listing> = {};
+    items.forEach((s: Listing) => {
       const keys = [String(s.id || ""), String(s.serviceId || ""), String(s.vendorId || "")].filter(Boolean);
       keys.forEach((k) => {
         map[k] = s;
@@ -359,8 +320,8 @@ export default function VendorMyListings() {
   }
 
   const bookingsSorted = useMemo(() => {
-    const list = bookings.map((b) => ({ ...b }));
-    list.sort((a, b) => {
+    const list: Booking[] = bookings.map((b: Booking) => ({ ...b }));
+    list.sort((a: Booking, b: Booking) => {
       const da = parseBookingDate(a)?.getTime() ?? 0;
       const db = parseBookingDate(b)?.getTime() ?? 0;
       return da - db;
@@ -393,7 +354,7 @@ export default function VendorMyListings() {
 
   function openFeedback(i: Listing) {
     const subj = `Feedback request: ${i.title}`;
-    const body = `Hello Admin\n\nMy listing "${i.title}" (ID: ${i.id}) was ${String(i.status || 'rejected')}. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!`;
+    const body = `Hello Admin\n\nMy listing \"${i.title}\" (ID: ${i.id}) was ${String(i.status || 'rejected')}. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!`;
     setFeedback({ open: true, listing: i, subject: subj, content: body, sending: false, err: null, done: false });
   }
   
@@ -496,7 +457,7 @@ export default function VendorMyListings() {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((i, idx) => {
+                    {items.map((i: Listing, idx: number) => {
                       const serviceKey = String(i.id || i.serviceId || i.vendorId || "");
                       return (
                       <tr key={serviceKey || idx}>
@@ -566,7 +527,7 @@ export default function VendorMyListings() {
                     </tr>
                   </thead>
                   <tbody>
-                    {bookingsSorted.map((b, idx) => {
+                    {bookingsSorted.map((b: Booking, idx: number) => {
                       const dt = parseBookingDate(b);
                       const { date, time } = formatBookingDate(dt);
                       const slotLabel = formatSlot(b.scheduledSlot);
