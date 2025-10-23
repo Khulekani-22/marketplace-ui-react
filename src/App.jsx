@@ -61,7 +61,7 @@ const GalleryPage = React.lazy(() => import("./pages/GalleryPage.tsx"));
 const ImageGeneratorPage = React.lazy(() => import("./pages/ImageGeneratorPage.tsx"));
 const ImageUploadPage = React.lazy(() => import("./pages/ImageUploadPage.tsx"));
 const InvoiceAddPage = React.lazy(() => import("./pages/InvoiceAddPage.tsx"));
-const InvoiceEditPage = React.lazy(() => import("./pages/InvoiceEditPage.tsx));
+const InvoiceEditPage = React.lazy(() => import("./pages/InvoiceEditPage.tsx"));
 const InvoiceListPage = React.lazy(() => import("./pages/InvoiceListPage.tsx"));
 const InvoicePreviewPage = React.lazy(() => import("./pages/InvoicePreviewPage.tsx"));
 const KanbanPage = React.lazy(() => import("./pages/KanbanPage.tsx"));
