@@ -11,27 +11,22 @@ import PrivateRoute from "./components/PrivateRoute.tsx";
 import AdminRoute from "./components/AdminRoute.tsx";
 import VendorRoute from "./components/VendorRoute.tsx";
 
-// 👇 React Query
+// React Query
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const queryClient = new QueryClient();
 
-// Lazy loading with retry logic for better UX
-console.log("📱 App.jsx is loading...");
-
-// Minimal test - just the Dashboard
-import Dashboard from "./pages/Dashboard.tsx";
+// Lazy imports
+const Dashboard = React.lazy(() => import("./pages/Dashboard.tsx"));
 const LandingPage = React.lazy(() => import("./pages/LandingPage.tsx"));
 const HomePageTwo = React.lazy(() => import("./pages/HomePageTwo.tsx"));
 const HomePageThree = React.lazy(() => import("./pages/HomePageThree.tsx"));
 const HomePageFour = React.lazy(() => import("./pages/HomePageFour.tsx"));
 const HomePageFive = React.lazy(() => import("./pages/HomePageFive.tsx"));
 const HomePageSix = React.lazy(() => import("./pages/HomePageSix.tsx"));
-// NOTE: /index-7 route is not mounted; we redirect below
 const HomePageEight = React.lazy(() => import("./pages/HomePageEight.tsx"));
 const HomePageNine = React.lazy(() => import("./pages/HomePageNine.tsx"));
 const HomePageTen = React.lazy(() => import("./pages/HomePageTen.tsx"));
 const HomePageEleven = React.lazy(() => import("./pages/HomePageEleven.tsx"));
-
 const EmailPage = React.lazy(() => import("./pages/EmailPage.tsx"));
 const AddUserPage = React.lazy(() => import("./pages/AddUserPage.tsx"));
 const AlertPage = React.lazy(() => import("./pages/AlertPage.tsx"));
@@ -75,7 +70,7 @@ const NotificationPage = React.lazy(() => import("./pages/NotificationPage.tsx")
 const PaginationPage = React.lazy(() => import("./pages/PaginationPage.tsx"));
 const PaymentGatewayPage = React.lazy(() => import("./pages/PaymentGatewayPage.tsx"));
 const PieChartPage = React.lazy(() => import("./pages/PieChartPage.tsx"));
-const PortfolioPage = React.lazy(() => import("./pages/PortfolioPage.tsx"));
+const PortfolioPage = React.lazy(() => import("./pages/PortfolioPage.tsx));
 const PricingPage = React.lazy(() => import("./pages/PricingPage.tsx"));
 const ProgressPage = React.lazy(() => import("./pages/ProgressPage.tsx"));
 const RadioPage = React.lazy(() => import("./pages/RadioPage.tsx"));
@@ -110,7 +105,7 @@ const AuditLogsPage = React.lazy(() => import("./pages/AuditLogsPage.tsx"));
 const UserRoleManagementPage = React.lazy(() => import("./pages/UserRoleManagementPage.tsx"));
 const MySubscriptionsPage = React.lazy(() => import("./pages/MySubscriptionsPage.tsx"));
 
-// data views (these were missing before)
+// data views
 const AllDataTable = React.lazy(() => import("./pages/AllDataTable.tsx"));
 const DataOverview = React.lazy(() => import("./pages/DataOverview.tsx"));
 const Market1 = React.lazy(() => import("./pages/Market1.tsx"));
@@ -127,7 +122,6 @@ const VendorMyListings = React.lazy(() => import("./pages/VendorMyListings.tsx")
 const VendorProfilePage = React.lazy(() => import("./pages/VendorProfilePage.tsx"));
 const VendorsAdminPage = React.lazy(() => import("./pages/VendorsAdminPage.tsx"));
 const AdminWalletCreditsPage = React.lazy(() => import("./pages/AdminWalletCreditsPage.tsx"));
-
 const StartupProfilePage = React.lazy(() => import("./pages/StartupProfilePage.tsx"));
 const VendorDashboardPage = React.lazy(() => import("./pages/VendorDashboardPage.tsx"));
 const VendorSignupPage = React.lazy(() => import("./pages/VendorSignupPage.tsx"));
@@ -153,17 +147,7 @@ function App() {
               <NotificationsProvider>
                 <Routes>
                   {/* auth */}
-                  <Route path="/login" element={
-                    <AppSyncProvider>
-                      <WalletProvider>
-                        <NotificationsProvider>
-                          <VendorProvider>
-                            <LoginForm />
-                          </VendorProvider>
-                        </NotificationsProvider>
-                      </WalletProvider>
-                    </AppSyncProvider>
-                  } />
+                  <Route path="/login" element={<LoginForm />} />
 
                   {/* protected */}
                   <Route path="/dashboard" element={<VendorRoute><Dashboard /></VendorRoute>} />
@@ -189,7 +173,7 @@ function App() {
                   <Route path="/index-10" element={<HomePageTen />} />
                   <Route path="/index-11" element={<HomePageEleven />} />
 
-                  {/* SL samples */}
+                  {/* samples */}
                   <Route path="/add-user" element={<AddUserPage />} />
                   <Route path="/alert" element={<AlertPage />} />
                   <Route path="/assign-role" element={<AssignRolePage />} />
@@ -289,15 +273,9 @@ function App() {
                   <Route
                     path="/audit-logs"
                     element={
-                      <AppSyncProvider>
-                        <WalletProvider>
-                          <NotificationsProvider>
-                            <AdminRoute>
-                              <AuditLogsPage />
-                            </AdminRoute>
-                          </NotificationsProvider>
-                        </WalletProvider>
-                      </AppSyncProvider>
+                      <AdminRoute>
+                        <AuditLogsPage />
+                      </AdminRoute>
                     }
                   />
                   <Route
