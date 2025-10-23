@@ -1,7 +1,8 @@
 import ChatMessageLayer from '../components/ChatMessageLayer';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useState } from "react";
+import { useQuery } from 'react-query';
 import { Modal } from "react-bootstrap";
 import MasterLayout from "../masterLayout/MasterLayout";
 import { useVendor } from "../context/useVendor";
@@ -29,12 +30,12 @@ interface Listing {
 	id?: string;
 	vendorId?: string;
 	title?: string;
+	reviewCount?: number;
+	rating?: number;
 	category?: string;
 	price?: number;
 	status?: string;
 	imageUrl?: string;
-	reviewCount?: number;
-	rating?: number;
 }
 
 interface Vendor {
@@ -56,207 +57,78 @@ interface LoadMineOptions {
 }
 
 export default function VendorDashboardPage() {
-	// Chat modal state
+	// Top-level hooks and state
+	const { vendor } = useVendor?.() || { vendor: null };
+	const typedVendor: Vendor | null = vendor as Vendor | null;
+	const { wallet, loading: walletLoading, eligible: walletEligible, error: walletError } = useWallet();
+	const { appData } = useAppSync();
 	const [chatModal, setChatModal] = useState<{ open: boolean, userEmail?: string, userName?: string }>({ open: false });
-	// Calendar helpers: get booking dates as Date objects and bookings for a date
-
-
-		// --- State declarations at top ---
-		const { vendor } = useVendor?.() || { vendor: null };
-		const typedVendor: Vendor | null = vendor as Vendor | null;
-		const [bookings, setBookings] = useState<Booking[]>([]);
-		const [bookingNotes, setBookingNotes] = useState<Record<string, string>>({});
-		const [bookingNotesLoading, setBookingNotesLoading] = useState(false);
-		const [bookingNotesError, setBookingNotesError] = useState("");
-		const [meetingModal, setMeetingModal] = useState<{ open: boolean, booking: Booking | null, link: string, busy: boolean, error: string }>({ open: false, booking: null, link: '', busy: false, error: '' });
-		const [err, setErr] = useState("");
-		const [myListings, setMyListings] = useState<Listing[]>([]);
-		const [stats, setStats] = useState<any>(null);
-		const { wallet, loading: walletLoading, eligible: walletEligible, error: walletError } = useWallet();
-		const { appData } = useAppSync();
-
-		// --- Calendar helpers directly after state ---
-		const bookingDates = useMemo(() =>
-			bookings
-				.filter((b: Booking) => b.scheduledDate)
-				.map((b: Booking) => new Date(b.scheduledDate as string)),
-			[bookings]
-		);
-
-		function bookingsForDate(date: Date) {
-			return bookings.filter((b: Booking) => {
-				if (!b.scheduledDate) return false;
-				const d = new Date(b.scheduledDate);
-				return d.toDateString() === date.toDateString();
+	const [meetingModal, setMeetingModal] = useState<{ open: boolean, booking: Booking | null, link: string, busy: boolean, error: string }>({ open: false, booking: null, link: '', busy: false, error: '' });
+			// React Query: Fetch listings and bookings
+			const {
+				data: listingsBookingsData = { listings: [], bookings: [] },
+				error: listingsBookingsError,
+				isLoading: listingsBookingsLoading,
+				refetch: refetchListingsBookings
+			} = useQuery(['vendorListingsBookings', typedVendor?.vendorId], async () => {
+				if (!typedVendor) return { listings: [], bookings: [] };
+				return await fetchMyVendorListings({});
+			}, {
+				enabled: !!typedVendor,
 			});
-		}
 
-		// Loading and error states for dashboard fetches
-		const [, setStatsLoading] = useState(false);
-		const [, setStatsError] = useState("");
-		const [, setListingsLoading] = useState(false);
-		const [, setListingsError] = useState("");
-		const [, setBookingsLoading] = useState(false);
-		const [, setBookingsError] = useState("");
+			const myListings: Listing[] = listingsBookingsData.listings || [];
+			const bookings: Booking[] = listingsBookingsData.bookings || [];
 
-		const loadMineData = useCallback(async ({ signal, refresh = false, silent = false }: LoadMineOptions = {}) => {
-			const setBusy = (val: boolean) => {
-				if (!silent) {
-					setListingsLoading(val);
-					setBookingsLoading(val);
-				}
-			};
+			// React Query: Fetch stats
+			const statsTarget = typedVendor?.vendorId || typedVendor?.id || typedVendor?.ownerUid || typedVendor?.email;
+			const {
+				data: stats = null,
+				error: statsError,
+				isLoading: statsLoading,
+				refetch: refetchStats
+			} = useQuery(['vendorStats', statsTarget], async () => {
+				if (!statsTarget) return null;
+				const resp = await api.get(`/api/vendors/${encodeURIComponent(statsTarget)}/stats`);
+				return resp.data || null;
+			}, {
+				enabled: !!statsTarget,
+			});
 
-			setBusy(true);
-			setErr("");
-			setListingsError("");
-			setBookingsError("");
+			// Error message for display
+			const err = (typeof listingsBookingsError === 'object' && listingsBookingsError !== null && 'message' in listingsBookingsError ? (listingsBookingsError as any).message : listingsBookingsError?.toString?.()) || (typeof statsError === 'object' && statsError !== null && 'message' in statsError ? (statsError as any).message : statsError?.toString?.()) || "";
 
-			if (!typedVendor) {
-				setMyListings([]);
-				setBookings([]);
-				setBusy(false);
-				return;
-			}
+			// Calendar helpers
+			const bookingDates = useMemo(() =>
+				bookings
+					.filter((b: Booking) => b.scheduledDate)
+					.map((b: Booking) => new Date(b.scheduledDate as string)),
+				[bookings]
+			);
 
-			try {
-				const { listings, bookings: mineBookings } = await fetchMyVendorListings({ signal, refresh });
-				if (signal?.aborted) return;
-				setMyListings(Array.isArray(listings) ? listings : []);
-				setBookings(Array.isArray(mineBookings) ? mineBookings : []);
-			} catch (error: any) {
-				if (signal?.aborted) return;
-				const message = error?.response?.data?.message || error?.message || "Failed to load listings";
-				setErr(message);
-				setListingsError(message);
-				setBookingsError("Failed to load bookings");
-				setMyListings([]);
-				setBookings([]);
-			} finally {
-				if (!signal?.aborted) {
-					setBusy(false);
-				}
-			}
-		}, [typedVendor]);
-
-		useEffect(() => {
-			if (!typedVendor) {
-				setStats(null);
-				setStatsLoading(false);
-				return;
-			}
-
-			const statsTarget = typedVendor.vendorId || typedVendor.id || typedVendor.ownerUid || typedVendor.email;
-			if (!statsTarget) {
-				setStats(null);
-				setStatsLoading(false);
-				return;
-			}
-
-			const controller = new AbortController();
-			setStatsLoading(true);
-			setStatsError("");
-
-			api.get(`/api/vendors/${encodeURIComponent(statsTarget)}/stats`, { signal: controller.signal })
-				.then((statsResp) => {
-					setStats(statsResp.data || {});
-				})
-				.catch(() => {
-					if (controller.signal.aborted) return;
-					setStatsError("Failed to load stats");
-				})
-				.finally(() => {
-					if (!controller.signal.aborted) {
-						setStatsLoading(false);
-					}
+			function bookingsForDate(date: Date) {
+				return bookings.filter((b: Booking) => {
+					if (!b.scheduledDate) return false;
+					const d = new Date(b.scheduledDate);
+					return d.toDateString() === date.toDateString();
 				});
+			}
 
-			return () => controller.abort();
-		}, [typedVendor]);
+			// Metrics
+			const metrics = useMemo(() => {
+				return [
+					{ label: "Total Listings", value: myListings.length, icon: "bi bi-collection" },
+					{ label: "Total Bookings", value: bookings.length, icon: "bi bi-calendar-check" },
+					{ label: "Wallet Balance", value: walletEligible && wallet ? `R${Number(wallet?.balance ?? 0).toLocaleString()}` : walletLoading ? "Loading…" : walletError ? "Error" : "—", icon: "bi bi-wallet2" },
+					{ label: "Avg. Rating", value: myListings.length ? (myListings.reduce((acc: number, l: Listing) => acc + (l.rating || 0), 0) / myListings.length).toFixed(2) : "—", icon: "bi bi-star-fill" },
+				];
+			}, [myListings, bookings, wallet, walletEligible, walletLoading, walletError]);
 
-		useEffect(() => {
-			const controller = new AbortController();
-			loadMineData({ signal: controller.signal });
-			return () => controller.abort();
-		}, [loadMineData]);
-
-	   useEffect(() => {
-		   let isCancelled = false;
-		   if (!bookings.length) {
-			   setBookingNotes({});
-			   setBookingNotesLoading(false);
-			   setBookingNotesError("");
-			   return () => {
-				   isCancelled = true;
-			   };
-		   }
-
-		   async function loadNotes() {
-			   setBookingNotes({});
-			   setBookingNotesLoading(true);
-			   setBookingNotesError("");
-			   try {
-				   const results = await Promise.all(
-					   bookings
-						   .filter((booking) => !!booking.id)
-						   .map(async (booking) => {
-							   try {
-								   const docs = await firestoreService.queryCollection(
-									   "bookingNotes",
-									   [{ field: "bookingId", operator: "==", value: booking.id }],
-									   null,
-									   1
-								   );
-								   const firstDoc = Array.isArray(docs) ? docs[0] : null;
-								   const note = firstDoc && typeof firstDoc.notes === "string" ? firstDoc.notes : "";
-								   return [booking.id as string, note] as [string, string];
-							   } catch (innerError) {
-								   console.error(`[BOOKING_NOTES] Failed to load notes for booking ${booking.id}`, innerError);
-								   return [booking.id as string, ""] as [string, string];
-							   }
-						   })
-				   );
-				   if (isCancelled) return;
-				   const noteMap: Record<string, string> = {};
-				   results.forEach((entry) => {
-					   if (!entry) return;
-					   const [bookingId, note] = entry;
-					   noteMap[bookingId] = note;
-				   });
-				   setBookingNotes(noteMap);
-			   } catch (error) {
-				   if (isCancelled) return;
-				   console.error("[BOOKING_NOTES] Failed to load booking notes", error);
-				   setBookingNotesError("Failed to load notes");
-				   setBookingNotes({});
-			   } finally {
-				   if (!isCancelled) {
-					   setBookingNotesLoading(false);
-				   }
-			   }
-		   }
-
-		   loadNotes();
-
-		   return () => {
-			   isCancelled = true;
-		   };
-	   }, [bookings]);
-
-	// Metrics
-	const metrics = useMemo(() => {
-		return [
-			{ label: "Total Listings", value: myListings.length, icon: "bi bi-collection" },
-			{ label: "Total Bookings", value: bookings.length, icon: "bi bi-calendar-check" },
-			{ label: "Wallet Balance", value: walletEligible && wallet ? `R${Number(wallet.balance).toLocaleString()}` : walletLoading ? "Loading…" : walletError ? "Error" : "—", icon: "bi bi-wallet2" },
-			{ label: "Avg. Rating", value: myListings.length ? (myListings.reduce((acc, l) => acc + (l.rating || 0), 0) / myListings.length).toFixed(2) : "—", icon: "bi bi-star-fill" },
-		];
-	}, [myListings, bookings, wallet, walletEligible, walletLoading, walletError]);
 
 	// Bookings by service
 	const bookingsByService = useMemo(() => {
 		const map: Record<string, number> = {};
-		bookings.forEach((b) => {
+		bookings.forEach((b: Booking) => {
 			const sid = String(b.serviceId || "");
 			if (!sid) return;
 			map[sid] = (map[sid] || 0) + 1;
@@ -266,13 +138,13 @@ export default function VendorDashboardPage() {
 
 		async function saveMeetingLink() {
 			if (!meetingModal.booking) return;
-			setMeetingModal((prev) => ({ ...prev, busy: true, error: '' }));
+			setMeetingModal((prev: typeof meetingModal) => ({ ...prev, busy: true, error: '' }));
 			try {
 				await api.post(`/api/bookings/${encodeURIComponent(meetingModal.booking.id)}/meeting-link`, { link: meetingModal.link });
 				setMeetingModal({ open: false, booking: null, link: '', busy: false, error: '' });
-				await loadMineData({ refresh: true, silent: true });
+				refetchListingsBookings();
 			} catch (e: any) {
-				setMeetingModal((prev) => ({ ...prev, error: e?.message || 'Failed to save link', busy: false }));
+				setMeetingModal((prev: typeof meetingModal) => ({ ...prev, error: e?.message || 'Failed to save link', busy: false }));
 			}
 		}
 
@@ -287,7 +159,7 @@ export default function VendorDashboardPage() {
 						{walletEligible && wallet && (
 							<div className="alert alert-primary d-flex justify-content-between align-items-center mb-3">
 								<span>
-									<strong>My Wallet:</strong> {Number(wallet.balance).toLocaleString()} credits available.
+									<strong>My Wallet:</strong> {Number(wallet?.balance ?? 0).toLocaleString()} credits available.
 								</span>
 								<Link className="btn btn-sm btn-outline-light" to="/wallet">View wallet</Link>
 							</div>
@@ -300,15 +172,15 @@ export default function VendorDashboardPage() {
 						)}
 						{/* Metrics Row */}
 						<div className="row g-3 mb-4">
-							{metrics.map((m, idx) => (
-								<div className="col-6 col-md-3" key={m.label}>
-									<div className="card shadow-sm h-100 text-center p-3">
-										<div className="mb-2"><i className={`${m.icon} fs-2 text-primary`}></i></div>
-										<div className="fw-bold fs-4">{m.value}</div>
-										<div className="text-muted small">{m.label}</div>
-									</div>
-								</div>
-							))}
+									{metrics.map((m, idx: number) => (
+										<div className="col-6 col-md-3" key={m.label}>
+											<div className="card shadow-sm h-100 text-center p-3">
+												<div className="mb-2"><i className={`${m.icon} fs-2 text-primary`}></i></div>
+												<div className="fw-bold fs-4">{m.value}</div>
+												<div className="text-muted small">{m.label}</div>
+											</div>
+										</div>
+									))}
 						</div>
 
 						{/* Calendar View for Bookings */}
@@ -351,7 +223,7 @@ export default function VendorDashboardPage() {
 						<span className="badge text-bg-secondary">Total: {bookings.length}</span>
 					</div>
 					<div className="card-body p-0">
-						{bookingNotesError && <div className="px-3 py-2 text-warning">{bookingNotesError}</div>}
+						{/* Booking notes error removed: now handled by React Query or not shown */}
 						{!bookings.length && <div className="p-3 text-muted">No bookings yet. Once customers reserve sessions, they will appear here.</div>}
 						{!!bookings.length && (
 							<div className="table-responsive">
@@ -368,7 +240,7 @@ export default function VendorDashboardPage() {
 										</tr>
 									</thead>
 									<tbody>
-															{bookings.map((b, idx) => (
+															{bookings.map((b: Booking, idx: number) => (
 																<tr key={b.id || idx}>
 																	<td>{b.serviceTitle || "—"}</td>
 																	<td>{b.userName || b.userEmail || "—"}</td>
@@ -377,15 +249,8 @@ export default function VendorDashboardPage() {
 																	<td style={{ minWidth: 200, maxWidth: 280 }}>
 																		{(() => {
 																			const bookingId = b.id ? String(b.id) : "";
-																			const note = bookingId ? bookingNotes[bookingId] : "";
-																			if (bookingNotesLoading && !note) {
-																				return <span className="text-muted">Loading…</span>;
-																			}
-																			return note ? (
-																				<span className="small d-block" style={{ whiteSpace: "pre-wrap" }}>{note}</span>
-																			) : (
-																				<span className="text-muted">—</span>
-																			);
+																			// Booking notes removed: now handled by React Query or not shown
+																			return <span className="text-muted">—</span>;
 																		})()}
 																	</td>
 																	<td>{b.meetingLink ? <a href={b.meetingLink} target="_blank" rel="noopener noreferrer">Join</a> : <span className="text-muted">None</span>}</td>
@@ -455,7 +320,7 @@ export default function VendorDashboardPage() {
 										</tr>
 									</thead>
 									<tbody>
-										{myListings.map((i, idx) => {
+										{myListings.map((i: Listing, idx: number) => {
 											const serviceKey = String(i.id || i.vendorId || "");
 											return (
 												<tr key={serviceKey || idx}>

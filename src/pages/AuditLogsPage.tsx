@@ -78,8 +78,8 @@ const AuditLogsPage = () => {
   return (
     <MasterLayout>
       <Breadcrumb title="Audit Logs" />
-      <AuditLogsLayer />
       <AuditLogDashboard stats={stats} />
+      <AuditLogsLayer />
     </MasterLayout>
   );
 };
