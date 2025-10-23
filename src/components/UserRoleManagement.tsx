@@ -104,11 +104,14 @@ export default function AdminUsersPage() {
       role: normalizeRole(u.role),
     }));
   }
-  
+
 // Helper: define default feature access by role
 function getDefaultRoleAccess(role: string, featureKey: string): boolean {
   const normalized = typeof role === 'string' ? role.toLowerCase() : '';
-  if (normalized === 'admin') return true;
+  if (normalized === 'admin') {
+    // Admins get all features checked by default
+    return true;
+  }
   if (normalized === 'vendor') {
     const vendorDefaults = [
       'dashboard', 'market1', 'listings-vendors', 'listings-vendors-mine', 'profile-vendor', 'vendor-home', 'wallet', 'subscriptions', 'email', 'support'
@@ -205,8 +208,8 @@ function getDefaultRoleAccess(role: string, featureKey: string): boolean {
       const next = { ...current, [featureKey]: value };
       await api.patch(`/api/users/${encodeURIComponent(email)}/privileges`, { featurePrivileges: next });
       setPrivileges((prev) => ({ ...prev, [email]: next }));
-    } catch {
-      // keep silent; UI remains unchanged if backend fails next tick
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Failed to update privileges");
     } finally {
       setPrivBusy((prev) => ({ ...prev, [email]: false }));
     }
