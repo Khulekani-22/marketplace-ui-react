@@ -16,6 +16,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const queryClient = new QueryClient();
 
 // Lazy imports
+const AdminRtoRpoPage = React.lazy(() => import("./pages/AdminRtoRpoPage.jsx"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard.tsx"));
 const LandingPage = React.lazy(() => import("./pages/LandingPage.tsx"));
 const HomePageTwo = React.lazy(() => import("./pages/HomePageTwo.tsx"));
@@ -318,9 +319,6 @@ function App() {
                       </AdminRoute>
                     }
                   />
-// ...existing code...
-const AdminRtoRpoPage = React.lazy(() => import("./pages/AdminRtoRpoPage.jsx"));
-// ...existing code...
 
                   <Route
                     path="/admin/rto-rpo"
