@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => {
   const port = Number(env.VITE_PORT || 5173)
 
   return {
+    resolve: {
+      dedupe: ['react', 'react-dom']
+    },
     plugins: [react()],
     build: {
       // Optimize chunk loading and reduce bundle splitting issues

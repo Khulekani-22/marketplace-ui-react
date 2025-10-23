@@ -153,7 +153,17 @@ function App() {
               <NotificationsProvider>
                 <Routes>
                   {/* auth */}
-                  <Route path="/login" element={<VendorProvider><LoginForm /></VendorProvider>} />
+                  <Route path="/login" element={
+                    <AppSyncProvider>
+                      <WalletProvider>
+                        <NotificationsProvider>
+                          <VendorProvider>
+                            <LoginForm />
+                          </VendorProvider>
+                        </NotificationsProvider>
+                      </WalletProvider>
+                    </AppSyncProvider>
+                  } />
 
                   {/* protected */}
                   <Route path="/dashboard" element={<VendorRoute><Dashboard /></VendorRoute>} />
