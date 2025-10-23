@@ -1,5 +1,5 @@
 // src/components/LoginForm.jsx
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
@@ -47,6 +47,21 @@ export default function LoginForm({
   afterLogin,
   showTenant = true,
 }) {
+  const dispatcher = (React as any)?.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED?.ReactCurrentDispatcher?.current;
+  if (!dispatcher || typeof dispatcher.useState !== "function") {
+    console.error("[LoginForm] React dispatcher missing. Possible duplicate React or invalid render context.");
+    return (
+      <div className="container my-4" style={{ maxWidth: 480 }}>
+        <div className="card shadow-sm">
+          <div className="card-body p-4">
+            <h1 className="h4 mb-3">Sign in</h1>
+            <p className="text-muted">Loading sign-in experience…</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const nav = useNavigate();
   const location = useLocation();
   const vendorCtx = useContext(VendorContext);
