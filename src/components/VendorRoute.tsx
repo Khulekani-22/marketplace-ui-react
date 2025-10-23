@@ -1,5 +1,6 @@
 // src/components/VendorRoute.jsx
 import { useEffect, useState } from "react";
+import { VendorProvider } from "../context/VendorContext";
 import { Navigate, useLocation } from "react-router-dom";
 import { auth } from "../firebase.js";
 import { api } from "../lib/api";
@@ -63,7 +64,7 @@ export default function VendorRoute({ children }) {
   }
   // Wrap allowed children in VendorProvider for context
   if (state.allowed) {
-    const { VendorProvider } = require("../context/VendorContext.tsx");
+    // VendorProvider is imported at the top as ES import
     return <VendorProvider>{children}</VendorProvider>;
   }
   return <Navigate to="/profile-startup" replace />;
