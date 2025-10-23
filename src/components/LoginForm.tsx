@@ -1,5 +1,5 @@
 // src/components/LoginForm.jsx
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
@@ -11,7 +11,7 @@ import {
 import { auth } from "../firebase.js";
 import { bootstrapSession } from "../lib/api";
 import { hasFullAccess } from "../utils/roles";
-import { useVendor } from "../context/useVendor";
+import { VendorContext } from "../context/vendorContextBase";
 import { writeAuditLog } from "../lib/audit";
 
 const google = new GoogleAuthProvider();
@@ -49,7 +49,8 @@ export default function LoginForm({
 }) {
   const nav = useNavigate();
   const location = useLocation();
-  const { refresh } = useVendor();
+  const vendorCtx = useContext(VendorContext);
+  const refreshVendor = vendorCtx?.refresh;
 
   // return URL support: /login?returnTo=/somewhere or navigate("/login", { state: { from: "/somewhere" }})
   const returnTo = useMemo(() => {
@@ -90,8 +91,8 @@ export default function LoginForm({
       // Persist tenant choice for downstream interceptors/session helpers
       sessionStorage.setItem("tenantId", tenantId);
       try {
-        // Ensure VendorContext picks up the just-logged-in user immediately
-        await refresh?.();
+        // Ensure VendorContext picks up the just-logged-in user immediately when available
+        await refreshVendor?.();
       } catch {
         // ignore – VendorProvider will still refresh on its own
       }
@@ -118,7 +119,7 @@ export default function LoginForm({
     });
 
     return () => unsub();
-  }, [afterLogin, nav, returnTo, tenantId, refresh]);
+  }, [afterLogin, nav, returnTo, tenantId, refreshVendor]);
 
   async function doEmailLogin(e) {
     e.preventDefault();
