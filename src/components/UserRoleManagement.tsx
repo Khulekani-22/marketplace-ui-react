@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, bootstrapSession } from "../lib/api";
 import { auth } from "../firebase.js";
@@ -103,6 +104,26 @@ export default function AdminUsersPage() {
       role: normalizeRole(u.role),
     }));
   }
+  
+// Helper: define default feature access by role
+function getDefaultRoleAccess(role: string, featureKey: string): boolean {
+  const normalized = typeof role === 'string' ? role.toLowerCase() : '';
+  if (normalized === 'admin') return true;
+  if (normalized === 'vendor') {
+    const vendorDefaults = [
+      'dashboard', 'market1', 'listings-vendors', 'listings-vendors-mine', 'profile-vendor', 'vendor-home', 'wallet', 'subscriptions', 'email', 'support'
+    ];
+    return vendorDefaults.includes(featureKey);
+  }
+  if (normalized === 'startup') {
+    const startupDefaults = [
+      'dashboard', 'market1', 'profile-startup', 'wallet', 'subscriptions', 'email', 'support'
+    ];
+    return startupDefaults.includes(featureKey);
+  }
+  return false;
+}
+// Helper: define default feature access by role
 
   async function refresh() {
     setLoading(true);
@@ -1021,7 +1042,11 @@ export default function AdminUsersPage() {
                         <input
                           type="checkbox"
                           className="form-check-input"
-                          checked={!!privileges[u.email]?.[f.key]}
+                          checked={
+                            typeof privileges[u.email]?.[f.key] === 'boolean'
+                              ? privileges[u.email][f.key]
+                              : getDefaultRoleAccess(u.role, f.key)
+                          }
                           disabled={!!privBusy[u.email]}
                           onChange={(e) => updateFeaturePrivilege(u.email, f.key, e.target.checked)}
                         />
