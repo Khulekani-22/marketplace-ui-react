@@ -78,7 +78,61 @@ class FirestoreDataStore {
       // Check if already initialized
       if (admin.apps.length > 0) {
         this.db = admin.firestore();
-        this.initialized = true;
+        // --- Aggregation logic: Merge startups, vendors, and admins into users collection ---
+        try {
+          const users = Array.isArray(data.users) ? data.users : [];
+          const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+          const startups = Array.isArray(data.startups) ? data.startups : [];
+          const seen = new Map();
+          // Add users (admins/members)
+          for (const u of users) {
+            if (!u || typeof u !== 'object') continue;
+            const email = (u.email || '').toLowerCase();
+            if (!email) continue;
+            seen.set(email, {
+              ...u,
+              email,
+              role: u.role || 'member',
+              type: 'user',
+              tenantId: u.tenantId || 'public',
+            });
+          }
+          // Add vendors
+          for (const v of vendors) {
+            const email = (v.contactEmail || v.email || '').toLowerCase();
+            if (!email) continue;
+            if (!seen.has(email)) {
+              seen.set(email, {
+                email,
+                name: v.name || v.companyName || email,
+                role: v.role || 'vendor',
+                type: 'vendor',
+                tenantId: v.tenantId || 'vendor',
+                ...v,
+              });
+            }
+          }
+          // Add startups
+          for (const s of startups) {
+            const email = (s.contactEmail || s.email || '').toLowerCase();
+            if (!email) continue;
+            if (!seen.has(email)) {
+              seen.set(email, {
+                email,
+                name: s.name || s.companyName || email,
+                role: s.role || 'startup',
+                type: 'startup',
+                tenantId: s.tenantId || 'startup',
+                ...s,
+              });
+            }
+          }
+          // Overwrite users collection with merged list
+          data.users = Array.from(seen.values());
+        } catch (aggError) {
+          console.warn('⚠️  Failed to aggregate users, vendors, startups:', aggError);
+        }
+        return data;
         return;
       }
 

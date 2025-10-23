@@ -110,12 +110,22 @@ export default function AdminUsersPage() {
     try {
       const { data } = await api.get("/api/users");
       const list = Array.isArray(data) ? data : [];
-      // Show all users (admins and others)
+      // Show only startups and vendors from all-contacts
+      const contactsResp = await api.get("/api/users/all-contacts");
+      type Contact = {
+        email: string;
+        name?: string;
+        role?: string;
+        type?: string;
+        tenantId?: string;
+      };
+      const contacts: Contact[] = Array.isArray(contactsResp.data?.items) ? contactsResp.data.items : [];
+      const startupsAndVendors = contacts.filter((u: Contact) => u.type === "startup" || u.type === "vendor");
       setUsers(
-        list.map((u) => ({
+        startupsAndVendors.map((u: Contact) => ({
           email: (u.email || "").toLowerCase(),
           tenantId: !u.tenantId || u.tenantId === "public" ? "vendor" : u.tenantId,
-          role: u.role || "member",
+          role: u.role || (u.type === "startup" ? "startup" : "vendor"),
         }))
       );
       // Batch fetch feature privileges for all users
