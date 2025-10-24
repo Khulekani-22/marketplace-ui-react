@@ -226,16 +226,24 @@ export default function VendorMyListings() {
   }, [vendor, navigate]);
 
   // React Query: fetch listings and bookings
-  const { data, isLoading, error: queryError, refetch } = useQuery<{ listings: Listing[]; bookings: Booking[] }>(
-    [
-      "vendorListings",
-      activeVendor?.vendorId || activeVendor?.email || activeVendor?.id || "",
-      tenantId,
-    ],
-    async () => {
-      if (!activeVendor) return { listings: [], bookings: [] };
+  const vendorKey = useMemo(() => {
+    if (!activeVendor) return "";
+    return activeVendor.vendorId || activeVendor.email || activeVendor.id || "";
+  }, [activeVendor]);
+
+  const {
+    data,
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery<{ listings: Listing[]; bookings: Booking[] }>({
+    queryKey: ["vendorListings", vendorKey, tenantId],
+    queryFn: async ({ signal }) => {
+      if (!activeVendor) {
+        return { listings: [], bookings: [] };
+      }
       // Only fetch required fields
-      const { listings, bookings } = await fetchMyVendorListings({});
+      const { listings, bookings } = await fetchMyVendorListings({ signal });
       const normalizedListings = Array.isArray(listings) ? listings : [];
       const normalizedBookings = Array.isArray(bookings) ? bookings : [];
       return {
@@ -243,12 +251,10 @@ export default function VendorMyListings() {
         bookings: normalizedBookings,
       };
     },
-    {
-      enabled: !!activeVendor,
-      staleTime: 1000 * 60 * 2, // 2 minutes
-      onError: (e: any) => setErr(e?.message || "Failed to load listings"),
-    }
-  );
+    enabled: !!activeVendor,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    onError: (e: any) => setErr(e?.message || "Failed to load listings"),
+  });
 
   const items: Listing[] = data?.listings || [];
   const bookings: Booking[] = data?.bookings || [];

@@ -64,6 +64,14 @@ function renderStars(n: number) {
   );
 }
 
+function resolveListingType(service: Partial<Service> = {}): string {
+  const raw = (service.listingType || (service as any).type || "").toString().toLowerCase();
+  if (raw) return raw;
+  const category = (service.category || "").toString().toLowerCase();
+  if (category.includes("mentorship") || category.includes("mentor")) return "mentorship";
+  return "service";
+}
+
 export default function MySubscriptionsPage() {
   const [detailsModal, setDetailsModal] = useState<{ open: boolean, service: Service | null }>({ open: false, service: null });
   const [reviewModal, setReviewModal] = useState<{ open: boolean, service: Service | null, rating: number, comment: string, busy: boolean, error: string }>({ open: false, service: null, rating: 0, comment: '', busy: false, error: '' });
@@ -119,7 +127,15 @@ export default function MySubscriptionsPage() {
   });
 
   // React Query: fetch service details for subscriptions
-  const serviceIds = useMemo(() => new Set(subscriptions.filter((x: any) => (x.type || "service") === "service" && x.serviceId != null).map((x: any) => String(x.serviceId))), [subscriptions]);
+  const serviceIds = useMemo(
+    () =>
+      new Set(
+        subscriptions
+          .filter((x: any) => x.serviceId != null)
+          .map((x: any) => String(x.serviceId))
+      ),
+    [subscriptions]
+  );
   const { data: items = [] } = useQuery({
     queryKey: ["subscribedServices", Array.from(serviceIds)],
     queryFn: async () => {
@@ -155,6 +171,23 @@ export default function MySubscriptionsPage() {
     staleTime: 1000 * 60 * 2,
     enabled: !!auth.currentUser && !!serviceIds.size,
   });
+
+  const normalizedSubscriptions = useMemo(() => {
+    return items.map((svc: Service & { __listingType?: string }) => ({
+      ...svc,
+      __listingType: resolveListingType(svc),
+    }));
+  }, [items]);
+
+  const filteredSubscriptions = useMemo(() => {
+    return normalizedSubscriptions.filter(
+      (svc) => activeType === "all" || (svc.__listingType || "service") === activeType
+    );
+  }, [normalizedSubscriptions, activeType]);
+
+  const mentorshipListings = useMemo(() => {
+    return normalizedSubscriptions.filter((svc) => (svc.__listingType || "") === "mentorship");
+  }, [normalizedSubscriptions]);
 
   // Manual refresh handler
   const loadSubscriptions = useCallback(() => refetch(), [refetch]);
@@ -257,6 +290,11 @@ export default function MySubscriptionsPage() {
     return `${displayHour}:00 ${period}`;
   };
 
+  const getDisplayListingType = (svc: { __listingType?: string; listingType?: string }) => {
+    const type = (svc.__listingType || svc.listingType || 'subscription').toString();
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
   const getStatusBadgeClass = (status: string = 'scheduled') => {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -269,6 +307,106 @@ export default function MySubscriptionsPage() {
       default:
         return 'bg-secondary-600';
     }
+  };
+
+  const renderSubscriptionCard = (s: (Service & { __listingType?: string })) => {
+    const sub = subscriptions.find((entry: any) => String(entry.serviceId) === String(s.id));
+    const hasSchedule = sub?.scheduledDate && sub?.scheduledSlot;
+    const listingTypeLabel = getDisplayListingType(s);
+    const priceLabel = Number(s.price || 0).toLocaleString();
+    const isBusy = !!busyMap[String(s.id)];
+
+    return (
+      <div className="col-12 col-md-6 col-lg-4" key={String(s.id)}>
+        <div className="card h-100 shadow-sm hover-shadow">
+          {s.imageUrl && (
+            <img
+              src={s.imageUrl}
+              className="card-img-top"
+              alt={s.title || 'Listing'}
+              style={{ height: 180, objectFit: 'cover' }}
+            />
+          )}
+          <div className="card-body d-flex flex-column">
+            <h6 className="card-title mb-2">{s.title || 'Listing'}</h6>
+            <div className="text-muted small mb-2">
+              <i className="ri-building-line me-1"></i>
+              {s.vendor || 'Unknown Vendor'}
+            </div>
+            <div className="text-muted small mb-2">
+              <i className="ri-price-tag-3-line me-1"></i>
+              {s.category || 'General'}
+            </div>
+            <div className="text-muted small mb-2">
+              <i className="ri-list-check-2 me-1"></i>
+              {listingTypeLabel}
+            </div>
+            {s.description && (
+              <p className="flex-grow-1 text-secondary small mb-3">
+                {s.description.slice(0, 120)}
+                {s.description.length > 120 ? '…' : ''}
+              </p>
+            )}
+            {hasSchedule && (
+              <div className="alert alert-info alert-sm p-2 mb-3">
+                <i className="ri-calendar-line me-1"></i>
+                <small>
+                  <strong>Next Session:</strong>
+                  <br />
+                  {formatDate(sub!.scheduledDate!)} at {formatSlot(sub!.scheduledSlot!)}
+                </small>
+              </div>
+            )}
+            <div className="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+              <div>
+                <strong className="text-primary-600">R {priceLabel}</strong>
+                {s.rating && (
+                  <div className="small text-muted">
+                    <i className="ri-star-fill text-warning"></i>
+                    {Number(s.rating).toFixed(1)}
+                  </div>
+                )}
+              </div>
+              <div className="d-flex gap-2">
+                <button
+                  className="btn btn-sm btn-outline-primary"
+                  onClick={() => setDetailsModal({ open: true, service: s })}
+                >
+                  <i className="ri-eye-line me-1"></i>
+                  View Details
+                </button>
+                <button
+                  className="btn btn-sm btn-outline-success"
+                  onClick={() =>
+                    setReviewModal({ open: true, service: s, rating: 0, comment: '', busy: false, error: '' })
+                  }
+                >
+                  <i className="ri-star-line me-1"></i>
+                  Review
+                </button>
+                <button
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={() => handleUnsubscribe(s.id)}
+                  disabled={isBusy}
+                >
+                  {isBusy ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                      Removing…
+                    </>
+                  ) : (
+                    <>
+                      <i className="ri-close-circle-line me-1"></i>
+                      Unsubscribe
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -285,7 +423,7 @@ export default function MySubscriptionsPage() {
                 onClick={() => setActiveTab('subscriptions')}
               >
                 <i className="ri-shopping-cart-line me-1"></i>
-                Subscriptions ({items.length})
+                Subscriptions ({normalizedSubscriptions.length})
               </button>
               <button
                 type="button"
@@ -301,7 +439,7 @@ export default function MySubscriptionsPage() {
                 onClick={() => setActiveTab('mentorship')}
               >
                 <i className="ri-user-star-line me-1"></i>
-                Mentorship
+                Mentorship ({mentorshipListings.length})
               </button>
             </div>
             <div className="d-flex gap-2">
@@ -352,7 +490,7 @@ export default function MySubscriptionsPage() {
               {/* Subscriptions Tab */}
               {activeTab === 'subscriptions' && (
                 <div className="row g-3">
-                  {items.filter((s) => activeType === 'all' || (s.listingType ?? 'subscription') === activeType).length === 0 && (
+                  {filteredSubscriptions.length === 0 && (
                     <div className="col-12 text-center py-5">
                       <i className="ri-shopping-cart-line display-4 text-secondary mb-3"></i>
                       <h5 className="text-secondary">No active subscriptions</h5>
@@ -363,136 +501,25 @@ export default function MySubscriptionsPage() {
                       </a>
                     </div>
                   )}
-                  {items.filter((s) => activeType === 'all' || (s.listingType ?? 'subscription') === activeType).map((s) => {
-                    const sub = subscriptions.find((sub) => String(sub.serviceId) === String(s.id));
-                    const hasSchedule = sub?.scheduledDate && sub?.scheduledSlot;
-                    return (
-                      <div className="col-12 col-md-6 col-lg-4" key={String(s.id)}>
-                        <div className="card h-100 shadow-sm hover-shadow">
-                          {s.imageUrl && (
-                            <img 
-                              src={s.imageUrl} 
-                              className="card-img-top" 
-                              alt={s.title || 'Listing'} 
-                              style={{ height: 180, objectFit: 'cover' }} 
-                            />
-                          )}
-                          <div className="card-body d-flex flex-column">
-                            <h6 className="card-title mb-2">{s.title || 'Listing'}</h6>
-                            <div className="text-muted small mb-2">
-                              <i className="ri-building-line me-1"></i>
-                              {s.vendor || 'Unknown Vendor'}
-                            </div>
-                            <div className="text-muted small mb-2">
-                              <i className="ri-price-tag-3-line me-1"></i>
-                              {s.category || 'General'}
-                            </div>
-                            <div className="text-muted small mb-2">
-                              <i className="ri-list-check-2 me-1"></i>
-                              {(s.listingType ?? 'Subscription').charAt(0).toUpperCase() + (s.listingType ?? 'Subscription').slice(1)}
-                            </div>
-                            {s.description && (
-                              <p className="flex-grow-1 text-secondary small mb-3">
-                                {s.description.slice(0, 120)}{s.description.length > 120 ? '…' : ''}
-                              </p>
-                            )}
-                            {hasSchedule && (
-                              <div className="alert alert-info alert-sm p-2 mb-3">
-                                <i className="ri-calendar-line me-1"></i>
-                                <small>
-                                  <strong>Next Session:</strong><br />
-                                  {formatDate(sub.scheduledDate!)} at {formatSlot(sub.scheduledSlot!)}
-                                </small>
-                              </div>
-                            )}
-                            <div className="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
-                              <div>
-                                <strong className="text-primary-600">R {Number(s.price || 0).toLocaleString()}</strong>
-                                {s.rating && (
-                                  <div className="small text-muted">
-                                    <i className="ri-star-fill text-warning"></i>
-                                    {Number(s.rating).toFixed(1)}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="d-flex gap-2">
-                                <button className="btn btn-sm btn-outline-primary" onClick={() => setDetailsModal({ open: true, service: s })}>
-                                  <i className="ri-eye-line me-1"></i>View Details
-                                </button>
-                                <button className="btn btn-sm btn-outline-success" onClick={() => setReviewModal({ open: true, service: s, rating: 0, comment: '', busy: false, error: '' })}>
-                                  <i className="ri-star-line me-1"></i>Review
-                                </button>
-                                <button 
-                                  className="btn btn-sm btn-outline-danger" 
-                                  onClick={() => handleUnsubscribe(s.id)} 
-                                  disabled={!!busyMap[String(s.id)]}
-                                >
-                                  {busyMap[String(s.id)] ? (
-                                    <>
-                                      <span className="spinner-border spinner-border-sm me-1" role="status"></span>
-                                      Removing…
-                                    </>
-                                  ) : (
-                                    <>
-                                      <i className="ri-close-circle-line me-1"></i>
-                                      Unsubscribe
-                                    </>
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-  {/* Details Modal - move outside map */}
-  {/* Review Modal - move outside map */}
-    {/* Render modals once at the root, not inside map */}
-    <Modal show={detailsModal.open} onHide={() => setDetailsModal({ open: false, service: null })} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>Listing Details</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {detailsModal.service && (
-          <>
-            <h5>{detailsModal.service.title}</h5>
-            <div className="mb-2 text-muted">{detailsModal.service.vendor}</div>
-            <div className="mb-2">Category: {detailsModal.service.category}</div>
-            <div className="mb-2">Price: R {Number(detailsModal.service.price || 0).toLocaleString()}</div>
-            <div className="mb-2">Rating: {renderStars(Number(detailsModal.service.rating || 0))} {Number(detailsModal.service.rating || 0).toFixed(1)}</div>
-            <div className="mb-2">{detailsModal.service.description}</div>
-            {/* Add tags, contact, etc. if available */}
-          </>
-        )}
-      </Modal.Body>
-    </Modal>
+                  {filteredSubscriptions.map(renderSubscriptionCard)}
+                </div>
+              )}
 
-    <Modal show={reviewModal.open} onHide={() => setReviewModal({ open: false, service: null, rating: 0, comment: '', busy: false, error: '' })} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>Review Listing</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {reviewModal.service && (
-          <>
-            <div className="mb-2">{reviewModal.service.title}</div>
-            <div className="mb-3">
-              {[1,2,3,4,5].map((n) => (
-                <button key={n} type="button" onClick={() => setReviewModal((prev) => ({ ...prev, rating: n }))} className="btn btn-link p-0 me-1" aria-label={`Rate ${n} stars`}>
-                  <span style={{ fontSize: 24, color: reviewModal.rating >= n ? "#f5a623" : "#ccc" }}>★</span>
-                </button>
-              ))}
-            </div>
-            <textarea className="form-control mb-3" rows={3} placeholder="Write a quick comment (optional)" value={reviewModal.comment} onChange={(e) => setReviewModal((prev) => ({ ...prev, comment: e.target.value }))} />
-            {reviewModal.error && <div className="alert alert-danger py-2">{reviewModal.error}</div>}
-            {/* Review button removed: submitReview is not defined. Add implementation if needed. */}
-            <div className="btn btn-primary" style={{pointerEvents: 'none', opacity: 0.7}}>
-              {reviewModal.busy ? 'Submitting…' : 'Submit review'}
-            </div>
-          </>
-        )}
-      </Modal.Body>
-    </Modal>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+              {/* Mentorship Tab */}
+              {activeTab === 'mentorship' && (
+                <div className="row g-3">
+                  {mentorshipListings.length === 0 && (
+                    <div className="col-12 text-center py-5">
+                      <i className="ri-user-star-line display-4 text-secondary mb-3"></i>
+                      <h5 className="text-secondary">No mentorship sessions yet</h5>
+                      <p className="text-muted">Book a mentor from the marketplace to see them here</p>
+                      <a href="/mentorship" className="btn btn-primary-600 mt-2">
+                        <i className="ri-compass-3-line me-1"></i>
+                        Explore Mentors
+                      </a>
+                    </div>
+                  )}
+                  {mentorshipListings.map(renderSubscriptionCard)}
                 </div>
               )}
 
@@ -588,6 +615,74 @@ export default function MySubscriptionsPage() {
           )}
         </div>
       </div>
+
+      <Modal show={detailsModal.open} onHide={() => setDetailsModal({ open: false, service: null })} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Listing Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {detailsModal.service && (
+            <>
+              <h5>{detailsModal.service.title}</h5>
+              <div className="mb-2 text-muted">{detailsModal.service.vendor}</div>
+              <div className="mb-2">Category: {detailsModal.service.category}</div>
+              <div className="mb-2">Price: R {Number(detailsModal.service.price || 0).toLocaleString()}</div>
+              <div className="mb-2">
+                Rating: {renderStars(Number(detailsModal.service.rating || 0))}{' '}
+                {Number(detailsModal.service.rating || 0).toFixed(1)}
+              </div>
+              <div className="mb-2">{detailsModal.service.description}</div>
+            </>
+          )}
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        show={reviewModal.open}
+        onHide={() =>
+          setReviewModal({ open: false, service: null, rating: 0, comment: '', busy: false, error: '' })
+        }
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Review Listing</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {reviewModal.service && (
+            <>
+              <div className="mb-2">{reviewModal.service.title}</div>
+              <div className="mb-3">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setReviewModal((prev) => ({ ...prev, rating: n }))}
+                    className="btn btn-link p-0 me-1"
+                    aria-label={`Rate ${n} stars`}
+                  >
+                    <span
+                      style={{ fontSize: 24, color: reviewModal.rating >= n ? '#f5a623' : '#ccc' }}
+                    >
+                      ★
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <textarea
+                className="form-control mb-3"
+                rows={3}
+                placeholder="Write a quick comment (optional)"
+                value={reviewModal.comment}
+                onChange={(e) => setReviewModal((prev) => ({ ...prev, comment: e.target.value }))}
+              />
+              {reviewModal.error && <div className="alert alert-danger py-2">{reviewModal.error}</div>}
+              <div className="btn btn-primary" style={{ pointerEvents: 'none', opacity: 0.7 }}>
+                {reviewModal.busy ? 'Submitting…' : 'Submit review'}
+              </div>
+            </>
+          )}
+        </Modal.Body>
+      </Modal>
     </MasterLayout>
   );
 }
