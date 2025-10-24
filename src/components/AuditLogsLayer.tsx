@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Modal } from "react-bootstrap";
 import { fetchAuditLogs } from "../lib/audit";
 import { api } from "../lib/api";
 
@@ -15,6 +16,7 @@ export default function AuditLogsLayer() {
   const [dateTo, setDateTo] = useState("");
   const [tenantId, setTenantId] = useState(() => sessionStorage.getItem("tenantId") || "vendor");
   const [tenants, setTenants] = useState([{ id: "vendor", name: "Vendor" }]);
+  const [detailModal, setDetailModal] = useState<{ open: boolean; log: any | null }>({ open: false, log: null });
 
   useEffect(() => {
     let mounted = true;
@@ -78,6 +80,37 @@ export default function AuditLogsLayer() {
         .some((v) => String(v).toLowerCase().includes(s));
     });
   }, [logs, search]);
+
+  const normalizeMetadata = useCallback((meta: any) => {
+    if (!meta) return {};
+    if (typeof meta === "object") return meta;
+    if (typeof meta === "string") {
+      try {
+        return JSON.parse(meta);
+      } catch {
+        return { message: meta };
+      }
+    }
+    return {};
+  }, []);
+
+  const isErrorLog = useCallback((log: any) => {
+    if (!log) return false;
+    const action = String(log.action || "").toUpperCase();
+    if (action === "API_ERROR" || action === "ERROR") return true;
+    const level = String(log.level || "").toLowerCase();
+    if (level === "error") return true;
+    const metadata = normalizeMetadata(log.metadata);
+    const statusCandidate = metadata.status ?? metadata.statusCode ?? metadata.httpStatus ?? metadata.responseStatus;
+    const numericStatus = Number(statusCandidate);
+    if (Number.isFinite(numericStatus) && numericStatus >= 400) return true;
+    const msg = String(metadata.message || metadata.error || "").toLowerCase();
+    if (msg.includes("error") || msg.includes("failed") || msg.includes("exception")) return true;
+    return false;
+  }, [normalizeMetadata]);
+
+  const detailMetadata = detailModal.log ? normalizeMetadata(detailModal.log.metadata) : {};
+  const detailJson = detailModal.log ? JSON.stringify(detailMetadata, null, 2) : "";
 
   function exportCsv() {
     const header = [
@@ -205,11 +238,17 @@ export default function AuditLogsLayer() {
                 <th>Target</th>
                 <th>IP</th>
                 <th>Tenant</th>
+                <th style={{ minWidth: 160 }}>Details</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((r) => (
-                <tr key={r.id}>
+              {filtered.map((r) => {
+                const metadata = normalizeMetadata(r.metadata);
+                const message = metadata.message || metadata.error || metadata.statusText || metadata.code || "—";
+                const statusValue = metadata.status ?? metadata.statusCode ?? metadata.httpStatus ?? metadata.responseStatus;
+                const method = metadata.method ? String(metadata.method).toUpperCase() : null;
+                return (
+                  <tr key={r.id} className={isErrorLog(r) ? "table-danger" : undefined}>
                   <td>
                     {r.timestamp ? (
                       <>
@@ -243,11 +282,33 @@ export default function AuditLogsLayer() {
                   </td>
                   <td>{r.ip || "—"}</td>
                   <td>{r.tenantId || "vendor"}</td>
-                </tr>
-              ))}
+                  <td>
+                    <div className="small">
+                      {method ? <span className="badge text-bg-primary me-1">{method}</span> : null}
+                      {statusValue !== undefined && statusValue !== null ? (
+                        <span className={`badge ${Number(statusValue) >= 400 ? 'text-bg-danger' : 'text-bg-secondary'} me-1`}>
+                          {statusValue}
+                        </span>
+                      ) : null}
+                      <span className="text-truncate d-inline-block" style={{ maxWidth: 220 }} title={message}>
+                        {message}
+                      </span>
+                    </div>
+                    <div className="mt-1">
+                      <button
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setDetailModal({ open: true, log: r })}
+                      >
+                        View
+                      </button>
+                    </div>
+                  </td>
+                  </tr>
+                );
+              })}
               {loading && (
                 <tr>
-                  <td colSpan={6} className="text-center text-secondary py-4">
+                  <td colSpan={7} className="text-center text-secondary py-4">
                     Loading logs…
                   </td>
                 </tr>
@@ -257,6 +318,40 @@ export default function AuditLogsLayer() {
         </div>
 
       </div>
+
+      <Modal
+        show={detailModal.open}
+        onHide={() => setDetailModal({ open: false, log: null })}
+        size="lg"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Audit Log Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {detailModal.log ? (
+            <>
+              <div className="mb-2">
+                <strong>Action:</strong> {detailModal.log.action || '—'}
+              </div>
+              <div className="mb-2 text-break">
+                <strong>Endpoint:</strong>{' '}
+                {detailMetadata.method ? `${String(detailMetadata.method).toUpperCase()} ` : ''}
+                {detailMetadata.url || detailMetadata.path || detailMetadata.endpoint || detailModal.log.targetId || '—'}
+              </div>
+              <div className="mb-3">
+                <strong>Message:</strong>{' '}
+                {detailMetadata.message || detailMetadata.error || detailMetadata.statusText || '—'}
+              </div>
+              <pre className="bg-light p-3 rounded small mb-0" style={{ maxHeight: 400, overflow: 'auto' }}>
+{detailJson}
+              </pre>
+            </>
+          ) : (
+            <div className="text-secondary">No details available.</div>
+          )}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }

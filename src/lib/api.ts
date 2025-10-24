@@ -50,6 +50,15 @@ type ApiRequestConfig = InternalAxiosRequestConfig & {
   _switchAttempts?: number;
   _resetOnce?: boolean;
   _delayedRetry?: boolean;
+  _startTime?: number;
+  _clientPath?: string;
+  _userAgent?: string;
+  _tenantSnapshot?: string;
+  _requestPayloadPreview?: string;
+  _requestPayloadLength?: number | null;
+  _queryPreview?: string;
+  _fallbackHistory?: string[];
+  _loggedAuditError?: boolean;
 };
 
 export const api = axios.create({ baseURL: currentBase });
@@ -60,6 +69,54 @@ function combineUrl(base?: string, url?: string) {
   const baseClean = base.replace(/\/+$/, "");
   const urlClean = url.replace(/^\/+/, "");
   return `${baseClean}/${urlClean}`;
+}
+
+const SNIPPET_LIMIT = 500;
+
+function createSnippet(value: any): { snippet: string; length: number | null } | null {
+  if (value === undefined || value === null) return null;
+
+  if (typeof value === "string") {
+    return {
+      snippet: value.length > SNIPPET_LIMIT ? `${value.slice(0, SNIPPET_LIMIT)}…` : value,
+      length: value.length,
+    };
+  }
+
+  if (typeof value === "object") {
+    try {
+      if (typeof FormData !== "undefined" && value instanceof FormData) {
+        return { snippet: "[form-data]", length: null };
+      }
+    } catch {
+      /* FormData not available */
+    }
+    try {
+      if (typeof ArrayBuffer !== "undefined" && value instanceof ArrayBuffer) {
+        return { snippet: `[arraybuffer length=${value.byteLength}]`, length: value.byteLength };
+      }
+    } catch {}
+    try {
+      if (typeof Blob !== "undefined" && value instanceof Blob) {
+        return { snippet: `[blob size=${value.size}]`, length: value.size };
+      }
+    } catch {}
+    try {
+      const json = JSON.stringify(value);
+      return {
+        snippet: json.length > SNIPPET_LIMIT ? `${json.slice(0, SNIPPET_LIMIT)}…` : json,
+        length: json.length,
+      };
+    } catch {
+      return { snippet: "[unserializable]", length: null };
+    }
+  }
+
+  const str = String(value);
+  return {
+    snippet: str.length > SNIPPET_LIMIT ? `${str.slice(0, SNIPPET_LIMIT)}…` : str,
+    length: str.length,
+  };
 }
 
 function extractMessage(error: AxiosError, override?: string) {
@@ -210,7 +267,7 @@ api.interceptors.request.use(async (config) => {
   // Wait for Firebase auth to initialize before sending requests
   // This prevents 401 errors during app startup
   await waitForAuth();
-  
+
   const user = auth.currentUser;
   if (user) {
     // use a fresh token each request; SDK refreshes under the hood
@@ -225,6 +282,36 @@ api.interceptors.request.use(async (config) => {
   // Attach a correlation id and basic client info for accounting
   config.headers["x-request-id"] = requestId();
   try { config.headers["x-client-path"] = window.location.pathname; } catch {}
+
+  const extended = config as ApiRequestConfig;
+  extended._startTime = Date.now();
+  extended._clientPath = (() => {
+    try {
+      return typeof window !== "undefined" ? window.location.pathname : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+  extended._tenantSnapshot = tenantId;
+  extended._userAgent = (() => {
+    try {
+      return typeof navigator !== "undefined" ? navigator.userAgent : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+
+  const payloadSnippet = createSnippet(config?.data);
+  if (payloadSnippet) {
+    extended._requestPayloadPreview = payloadSnippet.snippet;
+    extended._requestPayloadLength = payloadSnippet.length;
+  } else {
+    extended._requestPayloadPreview = undefined;
+    extended._requestPayloadLength = null;
+  }
+
+  const querySnippet = createSnippet(config?.params);
+  extended._queryPreview = querySnippet ? querySnippet.snippet : undefined;
 
   // Shim common payload shapes that include tenant identifiers
   if (config.data && typeof config.data === "object") config.data = shimTenantInPayload(config.data);
@@ -262,6 +349,7 @@ api.interceptors.response.use(null, async (error) => {
       currentBase = nextBase;
       api.defaults.baseURL = nextBase;
       original.baseURL = nextBase;
+      original._fallbackHistory = [...(original._fallbackHistory || []), nextBase];
       return api(original);
     }
     // Exhausted fallbacks: reset to first candidate and try once
@@ -272,32 +360,59 @@ api.interceptors.response.use(null, async (error) => {
       api.defaults.baseURL = currentBase;
       original.baseURL = currentBase;
       original._switchAttempts = 0;
+      original._fallbackHistory = [...(original._fallbackHistory || []), currentBase];
       return api(original);
     }
-  }
-
-  try {
-    const method = (original?.method || "get").toUpperCase();
-    const url = combineUrl(original.baseURL || api.defaults.baseURL || currentBase, original.url);
-    await writeAuditLog({
-      action: "API_ERROR",
-      metadata: {
-        method,
-        url,
-        status: status ?? null,
-        code: error.code || null,
-        message: extractMessage(error),
-        requestId: original?.headers?.["x-request-id"] || null,
-      },
-    });
-  } catch {
-    /* ignore audit failures */
   }
 
   if (!original._delayedRetry && method === "get") {
     original._delayedRetry = true;
     await delay(1000);
     return api(original);
+  }
+
+  if (!original._loggedAuditError) {
+    original._loggedAuditError = true;
+    try {
+      const methodUpper = (original?.method || "get").toUpperCase();
+      const url = combineUrl(original.baseURL || api.defaults.baseURL || currentBase, original.url);
+      const latencyMs = typeof original._startTime === "number" ? Date.now() - original._startTime : null;
+      const responseData = error.response?.data;
+      const responseSnippet = createSnippet(responseData);
+      const metadata: Record<string, any> = {
+        method: methodUpper,
+        url,
+        baseURL: original.baseURL || api.defaults.baseURL || currentBase,
+        status: status ?? null,
+        statusText: error.response?.statusText || null,
+        code: error.code || null,
+        message: extractMessage(error),
+        requestId: original?.headers?.["x-request-id"] || null,
+        tenantId: original._tenantSnapshot || SESSION.tenantId || sessionStorage.getItem("tenantId") || "vendor",
+        clientPath: original._clientPath || original.headers?.["x-client-path"] || null,
+        userAgent: original._userAgent || null,
+        latencyMs,
+        retriedAuth: !!original._retriedAuth,
+        fallbackAttempts: Number(original._switchAttempts || 0),
+        usedReset: !!original._resetOnce,
+        networkError: isNetworkError,
+        requestPayloadSize: original._requestPayloadLength ?? null,
+        requestPayloadPreview: original._requestPayloadPreview,
+        requestQueryPreview: original._queryPreview,
+        responseSize: responseSnippet?.length ?? null,
+        responsePreview: responseSnippet?.snippet,
+        responseHeaders: error.response?.headers,
+      };
+      if (Array.isArray(original._fallbackHistory) && original._fallbackHistory.length) {
+        metadata.fallbackHistory = original._fallbackHistory;
+      }
+      await writeAuditLog({
+        action: "API_ERROR",
+        metadata,
+      });
+    } catch {
+      /* ignore audit failures */
+    }
   }
 
   reportApiError(error);
