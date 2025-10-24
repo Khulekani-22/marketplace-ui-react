@@ -545,6 +545,84 @@ class FirestoreDataStore {
     });
   }
 
+  async getDocumentsByIds(collectionName, ids = []) {
+    if (!this.initialized) {
+      throw new Error('Firestore not initialized');
+    }
+
+    const uniqueIds = Array.from(
+      new Set(
+        (ids || [])
+          .map((id) => (id != null ? String(id).trim() : ''))
+          .filter((id) => id.length > 0)
+      )
+    );
+
+    if (!uniqueIds.length) return [];
+
+    const docRefs = uniqueIds.map((id) => this.db.collection(collectionName).doc(id));
+    const results = [];
+
+    for (const chunk of chunkArray(docRefs, 100)) {
+      if (!chunk.length) continue;
+      try {
+        const snapshots = await this.db.getAll(...chunk);
+        snapshots.forEach((doc) => {
+          if (!doc?.exists) return;
+          results.push(serializeDocument(doc));
+        });
+      } catch (err) {
+        console.warn(
+          `[FirestoreDataStore] getDocumentsByIds failed for ${collectionName}`,
+          err?.message || err
+        );
+      }
+    }
+
+    return results;
+  }
+
+  async getMentorshipSessions({ tenantId, limit = 200, includePast = true } = {}) {
+    if (!this.initialized) {
+      throw new Error('Firestore not initialized');
+    }
+
+    const normalizedTenant = this.normalizeTenant(tenantId);
+    let baseQuery = this.db.collection('mentorshipSessions');
+    if (normalizedTenant !== 'public') {
+      baseQuery = baseQuery.where('tenantId', '==', normalizedTenant);
+    }
+
+    let snapshot;
+    try {
+      let orderedQuery = baseQuery.orderBy('sessionDate', 'desc');
+      if (limit) {
+        orderedQuery = orderedQuery.limit(limit);
+      }
+      snapshot = await orderedQuery.get();
+    } catch (err) {
+      console.warn('[FirestoreDataStore] sessionDate order failed, falling back', err?.message || err);
+      let fallbackQuery = baseQuery;
+      if (limit) {
+        fallbackQuery = fallbackQuery.limit(limit);
+      }
+      snapshot = await fallbackQuery.get();
+    }
+
+    let sessions = snapshot.docs.map((doc) => serializeDocument(doc));
+
+    if (!includePast) {
+      const now = Date.now();
+      sessions = sessions.filter((session) => {
+        const ts = Date.parse(session.sessionDate || session.scheduledDate || session.createdAt || '');
+        if (!Number.isFinite(ts)) return true;
+        return ts >= now;
+      });
+    }
+
+    return sessions;
+  }
+
   async findVendorProfile({ tenantId, uid, email } = {}) {
     if (!this.initialized) {
       throw new Error('Firestore not initialized');

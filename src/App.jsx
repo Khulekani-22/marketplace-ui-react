@@ -66,6 +66,7 @@ const LineChartPage = React.lazy(() => import("./pages/LineChartPage.tsx"));
 const ListPage = React.lazy(() => import("./pages/ListPage.tsx"));
 const MarketplaceDetailsPage = React.lazy(() => import("./pages/MarketplaceDetailsPage.tsx"));
 const MarketplacePage = React.lazy(() => import("./pages/MarketplacePage.tsx"));
+const MentorshipPage = React.lazy(() => import("./pages/MentorshipPage.tsx"));
 const NotificationAlertPage = React.lazy(() => import("./pages/NotificationAlertPage.tsx"));
 const NotificationPage = React.lazy(() => import("./pages/NotificationPage.tsx"));
 const PaginationPage = React.lazy(() => import("./pages/PaginationPage.tsx"));
@@ -220,6 +221,7 @@ function App() {
                   <Route path="/list" element={<ListPage />} />
                   <Route path="/marketplace-details" element={<MarketplaceDetailsPage />} />
                   <Route path="/marketplace" element={<MarketplacePage />} />
+                  <Route path="/mentorship" element={<MentorshipPage />} />
                   <Route
                     path="/subscriptions"
                     element={

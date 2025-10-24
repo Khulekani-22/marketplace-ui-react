@@ -246,6 +246,13 @@ function MasterLayoutInner({ children }) {
             </li>
 
             <li>
+              <NavLink to="/mentorship" className={navClass}>
+                <Icon icon="mdi:account-tie-outline" className="menu-icon" />
+                <span>Mentorship</span>
+              </NavLink>
+            </li>
+
+            <li>
               <NavLink to="/access-capital" className={navClass}>
                 <Icon icon="mdi:cash-multiple" className="menu-icon" />
                 <span>Access to Capital</span>

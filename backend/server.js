@@ -17,6 +17,7 @@ import vendorsRouter from "./routes/vendors.js";
 import startupsRouter from "./routes/startups.js";
 import tenantsRouter from "./routes/tenants.js";
 import subscriptionsRouter from "./routes/subscriptions.js";
+import mentorshipRouter from "./routes/mentorship.js";
 import usersRouter from "./routes/users.js";
 import adminRouter from "./routes/admin.js";
 import paymentRoutes from "./routes/payments.js";
@@ -479,6 +480,7 @@ app.use("/api/lms", lmsRouter);
 
 /* --------------------------------- Other APIs ----------------------------- */
 app.use("/api/health", healthRouter);
+app.use("/api/mentorship", mentorshipRouter);
 app.use("/api/data/services", servicesRouter);
 app.use("/api/data/vendors", vendorsRouter);
 app.use("/api/data/startups", startupsRouter);
