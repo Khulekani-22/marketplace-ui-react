@@ -785,10 +785,10 @@ class FirestoreDataStore {
         this.cache = data;
         this.lastLoaded = Date.now();
       
-        console.log('✅ Data saved successfully');
+        console.log('Data saved successfully');
 
       } catch (error) {
-        console.error('❌ saveData failed:', error);
+        console.error('saveData failed:', error);
         throw error;
       }
   }

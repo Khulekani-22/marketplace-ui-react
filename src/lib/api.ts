@@ -3,6 +3,7 @@ import axios, { isAxiosError, type AxiosError, type InternalAxiosRequestConfig }
 import { toast } from "react-toastify";
 import { auth } from "./firebase";
 import { waitForAuth } from "./authReady";
+import { writeAuditLog } from "./audit";
 
 // In-memory session derived from the API (authoritative)
 interface Session {
@@ -273,6 +274,24 @@ api.interceptors.response.use(null, async (error) => {
       original._switchAttempts = 0;
       return api(original);
     }
+  }
+
+  try {
+    const method = (original?.method || "get").toUpperCase();
+    const url = combineUrl(original.baseURL || api.defaults.baseURL || currentBase, original.url);
+    await writeAuditLog({
+      action: "API_ERROR",
+      metadata: {
+        method,
+        url,
+        status: status ?? null,
+        code: error.code || null,
+        message: extractMessage(error),
+        requestId: original?.headers?.["x-request-id"] || null,
+      },
+    });
+  } catch {
+    /* ignore audit failures */
   }
 
   if (!original._delayedRetry && method === "get") {
