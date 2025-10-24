@@ -310,26 +310,109 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ userEmail, userName }
   const buildContacts = useCallback(
     (threadList: ThreadSummary[]): ContactSummary[] => {
       const sessionEmail = (currentSession?.email || '').toLowerCase();
+      const sessionUid = (currentSession?.uid || '').toLowerCase();
+
+      const normalizeId = (value?: string | null) => {
+        if (!value) return '';
+        const lowered = value.toLowerCase();
+        const parts = lowered.split(':');
+        return parts[parts.length - 1] || lowered;
+      };
+
+      const collectMessageCandidates = (raw: any): { hasSent: boolean; matchesInbox: boolean } => {
+        const messages = Array.isArray(raw?.messages) ? raw.messages : Array.isArray(raw) ? raw : [];
+        let hasSent = false;
+        let matchesInbox = false;
+
+        for (const message of messages) {
+          const senderEmail = (message?.senderEmail || message?.email || message?.from?.email || '').toLowerCase();
+          const rawSenderId = (message?.senderId || message?.sender?.id || message?.from?.uid || message?.from?.id || '')
+            .toString()
+            .toLowerCase();
+          const senderId = normalizeId(
+            message?.senderId || message?.sender?.id || message?.from?.uid || message?.from?.id || null
+          );
+          const recipientEmailCandidates: string[] = [];
+          const candidateValues = [
+            message?.recipientEmail,
+            message?.receiverEmail,
+            message?.toEmail,
+            message?.targetEmail,
+            message?.to?.email,
+            message?.recipient?.email,
+            message?.to?.[0]?.email,
+            message?.recipients?.[0]?.email,
+          ];
+          for (const value of candidateValues) {
+            if (typeof value === 'string' && value.includes('@')) {
+              recipientEmailCandidates.push(value.toLowerCase());
+            }
+          }
+          if (Array.isArray(message?.to)) {
+            for (const target of message.to) {
+              if (typeof target === 'string' && target.includes('@')) {
+                recipientEmailCandidates.push(target.toLowerCase());
+              } else if (target && typeof target === 'object' && typeof target.email === 'string') {
+                recipientEmailCandidates.push(target.email.toLowerCase());
+              }
+            }
+          }
+          if (Array.isArray(message?.recipients)) {
+            for (const target of message.recipients) {
+              if (typeof target === 'string' && target.includes('@')) {
+                recipientEmailCandidates.push(target.toLowerCase());
+              } else if (target && typeof target === 'object' && typeof target.email === 'string') {
+                recipientEmailCandidates.push(target.email.toLowerCase());
+              }
+            }
+          }
+
+          if (sessionEmail && senderEmail === sessionEmail) {
+            hasSent = true;
+          }
+          if (sessionUid && senderId && (senderId === sessionUid || rawSenderId.endsWith(`:${sessionUid}`))) {
+            hasSent = true;
+          }
+          if (sessionEmail && recipientEmailCandidates.includes(sessionEmail)) {
+            matchesInbox = true;
+          }
+        }
+
+        return { hasSent, matchesInbox };
+      };
       return threadList
         .map((thread) => {
           const participants = thread.participants || [];
-          // For sent, check if ANY message in the thread was sent by the current user
-          let hasSent = false;
-          if (thread.raw && Array.isArray(thread.raw.messages)) {
-            hasSent = thread.raw.messages.some((msg: any) => {
-              const sender = (msg.senderEmail || msg.email || '').toLowerCase();
-              return sender === sessionEmail;
-            });
-          } else if (Array.isArray(thread.raw)) {
-            // legacy
-            hasSent = thread.raw.some((msg: any) => {
-              const sender = (msg?.from?.email || '').toLowerCase();
-              return sender === sessionEmail;
-            });
-          }
-          // For inbox, show threads where current user is a participant but not the only sender
+          const participantEmails = participants
+            .map((participant) => (participant?.email || '').toLowerCase())
+            .filter(Boolean);
+          const participantIds = participants
+            .map((participant) => normalizeId(participant?.id))
+            .filter(Boolean);
+          const participantRawIds = participants
+            .map((participant) => (participant?.id || '').toLowerCase())
+            .filter(Boolean);
+
+          const { hasSent, matchesInbox } = collectMessageCandidates(thread.raw);
+
+          const contextEmails = Object.values(thread.context || {})
+            .flatMap((value) => {
+              if (typeof value === 'string' && value.includes('@')) return [value.toLowerCase()];
+              return [] as string[];
+            })
+            .filter(Boolean);
+
+          const isParticipantMatch =
+            (!!sessionEmail && participantEmails.includes(sessionEmail)) ||
+            (!!sessionUid &&
+              (participantIds.some((id) => id === sessionUid) ||
+                participantRawIds.some((id) => id.endsWith(`:${sessionUid}`))));
+
+          const isInbox =
+            isParticipantMatch ||
+            (!!sessionEmail && contextEmails.includes(sessionEmail)) ||
+            matchesInbox;
           const isSent = hasSent;
-          const isInbox = participants.some((p) => (p.email || '').toLowerCase() === sessionEmail);
           let counterpart = participants.find(
             (participant) => (participant?.email || '').toLowerCase() !== sessionEmail
           );
@@ -416,6 +499,10 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ userEmail, userName }
     async (contact: ContactSummary) => {
       setSelectedContact(contact);
       if (contact.type === 'thread') {
+        if (!contact.threadId) {
+          setConversationMessages([]);
+          return;
+        }
         try {
           const response = await api.get(`/api/messages/${contact.threadId}`);
           const threadData = response.data && response.data.id ? response.data : contact.thread.raw;
@@ -490,9 +577,15 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ userEmail, userName }
 
         setNewMessage('');
         const nextContacts = await loadThreads({ silent: true });
-        const refreshed = nextContacts.find(
+        let refreshed = nextContacts.find(
           (contact) => contact.threadId === selectedContact.threadId && contact.type === selectedContact.type
         );
+        if (!refreshed && selectedContact.email) {
+          const targetEmail = selectedContact.email.toLowerCase();
+          refreshed = nextContacts.find(
+            (contact) => contact.email && contact.email.toLowerCase() === targetEmail
+          );
+        }
         if (refreshed) {
           await selectContact(refreshed);
         }
@@ -699,6 +792,7 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ userEmail, userName }
               ) : (
                 <div className='text-center text-muted py-4'>No messages yet</div>
               )}
+              <div ref={messagesEndRef} />
             </div>
             {/* Message composer */}
             <form className='chat-message-box mt-3' onSubmit={handleSendMessage}>
