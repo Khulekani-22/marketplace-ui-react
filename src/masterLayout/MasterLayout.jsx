@@ -84,7 +84,7 @@ function MasterLayoutInner({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { role, tenantId: contextTenantId, isAdmin, syncNow } = useAppSync();
+  const { role, tenantId: contextTenantId, isAdmin, syncNow, featurePrivileges = {} } = useAppSync();
   const [sidebarActive, setSidebarActive] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [tenants, setTenants] = useState([]);
@@ -92,7 +92,6 @@ function MasterLayoutInner({ children }) {
   const normalizeTenant = (id) => {
     if (!id) return "vendor";
     return id === "public" ? "vendor" : id;
-    const { featurePrivileges = {} } = useAppSync();
   };
 
   const readStoredTenant = () => {
