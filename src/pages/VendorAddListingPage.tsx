@@ -552,15 +552,16 @@ export default function VendorAddListingPage() {
                   />
                 </div>
                 <div className="col-md-4">
-                  <label className="form-label">Listing type</label>
+                  <label className="form-label">Listing category/type</label>
                   <select
                     className="form-select"
                     value={form.listingType}
                     onChange={(e) => setField("listingType", e.target.value)}
                     disabled={blocked}
                   >
-                    <option value="service">Service</option>
-                    <option value="saas">SaaS</option>
+                    <option value="mentorship">Mentorship</option>
+                    <option value="booking">Booking</option>
+                    <option value="subscription">Subscription</option>
                   </select>
                 </div>
               </div>

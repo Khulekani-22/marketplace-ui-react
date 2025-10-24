@@ -368,6 +368,12 @@ function MasterLayoutInner({ children }) {
                     <span>Manage Wallet Credits</span>
                   </NavLink>
                 </li>
+                  <li>
+                    <NavLink to="/admin/rto-rpo" className={navClass}>
+                      <Icon icon="mdi:backup-restore" className="menu-icon" />
+                      <span>RTO & RPO Management</span>
+                    </NavLink>
+                  </li>
               </>
             )}
 

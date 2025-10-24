@@ -3,12 +3,14 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+
 import App from "./App.jsx";
 import { VendorProvider } from "./context/VendorContext";
 import { MessagesProvider } from "./context/MessagesContext.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
+import { QueryClient, QueryClientProvider } from "react-query";
 
-console.log('🚀 Main.jsx is loading...');
+console.log('Main.jsx is loading...');
 
 // --- Styles (order matters: base CSS before component CSS) ---
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -38,25 +40,29 @@ try {
   // silently ignore if theme utils are unavailable
 }
 
+
 const rootEl = document.getElementById("root");
 if (!rootEl) {
   throw new Error("Missing #root element in index.html");
 }
 
-console.log('🔥 About to render React app...');
+console.log('About to render React app...');
+
+const queryClient = new QueryClient();
 
 createRoot(rootEl).render(
-  // <React.StrictMode> can be re-enabled if desired
-  <BrowserRouter>
-    <ToastContainer position="top-right" autoClose={4000} newestOnTop closeOnClick pauseOnFocusLoss={false} />
-    <AuthProvider>
-      <VendorProvider>
-        <MessagesProvider>
-          <App />
-        </MessagesProvider>
-      </VendorProvider>
-    </AuthProvider>
-  </BrowserRouter>
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <ToastContainer position="top-right" autoClose={4000} newestOnTop closeOnClick pauseOnFocusLoss={false} />
+      <AuthProvider>
+        <VendorProvider>
+          <MessagesProvider>
+            <App />
+          </MessagesProvider>
+        </VendorProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </QueryClientProvider>
 );
 
-console.log('✅ React app rendered');
+console.log('React app rendered');

@@ -18,6 +18,7 @@ interface Service {
   category?: string;
   vendor?: string;
   imageUrl?: string;
+  listingType?: string;
 }
 
 interface Booking {
@@ -66,7 +67,8 @@ function renderStars(n: number) {
 export default function MySubscriptionsPage() {
   const [detailsModal, setDetailsModal] = useState<{ open: boolean, service: Service | null }>({ open: false, service: null });
   const [reviewModal, setReviewModal] = useState<{ open: boolean, service: Service | null, rating: number, comment: string, busy: boolean, error: string }>({ open: false, service: null, rating: 0, comment: '', busy: false, error: '' });
-  const [activeTab, setActiveTab] = useState<"subscriptions" | "bookings">("subscriptions");
+  const [activeTab, setActiveTab] = useState<"subscriptions" | "bookings" | "mentorship">("subscriptions");
+  const [activeType, setActiveType] = useState<string>("all");
   const [err, setErr] = useState("");
   const [busyMap, setBusyMap] = useState<BusyMap>({});
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
@@ -293,25 +295,41 @@ export default function MySubscriptionsPage() {
                 <i className="ri-calendar-check-line me-1"></i>
                 Bookings ({bookings.length})
               </button>
+              <button
+                type="button"
+                className={`btn btn-sm ${activeTab === 'mentorship' ? 'btn-primary-600' : 'btn-outline-primary'}`}
+                onClick={() => setActiveTab('mentorship')}
+              >
+                <i className="ri-user-star-line me-1"></i>
+                Mentorship
+              </button>
             </div>
-            <button
-              type="button"
-              className="btn btn-outline-secondary btn-sm"
-              onClick={loadSubscriptions}
-              disabled={loading || refreshing}
-            >
-              {refreshing ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                  Refreshing…
-                </>
-              ) : (
-                <>
-                  <i className="ri-refresh-line me-1"></i>
-                  Refresh
-                </>
-              )}
-            </button>
+            <div className="d-flex gap-2">
+              <select className="form-select form-select-sm" value={activeType} onChange={e => setActiveType(e.target.value)} style={{ minWidth: 140 }}>
+                <option value="all">All Types</option>
+                <option value="mentorship">Mentorship</option>
+                <option value="booking">Booking</option>
+                <option value="subscription">Subscription</option>
+              </select>
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm"
+                onClick={loadSubscriptions}
+                disabled={loading || refreshing}
+              >
+                {refreshing ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Refreshing…
+                  </>
+                ) : (
+                  <>
+                    <i className="ri-refresh-line me-1"></i>
+                    Refresh
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -334,7 +352,7 @@ export default function MySubscriptionsPage() {
               {/* Subscriptions Tab */}
               {activeTab === 'subscriptions' && (
                 <div className="row g-3">
-                  {items.length === 0 && (
+                  {items.filter((s) => activeType === 'all' || (s.listingType ?? 'subscription') === activeType).length === 0 && (
                     <div className="col-12 text-center py-5">
                       <i className="ri-shopping-cart-line display-4 text-secondary mb-3"></i>
                       <h5 className="text-secondary">No active subscriptions</h5>
@@ -345,10 +363,9 @@ export default function MySubscriptionsPage() {
                       </a>
                     </div>
                   )}
-                  {items.map((s) => {
+                  {items.filter((s) => activeType === 'all' || (s.listingType ?? 'subscription') === activeType).map((s) => {
                     const sub = subscriptions.find((sub) => String(sub.serviceId) === String(s.id));
                     const hasSchedule = sub?.scheduledDate && sub?.scheduledSlot;
-                    
                     return (
                       <div className="col-12 col-md-6 col-lg-4" key={String(s.id)}>
                         <div className="card h-100 shadow-sm hover-shadow">
@@ -369,6 +386,10 @@ export default function MySubscriptionsPage() {
                             <div className="text-muted small mb-2">
                               <i className="ri-price-tag-3-line me-1"></i>
                               {s.category || 'General'}
+                            </div>
+                            <div className="text-muted small mb-2">
+                              <i className="ri-list-check-2 me-1"></i>
+                              {(s.listingType ?? 'Subscription').charAt(0).toUpperCase() + (s.listingType ?? 'Subscription').slice(1)}
                             </div>
                             {s.description && (
                               <p className="flex-grow-1 text-secondary small mb-3">

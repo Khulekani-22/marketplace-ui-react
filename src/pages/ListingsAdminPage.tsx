@@ -1246,8 +1246,9 @@ function ServicesEditor(props) {
                         updateService({ listingType: e.target.value })
                       }
                     >
-                      <option value="service">Service</option>
-                      <option value="saas">SaaS</option>
+                      <option value="mentorship">Mentorship</option>
+                      <option value="booking">Booking</option>
+                      <option value="subscription">Subscription</option>
                     </select>
                   </div>
                   <div className="col-md-4">
@@ -1277,7 +1278,7 @@ function ServicesEditor(props) {
                       onChange={(e) => handleBindVendorById(e.target.value)}
                     >
                       <option value="">—</option>
-                      {vendorOptions.map((v) => (
+                      {vendorOptions.map((v: any) => (
                         <option key={v.id} value={v.id}>
                           {v.label}
                         </option>
@@ -1498,7 +1499,7 @@ function ServicesEditor(props) {
 }
 
 
-function VersionHistory({ items, onRestore }) {
+function VersionHistory({ items, onRestore }: { items: any[]; onRestore: (item: any) => void }) {
   return (
     <div className="card">
       <div className="card-header fw-semibold d-flex justify-content-between">
@@ -1514,7 +1515,7 @@ function VersionHistory({ items, onRestore }) {
             </div>
           </div>
         )}
-        {items?.map((ck) => (
+  {items?.map((ck: any) => (
           <div key={ck.id} className="list-group-item">
             <div className="d-flex justify-content-between">
               <div>
