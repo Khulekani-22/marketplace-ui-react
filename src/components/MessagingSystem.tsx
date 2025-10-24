@@ -467,17 +467,19 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ userEmail, userName }
       const content = newMessage.trim();
       setSending(true);
       try {
-        if (selectedContact.type === 'thread') {
+        // If threadId exists, reply to thread; otherwise, create a new direct message
+        if (selectedContact.type === 'thread' && selectedContact.threadId) {
           await api.post('/api/messages/reply', {
             threadId: selectedContact.threadId,
             content,
           });
         } else {
+          // Direct message fallback: create a new message if no threadId
           const recipient = selectedContact.email || selectedContact.thread.legacy?.user2;
           if (!recipient) {
             throw new Error('Missing recipient email');
           }
-          const subject = selectedContact.thread.subject || `Message to ${selectedContact.name}`;
+          const subject = selectedContact.thread?.subject || `Message to ${selectedContact.name}`;
           await api.post('/api/messages', {
             to: recipient,
             subject,
@@ -671,15 +673,49 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ userEmail, userName }
       <div className='chat-main card'>
         {selectedContact ? (
           <>
-            {/* ...existing code for selected contact and messages... */}
-            <div className='chat-sidebar-single active'>
-              {/* ...existing code... */}
+            {/* Selected contact header */}
+            <div className='chat-sidebar-single active mb-2'>
+              <div className='img'>
+                <img src={selectedContact.avatar} alt={selectedContact.name} />
+              </div>
+              <div className='info'>
+                <h6 className='text-md mb-0'>{selectedContact.name}</h6>
+                <p className='mb-0 text-xs'>{selectedContact.email}</p>
+              </div>
             </div>
+            {/* Conversation message list */}
             <div className='chat-message-list' style={{ maxHeight: '400px', overflowY: 'auto' }}>
-              {/* ...existing code... */}
+              {conversationMessages.length > 0 ? (
+                conversationMessages.map((msg, idx) => (
+                  <div key={msg.id || idx} className={`chat-message-single ${isFromCurrentUser(msg) ? 'from-current-user' : ''}`} style={{ marginBottom: 12 }}>
+                    <div className='d-flex align-items-center mb-1'>
+                      <img src={isFromCurrentUser(msg) ? currentUserAvatar : selectedContact.avatar} alt='avatar' style={{ width: 32, height: 32, borderRadius: '50%', marginRight: 8 }} />
+                      <span className='fw-bold'>{isFromCurrentUser(msg) ? currentUserName : selectedContact.name}</span>
+                      <span className='ms-2 text-muted' style={{ fontSize: '0.85em' }}>{formatTime(msg.timestamp)}</span>
+                    </div>
+                    <div className='chat-message-content card p-2'>{msg.content}</div>
+                  </div>
+                ))
+              ) : (
+                <div className='text-center text-muted py-4'>No messages yet</div>
+              )}
             </div>
-            <form className='chat-message-box' onSubmit={handleSendMessage}>
-              {/* ...existing code... */}
+            {/* Message composer */}
+            <form className='chat-message-box mt-3' onSubmit={handleSendMessage}>
+              <div className='input-group'>
+                <input
+                  type='text'
+                  className='form-control'
+                  placeholder='Type your message...'
+                  value={newMessage}
+                  onChange={e => setNewMessage(e.target.value)}
+                  disabled={sending}
+                  required
+                />
+                <button type='submit' className='btn btn-primary' disabled={sending || !newMessage.trim()}>
+                  {sending ? 'Sending...' : <Icon icon='mdi:send' />}
+                </button>
+              </div>
             </form>
           </>
         ) : (
