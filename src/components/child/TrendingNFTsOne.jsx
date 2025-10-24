@@ -179,9 +179,13 @@ const TrendingNFTsOne = ({
               return id;
             })
         );
+        console.log('[TrendingNFTsOne] Subscriptions fetched:', items);
+        console.log('[TrendingNFTsOne] Subscription IDs (as strings):', Array.from(set));
         setSubs(set);
         setBookings(bookingMap);
-      } catch {}
+      } catch (e) {
+        console.error('[TrendingNFTsOne] Error fetching subscriptions:', e);
+      }
     })();
     return () => { cancelled = true; };
   }, []);
@@ -666,6 +670,9 @@ const TrendingNFTsOne = ({
                 const reviewsCount = Number(service.reviewCount || (Array.isArray(service.reviews) ? service.reviews.length : 0) || 0);
                 const id = String(service.id);
                 const isSub = subs.has(id);
+                if (subs.size > 0) {
+                  console.log('[TrendingNFTsOne] Checking service', service.id, 'as string:', id, 'isSub:', isSub);
+                }
                 const bookable = isServiceListing(service);
                 const bookingInfo = bookings[id];
                 const price = Math.max(0, Number(service.price || 0) || 0);

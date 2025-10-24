@@ -18,6 +18,84 @@ function mapTenant(id) {
   return id === "vendor" ? "public" : id || "public";
 }
 
+const FEATURE_KEYS = [
+  "dashboard",
+  "market1",
+  "access-capital",
+  "listings-vendors",
+  "listings-vendors-mine",
+  "profile-vendor",
+  "vendor-home",
+  "profile-startup",
+  "profile-vendor-admin",
+  "audit-logs",
+  "listings-admin",
+  "admin-users",
+  "sloane-academy-admin",
+  "admin-dashboard",
+  "admin-wallet-credits",
+  "email",
+  "wallet",
+  "subscriptions",
+  "sloane-academy",
+  "support",
+];
+
+const ROLE_DEFAULTS = {
+  admin: new Set(FEATURE_KEYS),
+  vendor: new Set([
+    "dashboard",
+    "market1",
+    "listings-vendors",
+    "listings-vendors-mine",
+    "profile-vendor",
+    "vendor-home",
+    "wallet",
+    "subscriptions",
+    "email",
+    "support",
+  ]),
+  startup: new Set([
+    "dashboard",
+    "market1",
+    "profile-startup",
+    "wallet",
+    "subscriptions",
+    "email",
+    "support",
+  ]),
+};
+
+function normalizeRoleValue(role) {
+  const value = typeof role === "string" ? role.trim().toLowerCase() : "";
+  if (value === "partner") return "vendor";
+  if (value === "admin" || value === "vendor" || value === "startup") return value;
+  return value || "member";
+}
+
+function buildDefaultPrivileges(role) {
+  const normalized = normalizeRoleValue(role);
+  const defaults = {};
+  const enabled = ROLE_DEFAULTS[normalized] || new Set();
+  for (const key of FEATURE_KEYS) {
+    defaults[key] = enabled.has(key);
+  }
+  return defaults;
+}
+
+function mergePrivileges(role, ...sources) {
+  const base = buildDefaultPrivileges(role);
+  for (const src of sources) {
+    if (!src || typeof src !== "object") continue;
+    for (const key of FEATURE_KEYS) {
+      if (Object.prototype.hasOwnProperty.call(src, key)) {
+        base[key] = !!src[key];
+      }
+    }
+  }
+  return base;
+}
+
 // Conservative admin check that doesn’t depend on middleware call signature
 function isAdminRequest(req) {
   const u = req.user || {};
@@ -63,7 +141,7 @@ function sanitizeUsersPayload(list = []) {
     if (!entry || typeof entry !== "object") continue;
     const email = normalizeEmail(entry.email);
     if (!email) continue;
-    const role = entry.role === "admin" ? "admin" : "member";
+    const role = normalizeRoleValue(entry.role);
     const rawTenant = typeof entry.tenantId === "string" ? entry.tenantId.trim() : "";
     const tenantId = mapTenant(rawTenant);
     const uid = typeof entry.uid === "string" && entry.uid.trim() ? entry.uid.trim() : undefined;
@@ -94,7 +172,9 @@ router.post("/batch-privileges", firebaseAuthRequired, async (req, res) => {
     const users = Array.isArray(data.users) ? data.users : [];
     for (const email of normEmails) {
       const user = users.find((u) => normalizeEmail(u.email) === email);
-      out[email] = user?.featurePrivileges || {};
+      const role = normalizeRoleValue(user?.role);
+      const stored = user && typeof user.featurePrivileges === "object" ? user.featurePrivileges : {};
+      out[email] = mergePrivileges(role, stored);
     }
     res.json({ privileges: out });
   } catch (e) {
@@ -165,6 +245,31 @@ router.get("/me", async (req, res) => {
   res.json(found || { email, tenantId: "public", role: "member" });
 });
 
+router.get("/:email/privileges", firebaseAuthRequired, async (req, res) => {
+  try {
+    if (!isAdminRequest(req)) {
+      return res.status(403).json({ status: "error", message: "Forbidden" });
+    }
+    const email = normalizeEmail(decodeURIComponent(req.params.email || ""));
+    if (!email) {
+      return res.status(400).json({ status: "error", message: "Missing email" });
+    }
+
+    const data = await getData();
+    const users = Array.isArray(data.users) ? data.users : [];
+    const user = users.find((u) => normalizeEmail(u.email) === email);
+    const role = normalizeRoleValue(user?.role);
+    const stored = user && typeof user.featurePrivileges === "object" ? user.featurePrivileges : {};
+    const featurePrivileges = mergePrivileges(role, stored);
+
+    return res.json({ email, featurePrivileges });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ status: "error", message: e?.message || "Failed to fetch privileges" });
+  }
+});
+
 // Upsert a user's role/tenant
 router.post("/", firebaseAuthRequired, isAdminForTenant, async (req, res) => {
   const { email, tenantId = "public", role = "member", uid = "" } = req.body || {};
@@ -193,6 +298,57 @@ router.post("/", firebaseAuthRequired, isAdminForTenant, async (req, res) => {
   }
   await saveData(data);
   res.json({ ok: true, users: data.users });
+});
+
+router.patch("/:email/privileges", firebaseAuthRequired, async (req, res) => {
+  try {
+    if (!isAdminRequest(req)) {
+      return res.status(403).json({ status: "error", message: "Forbidden" });
+    }
+    const email = normalizeEmail(decodeURIComponent(req.params.email || ""));
+    if (!email) {
+      return res.status(400).json({ status: "error", message: "Missing email" });
+    }
+
+    const data = await getData();
+    const list = Array.isArray(data.users) ? data.users : [];
+    let idx = list.findIndex((u) => normalizeEmail(u.email) === email);
+    const existing = idx >= 0 ? list[idx] : null;
+
+    const role = normalizeRoleValue(req.body?.role || existing?.role);
+    const tenantId = existing?.tenantId || mapTenant(req.body?.tenantId);
+
+    const incoming = req.body?.featurePrivileges && typeof req.body.featurePrivileges === "object"
+      ? req.body.featurePrivileges
+      : {};
+
+    const stored = existing && typeof existing.featurePrivileges === "object" ? existing.featurePrivileges : {};
+    const featurePrivileges = mergePrivileges(role, stored, incoming);
+
+    const nextUser = {
+      ...(existing || {}),
+      email,
+      tenantId: tenantId || "public",
+      role,
+      featurePrivileges,
+    };
+
+    if (idx >= 0) {
+      list[idx] = { ...existing, ...nextUser };
+    } else {
+      list.push(nextUser);
+      idx = list.length - 1;
+    }
+
+    data.users = list;
+    await saveData(data);
+
+    return res.json({ email, featurePrivileges });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ status: "error", message: e?.message || "Failed to update privileges" });
+  }
 });
 
 // Upgrade a public user to a private tenant and grant admin role
