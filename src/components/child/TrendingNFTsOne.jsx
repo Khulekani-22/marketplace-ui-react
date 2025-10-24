@@ -1,5 +1,5 @@
 // src/components/TrendingNFTsOne.jsx
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../../firebase.js";
 import { api } from "../../lib/api";
@@ -9,16 +9,49 @@ import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from
 import PaymentModal from "../PaymentModal";
 
 // Normalize any legacy keys so the card always has the fields your UI expects
-const normalize = (s) => ({
-  ...s,
-  vendor: s.vendor ?? s.vendorName ?? "",
-  imageUrl: s.imageUrl ?? s.thumbnail ?? "",
-  category: s.category ?? s.categoryId ?? "",
-  rating: typeof s.rating === "number" ? s.rating : Number(s.rating || 0),
-  reviews: Array.isArray(s.reviews) ? s.reviews : [],
-  // default to "approved" for older data that doesn't have status
-  status: (s.status ?? "approved").toString().toLowerCase(),
-});
+const MENTORSHIP_KEYWORDS = [
+  "mentor",
+  "mentorship",
+  "coaching",
+  "advisory",
+  "office hours",
+  "clinic",
+];
+
+const containsKeyword = (value) => {
+  if (!value) return false;
+  const lower = value.toString().toLowerCase();
+  return MENTORSHIP_KEYWORDS.some((kw) => lower.includes(kw));
+};
+
+const resolveListingType = (service = {}) => {
+  const raw = (service.listingType || service.type || "").toString().trim().toLowerCase();
+  if (raw) return raw;
+  if (containsKeyword(service.category)) return "mentorship";
+  if (containsKeyword(service.title)) return "mentorship";
+  if (containsKeyword(service.description)) return "mentorship";
+  if (Array.isArray(service.tags) && service.tags.some((tag) => containsKeyword(tag))) {
+    return "mentorship";
+  }
+  return "service";
+};
+
+const normalize = (service = {}) => {
+  const listingType = resolveListingType(service);
+  const status = (service.status ?? "approved").toString().toLowerCase();
+  return {
+    ...service,
+    vendor: service.vendor ?? service.vendorName ?? "",
+    imageUrl: service.imageUrl ?? service.thumbnail ?? "",
+    category: service.category ?? service.categoryId ?? (listingType === "mentorship" ? "Mentorship" : ""),
+    rating: typeof service.rating === "number" ? service.rating : Number(service.rating || 0),
+    reviews: Array.isArray(service.reviews) ? service.reviews : [],
+    status,
+    listingType,
+  };
+};
+
+const safeArray = (value) => (Array.isArray(value) ? value : []);
 
 // Only show approved items to end users
 const isApproved = (s) => s.status === "approved";
@@ -43,8 +76,8 @@ function createHourlySlots(start = SERVICE_DAY_START, end = SERVICE_DAY_END) {
 }
 
 function isServiceListing(service = {}) {
-  const type = (service.listingType || service.type || "").toString().toLowerCase();
-  return type === "service" || type === "services";
+  const type = resolveListingType(service);
+  return type === "service" || type === "mentorship";
 }
 
 function formatBookingDate(dateString) {
@@ -64,6 +97,44 @@ function formatCredits(amount) {
   return creditsFormatter.format(Math.round(value));
 }
 
+const pickFresher = (a = {}, b = {}) => {
+  const ca = Number(a.reviewCount || (Array.isArray(a.reviews) ? a.reviews.length : 0) || 0);
+  const cb = Number(b.reviewCount || (Array.isArray(b.reviews) ? b.reviews.length : 0) || 0);
+  const ta = Date.parse(a.lastReviewedAt || "") || 0;
+  const tb = Date.parse(b.lastReviewedAt || "") || 0;
+  if (cb > ca) return b;
+  if (cb < ca) return a;
+  if (tb > ta) return b;
+  return a;
+};
+
+const mergeLists = (currentList = [], baseList = [], liveList = []) => {
+  const map = new Map();
+  baseList.forEach((s) => map.set(String(s.id), s));
+  liveList.forEach((s) => map.set(String(s.id), s));
+  currentList.forEach((c) => {
+    const id = String(c.id);
+    const existing = map.get(id) || {};
+    const chosen = pickFresher(existing, c);
+    map.set(id, {
+      ...existing,
+      reviews: Array.isArray(chosen.reviews) ? chosen.reviews : existing.reviews,
+      reviewCount:
+        Number(
+          chosen.reviewCount ||
+            (Array.isArray(chosen.reviews) ? chosen.reviews.length : existing.reviewCount || 0) ||
+            0
+        ) || 0,
+      rating:
+        typeof chosen.rating === 'number'
+          ? chosen.rating
+          : Number(chosen.rating || existing.rating || 0),
+      lastReviewedAt: chosen.lastReviewedAt || existing.lastReviewedAt,
+    });
+  });
+  return Array.from(map.values());
+};
+
 const TrendingNFTsOne = ({
   query: controlledQuery,
   onQueryChange,
@@ -71,15 +142,10 @@ const TrendingNFTsOne = ({
   onCategoryChange,
   onCategoriesChange,
 }) => {
-  const tenantId = useMemo(
-    () => sessionStorage.getItem("tenantId") || "vendor",
-    []
-  );
+  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
 
-  // Start with empty array, will load from API
-  const baseApproved = useMemo(() => [], []);
-  const [services, setServices] = useState(baseApproved);
-  const servicesRef = useRef(baseApproved);
+  const [services, setServices] = useState([]);
+  const servicesRef = useRef([]);
   const versionRef = useRef(0); // guards against stale fetch overwriting fresher state
   const [loading, setLoading] = useState(true);
   // Category filter (controlled or internal)
@@ -112,52 +178,59 @@ const TrendingNFTsOne = ({
     return map;
   }, [bookingSlots]);
 
-  function pickFresher(a = {}, b = {}) {
-    const ca = Number(a.reviewCount || (Array.isArray(a.reviews) ? a.reviews.length : 0) || 0);
-    const cb = Number(b.reviewCount || (Array.isArray(b.reviews) ? b.reviews.length : 0) || 0);
-    const ta = Date.parse(a.lastReviewedAt || "") || 0;
-    const tb = Date.parse(b.lastReviewedAt || "") || 0;
-    if (cb > ca) return b;
-    if (cb < ca) return a;
-    if (tb > ta) return b;
-    return a;
-  }
+  const loadServices = useCallback(
+    async ({ background = false, forceRefresh = false } = {}) => {
+      const version = versionRef.current + 1;
+      versionRef.current = version;
+      if (!background) setLoading(true);
 
-  function mergeLists(currentList, baseList, liveList) {
-    const map = new Map();
-    baseList.forEach((s) => map.set(String(s.id), s));
-    liveList.forEach((s) => map.set(String(s.id), s)); // live over base
-    // preserve fresher review info already shown in UI
-    currentList.forEach((c) => {
-      const id = String(c.id);
-      const existing = map.get(id) || {};
-      const chosen = pickFresher(existing, c);
-      // keep non-review fields from existing (live/base) but replace review fields with the fresher one
-      map.set(id, {
-        ...existing,
-        reviews: Array.isArray(chosen.reviews) ? chosen.reviews : existing.reviews,
-        reviewCount: Number(chosen.reviewCount || (Array.isArray(chosen.reviews) ? chosen.reviews.length : existing.reviewCount || 0) || 0),
-        rating: typeof chosen.rating === 'number' ? chosen.rating : Number(chosen.rating || existing.rating || 0),
-        lastReviewedAt: chosen.lastReviewedAt || existing.lastReviewedAt,
-      });
-    });
-    return Array.from(map.values());
-  }
+      const fallbackApproved = safeArray(appData?.services).map(normalize).filter(isApproved);
+
+      const applyResult = (remoteApproved, fallbackFlag = false) => {
+        const merged = mergeLists(
+          servicesRef.current ?? [],
+          fallbackApproved,
+          remoteApproved
+        );
+        if (versionRef.current === version) {
+          servicesRef.current = merged;
+          setServices(merged);
+          if (!background) setLoading(false);
+          if (fallbackFlag) {
+            console.warn('[TrendingNFTsOne] Using fallback service data');
+          }
+        }
+      };
+
+      try {
+        const params = {
+          page: 1,
+          pageSize: 400,
+        };
+        if (forceRefresh) params.refresh = 'true';
+        if (tenantId) params.tenantId = tenantId;
+        const { data } = await api.get('/api/data/services', {
+          params,
+          suppressToast: true,
+          suppressErrorLog: true,
+        });
+        const remoteApproved = safeArray(data?.items).map(normalize).filter(isApproved);
+        applyResult(remoteApproved);
+      } catch (error) {
+        console.warn('[TrendingNFTsOne] Live services fetch failed', error?.message || error);
+        applyResult([], true);
+      }
+    },
+    [appData, tenantId]
+  );
 
   async function refreshFromLive() {
-    const liveApproved = (appData?.services || []).map(normalize).filter(isApproved);
-    const merged = mergeLists(servicesRef.current ?? services, baseApproved, liveApproved);
-    setServices(merged);
+    await loadServices({ forceRefresh: true });
   }
 
-  // Load live data from backend; fall back silently on any error
   useEffect(() => {
-    const liveApproved = (appData?.services || []).map(normalize).filter(isApproved);
-    const merged = mergeLists(servicesRef.current ?? services, baseApproved, liveApproved);
-    setServices(merged);
-    setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId, appData]);
+    loadServices();
+  }, [tenantId, appData, loadServices]);
 
   // Load my subscriptions (if authed)
   useEffect(() => {
@@ -170,7 +243,7 @@ const TrendingNFTsOne = ({
         const bookingMap = {};
         const set = new Set(
           items
-            .filter((x) => (x.type || 'service') === 'service')
+            .filter((x) => !x.canceledAt)
             .map((x) => {
               const id = String(x.serviceId);
               if (x.scheduledDate || x.scheduledSlot) {
@@ -291,14 +364,15 @@ const TrendingNFTsOne = ({
 
   // Categories reflect whatever data we ended up with (approved only)
   const categories = useMemo(() => {
-    const uniq = Array.from(
-      new Set(
-        services
-          .map((s) => (s.category || "").trim())
-          .filter(Boolean)
-      )
-    );
-    return ["All", ...uniq];
+    const uniq = new Set(["All"]);
+    services.forEach((service) => {
+      const category = (service.category || "").trim();
+      if (category) uniq.add(category);
+      if (resolveListingType(service) === "mentorship") {
+        uniq.add("Mentorship");
+      }
+    });
+    return Array.from(uniq);
   }, [services]);
 
   // Bubble up categories to parent when available
@@ -311,9 +385,14 @@ const TrendingNFTsOne = ({
   const filteredServices = useMemo(() => {
     const tab = activeTab.toLowerCase();
     const q = (query || "").trim().toLowerCase();
-    let base = activeTab === "All"
-      ? services
-      : services.filter((s) => (s.category || "").trim().toLowerCase() === tab);
+    let base;
+    if (activeTab === "All") {
+      base = services;
+    } else if (activeTab === "Mentorship") {
+      base = services.filter((s) => resolveListingType(s) === "mentorship" || (s.category || "").trim().toLowerCase() === "mentorship");
+    } else {
+      base = services.filter((s) => (s.category || "").trim().toLowerCase() === tab);
+    }
     if (!q) return base;
     return base.filter((s) => {
       const hay = [
