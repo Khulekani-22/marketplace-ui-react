@@ -92,6 +92,7 @@ function MasterLayoutInner({ children }) {
   const normalizeTenant = (id) => {
     if (!id) return "vendor";
     return id === "public" ? "vendor" : id;
+    const { featurePrivileges = {} } = useAppSync();
   };
 
   const readStoredTenant = () => {
@@ -139,6 +140,14 @@ function MasterLayoutInner({ children }) {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
+                  {featurePrivileges["audit-logs"] && (
+                    <li>
+                      <NavLink to="/audit-logs" className={navClass}>
+                        <Icon icon="mdi:clipboard-text-clock-outline" className="menu-icon" />
+                        <span>Audit Logs</span>
+                      </NavLink>
+                    </li>
+                  )}
   // Load tenants list for switcher (best-effort)
   useEffect(() => {
     (async () => {

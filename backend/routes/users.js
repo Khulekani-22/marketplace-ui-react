@@ -242,7 +242,14 @@ router.get("/me", async (req, res) => {
   const email = normalizeEmail(req.user?.email || req.query.email);
   if (!email) return res.status(400).json({ error: "Missing email" });
   const found = users.find((u) => normalizeEmail(u.email) === email);
-  res.json(found || { email, tenantId: "public", role: "member" });
+  if (!found) {
+    return res.json({ email, tenantId: "public", role: "member", featurePrivileges: mergePrivileges("member") });
+  }
+  // Merge privileges for the found user
+  const role = normalizeRoleValue(found.role);
+  const stored = found && typeof found.featurePrivileges === "object" ? found.featurePrivileges : {};
+  const featurePrivileges = mergePrivileges(role, stored);
+  res.json({ ...found, featurePrivileges });
 });
 
 router.get("/:email/privileges", firebaseAuthRequired, async (req, res) => {

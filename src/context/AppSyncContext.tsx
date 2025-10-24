@@ -54,6 +54,12 @@ export function AppSyncProvider({ children }) {
   const [appDataLoading, setAppDataLoading] = useState(() => !initialAppData);
   const [appDataError, setAppDataError] = useState("");
   const [role, setRole] = useState(() => normalizeRole(sessionStorage.getItem("role")));
+  const [featurePrivileges, setFeaturePrivileges] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem("featurePrivileges");
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  });
 
   const normalizeTenant = useCallback((id: string | null | undefined) => {
     if (!id) return "vendor";
@@ -80,9 +86,11 @@ export function AppSyncProvider({ children }) {
       const nextTenant = normalizeTenant(data?.tenantId);
       const email = data?.email || user.email || null;
       const uid = data?.uid || user.uid || null;
+      const nextPrivileges = data?.featurePrivileges || {};
       try {
         sessionStorage.setItem("role", nextRole);
         sessionStorage.setItem("tenantId", nextTenant);
+        sessionStorage.setItem("featurePrivileges", JSON.stringify(nextPrivileges));
         if (email) sessionStorage.setItem("userEmail", email);
         else sessionStorage.removeItem("userEmail");
         if (uid) sessionStorage.setItem("userId", uid);
@@ -92,11 +100,13 @@ export function AppSyncProvider({ children }) {
       }
       setRole(nextRole);
       setTenantId(nextTenant);
+      setFeaturePrivileges(nextPrivileges);
     } catch {
       if (!auth.currentUser) {
         try {
           sessionStorage.removeItem("role");
           sessionStorage.removeItem("tenantId");
+          sessionStorage.removeItem("featurePrivileges");
           sessionStorage.removeItem("userEmail");
           sessionStorage.removeItem("userId");
         } catch {
@@ -104,6 +114,7 @@ export function AppSyncProvider({ children }) {
         }
         setRole("member");
         setTenantId("vendor");
+        setFeaturePrivileges({});
       }
     }
   }, [normalizeTenant]);
@@ -232,8 +243,8 @@ export function AppSyncProvider({ children }) {
   }, [lastSyncAt]);
 
   const value = useMemo(
-    () => ({ appData, appDataLoading, appDataError, role, tenantId, isAdmin, lastSyncAt, syncNow }),
-    [appData, appDataLoading, appDataError, role, tenantId, isAdmin, lastSyncAt, syncNow]
+  () => ({ appData, appDataLoading, appDataError, role, tenantId, featurePrivileges, isAdmin, lastSyncAt, syncNow }),
+  [appData, appDataLoading, appDataError, role, tenantId, featurePrivileges, isAdmin, lastSyncAt, syncNow]
   );
 
   useEffect(() => {
@@ -247,4 +258,11 @@ export function AppSyncProvider({ children }) {
   }, [appDataError]);
 
   return <AppSyncContext.Provider value={value}>{children}</AppSyncContext.Provider>;
+}
+
+import { useContext } from "react";
+import { AppSyncContext } from "./appSyncContext";
+
+export function useAppSync() {
+  return useContext(AppSyncContext);
 }

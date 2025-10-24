@@ -6,6 +6,7 @@ export const AppSyncContext = createContext({
   appDataError: "",
   role: "member",
   tenantId: "vendor",
+  featurePrivileges: {},
   isAdmin: false,
   lastSyncAt: 0,
   syncNow: async (_options?: { force?: boolean; background?: boolean; reason?: string; targetPath?: string }) => {},
