@@ -64,11 +64,38 @@ function renderStars(n: number) {
   );
 }
 
-function resolveListingType(service: Partial<Service> = {}): string {
-  const raw = (service.listingType || (service as any).type || "").toString().toLowerCase();
+const MENTORSHIP_KEYWORDS = [
+  "mentor",
+  "mentorship",
+  "coaching",
+  "advisory",
+  "office hours",
+  "clinic",
+];
+
+function containsKeyword(value?: string | null) {
+  if (!value) return false;
+  const lower = value.toString().toLowerCase();
+  return MENTORSHIP_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
+function isMentorshipCandidate(service: Partial<Service> & Record<string, any> = {}) {
+  if (containsKeyword(service.category)) return true;
+  if (containsKeyword(service.title)) return true;
+  if (containsKeyword(service.description)) return true;
+  if (Array.isArray(service.tags) && service.tags.some((tag) => containsKeyword(tag))) return true;
+  if (service.requiresScheduling || service.bookingRequired || service.bookingConfig) return true;
+  return false;
+}
+
+function resolveListingType(service: Partial<Service> & Record<string, any> = {}): string {
+  const raw = (service.listingType || service.type || "").toString().trim().toLowerCase();
+  if (raw === "mentorship" || raw === "mentor") return "mentorship";
+  if (raw === "booking") {
+    return isMentorshipCandidate(service) ? "mentorship" : "booking";
+  }
   if (raw) return raw;
-  const category = (service.category || "").toString().toLowerCase();
-  if (category.includes("mentorship") || category.includes("mentor")) return "mentorship";
+  if (isMentorshipCandidate(service)) return "mentorship";
   return "service";
 }
 

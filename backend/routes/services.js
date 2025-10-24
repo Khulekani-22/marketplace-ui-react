@@ -224,6 +224,56 @@ router.get("/mine", firebaseAuthRequired, async (req, res) => {
         vendorId,
         emails: [vendorEmail, userEmail].filter(Boolean),
       });
+
+      if ((!Array.isArray(listings) || listings.length === 0) || (!Array.isArray(bookingsForVendor) || bookingsForVendor.length === 0)) {
+        const data = await ensureFallbackData();
+        const services = Array.isArray(data?.services) ? data.services : [];
+        const bookings = Array.isArray(data?.bookings) ? data.bookings : [];
+
+        if (!Array.isArray(listings) || listings.length === 0) {
+          listings = services
+            .filter((s) => {
+              if (!sameTenant(s?.tenantId, tenantId)) return false;
+              const sid = (s?.vendorId || '').toString();
+              const ownerUid = (s?.ownerUid || s?.ownerId || '').toString();
+              const svcEmail = normalizeEmail(s?.contactEmail || s?.email);
+              const svcName = (s?.vendor || '').toString().trim().toLowerCase();
+              return (
+                (!!vendorId && !!sid && sid === vendorId) ||
+                (!!uid && !!ownerUid && ownerUid === uid) ||
+                (!!vendorEmail && !!svcEmail && svcEmail === vendorEmail) ||
+                (!sid && !!vendorNameLc && !!svcName && svcName === vendorNameLc)
+              );
+            })
+            .map((s) => ({ ...s }));
+        }
+
+        if (!Array.isArray(bookingsForVendor) || bookingsForVendor.length === 0) {
+          const listingIds = new Set();
+          listings.forEach((s) => {
+            [s?.id, s?.serviceId, s?.vendorId]
+              .map((v) => (v ?? '').toString())
+              .filter((v) => !!v && v !== 'undefined')
+              .forEach((v) => listingIds.add(v));
+          });
+
+          bookingsForVendor = bookings
+            .filter((b) => {
+              if (!sameTenant(b?.tenantId, tenantId)) return false;
+              const sid = (b?.serviceId || '').toString();
+              const bid = (b?.vendorId || '').toString();
+              const bEmail = normalizeEmail(b?.vendorEmail);
+              const bName = (b?.vendorName || '').toString().trim().toLowerCase();
+              return (
+                (!!sid && listingIds.has(sid)) ||
+                (!!vendorId && !!bid && bid === vendorId) ||
+                (!!vendorEmail && !!bEmail && bEmail === vendorEmail) ||
+                (!!vendorNameLc && !!bName && bName === vendorNameLc)
+              );
+            })
+            .map((b) => ({ ...b }));
+        }
+      }
     } catch (err) {
       console.warn('[services] Optimized vendor listing query failed, using cache fallback', err?.message || err);
       const data = await ensureFallbackData();

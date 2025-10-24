@@ -219,6 +219,7 @@ function normalizeListing({ session, service, mentor }) {
     vendorName,
     imageUrl,
     category: service?.category || "Mentorship",
+    listingType: (service?.listingType || 'mentorship').toString().toLowerCase(),
     expertise,
     tenantId,
     nextSessionDate: nextSessionDate || undefined,
@@ -289,6 +290,8 @@ async function buildMentorshipListings({ tenantId, limit, includePastSessions = 
 
   const pushService = (map, svc) => {
     if (!svc || svc.id == null) return;
+    const status = String(svc.status || 'approved').toLowerCase();
+    if (status !== 'approved') return;
     map.set(String(svc.id), svc);
   };
 

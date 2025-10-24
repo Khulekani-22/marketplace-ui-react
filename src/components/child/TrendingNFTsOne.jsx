@@ -24,15 +24,23 @@ const containsKeyword = (value) => {
   return MENTORSHIP_KEYWORDS.some((kw) => lower.includes(kw));
 };
 
+const isMentorshipCandidate = (service = {}) => {
+  if (containsKeyword(service.category)) return true;
+  if (containsKeyword(service.title)) return true;
+  if (containsKeyword(service.description)) return true;
+  if (Array.isArray(service.tags) && service.tags.some((tag) => containsKeyword(tag))) return true;
+  if (service.requiresScheduling || service.bookingRequired || service.bookingConfig) return true;
+  return false;
+};
+
 const resolveListingType = (service = {}) => {
   const raw = (service.listingType || service.type || "").toString().trim().toLowerCase();
-  if (raw) return raw;
-  if (containsKeyword(service.category)) return "mentorship";
-  if (containsKeyword(service.title)) return "mentorship";
-  if (containsKeyword(service.description)) return "mentorship";
-  if (Array.isArray(service.tags) && service.tags.some((tag) => containsKeyword(tag))) {
-    return "mentorship";
+  if (raw === "mentorship" || raw === "mentor") return "mentorship";
+  if (raw === "booking") {
+    return isMentorshipCandidate(service) ? "mentorship" : "booking";
   }
+  if (raw) return raw;
+  if (isMentorshipCandidate(service)) return "mentorship";
   return "service";
 };
 
@@ -187,11 +195,10 @@ const TrendingNFTsOne = ({
       const fallbackApproved = safeArray(appData?.services).map(normalize).filter(isApproved);
 
       const applyResult = (remoteApproved, fallbackFlag = false) => {
-        const merged = mergeLists(
-          servicesRef.current ?? [],
-          fallbackApproved,
-          remoteApproved
-        );
+        const currentList = servicesRef.current ?? [];
+        const baseList = fallbackApproved.length ? fallbackApproved : currentList;
+        const liveList = remoteApproved.length ? remoteApproved : currentList;
+        const merged = mergeLists(currentList, baseList, liveList);
         if (versionRef.current === version) {
           servicesRef.current = merged;
           setServices(merged);
