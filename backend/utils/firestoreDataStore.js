@@ -762,29 +762,31 @@ class FirestoreDataStore {
    * Save data
    */
   async saveData(data) {
-    try {
-      // Validate data parameter
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid data parameter: must be an object');
-      }
+      try {
+        // Debug log for incoming data
+        console.log('saveData received:', data);
+        // Accept arrays and objects, but not null/undefined/primitives
+        const isValid = (typeof data === 'object' && data !== null);
+        if (!isValid) {
+          throw new Error('Invalid data parameter: must be a non-null object or array');
+        }
 
-      if (this.initialized) {
-        // Save to Firestore
-        console.log('💾 Saving data to Firestore...');
-        await this.saveToFirestore(data);
-      }
+        if (this.initialized) {
+          // Save to Firestore
+          console.log('💾 Saving data to Firestore...');
+          await this.saveToFirestore(data);
+        }
 
-
-      // Update cache
-      this.cache = data;
-      this.lastLoaded = Date.now();
+        // Update cache
+        this.cache = data;
+        this.lastLoaded = Date.now();
       
-      console.log('✅ Data saved successfully');
+        console.log('✅ Data saved successfully');
 
-    } catch (error) {
-      console.error('❌ saveData failed:', error);
-      throw error;
-    }
+      } catch (error) {
+        console.error('❌ saveData failed:', error);
+        throw error;
+      }
   }
 }
 
