@@ -7,6 +7,32 @@ function safeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+const MENTORSHIP_KEYWORDS = [
+  'mentor',
+  'mentorship',
+  'coaching',
+  'advisory',
+  'office hours',
+  'clinic',
+];
+
+function containsMentorKeyword(value) {
+  if (!value) return false;
+  const lower = String(value).toLowerCase();
+  return MENTORSHIP_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
+function looksLikeMentorshipService(service = {}) {
+  if (!service || typeof service !== 'object') return false;
+  if (containsMentorKeyword(service.title)) return true;
+  if (containsMentorKeyword(service.category)) return true;
+  if (containsMentorKeyword(service.description)) return true;
+  if (Array.isArray(service.tags) && service.tags.some((tag) => containsMentorKeyword(tag))) return true;
+  const listingType = String(service.listingType || service.type || '').toLowerCase();
+  if (listingType === 'mentorship' || listingType === 'mentor') return true;
+  return false;
+}
+
 function uniqueStrings(list) {
   return Array.from(
     new Set(
@@ -247,7 +273,6 @@ function filterMentorListings(listings, { search = "", expertise = "", tenantId 
 }
 
 async function buildMentorshipListings({ tenantId, limit, includePastSessions = true }) {
-  const context = { tenantId, limit, includePastSessions };
   const response = {
     listings: [],
     fallback: false,
@@ -260,6 +285,12 @@ async function buildMentorshipListings({ tenantId, limit, includePastSessions = 
   let users = [];
   let companies = [];
   let startups = [];
+  let fallbackData = null;
+
+  const pushService = (map, svc) => {
+    if (!svc || svc.id == null) return;
+    map.set(String(svc.id), svc);
+  };
 
   try {
     sessions = await firestoreDataStore.getMentorshipSessions({
@@ -268,22 +299,80 @@ async function buildMentorshipListings({ tenantId, limit, includePastSessions = 
       includePast: includePastSessions,
     });
 
-    if (!sessions.length) {
-      return response;
-    }
-
-    const serviceIds = uniqueStrings(sessions.map((session) => session.serviceId));
-    services = serviceIds.length
-      ? await firestoreDataStore.getDocumentsByIds('services', serviceIds)
+    const sessionServiceIds = uniqueStrings(sessions.map((session) => session.serviceId));
+    const sessionServices = sessionServiceIds.length
+      ? await firestoreDataStore.getDocumentsByIds('services', sessionServiceIds)
       : [];
 
-    const mentorIds = uniqueStrings(sessions.map((session) => session.mentorId));
+    const candidateServices = new Map();
+    sessionServices.forEach((svc) => pushService(candidateServices, svc));
+
+    const pageSize = limit || 200;
+
+    const collectCandidates = async (params, label) => {
+      try {
+        const result = await firestoreDataStore.queryServicesOptimized({
+          tenantId,
+          pageSize,
+          ...params,
+        });
+        safeArray(result?.items).forEach((svc) => pushService(candidateServices, svc));
+      } catch (err) {
+        console.warn(`[Mentorship] ${label} services query failed`, err?.message || err);
+      }
+    };
+
+    await collectCandidates({ listingType: 'mentorship' }, 'listingType');
+    await collectCandidates({ category: 'Mentorship' }, 'category');
+
+    let mentorshipServices = Array.from(candidateServices.values()).filter((svc) =>
+      looksLikeMentorshipService(svc)
+    );
+
+    if (!mentorshipServices.length) {
+      fallbackData = await getHybridData(true);
+      response.fallback = true;
+      safeArray(fallbackData?.services)
+        .filter((svc) => looksLikeMentorshipService(svc))
+        .forEach((svc) => pushService(candidateServices, svc));
+      mentorshipServices = Array.from(candidateServices.values()).filter((svc) =>
+        looksLikeMentorshipService(svc)
+      );
+      if (!sessions.length) {
+        sessions = safeArray(fallbackData?.mentorshipSessions);
+      }
+    }
+
+    const mergedServices = new Map();
+    sessionServices.forEach((svc) => pushService(mergedServices, svc));
+    mentorshipServices.forEach((svc) => pushService(mergedServices, svc));
+    services = Array.from(mergedServices.values());
+
+    const mentorIdsFromSessions = uniqueStrings(sessions.map((session) => session.mentorId));
+    const mentorIdsFromServices = uniqueStrings(
+      services.map((service) => service?.mentorId || service?.vendorId || service?.ownerUid)
+    );
+    const combinedMentorIds = uniqueStrings([
+      ...mentorIdsFromSessions,
+      ...mentorIdsFromServices,
+    ]);
+
     const [vendorDocs, profileDocs, userDocs, companyDocs, startupDocs] = await Promise.all([
-      mentorIds.length ? firestoreDataStore.getDocumentsByIds('vendors', mentorIds) : Promise.resolve([]),
-      mentorIds.length ? firestoreDataStore.getDocumentsByIds('profiles', mentorIds) : Promise.resolve([]),
-      mentorIds.length ? firestoreDataStore.getDocumentsByIds('users', mentorIds) : Promise.resolve([]),
-      mentorIds.length ? firestoreDataStore.getDocumentsByIds('companies', mentorIds) : Promise.resolve([]),
-      mentorIds.length ? firestoreDataStore.getDocumentsByIds('startups', mentorIds) : Promise.resolve([]),
+      combinedMentorIds.length
+        ? firestoreDataStore.getDocumentsByIds('vendors', combinedMentorIds)
+        : Promise.resolve([]),
+      combinedMentorIds.length
+        ? firestoreDataStore.getDocumentsByIds('profiles', combinedMentorIds)
+        : Promise.resolve([]),
+      combinedMentorIds.length
+        ? firestoreDataStore.getDocumentsByIds('users', combinedMentorIds)
+        : Promise.resolve([]),
+      combinedMentorIds.length
+        ? firestoreDataStore.getDocumentsByIds('companies', combinedMentorIds)
+        : Promise.resolve([]),
+      combinedMentorIds.length
+        ? firestoreDataStore.getDocumentsByIds('startups', combinedMentorIds)
+        : Promise.resolve([]),
     ]);
 
     vendors = vendorDocs;
@@ -294,14 +383,28 @@ async function buildMentorshipListings({ tenantId, limit, includePastSessions = 
   } catch (error) {
     console.warn('[Mentorship] Falling back to hybrid data store', error?.message || error);
     response.fallback = true;
-    const data = await getHybridData(true);
-    sessions = safeArray(data?.mentorshipSessions);
-    services = safeArray(data?.services);
-    vendors = safeArray(data?.vendors);
-    profiles = safeArray(data?.profiles);
-    users = safeArray(data?.users);
-    companies = safeArray(data?.companies);
-    startups = safeArray(data?.startups);
+    fallbackData = await getHybridData(true);
+    sessions = safeArray(fallbackData?.mentorshipSessions);
+    const fallbackServices = safeArray(fallbackData?.services);
+    const fallbackServiceIds = new Set(
+      sessions
+        .map((session) => (session?.serviceId != null ? String(session.serviceId) : ''))
+        .filter(Boolean)
+    );
+    const fallbackServiceMap = new Map();
+    fallbackServices.forEach((svc) => {
+      if (!svc || svc.id == null) return;
+      const id = String(svc.id);
+      if (fallbackServiceIds.has(id) || looksLikeMentorshipService(svc)) {
+        fallbackServiceMap.set(id, svc);
+      }
+    });
+    services = Array.from(fallbackServiceMap.values());
+    vendors = safeArray(fallbackData?.vendors);
+    profiles = safeArray(fallbackData?.profiles);
+    users = safeArray(fallbackData?.users);
+    companies = safeArray(fallbackData?.companies);
+    startups = safeArray(fallbackData?.startups);
   }
 
   if (!includePastSessions) {
@@ -315,20 +418,13 @@ async function buildMentorshipListings({ tenantId, limit, includePastSessions = 
     });
   }
 
-  if (!sessions.length) {
-    return response;
-  }
-
   const serviceMap = new Map();
-  services.forEach((service) => {
-    const key = service?.id != null ? String(service.id) : null;
-    if (!key) return;
-    if (!serviceMap.has(key)) serviceMap.set(key, service);
-  });
+  services.forEach((service) => pushService(serviceMap, service));
 
   const mentorIndex = buildMentorIndex({ vendors, profiles, users, companies, startups });
 
   const listingMap = new Map();
+
   sessions.forEach((session) => {
     const serviceKey = session?.serviceId != null ? String(session.serviceId) : '';
     const service = serviceKey && serviceMap.has(serviceKey) ? serviceMap.get(serviceKey) : null;
@@ -349,7 +445,25 @@ async function buildMentorshipListings({ tenantId, limit, includePastSessions = 
     }
   });
 
-  response.listings = Array.from(listingMap.values());
+  services
+    .filter((service) => looksLikeMentorshipService(service))
+    .forEach((service) => {
+      const mentor = pickMentorRecord({ session: null, service, mentorIndex }) || null;
+      const listing = normalizeListing({ session: null, service, mentor });
+      if (!listing) return;
+      const dedupeKey = listing.serviceId || listing.mentorId || listing.id;
+      if (!listingMap.has(dedupeKey)) {
+        listingMap.set(dedupeKey, listing);
+      }
+    });
+
+  const listings = Array.from(listingMap.values());
+  const limitedListings = limit ? listings.slice(0, Number(limit)) : listings;
+  if (!limitedListings.length && fallbackData) {
+    response.fallback = true;
+  }
+
+  response.listings = limitedListings;
   return response;
 }
 

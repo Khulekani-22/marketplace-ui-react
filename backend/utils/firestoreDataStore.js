@@ -343,6 +343,7 @@ class FirestoreDataStore {
     maxPrice,
     page = 1,
     pageSize = 20,
+    listingType,
   } = {}) {
     if (!this.initialized) {
       throw new Error('Firestore not initialized');
@@ -359,6 +360,9 @@ class FirestoreDataStore {
     }
     if (typeof featured === 'boolean') {
       queryRef = queryRef.where('featured', '==', featured);
+    }
+    if (listingType) {
+      queryRef = queryRef.where('listingType', '==', String(listingType));
     }
 
     const numericMin = Number(minPrice);
