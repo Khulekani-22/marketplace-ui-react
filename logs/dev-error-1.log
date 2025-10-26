@@ -11,3 +11,328 @@
 2025-10-26T11:20:06:   code: 'ERR_MODULE_NOT_FOUND',
 2025-10-26T11:20:06:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
 2025-10-26T11:20:06: }
+2025-10-26T11:21:28: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:21:28:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:21:28:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:21:28:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:21:28:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:21:28:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:21:28:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:21:28:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:21:28:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:21:28:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:21:28:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:21:28:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:21:28: }
+2025-10-26T11:22:03: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:22:03:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:22:03:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:22:03:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:22:03:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:22:03:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:22:03:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:22:03:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:22:03:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:22:03:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:22:03:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:22:03:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:22:03: }
+2025-10-26T11:22:25: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:22:25:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:22:25:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:22:25:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:22:25:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:22:25:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:22:25:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:22:25:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:22:25:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:22:25:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:22:25:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:22:25:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:22:25: }
+2025-10-26T11:22:26: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:22:26:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:22:26:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:22:26:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:22:26:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:22:26:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:22:26:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:22:26:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:22:26:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:22:26:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:22:26:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:22:26:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:22:26: }
+2025-10-26T11:23:02: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:23:02:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:23:02:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:23:02:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:23:02:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:23:02:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:23:02:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:23:02:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:23:02:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:23:02:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:23:02:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:23:02:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:23:02: }
+2025-10-26T11:23:41: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:23:41:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:23:41:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:23:41:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:23:41:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:23:41:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:23:41:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:23:41:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:23:41:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:23:41:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:23:41:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:23:41:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:23:41: }
+2025-10-26T11:26:25: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:26:25:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:26:25:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:26:25:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:26:25:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:26:25:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:26:25:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:26:25:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:26:25:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:26:25:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:26:25:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:26:25:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:26:25: }
+2025-10-26T11:29:13: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:29:13:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:29:13:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:29:13:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:29:13:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:29:13:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:29:13:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:29:13:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:29:13:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:29:13:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:29:13:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:29:13:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:29:13: }
+2025-10-26T11:29:14: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:29:14:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:29:14:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:29:14:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:29:14:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:29:14:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:29:14:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:29:14:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:29:14:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:29:14:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:29:14:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:29:14:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:29:14: }
+2025-10-26T11:29:18: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:29:18:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:29:18:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:29:18:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:29:18:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:29:18:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:29:18:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:29:18:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:29:18:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:29:18:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:29:18:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:29:18:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:29:18: }
+2025-10-26T11:41:35: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:41:35:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:41:35:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:41:35:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:41:35:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:41:35:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:41:35:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:41:35:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:41:35:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:41:35:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:41:35:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:41:35:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:41:35: }
+2025-10-26T11:41:35: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:41:35:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:41:35:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:41:35:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:41:35:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:41:35:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:41:35:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:41:35:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:41:35:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:41:35:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:41:35:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:41:35:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:41:35: }
+2025-10-26T11:44:35: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:44:35:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:44:35:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:44:35:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:44:35:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:44:35:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:44:35:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:44:35:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:44:35:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:44:35:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:44:35:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:44:35:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:44:35: }
+2025-10-26T11:44:36: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:44:36:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:44:36:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:44:36:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:44:36:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:44:36:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:44:36:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:44:36:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:44:36:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:44:36:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:44:36:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:44:36:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:44:36: }
+2025-10-26T11:47:36: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:47:36:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:47:36:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:47:36:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:47:36:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:47:36:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:47:36:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:47:36:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:47:36:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:47:36:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:47:36:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:47:36:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:47:36: }
+2025-10-26T11:47:37: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:47:37:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:47:37:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:47:37:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:47:37:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:47:37:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:47:37:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:47:37:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:47:37:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:47:37:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:47:37:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:47:37:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:47:37: }
+2025-10-26T11:50:28: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:50:28:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:50:28:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:50:28:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:50:28:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:50:28:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:50:28:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:50:28:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:50:28:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:50:28:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:50:28:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:50:28:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:50:28: }
+2025-10-26T11:50:48: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:50:48:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:50:48:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:50:48:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:50:48:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:50:48:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:50:48:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:50:48:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:50:48:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:50:48:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:50:48:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:50:48:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:50:48: }
+2025-10-26T11:52:17: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:52:17:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:52:17:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:52:17:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:52:17:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:52:17:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:52:17:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:52:17:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:52:17:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:52:17:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:52:17:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:52:17:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:52:17: }
+2025-10-26T11:52:18: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:52:18:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:52:18:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:52:18:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:52:18:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:52:18:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:52:18:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:52:18:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:52:18:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:52:18:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:52:18:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:52:18:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:52:18: }
+2025-10-26T11:53:50: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:53:50:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:53:50:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:53:50:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:53:50:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:53:50:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:53:50:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:53:50:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:53:50:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:53:50:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:53:50:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:53:50:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:53:50: }
+2025-10-26T11:54:08: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:54:08:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:54:08:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:54:08:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:54:08:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:54:08:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:54:08:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:54:08:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:54:08:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:54:08:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:54:08:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:54:08:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:54:08: }
+2025-10-26T11:54:19: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:54:19:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:54:19:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:54:19:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:54:19:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:54:19:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:54:19:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:54:19:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:54:19:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:54:19:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:54:19:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:54:19:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:54:19: }
+2025-10-26T11:55:37: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:55:37:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:55:37:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:55:37:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:55:37:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:55:37:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:55:37:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:55:37:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:55:37:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:55:37:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:55:37:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:55:37:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:55:37: }
+2025-10-26T11:55:37: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:55:37:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:55:37:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:55:37:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:55:37:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:55:37:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:55:37:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:55:37:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:55:37:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:55:37:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:55:37:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:55:37:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:55:37: }

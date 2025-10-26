@@ -1,0 +1,1464 @@
+{
+  "info": {
+    "name": "Sloane Marketplace API - Complete (All 12 Phases)",
+    "description": "Complete API collection covering all 12 phases:\n\n1. API Documentation\n2. API Key Authentication\n3. Enhanced CORS\n4. Per-API-Key Rate Limiting\n5. API Versioning\n6. Webhook System\n7. SDK Generation\n8. API Analytics\n9. Developer Portal\n10. OAuth 2.0\n11. GraphQL API\n12. API Gateway & Load Balancing\n\n**Base URL:** http://localhost:5055\n**GraphQL Endpoint:** http://localhost:5055/graphql\n\n**Authentication Methods:**\n- Firebase ID Token (Authorization: Bearer)\n- API Key (X-API-Key header)\n- OAuth 2.0 Access Token (Authorization: Bearer)\n\n**Version:** 1.0.0\n**Last Updated:** October 2025",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "sloane-marketplace-v1"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{firebase_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5055",
+      "type": "string",
+      "description": "Base URL for the API"
+    },
+    {
+      "key": "api_base",
+      "value": "http://localhost:5055/api",
+      "type": "string"
+    },
+    {
+      "key": "firebase_token",
+      "value": "",
+      "type": "string",
+      "description": "Firebase ID token - Get from Firebase Auth"
+    },
+    {
+      "key": "api_key",
+      "value": "",
+      "type": "string",
+      "description": "API key for third-party access"
+    },
+    {
+      "key": "oauth_access_token",
+      "value": "",
+      "type": "string",
+      "description": "OAuth 2.0 access token"
+    },
+    {
+      "key": "oauth_refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "client_secret",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "service_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "vendor_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "webhook_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Phase 12: Health & Monitoring",
+      "description": "Health checks, monitoring, and metrics endpoints",
+      "item": [
+        {
+          "name": "Liveness Probe",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/live",
+              "host": ["{{base_url}}"],
+              "path": ["health", "live"]
+            },
+            "description": "Kubernetes-style liveness probe. Returns 200 if server is running."
+          },
+          "response": []
+        },
+        {
+          "name": "Readiness Probe",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/ready",
+              "host": ["{{base_url}}"],
+              "path": ["health", "ready"]
+            },
+            "description": "Readiness probe. Returns 200 if all dependencies (Firestore, Redis) are ready."
+          },
+          "response": []
+        },
+        {
+          "name": "Detailed Health Status",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/status",
+              "host": ["{{base_url}}"],
+              "path": ["health", "status"]
+            },
+            "description": "Comprehensive health status with uptime, memory, cache stats, dependency checks."
+          },
+          "response": []
+        },
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/monitoring/metrics",
+              "host": ["{{api_base}}"],
+              "path": ["monitoring", "metrics"]
+            },
+            "description": "Prometheus-compatible metrics in text format. Scrape with Prometheus for monitoring."
+          },
+          "response": []
+        },
+        {
+          "name": "Performance Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/monitoring/stats",
+              "host": ["{{api_base}}"],
+              "path": ["monitoring", "stats"]
+            },
+            "description": "Human-readable performance statistics: throughput, latency, cache hit rate, circuit breakers."
+          },
+          "response": []
+        },
+        {
+          "name": "Recent Errors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/monitoring/errors?limit=50",
+              "host": ["{{api_base}}"],
+              "path": ["monitoring", "errors"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Recent error logs with timestamps, paths, status codes."
+          },
+          "response": []
+        },
+        {
+          "name": "Performance Analysis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/monitoring/performance",
+              "host": ["{{api_base}}"],
+              "path": ["monitoring", "performance"]
+            },
+            "description": "Performance KPIs: requests/sec, error rate, success rate, slowest routes."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Phase 2: API Key Management",
+      "description": "API key creation, management, and authentication",
+      "item": [
+        {
+          "name": "Create API Key",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Application\",\n  \"description\": \"API key for my mobile app\",\n  \"rateLimit\": \"standard\",\n  \"allowedOrigins\": [\"https://myapp.com\"],\n  \"scopes\": [\"services:read\", \"vendors:read\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/api-keys",
+              "host": ["{{api_base}}"],
+              "path": ["api-keys"]
+            },
+            "description": "Create a new API key. Rate limit tiers: free (100/hr), standard (1000/hr), premium (10000/hr)"
+          },
+          "response": []
+        },
+        {
+          "name": "List My API Keys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/api-keys",
+              "host": ["{{api_base}}"],
+              "path": ["api-keys"]
+            },
+            "description": "List all API keys for the authenticated user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get API Key Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/api-keys/:keyId",
+              "host": ["{{api_base}}"],
+              "path": ["api-keys", ":keyId"],
+              "variable": [
+                {
+                  "key": "keyId",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update API Key",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated App Name\",\n  \"description\": \"Updated description\",\n  \"allowedOrigins\": [\"https://myapp.com\", \"https://app.myapp.com\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/api-keys/:keyId",
+              "host": ["{{api_base}}"],
+              "path": ["api-keys", ":keyId"],
+              "variable": [
+                {
+                  "key": "keyId",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke API Key",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/api-keys/:keyId",
+              "host": ["{{api_base}}"],
+              "path": ["api-keys", ":keyId"],
+              "variable": [
+                {
+                  "key": "keyId",
+                  "value": "{{api_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test API Key Auth",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{api_base}}/v1/services",
+              "host": ["{{api_base}}"],
+              "path": ["v1", "services"]
+            },
+            "description": "Test API key authentication by fetching services"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Phase 5: API Versioning",
+      "description": "API version testing (v1 and v2)",
+      "item": [
+        {
+          "name": "V1 - Get Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/v1/services",
+              "host": ["{{api_base}}"],
+              "path": ["v1", "services"]
+            },
+            "description": "Version 1 API - Legacy format"
+          },
+          "response": []
+        },
+        {
+          "name": "V2 - Get Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/v2/services",
+              "host": ["{{api_base}}"],
+              "path": ["v2", "services"]
+            },
+            "description": "Version 2 API - Enhanced format with additional metadata"
+          },
+          "response": []
+        },
+        {
+          "name": "Default Version (V2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/services",
+              "host": ["{{api_base}}"],
+              "path": ["services"]
+            },
+            "description": "No version specified - defaults to V2"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Phase 6: Webhooks",
+      "description": "Webhook management and testing",
+      "item": [
+        {
+          "name": "Create Webhook",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://your-app.com/webhooks\",\n  \"events\": [\"service.created\", \"service.updated\", \"subscription.created\"],\n  \"secret\": \"your_webhook_secret_key\",\n  \"description\": \"Production webhook\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/webhooks",
+              "host": ["{{api_base}}"],
+              "path": ["webhooks"]
+            },
+            "description": "Create a new webhook subscription. Events: service.created, service.updated, service.deleted, subscription.created, subscription.updated, etc."
+          },
+          "response": []
+        },
+        {
+          "name": "List Webhooks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/webhooks",
+              "host": ["{{api_base}}"],
+              "path": ["webhooks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Webhook Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/webhooks/:webhookId",
+              "host": ["{{api_base}}"],
+              "path": ["webhooks", ":webhookId"],
+              "variable": [
+                {
+                  "key": "webhookId",
+                  "value": "{{webhook_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Webhook",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"events\": [\"service.created\", \"service.updated\", \"service.deleted\", \"subscription.created\"],\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/webhooks/:webhookId",
+              "host": ["{{api_base}}"],
+              "path": ["webhooks", ":webhookId"],
+              "variable": [
+                {
+                  "key": "webhookId",
+                  "value": "{{webhook_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Webhook",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"service.created\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/webhooks/:webhookId/test",
+              "host": ["{{api_base}}"],
+              "path": ["webhooks", ":webhookId", "test"],
+              "variable": [
+                {
+                  "key": "webhookId",
+                  "value": "{{webhook_id}}"
+                }
+              ]
+            },
+            "description": "Send a test webhook event"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Webhook Deliveries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/webhooks/:webhookId/deliveries?limit=50",
+              "host": ["{{api_base}}"],
+              "path": ["webhooks", ":webhookId", "deliveries"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "webhookId",
+                  "value": "{{webhook_id}}"
+                }
+              ]
+            },
+            "description": "Get delivery history for a webhook"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Webhook",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/webhooks/:webhookId",
+              "host": ["{{api_base}}"],
+              "path": ["webhooks", ":webhookId"],
+              "variable": [
+                {
+                  "key": "webhookId",
+                  "value": "{{webhook_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Phase 8: Analytics",
+      "description": "API analytics and usage statistics",
+      "item": [
+        {
+          "name": "Get Usage Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/analytics/usage?period=7d",
+              "host": ["{{api_base}}"],
+              "path": ["analytics", "usage"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "7d",
+                  "description": "1d, 7d, 30d, 90d"
+                }
+              ]
+            },
+            "description": "Get API usage statistics for the specified period"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Endpoint Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/analytics/endpoints",
+              "host": ["{{api_base}}"],
+              "path": ["analytics", "endpoints"]
+            },
+            "description": "Get statistics per endpoint"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Error Analysis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/analytics/errors?period=7d",
+              "host": ["{{api_base}}"],
+              "path": ["analytics", "errors"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "7d"
+                }
+              ]
+            },
+            "description": "Get error rate analysis"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Performance Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/analytics/performance",
+              "host": ["{{api_base}}"],
+              "path": ["analytics", "performance"]
+            },
+            "description": "Get response time metrics and performance data"
+          },
+          "response": []
+        },
+        {
+          "name": "Get API Key Usage",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/analytics/api-keys/:keyId",
+              "host": ["{{api_base}}"],
+              "path": ["analytics", "api-keys", ":keyId"],
+              "variable": [
+                {
+                  "key": "keyId",
+                  "value": "{{api_key}}"
+                }
+              ]
+            },
+            "description": "Get usage statistics for a specific API key"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Phase 10: OAuth 2.0",
+      "description": "OAuth 2.0 authorization flows",
+      "item": [
+        {
+          "name": "Authorization Code Flow - Get Code",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/oauth/authorize?response_type=code&client_id={{client_id}}&redirect_uri=https://your-app.com/callback&scope=services:read vendors:read&state=random_state_string&code_challenge=CHALLENGE&code_challenge_method=S256",
+              "host": ["{{api_base}}"],
+              "path": ["oauth", "authorize"],
+              "query": [
+                {
+                  "key": "response_type",
+                  "value": "code"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "https://your-app.com/callback"
+                },
+                {
+                  "key": "scope",
+                  "value": "services:read vendors:read"
+                },
+                {
+                  "key": "state",
+                  "value": "random_state_string"
+                },
+                {
+                  "key": "code_challenge",
+                  "value": "CHALLENGE"
+                },
+                {
+                  "key": "code_challenge_method",
+                  "value": "S256"
+                }
+              ]
+            },
+            "description": "Step 1: Get authorization code (PKCE-enabled)"
+          },
+          "response": []
+        },
+        {
+          "name": "Authorization Code Flow - Exchange Token",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "AUTHORIZATION_CODE",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "https://your-app.com/callback",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{client_secret}}",
+                  "type": "text"
+                },
+                {
+                  "key": "code_verifier",
+                  "value": "VERIFIER",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{api_base}}/oauth/token",
+              "host": ["{{api_base}}"],
+              "path": ["oauth", "token"]
+            },
+            "description": "Step 2: Exchange authorization code for access token"
+          },
+          "response": []
+        },
+        {
+          "name": "Client Credentials Flow",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{client_secret}}",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "services:read vendors:read",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{api_base}}/oauth/token",
+              "host": ["{{api_base}}"],
+              "path": ["oauth", "token"]
+            },
+            "description": "Server-to-server authentication"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "refresh_token",
+                  "type": "text"
+                },
+                {
+                  "key": "refresh_token",
+                  "value": "{{oauth_refresh_token}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{client_secret}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{api_base}}/oauth/token",
+              "host": ["{{api_base}}"],
+              "path": ["oauth", "token"]
+            },
+            "description": "Get new access token using refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke Token",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "{{oauth_access_token}}",
+                  "type": "text"
+                },
+                {
+                  "key": "token_type_hint",
+                  "value": "access_token",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{api_base}}/oauth/revoke",
+              "host": ["{{api_base}}"],
+              "path": ["oauth", "revoke"]
+            },
+            "description": "Revoke an access or refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "Test OAuth Token",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{oauth_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/services",
+              "host": ["{{api_base}}"],
+              "path": ["services"]
+            },
+            "description": "Test OAuth access token by fetching services"
+          },
+          "response": []
+        },
+        {
+          "name": "Manage OAuth Clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/oauth/clients",
+              "host": ["{{api_base}}"],
+              "path": ["oauth", "clients"]
+            },
+            "description": "List OAuth clients for the authenticated user"
+          },
+          "response": []
+        },
+        {
+          "name": "Create OAuth Client",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Application\",\n  \"redirectUris\": [\"https://your-app.com/callback\"],\n  \"scopes\": [\"services:read\", \"services:write\", \"vendors:read\"],\n  \"description\": \"OAuth client for my app\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/oauth/clients",
+              "host": ["{{api_base}}"],
+              "path": ["oauth", "clients"]
+            },
+            "description": "Create a new OAuth client"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Phase 11: GraphQL",
+      "description": "GraphQL queries, mutations, and subscriptions",
+      "item": [
+        {
+          "name": "GraphQL - Get Services",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetServices($limit: Int, $sortBy: String, $sortOrder: SortOrder) {\n  services(pagination: { limit: $limit }, sort: { field: $sortBy, order: $sortOrder }) {\n    edges {\n      node {\n        id\n        name\n        description\n        price\n        status\n        vendor {\n          id\n          businessName\n        }\n        createdAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      hasPreviousPage\n    }\n  }\n}",
+                "variables": "{\n  \"limit\": 10,\n  \"sortBy\": \"createdAt\",\n  \"sortOrder\": \"DESC\"\n}"
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": ["{{base_url}}"],
+              "path": ["graphql"]
+            },
+            "description": "Query services with pagination and sorting"
+          },
+          "response": []
+        },
+        {
+          "name": "GraphQL - Get Service by ID",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetService($id: ID!) {\n  service(id: $id) {\n    id\n    name\n    description\n    price\n    status\n    vendor {\n      id\n      businessName\n      email\n    }\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": "{\n  \"id\": \"{{service_id}}\"\n}"
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": ["{{base_url}}"],
+              "path": ["graphql"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GraphQL - Create Service",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateService($input: CreateServiceInput!) {\n  createService(input: $input) {\n    id\n    name\n    description\n    price\n    status\n    createdAt\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"name\": \"GraphQL Test Service\",\n    \"description\": \"Created via GraphQL\",\n    \"price\": 99.99,\n    \"status\": \"ACTIVE\"\n  }\n}"
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": ["{{base_url}}"],
+              "path": ["graphql"]
+            },
+            "description": "Create a new service via GraphQL mutation"
+          },
+          "response": []
+        },
+        {
+          "name": "GraphQL - Get My Subscriptions",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query MySubscriptions {\n  mySubscriptions {\n    edges {\n      node {\n        id\n        status\n        startDate\n        endDate\n        service {\n          id\n          name\n          price\n        }\n        vendor {\n          id\n          businessName\n        }\n      }\n    }\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": ["{{base_url}}"],
+              "path": ["graphql"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GraphQL - Get My Wallet",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query MyWallet {\n  myWallet {\n    id\n    balance\n    currency\n    transactions(pagination: { limit: 10 }) {\n      edges {\n        node {\n          id\n          type\n          amount\n          description\n          createdAt\n        }\n      }\n    }\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": ["{{base_url}}"],
+              "path": ["graphql"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GraphQL - Send Message",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation SendMessage($input: SendMessageInput!) {\n  sendMessage(input: $input) {\n    id\n    content\n    status\n    createdAt\n    recipient {\n      id\n      email\n    }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"recipientId\": \"RECIPIENT_USER_ID\",\n    \"content\": \"Hello from GraphQL!\"\n  }\n}"
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": ["{{base_url}}"],
+              "path": ["graphql"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GraphQL - Introspection Query",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "{\n  __schema {\n    types {\n      name\n      kind\n      description\n    }\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": ["{{base_url}}"],
+              "path": ["graphql"]
+            },
+            "description": "Get GraphQL schema information"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "REST API - Services",
+      "description": "Service management endpoints",
+      "item": [
+        {
+          "name": "Get All Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/services?limit=20&offset=0",
+              "host": ["{{api_base}}"],
+              "path": ["services"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Service by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/services/:serviceId",
+              "host": ["{{api_base}}"],
+              "path": ["services", ":serviceId"],
+              "variable": [
+                {
+                  "key": "serviceId",
+                  "value": "{{service_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Service\",\n  \"description\": \"Service description\",\n  \"price\": 99.99,\n  \"category\": \"Technology\",\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/services",
+              "host": ["{{api_base}}"],
+              "path": ["services"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Service Name\",\n  \"price\": 129.99\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/services/:serviceId",
+              "host": ["{{api_base}}"],
+              "path": ["services", ":serviceId"],
+              "variable": [
+                {
+                  "key": "serviceId",
+                  "value": "{{service_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/services/:serviceId",
+              "host": ["{{api_base}}"],
+              "path": ["services", ":serviceId"],
+              "variable": [
+                {
+                  "key": "serviceId",
+                  "value": "{{service_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "REST API - Vendors",
+      "description": "Vendor management endpoints",
+      "item": [
+        {
+          "name": "Get All Vendors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/vendors",
+              "host": ["{{api_base}}"],
+              "path": ["vendors"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Vendor by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/vendors/:vendorId",
+              "host": ["{{api_base}}"],
+              "path": ["vendors", ":vendorId"],
+              "variable": [
+                {
+                  "key": "vendorId",
+                  "value": "{{vendor_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Vendor Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/vendors/:vendorId/services",
+              "host": ["{{api_base}}"],
+              "path": ["vendors", ":vendorId", "services"],
+              "variable": [
+                {
+                  "key": "vendorId",
+                  "value": "{{vendor_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "REST API - Subscriptions",
+      "description": "Subscription management",
+      "item": [
+        {
+          "name": "Get My Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/subscriptions/mine",
+              "host": ["{{api_base}}"],
+              "path": ["subscriptions", "mine"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Subscription",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceId\": \"{{service_id}}\",\n  \"startDate\": \"2025-11-01\",\n  \"billingCycle\": \"monthly\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/subscriptions",
+              "host": ["{{api_base}}"],
+              "path": ["subscriptions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/subscriptions/:subscriptionId",
+              "host": ["{{api_base}}"],
+              "path": ["subscriptions", ":subscriptionId"],
+              "variable": [
+                {
+                  "key": "subscriptionId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "REST API - Messages",
+      "description": "Messaging system",
+      "item": [
+        {
+          "name": "Get My Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/messages/mine",
+              "host": ["{{api_base}}"],
+              "path": ["messages", "mine"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipientId\": \"RECIPIENT_USER_ID\",\n  \"subject\": \"Test Message\",\n  \"content\": \"Hello from Postman!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/messages",
+              "host": ["{{api_base}}"],
+              "path": ["messages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Message as Read",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/messages/:messageId/read",
+              "host": ["{{api_base}}"],
+              "path": ["messages", ":messageId", "read"],
+              "variable": [
+                {
+                  "key": "messageId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "REST API - Wallets",
+      "description": "Wallet and transaction management",
+      "item": [
+        {
+          "name": "Get My Wallet",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/wallets/mine",
+              "host": ["{{api_base}}"],
+              "path": ["wallets", "mine"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Wallet Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/wallets/mine/transactions?limit=50",
+              "host": ["{{api_base}}"],
+              "path": ["wallets", "mine", "transactions"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Transaction",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100.00,\n  \"type\": \"credit\",\n  \"description\": \"Test deposit\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_base}}/wallets/mine/transactions",
+              "host": ["{{api_base}}"],
+              "path": ["wallets", "mine", "transactions"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "REST API - Users",
+      "description": "User management",
+      "item": [
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/me",
+              "host": ["{{api_base}}"],
+              "path": ["me"]
+            },
+            "description": "Get authenticated user information"
+          },
+          "response": []
+        },
+        {
+          "name": "List Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_base}}/admin/users",
+              "host": ["{{api_base}}"],
+              "path": ["admin", "users"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

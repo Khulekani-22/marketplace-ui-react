@@ -52,6 +52,7 @@ foreach ($services['items'] as $service) {
 use Marketplace\SDK\MarketplaceClient;
 
 // Get Firebase token from your authentication flow
+// See GET_FIREBASE_TOKEN.md for how to get this token
 $firebaseToken = 'your-firebase-id-token';
 
 $client = new MarketplaceClient([
@@ -63,6 +64,60 @@ $client = new MarketplaceClient([
 $user = $client->getCurrentUser();
 echo "Welcome, " . $user['email'] . "!\n";
 ```
+
+#### 🔐 How to Get Firebase Token
+
+**Option 1: Using our helper script**
+```bash
+# From project root
+./scripts/get-firebase-token.sh your-email@example.com your-password
+```
+
+**Option 2: Using Firebase REST API**
+```bash
+curl -X POST \
+  "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=YOUR_WEB_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "your-email@example.com",
+    "password": "your-password",
+    "returnSecureToken": true
+  }'
+```
+
+**Option 3: From PHP**
+```php
+<?php
+
+// Sign in with Firebase REST API
+$apiKey = 'YOUR_FIREBASE_WEB_API_KEY';
+$email = 'your-email@example.com';
+$password = 'your-password';
+
+$response = file_get_contents(
+    "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=$apiKey",
+    false,
+    stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => 'Content-Type: application/json',
+            'content' => json_encode([
+                'email' => $email,
+                'password' => $password,
+                'returnSecureToken' => true
+            ])
+        ]
+    ])
+);
+
+$data = json_decode($response, true);
+$firebaseToken = $data['idToken']; // Use this token!
+$refreshToken = $data['refreshToken']; // Save for refreshing
+
+echo "Token: $firebaseToken\n";
+```
+
+See **[GET_FIREBASE_TOKEN.md](../../GET_FIREBASE_TOKEN.md)** for complete documentation.
 
 ## Core Features
 
