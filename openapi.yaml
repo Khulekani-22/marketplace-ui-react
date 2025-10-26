@@ -1,0 +1,964 @@
+openapi: 3.0.3
+info:
+  title: Marketplace API
+  description: |
+    Comprehensive API for the Sloane Marketplace platform.
+    
+    ## Authentication
+    - Firebase Authentication (Bearer token)
+    - JWT Authentication
+    - API Keys (coming soon)
+    
+    ## Base URL
+    - Production: https://your-domain.com/api
+    - Development: http://localhost:5055/api
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@22onsloane.co
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:5055/api
+    description: Development server
+  - url: https://marketplace-ui-react-vcl-main-oct.vercel.app/api
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Services
+    description: Marketplace service listings
+  - name: Vendors
+    description: Vendor management
+  - name: Startups
+    description: Startup profiles
+  - name: Subscriptions
+    description: Service subscriptions and bookings
+  - name: Messages
+    description: Messaging system
+  - name: Wallets
+    description: Wallet and credits management
+  - name: Users
+    description: User management
+  - name: Admin
+    description: Administrative operations
+  - name: Payments
+    description: Payment processing
+  - name: Mentorship
+    description: Mentorship programs
+  - name: LMS
+    description: Learning Management System
+  - name: Assistant
+    description: AI Assistant
+  - name: Tenants
+    description: Multi-tenancy management
+  - name: Audit
+    description: Audit logging
+  - name: Integrity
+    description: Data integrity validation
+  - name: Sync
+    description: Data synchronization
+
+security:
+  - bearerAuth: []
+  - apiKey: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Firebase ID token or JWT
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for machine-to-machine communication (coming soon)
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: string
+          enum: [error]
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+
+    Service:
+      type: object
+      required:
+        - id
+        - title
+        - price
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+          format: float
+        currency:
+          type: string
+          default: ZAR
+        vendor:
+          type: string
+        vendorId:
+          type: string
+        contactEmail:
+          type: string
+          format: email
+        featured:
+          type: boolean
+          default: false
+        rating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        reviewCount:
+          type: integer
+          minimum: 0
+        imageUrl:
+          type: string
+          format: uri
+        tenantId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Vendor:
+      type: object
+      required:
+        - id
+        - name
+        - email
+      properties:
+        id:
+          type: string
+        vendorId:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        website:
+          type: string
+          format: uri
+        description:
+          type: string
+        logo:
+          type: string
+          format: uri
+        tenantId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+        serviceId:
+          type: string
+        email:
+          type: string
+          format: email
+        uid:
+          type: string
+        type:
+          type: string
+          enum: [service, booking]
+        status:
+          type: string
+          enum: [active, canceled, expired]
+        createdAt:
+          type: string
+          format: date-time
+        canceledAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+        subscriptionId:
+          type: string
+        serviceId:
+          type: string
+        customerEmail:
+          type: string
+          format: email
+        customerName:
+          type: string
+        scheduledDate:
+          type: string
+          format: date
+        scheduledSlot:
+          type: string
+          pattern: '^([01]\d|2[0-3]):00$'
+        status:
+          type: string
+          enum: [pending, confirmed, completed, canceled]
+        meetingLink:
+          type: string
+          format: uri
+        bookedAt:
+          type: string
+          format: date-time
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+        subject:
+          type: string
+        content:
+          type: string
+        from:
+          type: string
+          format: email
+        to:
+          type: string
+          format: email
+        listingId:
+          type: string
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        replies:
+          type: array
+          items:
+            type: object
+
+    Wallet:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        balance:
+          type: number
+          format: float
+        currency:
+          type: string
+          default: ZAR
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    User:
+      type: object
+      properties:
+        uid:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [member, vendor, admin]
+        tenantId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the API is running
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  ts:
+                    type: string
+                    format: date-time
+
+  /me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: Get authenticated user information
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /data/services:
+    get:
+      tags:
+        - Services
+      summary: List services
+      description: Get paginated list of services with filtering
+      security: []
+      parameters:
+        - name: q
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Filter by category
+          schema:
+            type: string
+        - name: vendor
+          in: query
+          description: Filter by vendor ID
+          schema:
+            type: string
+        - name: featured
+          in: query
+          description: Filter featured services
+          schema:
+            type: boolean
+        - name: minPrice
+          in: query
+          description: Minimum price
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          description: Maximum price
+          schema:
+            type: number
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: pageSize
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: List of services
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginationMeta'
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Service'
+
+    post:
+      tags:
+        - Services
+      summary: Create service
+      description: Create a new service listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+      responses:
+        '201':
+          description: Service created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /data/services/mine:
+    get:
+      tags:
+        - Services
+      summary: Get my services
+      description: Get services owned by authenticated user
+      parameters:
+        - name: refresh
+          in: query
+          description: Force reload from database
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: User's services
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tenantId:
+                    type: string
+                  vendor:
+                    type: object
+                  listings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Service'
+                  bookings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Booking'
+
+  /data/services/{id}:
+    put:
+      tags:
+        - Services
+      summary: Update service
+      description: Update an existing service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+      responses:
+        '200':
+          description: Service updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Services
+      summary: Delete service
+      description: Delete a service listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Service deleted
+        '404':
+          description: Service not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /data/services/{id}/reviews:
+    post:
+      tags:
+        - Services
+      summary: Add review
+      description: Add a review to a service
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rating
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+                author:
+                  type: string
+                authorEmail:
+                  type: string
+                  format: email
+      responses:
+        '201':
+          description: Review added
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /data/vendors:
+    get:
+      tags:
+        - Vendors
+      summary: List vendors
+      description: Get paginated list of vendors
+      security: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: q
+          in: query
+          description: Search query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of vendors
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginationMeta'
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Vendor'
+
+    post:
+      tags:
+        - Vendors
+      summary: Create vendor
+      description: Create a new vendor profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+      responses:
+        '201':
+          description: Vendor created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+
+  /subscriptions/my:
+    get:
+      tags:
+        - Subscriptions
+      summary: Get my subscriptions
+      description: Get subscriptions for authenticated user
+      responses:
+        '200':
+          description: User subscriptions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Subscription'
+
+  /subscriptions/service:
+    post:
+      tags:
+        - Subscriptions
+      summary: Subscribe to service
+      description: Create a new subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - serviceId
+              properties:
+                serviceId:
+                  type: string
+                scheduledDate:
+                  type: string
+                  format: date
+                scheduledSlot:
+                  type: string
+                customerName:
+                  type: string
+      responses:
+        '201':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+    delete:
+      tags:
+        - Subscriptions
+      summary: Unsubscribe
+      description: Remove a subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - serviceId
+              properties:
+                serviceId:
+                  type: string
+      responses:
+        '204':
+          description: Unsubscribed successfully
+
+  /messages:
+    get:
+      tags:
+        - Messages
+      summary: List messages
+      description: Get messages for authenticated user
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+
+    post:
+      tags:
+        - Messages
+      summary: Send message
+      description: Send a new message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                listingId:
+                  type: string
+                listingTitle:
+                  type: string
+                vendorId:
+                  type: string
+                vendorEmail:
+                  type: string
+                  format: email
+                subject:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '201':
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+
+  /wallets/me:
+    get:
+      tags:
+        - Wallets
+      summary: Get my wallet
+      description: Get wallet information for authenticated user
+      responses:
+        '200':
+          description: Wallet information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+
+  /wallets/me/redeem:
+    post:
+      tags:
+        - Wallets
+      summary: Redeem credits
+      description: Use wallet credits for payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+              properties:
+                amount:
+                  type: number
+                serviceId:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Credits redeemed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  newBalance:
+                    type: number
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: List users
+      description: Get list of users
+      security: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Get current user
+      description: Get authenticated user details
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /assistant/ask:
+    post:
+      tags:
+        - Assistant
+      summary: Ask assistant
+      description: Ask a question to the AI assistant
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - question
+              properties:
+                question:
+                  type: string
+                context:
+                  type: object
+      responses:
+        '200':
+          description: Assistant response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+                  sources:
+                    type: array
+                    items:
+                      type: object
+
+  /audit-logs:
+    get:
+      tags:
+        - Audit
+      summary: Get audit logs
+      description: Retrieve audit log entries
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: userEmail
+          in: query
+          schema:
+            type: string
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Audit logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+
+  /tenants:
+    get:
+      tags:
+        - Tenants
+      summary: List tenants
+      description: Get all tenants
+      security: []
+      responses:
+        '200':
+          description: List of tenants
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string

@@ -1,0 +1,13 @@
+2025-10-26T11:20:06: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/config/firestore.js' imported from /Applications/XAMPP/xamppfiles/htdocs/firebase sloane hub/ui/marketplace-ui-react/backend/routes/externalApps.js
+2025-10-26T11:20:06:     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+2025-10-26T11:20:06:     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+2025-10-26T11:20:06:     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2025-10-26T11:20:06:     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:801:12)
+2025-10-26T11:20:06:     at #cachedDefaultResolve (node:internal/modules/esm/loader:725:25)
+2025-10-26T11:20:06:     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2025-10-26T11:20:06:     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:309:38)
+2025-10-26T11:20:06:     at #link (node:internal/modules/esm/module_job:208:49)
+2025-10-26T11:20:06:     at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+2025-10-26T11:20:06:   code: 'ERR_MODULE_NOT_FOUND',
+2025-10-26T11:20:06:   url: 'file:///Applications/XAMPP/xamppfiles/htdocs/firebase%20sloane%20hub/ui/marketplace-ui-react/backend/config/firestore.js'
+2025-10-26T11:20:06: }

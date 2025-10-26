@@ -1,6 +1,39 @@
 {
   "indexes": [
     {
+      "collectionGroup": "oauthClients",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "oauthTokens",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "refreshToken", "order": "ASCENDING" },
+        { "fieldPath": "clientId", "order": "ASCENDING" },
+        { "fieldPath": "revoked", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "oauthTokens",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "clientId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "oauthConsents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "clientId", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "services",
       "queryScope": "COLLECTION",
       "fields": [
@@ -166,6 +199,105 @@
       "fields": [
         { "fieldPath": "tenantId", "order": "ASCENDING" },
         { "fieldPath": "sessionDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "apiRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "apiRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "apiRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "ASCENDING" },
+        { "fieldPath": "success", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsHourly",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsHourly",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsDaily",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsDaily",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsEndpoints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "totalRequests", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsEndpoints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "avgResponseTime", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsEndpoints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "failedRequests", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsEndpoints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lastAccessed", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsConsumers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "totalRequests", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsConsumers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "avgResponseTime", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analyticsConsumers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lastRequest", "order": "DESCENDING" }
       ]
     }
   ],

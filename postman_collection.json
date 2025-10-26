@@ -1,0 +1,654 @@
+{
+  "info": {
+    "name": "Marketplace API",
+    "description": "Complete collection of Marketplace API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "marketplace-api-v1"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{firebase_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5055/api",
+      "type": "string"
+    },
+    {
+      "key": "firebase_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tenant_id",
+      "value": "public",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me",
+              "host": ["{{base_url}}"],
+              "path": ["me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "List Services",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/data/services?page=1&pageSize=20",
+              "host": ["{{base_url}}"],
+              "path": ["data", "services"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "featured",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "minPrice",
+                  "value": "0",
+                  "disabled": true
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "1000",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Services",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/data/services/mine",
+              "host": ["{{base_url}}"],
+              "path": ["data", "services", "mine"],
+              "query": [
+                {
+                  "key": "refresh",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenant_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"New Service\",\n  \"description\": \"Service description\",\n  \"category\": \"Business\",\n  \"price\": 99.99,\n  \"currency\": \"ZAR\",\n  \"vendor\": \"Vendor Name\",\n  \"contactEmail\": \"vendor@example.com\",\n  \"featured\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/data/services",
+              "host": ["{{base_url}}"],
+              "path": ["data", "services"]
+            }
+          }
+        },
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenant_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Service\",\n  \"price\": 149.99\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/data/services/:id",
+              "host": ["{{base_url}}"],
+              "path": ["data", "services", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "service-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenant_id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/data/services/:id",
+              "host": ["{{base_url}}"],
+              "path": ["data", "services", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "service-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Review",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Excellent service!\",\n  \"author\": \"John Doe\",\n  \"authorEmail\": \"john@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/data/services/:id/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["data", "services", ":id", "reviews"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "service-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vendors",
+      "item": [
+        {
+          "name": "List Vendors",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/data/vendors?page=1&pageSize=20",
+              "host": ["{{base_url}}"],
+              "path": ["data", "vendors"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Vendor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Vendor Name\",\n  \"email\": \"vendor@example.com\",\n  \"phone\": \"+27123456789\",\n  \"website\": \"https://vendor.com\",\n  \"description\": \"Vendor description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/data/vendors",
+              "host": ["{{base_url}}"],
+              "path": ["data", "vendors"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subscriptions",
+      "item": [
+        {
+          "name": "Get My Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subscriptions/my",
+              "host": ["{{base_url}}"],
+              "path": ["subscriptions", "my"]
+            }
+          }
+        },
+        {
+          "name": "Get My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/subscriptions/bookings/mine",
+              "host": ["{{base_url}}"],
+              "path": ["subscriptions", "bookings", "mine"]
+            }
+          }
+        },
+        {
+          "name": "Subscribe to Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceId\": \"service-id-here\",\n  \"scheduledDate\": \"2025-10-30\",\n  \"scheduledSlot\": \"14:00\",\n  \"customerName\": \"John Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/subscriptions/service",
+              "host": ["{{base_url}}"],
+              "path": ["subscriptions", "service"]
+            }
+          }
+        },
+        {
+          "name": "Unsubscribe",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceId\": \"service-id-here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/subscriptions/service",
+              "host": ["{{base_url}}"],
+              "path": ["subscriptions", "service"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "List Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/messages?page=1&pageSize=20",
+              "host": ["{{base_url}}"],
+              "path": ["messages"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"listingId\": \"service-id\",\n  \"listingTitle\": \"Service Title\",\n  \"vendorId\": \"vendor-id\",\n  \"vendorEmail\": \"vendor@example.com\",\n  \"subject\": \"Inquiry about service\",\n  \"content\": \"Message content here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/messages",
+              "host": ["{{base_url}}"],
+              "path": ["messages"]
+            }
+          }
+        },
+        {
+          "name": "Reply to Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"threadId\": \"message-id\",\n  \"content\": \"Reply content\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/messages/reply",
+              "host": ["{{base_url}}"],
+              "path": ["messages", "reply"]
+            }
+          }
+        },
+        {
+          "name": "Mark as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"message-id\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/messages/read",
+              "host": ["{{base_url}}"],
+              "path": ["messages", "read"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wallets",
+      "item": [
+        {
+          "name": "Get My Wallet",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wallets/me",
+              "host": ["{{base_url}}"],
+              "path": ["wallets", "me"]
+            }
+          }
+        },
+        {
+          "name": "Redeem Credits",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"serviceId\": \"service-id\",\n  \"description\": \"Payment for service\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/wallets/me/redeem",
+              "host": ["{{base_url}}"],
+              "path": ["wallets", "me", "redeem"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Add Credits to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"amount\": 500,\n  \"description\": \"Bonus credits\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/wallet/add-credits",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "wallet", "add-credits"]
+            }
+          }
+        },
+        {
+          "name": "Get Wallet Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/wallet/transactions?page=1&pageSize=50",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "wallet", "transactions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Wallet Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/wallet/summary",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "wallet", "summary"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assistant",
+      "item": [
+        {
+          "name": "Ask Question",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What services are available?\",\n  \"context\": {\n    \"tenantId\": \"public\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/assistant/ask",
+              "host": ["{{base_url}}"],
+              "path": ["assistant", "ask"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Logs",
+      "item": [
+        {
+          "name": "Get Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/audit-logs?limit=100",
+              "host": ["{{base_url}}"],
+              "path": ["audit-logs"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "100"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "userEmail",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "action",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

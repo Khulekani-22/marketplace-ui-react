@@ -1,6 +1,7 @@
 // server.js (ESM)
 
 import express from "express";
+import http from "http";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -28,11 +29,26 @@ import messagesRouter from "./routes/messages.js";
 import walletsRouter from "./routes/wallets.js";
 import integrityRouter from "./routes/integrity.js";
 import syncRouter from "./routes/sync.js";
+import apiKeysRouter from "./routes/apiKeys.js";
+import externalAppsRouter from "./routes/externalApps.js";
+import versionsRouter from "./routes/versions.js";
+import webhooksRouter from "./routes/webhooks.js";
+import developerPortalRouter from "./routes/developerPortal.js";
+import oauthRouter from "./routes/oauth.js";
+import { apolloServer, setupWebSocketServer } from "./graphql/server.js";
 import { tenantContext } from "./middleware/tenantContext.js";
 import { jwtAuthOptional } from "./middleware/authJWT.js";
 import { firebaseAuthRequired } from "./middleware/authFirebase.js";
 import { requireAdmin } from "./middleware/isAdmin.js";
 import { auditMutations } from "./middleware/audit.js";
+import { dynamicCors, securityHeaders, apiResponseHeaders, initializeCors } from "./middleware/corsConfig.js";
+import { apiKeyRateLimiter, rateLimitWarning } from "./middleware/apiKeyRateLimiter.js";
+import { apiVersioning, versionTransform } from "./middleware/apiVersioning.js";
+import { analyticsMiddleware, analyticsErrorHandler } from "./middleware/analyticsMiddleware.js";
+import analyticsRouter from "./routes/analytics.js";
+import monitoringRouter, { metricsMiddleware } from "./routes/monitoring.js";
+import { initializeRedis } from "./services/cacheService.js";
+import { cacheMiddleware, noCache } from "./middleware/cacheMiddleware.js";
 
 dotenv.config();
 
@@ -55,36 +71,51 @@ let replicatorStarted = false;
 /* ------------------------ Core security & parsing ------------------------ */
 app.use(helmet());
 app.use(express.json({ limit: "20mb" })); // checkpoints can be large
-// CORS: echo a concrete origin to satisfy browsers when credentials are used
-const DEFAULT_ORIGINS = [
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "https://marketplace-ui-react-vcl-main-oct.vercel.app",
-  "https://www.22onsloanecapital.co/",
-  "http://localhost:5055",
-  "http://127.0.0.1:5055",
-];
-const ENV_ORIGINS = (process.env.CORS_ORIGIN || "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
-const ALLOW_ORIGINS = Array.from(new Set([...ENV_ORIGINS, ...DEFAULT_ORIGINS]));
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // allow non-browser or same-origin requests (no origin header)
-      if (!origin) return callback(null, true);
-      if (ALLOW_ORIGINS.includes(origin)) return callback(null, true);
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  })
-);
+
+// Enhanced CORS configuration with dynamic origin validation
+app.use(dynamicCors());
+
+// Security headers (HSTS, CSP, X-Frame-Options, etc.)
+app.use(securityHeaders());
+
+// API response headers (version, timestamps, etc.)
+app.use(apiResponseHeaders());
+
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+
+/* -------- API Versioning -------- */
+app.use(apiVersioning());
+app.use(versionTransform());
 
 /* -------- Attach tenant and (optional) user to each request globally ----- */
 app.use(tenantContext);
 app.use(jwtAuthOptional);
+
+// API Key rate limiting (applies after API key auth)
+app.use(apiKeyRateLimiter());
+app.use(rateLimitWarning());
+
+// Metrics tracking (should be early to track all requests)
+app.use(metricsMiddleware());
+
+// Cache middleware for GET requests (applies to all routes)
+app.use(cacheMiddleware({
+  ttl: 300, // 5 minutes
+  skip: (req) => {
+    // Skip caching for authenticated requests
+    if (req.user || req.headers.authorization) return true;
+    // Skip caching for admin/auth endpoints
+    if (req.path.startsWith('/api/admin')) return true;
+    if (req.path.startsWith('/api/auth')) return true;
+    if (req.path.startsWith('/api/oauth')) return true;
+    if (req.path.startsWith('/api/me')) return true;
+    return false;
+  }
+}));
+
+// Analytics tracking (records all API requests)
+app.use(analyticsMiddleware);
+
 // Audit mutating requests (POST/PUT/PATCH/DELETE)
 app.use(auditMutations);
 
@@ -480,6 +511,7 @@ app.use("/api/lms", lmsRouter);
 
 /* --------------------------------- Other APIs ----------------------------- */
 app.use("/api/health", healthRouter);
+app.use("/api/versions", versionsRouter);
 app.use("/api/mentorship", mentorshipRouter);
 app.use("/api/data/services", servicesRouter);
 app.use("/api/data/vendors", vendorsRouter);
@@ -494,6 +526,14 @@ app.use("/api/messages", messagesRouter);
 app.use("/api/wallets", walletsRouter);
 app.use("/api/integrity", integrityRouter);
 app.use("/api/sync", syncRouter);
+app.use("/api/api-keys", apiKeysRouter);
+app.use("/api/external-apps", externalAppsRouter);
+app.use("/api/webhooks", webhooksRouter);
+app.use("/api/developer", developerPortalRouter);
+app.use("/api/oauth", oauthRouter);
+app.use("/api/analytics", analyticsRouter);
+app.use("/api/monitoring", monitoringRouter);
+app.use("/health", healthRouter);
 
 /* --------------------------------- 404 ----------------------------------- */
 app.use((req, res) => {
@@ -501,6 +541,9 @@ app.use((req, res) => {
 });
 
 /* ------------------------------ Error handler ---------------------------- */
+// Analytics error handler (records errors in analytics)
+app.use(analyticsErrorHandler);
+
 app.use((err, req, res, next) => {
   console.error("API Error:", err);
   res
@@ -511,14 +554,37 @@ app.use((err, req, res, next) => {
 /* --------------------------------- Start --------------------------------- */
 async function listenWithPort(port) {
   const HOST = process.env.HOST || "127.0.0.1";
-  return new Promise((resolve, reject) => {
-    const server = app
+  return new Promise(async (resolve, reject) => {
+    // Initialize Redis cache service
+    console.log('[Server] Initializing Redis cache...');
+    await initializeRedis();
+    
+    // Start Apollo Server
+    await apolloServer.start();
+    
+    // Apply Apollo middleware to Express
+    apolloServer.applyMiddleware({
+      app,
+      path: '/graphql',
+      cors: false, // We handle CORS ourselves
+    });
+
+    const httpServer = app
       .listen(port, HOST, () => {
         const hostLabel = HOST === "0.0.0.0" ? "localhost" : HOST;
         console.log(`SCDM backend running on http://${hostLabel}:${port}`);
+        console.log(`GraphQL endpoint: http://${hostLabel}:${port}/graphql`);
+        console.log(`GraphQL Playground: http://${hostLabel}:${port}/graphql`);
+        console.log(`Health Check: http://${hostLabel}:${port}/health/status`);
+        console.log(`Monitoring: http://${hostLabel}:${port}/api/monitoring/stats`);
         console.log(`Live appData.json: ${APP_DATA}`);
         console.log(`Snapshots dir:     ${SNAPSHOT_DIR}`);
-        resolve(server);
+        
+        // Setup WebSocket server for GraphQL subscriptions
+        setupWebSocketServer(httpServer);
+        console.log(`GraphQL Subscriptions (WebSocket): ws://${hostLabel}:${port}/graphql`);
+        
+        resolve(httpServer);
       })
       .on("error", (err) => {
         reject(err);
@@ -530,6 +596,8 @@ async function ensureInitialized() {
   if (!initPromise) {
     initPromise = (async () => {
       await initLmsStorage();
+      // Initialize CORS configuration
+      await initializeCors();
       return true;
     })();
   }

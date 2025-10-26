@@ -107,6 +107,9 @@ const AuditLogsPage = React.lazy(() => import("./pages/AuditLogsPage.tsx"));
 const UserRoleManagementPage = React.lazy(() => import("./pages/UserRoleManagementPage.tsx"));
 const MySubscriptionsPage = React.lazy(() => import("./pages/MySubscriptionsPage.tsx"));
 
+// OAuth
+const OAuthConsent = React.lazy(() => import("./components/OAuth/OAuthConsent.jsx"));
+
 // data views
 const AllDataTable = React.lazy(() => import("./pages/AllDataTable.tsx"));
 const DataOverview = React.lazy(() => import("./pages/DataOverview.tsx"));
@@ -205,6 +208,10 @@ function App() {
                   />
                   <Route path="/faq" element={<FaqPage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                  
+                  {/* OAuth Authorization */}
+                  <Route path="/oauth/authorize" element={<OAuthConsent />} />
+                  
                   <Route path="/form-layout" element={<FormLayoutPage />} />
                   <Route path="/form-validation" element={<FormValidationPage />} />
                   <Route path="/form" element={<FormPage />} />

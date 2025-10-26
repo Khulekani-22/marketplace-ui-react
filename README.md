@@ -1,4 +1,12 @@
+````markdown
 # Marketplace UI (Vite + React)
+
+## 📚 Documentation
+
+- **[API Documentation](./API_DOCUMENTATION.md)** - Complete API reference
+- **[Quick Start Guide](./API_QUICK_START.md)** - Get started quickly
+- **[OpenAPI Spec](./openapi.yaml)** - OpenAPI 3.0 specification
+- **[Postman Collection](./postman_collection.json)** - Import into Postman
 
 ## Local Development
 
