@@ -7,7 +7,7 @@
 
 import express from 'express';
 import analyticsService from '../services/analyticsService.js';
-import { firebaseAuthRequired } from '../middleware/auth.js';
+import { firebaseAuthRequired } from '../middleware/authFirebase.js';
 import { apiKeyAuth } from '../middleware/authApiKey.js';
 
 const router = express.Router();

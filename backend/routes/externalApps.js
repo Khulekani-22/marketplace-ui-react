@@ -6,10 +6,9 @@
  */
 
 import express from 'express';
-import { firestore } from '../config/firestore.js';
+import { firestore } from '../services/firestore.js';
 import { firebaseAuthRequired } from '../middleware/authFirebase.js';
 import { requireAdmin } from '../middleware/isAdmin.js';
-import { auditLog } from '../middleware/audit.js';
 import { refreshCorsCache } from '../middleware/corsConfig.js';
 
 const router = express.Router();
@@ -106,7 +105,7 @@ router.get('/', firebaseAuthRequired, async (req, res) => {
  * Register a new external app
  * POST /api/external-apps
  */
-router.post('/', firebaseAuthRequired, auditLog('external_app_created'), async (req, res) => {
+router.post('/', firebaseAuthRequired, async (req, res) => {
   try {
     const userId = req.user.uid;
     const {
@@ -250,7 +249,7 @@ router.get('/:id', firebaseAuthRequired, async (req, res) => {
  * Update external app
  * PATCH /api/external-apps/:id
  */
-router.patch('/:id', firebaseAuthRequired, auditLog('external_app_updated'), async (req, res) => {
+router.patch('/:id', firebaseAuthRequired, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.uid;
@@ -349,7 +348,7 @@ router.patch('/:id', firebaseAuthRequired, auditLog('external_app_updated'), asy
  * Delete external app
  * DELETE /api/external-apps/:id
  */
-router.delete('/:id', firebaseAuthRequired, auditLog('external_app_deleted'), async (req, res) => {
+router.delete('/:id', firebaseAuthRequired, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.uid;

@@ -10,7 +10,7 @@
  * - Credential support configuration
  */
 
-import { firestore } from '../config/firestore.js';
+import { firestore } from '../services/firestore.js';
 
 /**
  * Default allowed origins for local development

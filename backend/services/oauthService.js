@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { db } from '../config/firebase.js';
+import { firestore as db } from './firestore.js';
 
 /**
  * OAuth 2.0 Service

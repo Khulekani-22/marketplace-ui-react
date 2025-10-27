@@ -67,6 +67,7 @@ const PORT = Number(process.env.PORT || DEFAULT_PORT);
 let initPromise = null;
 let serverPromise = null;
 let replicatorStarted = false;
+let apolloServerStarted = false;
 
 /* ------------------------ Core security & parsing ------------------------ */
 app.use(helmet());
@@ -555,19 +556,22 @@ app.use((err, req, res, next) => {
 async function listenWithPort(port) {
   const HOST = process.env.HOST || "127.0.0.1";
   return new Promise(async (resolve, reject) => {
-    // Initialize Redis cache service
-    console.log('[Server] Initializing Redis cache...');
-    await initializeRedis();
-    
-    // Start Apollo Server
-    await apolloServer.start();
-    
-    // Apply Apollo middleware to Express
-    apolloServer.applyMiddleware({
-      app,
-      path: '/graphql',
-      cors: false, // We handle CORS ourselves
-    });
+    // Initialize Redis cache service (only once)
+    if (!apolloServerStarted) {
+      console.log('[Server] Initializing Redis cache...');
+      await initializeRedis();
+      
+      // Start Apollo Server (only once)
+      await apolloServer.start();
+      apolloServerStarted = true;
+      
+      // Apply Apollo middleware to Express
+      apolloServer.applyMiddleware({
+        app,
+        path: '/graphql',
+        cors: false, // We handle CORS ourselves
+      });
+    }
 
     const httpServer = app
       .listen(port, HOST, () => {

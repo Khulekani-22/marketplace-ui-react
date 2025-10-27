@@ -10,7 +10,7 @@
 
 import crypto from 'crypto';
 import axios from 'axios';
-import { firestore } from '../config/firestore.js';
+import { firestore } from '../services/firestore.js';
 
 /**
  * Supported webhook events

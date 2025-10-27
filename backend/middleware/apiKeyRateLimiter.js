@@ -14,7 +14,7 @@
  * - Bypass for admin users
  */
 
-import { firestore } from '../config/firestore.js';
+import { firestore } from '../services/firestore.js';
 
 /**
  * Rate limit tiers configuration

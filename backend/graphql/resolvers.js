@@ -1,9 +1,8 @@
 // backend/graphql/resolvers.js
 import { GraphQLScalarType, Kind } from 'graphql';
 import { PubSub } from 'graphql-subscriptions';
-import admin from '../config/firebase.js';
+import { firestore as db } from '../services/firestore.js';
 
-const db = admin.firestore();
 const pubsub = new PubSub();
 
 // Custom scalar types

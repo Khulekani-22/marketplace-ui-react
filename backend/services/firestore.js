@@ -3,12 +3,18 @@
 
 import { initializeApp, cert, getApps, getApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-// Load service account from environment variable
-if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-  throw new Error('FIREBASE_SERVICE_ACCOUNT env variable is not set');
-}
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+// Get directory path for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load service account key from file
+const serviceAccountPath = join(__dirname, '../../serviceAccountKey.json');
+console.log('🔑 Loading Firebase service account from:', serviceAccountPath);
+const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf-8'));
 
 // Robust singleton pattern for serverless
 let app;

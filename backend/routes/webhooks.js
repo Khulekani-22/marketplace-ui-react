@@ -6,10 +6,10 @@
 
 import express from 'express';
 import crypto from 'crypto';
-import { firestore } from '../config/firestore.js';
+import { firestore } from '../services/firestore.js';
 import { firebaseAuthRequired } from '../middleware/authFirebase.js';
 import { apiKeyAuth } from '../middleware/authApiKey.js';
-import { requireAdmin } from '../middleware/requireAdmin.js';
+import { requireAdmin } from '../middleware/isAdmin.js';
 import { 
   triggerWebhook, 
   testWebhook, 

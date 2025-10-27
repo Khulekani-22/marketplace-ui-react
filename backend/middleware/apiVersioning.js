@@ -143,9 +143,9 @@ export function apiVersioning() {
     req.apiVersion = requestedVersion;
     req.apiVersionInfo = VERSION_INFO[requestedVersion];
 
-    // Normalize path (remove version prefix if present)
+    // Store normalized path (don't modify req.path as it's read-only)
     const originalPath = req.path;
-    req.path = normalizeApiPath(req.path);
+    req.normalizedPath = normalizeApiPath(req.path);
     req.originalPath = originalPath;
 
     // Add version headers to response
@@ -297,6 +297,9 @@ export async function deprecateVersion(version, deprecationDate, sunsetDate) {
   // In production, this would also update the database
   console.log(`Version ${version} deprecated. Sunset date: ${sunsetDate}`);
 }
+
+// Named exports for convenience
+export { SUPPORTED_VERSIONS, DEFAULT_VERSION, LATEST_VERSION, VERSION_INFO };
 
 export default {
   apiVersioning,

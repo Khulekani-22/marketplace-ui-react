@@ -1,12 +1,13 @@
 // backend/graphql/server.js
 import { ApolloServer } from 'apollo-server-express';
 import { WebSocketServer } from 'ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { makeServer } from 'graphql-ws';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { typeDefs } from './schema.js';
 import { resolvers } from './resolvers.js';
 import { createLoaders } from './loaders.js';
-import admin from '../config/firebase.js';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 
 // Create executable schema
 const schema = makeExecutableSchema({
@@ -37,8 +38,17 @@ async function getContext({ req, connection }) {
     if (authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
       
+      // Initialize Firebase Admin if needed
+      let app;
+      if (!getApps().length) {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        app = initializeApp({
+          credential: cert(serviceAccount),
+        });
+      }
+      
       // Verify Firebase ID token
-      const decodedToken = await admin.auth().verifyIdToken(token);
+      const decodedToken = await getAuth().verifyIdToken(token);
       context.user = decodedToken;
     }
   } catch (error) {
@@ -84,7 +94,7 @@ export function setupWebSocketServer(httpServer) {
     path: '/graphql',
   });
 
-  useServer(
+  makeServer(
     {
       schema,
       context: async (ctx) => {

@@ -1,8 +1,6 @@
 // backend/graphql/loaders.js
 import DataLoader from 'dataloader';
-import admin from '../config/firebase.js';
-
-const db = admin.firestore();
+import { firestore as db } from '../services/firestore.js';
 
 // Batch load function helper
 async function batchLoadByIds(collection, ids) {
