@@ -163,6 +163,62 @@ router.get("/", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/data/services/:id
+ * Get a single service by ID
+ * Public endpoint - no authentication required
+ */
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const tenantId = req.tenant.id;
+
+    if (!id) {
+      return res.status(400).json({
+        status: "error",
+        message: "Service ID is required"
+      });
+    }
+
+    // Try Firestore first
+    try {
+      const serviceDoc = await firestoreDataStore.getServiceById(id);
+      
+      if (serviceDoc && sameTenant(serviceDoc.tenantId, tenantId)) {
+        return res.json(serviceDoc);
+      }
+    } catch (err) {
+      console.warn('[services/:id] Firestore lookup failed, falling back to cache', err?.message || err);
+    }
+
+    // Fallback to cached data
+    const forceReload = req.query.refresh === "true";
+    const { services = [] } = await getData(forceReload);
+
+    // Find service by ID
+    const service = services.find(
+      (s) => String(s.id) === String(id) && sameTenant(s.tenantId, tenantId)
+    );
+
+    if (!service) {
+      return res.status(404).json({
+        status: "error",
+        message: "Service not found",
+        code: "SERVICE_NOT_FOUND"
+      });
+    }
+
+    res.json(service);
+  } catch (error) {
+    console.error('Error fetching service by ID:', error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch service",
+      error: error.message
+    });
+  }
+});
+
 router.get("/mine", firebaseAuthRequired, async (req, res) => {
   try {
     const tenantId = req.tenant.id;

@@ -409,6 +409,35 @@ class FirestoreDataStore {
     };
   }
 
+  /**
+   * Get a single service by ID
+   * @param {string} serviceId - The service ID to fetch
+   * @returns {Promise<Object|null>} The service object or null if not found
+   */
+  async getServiceById(serviceId) {
+    if (!this.initialized) {
+      throw new Error('Firestore not initialized');
+    }
+
+    if (!serviceId) {
+      return null;
+    }
+
+    try {
+      const docRef = this.db.collection('services').doc(String(serviceId));
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      return serializeDocument(doc);
+    } catch (error) {
+      console.error('[FirestoreDataStore] Error fetching service by ID:', error);
+      throw error;
+    }
+  }
+
   async getVendorServices({
     tenantId,
     vendorId,

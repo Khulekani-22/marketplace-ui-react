@@ -41,6 +41,7 @@ import { jwtAuthOptional } from "./middleware/authJWT.js";
 import { firebaseAuthRequired } from "./middleware/authFirebase.js";
 import { requireAdmin } from "./middleware/isAdmin.js";
 import { auditMutations } from "./middleware/audit.js";
+import { apiKeyAuthOptional } from "./middleware/authApiKey.js";
 import { dynamicCors, securityHeaders, apiResponseHeaders, initializeCors } from "./middleware/corsConfig.js";
 import { apiKeyRateLimiter, rateLimitWarning } from "./middleware/apiKeyRateLimiter.js";
 import { apiVersioning, versionTransform } from "./middleware/apiVersioning.js";
@@ -71,7 +72,7 @@ let apolloServerStarted = false;
 
 /* ------------------------ Core security & parsing ------------------------ */
 app.use(helmet());
-app.use(express.json({ limit: "20mb" })); // checkpoints can be large
+app.use(express.json({ limit: "30mb" })); // checkpoints can be large
 
 // Enhanced CORS configuration with dynamic origin validation
 app.use(dynamicCors());
@@ -91,6 +92,7 @@ app.use(versionTransform());
 /* -------- Attach tenant and (optional) user to each request globally ----- */
 app.use(tenantContext);
 app.use(jwtAuthOptional);
+app.use(apiKeyAuthOptional);
 
 // API Key rate limiting (applies after API key auth)
 app.use(apiKeyRateLimiter());
