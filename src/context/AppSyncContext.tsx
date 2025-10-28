@@ -121,11 +121,48 @@ export function AppSyncProvider({ children }) {
 
   const refreshAppData = useCallback(async () => {
     try {
-      // Fetch core marketplace data from working endpoints
+      // Fetch core marketplace data from working endpoints with 8-second timeout per request
+      const timeout = (ms: number) => new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), ms)
+      );
+      
+      const fetchWithTimeout = (promise: Promise<any>, ms: number) =>
+        Promise.race([promise, timeout(ms)]);
+      
       const [servicesRes, vendorsRes, startupsRes] = await Promise.all([
-        api.get("/api/data/services", { suppressToast: true, suppressErrorLog: true } as any).catch(() => ({ data: { items: [] } })),
-        api.get("/api/data/vendors", { suppressToast: true, suppressErrorLog: true } as any).catch(() => ({ data: { items: [] } })),
-        api.get("/api/data/startups", { suppressToast: true, suppressErrorLog: true } as any).catch(() => ({ data: { items: [] } })),
+        fetchWithTimeout(
+          api.get("/api/data/services", { 
+            suppressToast: true, 
+            suppressErrorLog: true,
+            timeout: 8000, // 8 second axios timeout
+          } as any),
+          9000 // 9 second Promise timeout (slightly higher than axios)
+        ).catch((e) => {
+          console.warn('[AppSync] Services API failed:', e?.message || e);
+          return { data: { items: [] } };
+        }),
+        fetchWithTimeout(
+          api.get("/api/data/vendors", { 
+            suppressToast: true, 
+            suppressErrorLog: true,
+            timeout: 8000,
+          } as any),
+          9000
+        ).catch((e) => {
+          console.warn('[AppSync] Vendors API failed:', e?.message || e);
+          return { data: { items: [] } };
+        }),
+        fetchWithTimeout(
+          api.get("/api/data/startups", { 
+            suppressToast: true, 
+            suppressErrorLog: true,
+            timeout: 8000,
+          } as any),
+          9000
+        ).catch((e) => {
+          console.warn('[AppSync] Startups API failed:', e?.message || e);
+          return { data: { items: [] } };
+        }),
       ]);
       
       const next = {
@@ -142,7 +179,7 @@ export function AppSyncProvider({ children }) {
     } catch (e) {
       const err: any = e;
       const cached = readCachedAppData();
-      setAppData((prev) => {
+      setAppData((prev: any) => {
         if (prev) return prev;
         if (cached) return cached;
         return null;

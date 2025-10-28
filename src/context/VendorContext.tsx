@@ -78,18 +78,40 @@ export function VendorProvider({ children }) {
 
   const fetchLive = useCallback(async () => {
     try {
-      // Fetch vendors and startups from working endpoints instead of broken /api/lms/live
+      // Timeout helper
+      const timeout = (ms: number) => new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), ms)
+      );
+      
+      const fetchWithTimeout = (promise: Promise<any>, ms: number) =>
+        Promise.race([promise, timeout(ms)]);
+      
+      // Fetch vendors and startups from working endpoints with 8-second timeout
       const [vendorsRes, startupsRes] = await Promise.all([
-        api.get("/api/data/vendors", { 
-          headers: { "x-tenant-id": tenantId, "cache-control": "no-cache" },
-          suppressToast: true,
-          suppressErrorLog: true,
-        } as any).catch(() => ({ data: { items: [] } })),
-        api.get("/api/data/startups", {
-          headers: { "x-tenant-id": tenantId, "cache-control": "no-cache" },
-          suppressToast: true,
-          suppressErrorLog: true,
-        } as any).catch(() => ({ data: { items: [] } })),
+        fetchWithTimeout(
+          api.get("/api/data/vendors", { 
+            headers: { "x-tenant-id": tenantId, "cache-control": "no-cache" },
+            suppressToast: true,
+            suppressErrorLog: true,
+            timeout: 8000, // 8 second axios timeout
+          } as any),
+          9000 // 9 second Promise timeout
+        ).catch((e) => {
+          console.warn('[VendorContext] Vendors API failed:', e?.message || e);
+          return { data: { items: [] } };
+        }),
+        fetchWithTimeout(
+          api.get("/api/data/startups", {
+            headers: { "x-tenant-id": tenantId, "cache-control": "no-cache" },
+            suppressToast: true,
+            suppressErrorLog: true,
+            timeout: 8000,
+          } as any),
+          9000
+        ).catch((e) => {
+          console.warn('[VendorContext] Startups API failed:', e?.message || e);
+          return { data: { items: [] } };
+        }),
       ]);
       
       return {
