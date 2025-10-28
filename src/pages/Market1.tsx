@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { auth } from "../firebase.js";
@@ -47,9 +47,15 @@ export default function Market1() {
     setLoading(false);
   }, [q]);
 
+  // FIX: Use ref flag to prevent infinite loop
+  // Previously: useEffect with [load] dependency caused infinite re-renders
+  const loadedRef = useRef(false);
   useEffect(() => {
-    load();
-  }, [load]);
+    if (!loadedRef.current) {
+      loadedRef.current = true;
+      load();
+    }
+  }, []); // Empty array - load only once on mount
 
   useEffect(() => {
     (async () => {

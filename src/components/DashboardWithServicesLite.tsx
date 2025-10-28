@@ -60,10 +60,11 @@ const DashboardWithServicesLite = () => {
     }
   }, []); // No dependencies - load only once!
 
-  // Load on mount only
+  // FIX: Remove loadServices from dependency array to prevent infinite loop
+  // Even though loadServices has empty deps, including it here causes re-render cycles
   useEffect(() => {
     loadServices();
-  }, [loadServices]);
+  }, []); // Empty array - load only once on mount
 
   const handleViewAll = () => {
     navigate("/marketplace");

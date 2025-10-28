@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { api } from "../lib/api";
 
 export default function AllDataTable() {
@@ -16,9 +16,16 @@ export default function AllDataTable() {
     setLoading(false);
   }, [q]);
 
+  // FIX: Use ref flag to prevent infinite loop
+  // Previously: useEffect with [load] dependency caused infinite re-renders
+  // because load is useCallback depending on q
+  const loadedRef = useRef(false);
   useEffect(() => {
-    load();
-  }, [load]);
+    if (!loadedRef.current) {
+      loadedRef.current = true;
+      load();
+    }
+  }, []); // Empty array - load only once on mount
 
   return (
     <div className="container py-4">
