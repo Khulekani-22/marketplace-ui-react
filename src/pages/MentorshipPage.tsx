@@ -1,6 +1,6 @@
 import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
-import MentorshipLayer from "../components/MentorshipLayer";
+import MentorshipLayerSimple from "../components/MentorshipLayerSimple";
 
 export default function MentorshipPage() {
   return (
@@ -12,7 +12,7 @@ export default function MentorshipPage() {
           Discover vetted mentors and book one-on-one sessions tailored to your startup journey.
         </p>
       </div>
-      <MentorshipLayer />
+      <MentorshipLayerSimple />
     </MasterLayout>
   );
 }
