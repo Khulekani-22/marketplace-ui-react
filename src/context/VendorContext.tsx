@@ -128,7 +128,7 @@ export function VendorProvider({ children }) {
 
   const fetchVendorsApi = useCallback(async () => {
     try {
-      const arr = await api.get(`/api/data/vendors`).then((r) => r.data || []);
+      const arr = await api.get(`/api/data/vendors`, { timeout: 8000 }).then((r) => r.data || []);
       return Array.isArray(arr) ? arr : [];
     } catch {
       return [];

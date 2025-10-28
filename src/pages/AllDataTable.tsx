@@ -8,7 +8,10 @@ export default function AllDataTable() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await api.get("/api/data/services", { params: { q, page: 1, pageSize: 100 } });
+    const { data } = await api.get("/api/data/services", { 
+      params: { q, page: 1, pageSize: 100 },
+      timeout: 8000 
+    });
     setRows(data.items || []);
     setLoading(false);
   }, [q]);

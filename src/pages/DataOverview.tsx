@@ -9,7 +9,10 @@ export default function DataOverview() {
     (async () => {
       setLoading(true);
       // pull a large page to compute simple KPIs client-side
-      const { data } = await api.get("/api/data/services", { params: { page: 1, pageSize: 1000 } });
+      const { data } = await api.get("/api/data/services", { 
+        params: { page: 1, pageSize: 1000 },
+        timeout: 8000 
+      });
       const items = data.items || [];
       const total = data.total || items.length;
       const featured = items.filter(s => s.isFeatured).length;

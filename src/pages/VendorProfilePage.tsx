@@ -228,7 +228,7 @@ export default function VendorProfilePage() {
 
         // Merge API vendors
         try {
-          const list = await api.get(`/api/data/vendors`).then((r) => r.data || []);
+          const list = await api.get(`/api/data/vendors`, { timeout: 8000 }).then((r) => r.data || []);
           const draft = deepClone(base);
           draft.startups = Array.isArray(draft.startups) ? draft.startups : [];
           list.forEach((v) => {
@@ -411,7 +411,7 @@ export default function VendorProfilePage() {
       const user = auth.currentUser;
       if (!user) throw new Error("Please sign in");
       const email = (user.email || "").toLowerCase();
-      const startups = await api.get(`/api/data/startups`).then((r) => r.data || []);
+      const startups = await api.get(`/api/data/startups`, { timeout: 8000 }).then((r) => r.data || []);
       const mine = startups.find((s) => (s.ownerUid && s.ownerUid === user.uid) || ((s.contactEmail || s.email || "").toLowerCase() === email));
       if (!mine) {
         setErr("No startup profile found to import.");

@@ -173,7 +173,7 @@ function getDefaultRoleAccess(role: string, featureKey: string): boolean {
 
       // Also fetch vendors in current tenant to know who already has a vendor profile
       try {
-        const vendors = await api.get("/api/data/vendors").then((r) => r.data || []);
+        const vendors = await api.get("/api/data/vendors", { timeout: 8000 }).then((r) => r.data || []);
         const mEmail: Record<string, any> = {},
           mOwner: Record<string, any> = {},
           mId: Record<string, any> = {};

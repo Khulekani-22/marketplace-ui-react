@@ -72,7 +72,7 @@ export default function StartupProfilePage() {
         }
         // Also check if vendor profile already exists for this user
         try {
-          const vendorResponse = await api.get("/api/data/vendors");
+          const vendorResponse = await api.get("/api/data/vendors", { timeout: 8000 });
           const vendors = Array.isArray(vendorResponse.data) 
             ? vendorResponse.data 
             : (vendorResponse.data?.items || []);

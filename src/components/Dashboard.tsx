@@ -85,7 +85,7 @@ export default function Dashboard() {
         if (min !== null) params.minPrice = min;
         if (max !== null) params.maxPrice = max;
 
-        const { data } = await api.get("/api/data/services", { params });
+        const { data } = await api.get("/api/data/services", { params, timeout: 8000 });
         if (!ignore) {
           setRows(data.items || []);
           setTotal(data.total || 0);
