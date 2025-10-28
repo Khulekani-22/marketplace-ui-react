@@ -17,6 +17,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "vercel-build": "npm run build",
+    "generate-secret": "node -e \"console.log('\\n🔐 SESSION_SECRET:', require('crypto').randomBytes(32).toString('hex'), '\\n')\"",
     "postinstall": "node ./scripts/ensure-vite-dist.mjs && node ./scripts/ensure-service-account.mjs"
   },
   "dependencies": {
@@ -46,6 +47,13 @@
     "chart.js": "^4.5.0",
     "cors": "2.8.5",
     "datatables.net": "2.1.8",
+    "@graphql-tools/schema": "^10.0.25",
+    "apollo-server-express": "^3.13.0",
+    "graphql": "^16.11.0",
+    "graphql-subscriptions": "^3.0.0",
+    "graphql-tools": "^9.0.20",
+    "graphql-ws": "^6.0.6",
+    "ws": "^8.18.0",
     "datatables.net-dt": "2.3.2",
     "dotenv": "17.2.1",
     "express": "5.1.0",
