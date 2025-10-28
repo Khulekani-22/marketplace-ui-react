@@ -8,9 +8,10 @@ export default function DataOverview() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      // pull a large page to compute simple KPIs client-side
+      // Load first 100 items for faster initial load (reduced from 1000)
+      // Backend returns total count, so we can show accurate stats
       const { data } = await api.get("/api/data/services", { 
-        params: { page: 1, pageSize: 1000 },
+        params: { page: 1, pageSize: 100 },
         timeout: 8000 
       });
       const items = data.items || [];

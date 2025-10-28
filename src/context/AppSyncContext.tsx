@@ -129,9 +129,11 @@ export function AppSyncProvider({ children }) {
       const fetchWithTimeout = (promise: Promise<any>, ms: number) =>
         Promise.race([promise, timeout(ms)]);
       
+      // Load first 12 items only for fast initial page load (pagination strategy)
       const [servicesRes, vendorsRes, startupsRes] = await Promise.all([
         fetchWithTimeout(
           api.get("/api/data/services", { 
+            params: { page: 1, pageSize: 12 },
             suppressToast: true, 
             suppressErrorLog: true,
             timeout: 8000, // 8 second axios timeout
@@ -143,6 +145,7 @@ export function AppSyncProvider({ children }) {
         }),
         fetchWithTimeout(
           api.get("/api/data/vendors", { 
+            params: { page: 1, pageSize: 12 },
             suppressToast: true, 
             suppressErrorLog: true,
             timeout: 8000,
@@ -154,6 +157,7 @@ export function AppSyncProvider({ children }) {
         }),
         fetchWithTimeout(
           api.get("/api/data/startups", { 
+            params: { page: 1, pageSize: 12 },
             suppressToast: true, 
             suppressErrorLog: true,
             timeout: 8000,

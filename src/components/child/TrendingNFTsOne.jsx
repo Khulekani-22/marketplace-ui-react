@@ -156,6 +156,9 @@ const TrendingNFTsOne = ({
   const servicesRef = useRef([]);
   const versionRef = useRef(0); // guards against stale fetch overwriting fresher state
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1); // Track current page for pagination
+  const [totalItems, setTotalItems] = useState(0); // Total items available
+  const [isLoadingMore, setIsLoadingMore] = useState(false); // Loading more items
   // Category filter (controlled or internal)
   const [internalActiveTab, setInternalActiveTab] = useState("All");
   const activeTab = controlledCategory ?? internalActiveTab;
@@ -212,7 +215,7 @@ const TrendingNFTsOne = ({
       try {
         const params = {
           page: 1,
-          pageSize: 400,
+          pageSize: 12, // Load only first 12 items initially for fast load
         };
         if (forceRefresh) params.refresh = 'true';
         if (tenantId) params.tenantId = tenantId;
@@ -220,8 +223,11 @@ const TrendingNFTsOne = ({
           params,
           suppressToast: true,
           suppressErrorLog: true,
+          timeout: 8000, // 8-second timeout
         });
         const remoteApproved = safeArray(data?.items).map(normalize).filter(isApproved);
+        setTotalItems(data?.total || remoteApproved.length); // Track total available items
+        setCurrentPage(1); // Reset to page 1
         applyResult(remoteApproved);
       } catch (error) {
         console.warn('[TrendingNFTsOne] Live services fetch failed', error?.message || error);
@@ -230,6 +236,52 @@ const TrendingNFTsOne = ({
     },
     [appData, tenantId]
   );
+
+  const loadMoreServices = useCallback(async () => {
+    if (isLoadingMore) return; // Prevent duplicate requests
+    const nextPage = currentPage + 1;
+    const hasMore = services.length < totalItems;
+    
+    if (!hasMore) {
+      console.log('[TrendingNFTsOne] All services loaded');
+      return;
+    }
+
+    setIsLoadingMore(true);
+    try {
+      const params = {
+        page: nextPage,
+        pageSize: 50, // Load 50 more items per click
+      };
+      if (tenantId) params.tenantId = tenantId;
+      
+      const { data } = await api.get('/api/data/services', {
+        params,
+        suppressToast: true,
+        suppressErrorLog: true,
+        timeout: 8000,
+      });
+      
+      const remoteApproved = safeArray(data?.items).map(normalize).filter(isApproved);
+      
+      if (remoteApproved.length > 0) {
+        const currentList = servicesRef.current ?? [];
+        const merged = mergeLists(currentList, [], remoteApproved);
+        servicesRef.current = merged;
+        setServices(merged);
+        setCurrentPage(nextPage);
+        setTotalItems(data?.total || merged.length);
+        console.log(`[TrendingNFTsOne] Loaded page ${nextPage}, total: ${merged.length}/${data?.total || 0}`);
+      }
+    } catch (error) {
+      console.error('[TrendingNFTsOne] Load more failed:', error?.message || error);
+      setToast('Failed to load more services');
+      setToastType('danger');
+      setTimeout(() => setToast(''), 3000);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [currentPage, services.length, totalItems, isLoadingMore, tenantId]);
 
   async function refreshFromLive() {
     await loadServices({ forceRefresh: true });
@@ -888,6 +940,31 @@ const TrendingNFTsOne = ({
             {!loading && filteredServices.length === 0 && (
               <div className="col-12 text-center text-secondary-light">
                 No services found in this category.
+              </div>
+            )}
+
+            {/* View All / Load More Button */}
+            {!loading && services.length < totalItems && (
+              <div className="col-12 text-center mt-4">
+                <button 
+                  className="btn btn-primary btn-lg px-5"
+                  onClick={loadMoreServices}
+                  disabled={isLoadingMore}
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Loading more...
+                    </>
+                  ) : (
+                    <>
+                      View All ({totalItems - services.length} more)
+                    </>
+                  )}
+                </button>
+                <div className="text-muted mt-2 small">
+                  Showing {services.length} of {totalItems} services
+                </div>
               </div>
             )}
           </div>

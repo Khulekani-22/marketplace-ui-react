@@ -87,9 +87,11 @@ export function VendorProvider({ children }) {
         Promise.race([promise, timeout(ms)]);
       
       // Fetch vendors and startups from working endpoints with 8-second timeout
+      // Load first 12 items only for fast initial page load (pagination strategy)
       const [vendorsRes, startupsRes] = await Promise.all([
         fetchWithTimeout(
           api.get("/api/data/vendors", { 
+            params: { page: 1, pageSize: 12 },
             headers: { "x-tenant-id": tenantId, "cache-control": "no-cache" },
             suppressToast: true,
             suppressErrorLog: true,
@@ -102,6 +104,7 @@ export function VendorProvider({ children }) {
         }),
         fetchWithTimeout(
           api.get("/api/data/startups", {
+            params: { page: 1, pageSize: 12 },
             headers: { "x-tenant-id": tenantId, "cache-control": "no-cache" },
             suppressToast: true,
             suppressErrorLog: true,
