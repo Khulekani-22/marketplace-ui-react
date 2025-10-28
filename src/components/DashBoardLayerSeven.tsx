@@ -1,9 +1,9 @@
-import AccessToMarketDashboardSimple from "./AccessToMarketDashboardSimple";
+import DashboardWithServices from "./DashboardWithServices";
 
 const DashBoardLayerSeven = () => {
   return (
     <>
-      <AccessToMarketDashboardSimple />
+      <DashboardWithServices />
     </>
   );
 };
