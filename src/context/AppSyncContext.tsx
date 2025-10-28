@@ -121,11 +121,20 @@ export function AppSyncProvider({ children }) {
 
   const refreshAppData = useCallback(async () => {
     try {
-      const { data } = await api.get("/api/lms/live", {
-        suppressToast: true,
-        suppressErrorLog: true,
-      } as any);
-      const next = data || null;
+      // Fetch core marketplace data from working endpoints
+      const [servicesRes, vendorsRes, startupsRes] = await Promise.all([
+        api.get("/api/data/services", { suppressToast: true, suppressErrorLog: true } as any).catch(() => ({ data: { items: [] } })),
+        api.get("/api/data/vendors", { suppressToast: true, suppressErrorLog: true } as any).catch(() => ({ data: { items: [] } })),
+        api.get("/api/data/startups", { suppressToast: true, suppressErrorLog: true } as any).catch(() => ({ data: { items: [] } })),
+      ]);
+      
+      const next = {
+        services: Array.isArray(servicesRes.data?.items) ? servicesRes.data.items : [],
+        vendors: Array.isArray(vendorsRes.data?.items) ? vendorsRes.data.items : [],
+        startups: Array.isArray(startupsRes.data?.items) ? startupsRes.data.items : [],
+        lastUpdated: new Date().toISOString(),
+      };
+      
       setAppData(next);
       writeCachedAppData(next);
       setAppDataError("");
@@ -258,11 +267,4 @@ export function AppSyncProvider({ children }) {
   }, [appDataError]);
 
   return <AppSyncContext.Provider value={value}>{children}</AppSyncContext.Provider>;
-}
-
-import { useContext } from "react";
-import { AppSyncContext } from "./appSyncContext";
-
-export function useAppSync() {
-  return useContext(AppSyncContext);
 }
