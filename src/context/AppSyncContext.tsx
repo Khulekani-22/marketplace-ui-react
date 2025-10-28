@@ -264,9 +264,12 @@ export function AppSyncProvider({ children }) {
   );
 
   // Sync on route change with background refresh when data already cached
+  // FIX: Don't include syncNow in dependencies - it recreates when appData changes,
+  // causing infinite loop. Use useRef pattern or call directly.
   useEffect(() => {
     syncNow({ background: Boolean(appData), reason: "route-change" });
-  }, [location.pathname, appData, syncNow]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]); // Only sync when route changes, not when appData/syncNow change
 
   // Also sync immediately on sign-in (axios API-first via api client with token)
   useEffect(() => {
