@@ -18,6 +18,7 @@ const queryClient = new QueryClient();
 // Lazy imports
 const AdminRtoRpoPage = React.lazy(() => import("./pages/AdminRtoRpoPage.jsx"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard.tsx"));
+const DashboardDebug = React.lazy(() => import("./pages/DashboardDebug.tsx"));
 const LandingPage = React.lazy(() => import("./pages/LandingPage.tsx"));
 const HomePageTwo = React.lazy(() => import("./pages/HomePageTwo.tsx"));
 const HomePageThree = React.lazy(() => import("./pages/HomePageThree.tsx"));
@@ -156,6 +157,7 @@ function App() {
 
                   {/* protected */}
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/dashboard-debug" element={<DashboardDebug />} />
                   <Route
                     path="/lms-admin"
                     element={
