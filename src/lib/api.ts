@@ -61,7 +61,11 @@ type ApiRequestConfig = InternalAxiosRequestConfig & {
   _loggedAuditError?: boolean;
 };
 
-export const api = axios.create({ baseURL: currentBase });
+// Create axios instance with global 10-second timeout to prevent hung requests
+export const api = axios.create({ 
+  baseURL: currentBase,
+  timeout: 10000 // 10 seconds default timeout for all API calls
+});
 
 function combineUrl(base?: string, url?: string) {
   if (!url) return base || "";

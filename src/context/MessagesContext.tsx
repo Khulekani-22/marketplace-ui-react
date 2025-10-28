@@ -195,8 +195,8 @@ export function MessagesProvider({ children }) {
       try {
         const params = { t: Date.now(), ...(force ? { force: "1" } : {}) };
         const config = force
-          ? { params, headers: { "x-message-refresh": "manual" } }
-          : { params };
+          ? { params, headers: { "x-message-refresh": "manual" }, timeout: 8000 }
+          : { params, timeout: 8000 };
         const { data } = await api.get(`/api/messages`, config);
         const items = Array.isArray(data?.items) ? data.items : [];
         if (refreshSeq.current !== seq) return;
