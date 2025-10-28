@@ -1,0 +1,1 @@
+import{r as e}from"./vendor-CzT6oPac.js";import{V as o}from"./index-AR0poqkx.js";const n=()=>{const r=e.useContext(o);if(!r)throw new Error("useVendor must be used inside <VendorProvider />");return r};export{n as u};

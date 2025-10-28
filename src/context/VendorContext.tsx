@@ -1,9 +1,8 @@
 // src/context/VendorContext.jsx
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { onIdTokenChanged, signOut } from "firebase/auth";
 import { api } from "../lib/api";
-import { auth } from "../firebase.js";
+import { initializeFirebase } from "../utils/lazyFirebase.js";
 import { VendorContext } from "./vendorContextBase";
 
 const API_BASE = "/api/lms";
@@ -193,10 +192,30 @@ export function VendorProvider({ children }) {
   }, [fetchLive, fetchVendorsApi, tenantId]);
 
   useEffect(() => {
-    const unsub = onIdTokenChanged(auth, (user) => {
-      hydrateForUser(user);
-    });
-    return () => unsub();
+    let unsub: (() => void) | null = null;
+    let mounted = true;
+
+    const setupAuthListener = async () => {
+      try {
+        const { auth } = await initializeFirebase();
+        const { onIdTokenChanged } = await import('firebase/auth');
+        
+        if (!mounted) return;
+        
+        unsub = onIdTokenChanged(auth, (user) => {
+          hydrateForUser(user);
+        });
+      } catch (error) {
+        console.error('[VendorContext] Failed to setup auth listener:', error);
+      }
+    };
+
+    setupAuthListener();
+
+    return () => {
+      mounted = false;
+      if (unsub) unsub();
+    };
   }, [hydrateForUser]);
 
   useEffect(() => {
@@ -248,7 +267,11 @@ export function VendorProvider({ children }) {
       },
       signOutAndClear: async () => {
         try {
+          const { auth } = await initializeFirebase();
+          const { signOut } = await import('firebase/auth');
           await signOut(auth);
+        } catch (error) {
+          console.error('[VendorContext] Failed to sign out:', error);
         } finally {
           clearAllVendorCaches();
           setVendor(null);
