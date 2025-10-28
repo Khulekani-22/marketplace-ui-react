@@ -17,18 +17,7 @@ const DashboardWithServices = () => {
   return (
     <div className="dashboard-body">
       {/* Welcome Header */}
-      <div className="row gy-4 mb-4">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-body p-4">
-              <h3 className="mb-2">🎉 Welcome to the Marketplace!</h3>
-              <p className="text-secondary mb-0">
-                Browse our featured services below or explore the full marketplace.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
       {/* Quick Actions */}
       <div className="row gy-4 mb-4">
@@ -115,54 +104,7 @@ const DashboardWithServices = () => {
       </div>
 
       {/* Getting Started Info Card - Only show when not viewing all services */}
-      {!showAllServices && (
-        <div className="row gy-4">
-          <div className="col-12">
-            <div className="card border-primary">
-              <div className="card-body p-4">
-                <h5 className="mb-3">✨ Getting Started</h5>
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <h6>📝 Create Listings</h6>
-                    <p className="text-secondary small mb-0">
-                      Add your services to reach potential clients in the marketplace.
-                    </p>
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <h6>🔍 Discover Services</h6>
-                    <p className="text-secondary small mb-0">
-                      Browse offerings from vendors across various categories.
-                    </p>
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <h6>🤝 Connect</h6>
-                    <p className="text-secondary small mb-0">
-                      Network with startups and vendors in our ecosystem.
-                    </p>
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <h6>💼 Manage</h6>
-                    <p className="text-secondary small mb-0">
-                      Track your listings, subscriptions, and marketplace activity.
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <button 
-                    onClick={handleViewAll}
-                    className="btn btn-primary me-2"
-                  >
-                    View All Services
-                  </button>
-                  <Link to="/vendor-my-listings" className="btn btn-outline-primary">
-                    Manage Listings
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 };
