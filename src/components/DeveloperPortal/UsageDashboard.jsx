@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { auth } from '../../firebase';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './UsageDashboard.css';
 
 const UsageDashboard = ({ compact = false }) => {
@@ -9,51 +9,75 @@ const UsageDashboard = ({ compact = false }) => {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('24h');
 
-  useEffect(() => {
-    loadData();
+  const loadData = useCallback(async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      return { summary: null, series: [] };
+    }
+
+    const token = await user.getIdToken();
+
+    const [summaryRes, timeSeriesRes] = await Promise.all([
+      fetch(`/api/developer/usage-summary?period=${period}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      fetch(`/api/developer/api-keys?limit=1`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then(async (res) => {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          const keyId = data.data[0].id;
+          return fetch(`/api/developer/api-keys/${keyId}/timeseries?period=${period}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }
+        return null;
+      }),
+    ]);
+
+    const summaryPayloadJson = await summaryRes.json();
+    const summaryPayload = summaryPayloadJson.success ? summaryPayloadJson.data : null;
+
+    if (!timeSeriesRes) {
+      return { summary: summaryPayload, series: [] };
+    }
+
+    const timeSeriesData = await timeSeriesRes.json();
+    const series = timeSeriesData.success ? timeSeriesData.data.series : [];
+
+    return { summary: summaryPayload, series };
   }, [period]);
 
-  const loadData = async () => {
-    try {
-      const user = auth.currentUser;
-      const token = await user.getIdToken();
+  useEffect(() => {
+    let cancelled = false;
 
-      const [summaryRes, timeSeriesRes] = await Promise.all([
-        fetch(`/api/developer/usage-summary?period=${period}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`/api/developer/api-keys?limit=1`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }).then(async (res) => {
-          const data = await res.json();
-          if (data.success && data.data.length > 0) {
-            const keyId = data.data[0].id;
-            return fetch(`/api/developer/api-keys/${keyId}/timeseries?period=${period}`, {
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
-          }
-          return null;
-        })
-      ]);
-
-      const summaryData = await summaryRes.json();
-      if (summaryData.success) {
-        setSummary(summaryData.data);
-      }
-
-      if (timeSeriesRes) {
-        const timeSeriesData = await timeSeriesRes.json();
-        if (timeSeriesData.success) {
-          setTimeSeries(timeSeriesData.data.series);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const { summary: incomingSummary, series } = await loadData();
+        if (!cancelled) {
+          setSummary(incomingSummary);
+          setTimeSeries(Array.isArray(series) ? series : []);
+        }
+      } catch (error) {
+        console.error('Load usage data error:', error);
+        if (!cancelled) {
+          setSummary(null);
+          setTimeSeries([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
         }
       }
+    };
 
-      setLoading(false);
-    } catch (error) {
-      console.error('Load usage data error:', error);
-      setLoading(false);
-    }
-  };
+    fetchData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadData]);
 
   if (loading) {
     return <div className="loading">Loading usage data...</div>;

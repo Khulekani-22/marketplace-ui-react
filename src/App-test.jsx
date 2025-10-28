@@ -1,6 +1,6 @@
 // src/App.jsx - SIMPLIFIED FOR TESTING
 import React, { Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import RouteScrollToTop from "./helper/RouteScrollToTop";
 import { AppSyncProvider } from "./context/AppSyncContext.tsx";
 

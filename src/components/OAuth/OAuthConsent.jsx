@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase';
 import './OAuthConsent.css';
@@ -11,71 +11,87 @@ const OAuthConsent = () => {
   const [consentData, setConsentData] = useState(null);
   const [processing, setProcessing] = useState(false);
 
+  const searchKey = useMemo(() => searchParams.toString(), [searchParams]);
+
   useEffect(() => {
+    let cancelled = false;
+
+    const loadConsentRequest = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          if (!cancelled) {
+            setError('Please sign in to authorize');
+            setLoading(false);
+          }
+          return;
+        }
+
+        const params = new URLSearchParams(searchKey);
+        const clientId = params.get('client_id');
+        const redirectUri = params.get('redirect_uri');
+        const responseType = params.get('response_type');
+        const scope = params.get('scope');
+        const state = params.get('state');
+        const codeChallenge = params.get('code_challenge');
+        const codeChallengeMethod = params.get('code_challenge_method');
+
+        if (!clientId || !redirectUri || !responseType || !scope) {
+          if (!cancelled) {
+            setError('Invalid authorization request - missing required parameters');
+            setLoading(false);
+          }
+          return;
+        }
+
+        const authUrl = new URL('/api/oauth/authorize', window.location.origin);
+        authUrl.searchParams.set('client_id', clientId);
+        authUrl.searchParams.set('redirect_uri', redirectUri);
+        authUrl.searchParams.set('response_type', responseType);
+        authUrl.searchParams.set('scope', scope);
+        if (state) authUrl.searchParams.set('state', state);
+        if (codeChallenge) authUrl.searchParams.set('code_challenge', codeChallenge);
+        if (codeChallengeMethod) authUrl.searchParams.set('code_challenge_method', codeChallengeMethod);
+
+        const token = await user.getIdToken();
+        const response = await fetch(authUrl.toString(), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (!cancelled) {
+            setError(data.message || 'Failed to load authorization request');
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (response.redirected || data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+
+        if (!cancelled) {
+          setConsentData(data.data);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Load consent error:', error);
+        if (!cancelled) {
+          setError('Failed to load authorization request');
+          setLoading(false);
+        }
+      }
+    };
+
     loadConsentRequest();
-  }, []);
 
-  const loadConsentRequest = async () => {
-    try {
-      const user = auth.currentUser;
-      if (!user) {
-        setError('Please sign in to authorize');
-        setLoading(false);
-        return;
-      }
-
-      // Get authorization parameters from URL
-      const clientId = searchParams.get('client_id');
-      const redirectUri = searchParams.get('redirect_uri');
-      const responseType = searchParams.get('response_type');
-      const scope = searchParams.get('scope');
-      const state = searchParams.get('state');
-      const codeChallenge = searchParams.get('code_challenge');
-      const codeChallengeMethod = searchParams.get('code_challenge_method');
-
-      if (!clientId || !redirectUri || !responseType || !scope) {
-        setError('Invalid authorization request - missing required parameters');
-        setLoading(false);
-        return;
-      }
-
-      // Build authorization URL
-      const authUrl = new URL('/api/oauth/authorize', window.location.origin);
-      authUrl.searchParams.set('client_id', clientId);
-      authUrl.searchParams.set('redirect_uri', redirectUri);
-      authUrl.searchParams.set('response_type', responseType);
-      authUrl.searchParams.set('scope', scope);
-      if (state) authUrl.searchParams.set('state', state);
-      if (codeChallenge) authUrl.searchParams.set('code_challenge', codeChallenge);
-      if (codeChallengeMethod) authUrl.searchParams.set('code_challenge_method', codeChallengeMethod);
-
-      const token = await user.getIdToken();
-      const response = await fetch(authUrl.toString(), {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || 'Failed to load authorization request');
-        setLoading(false);
-        return;
-      }
-
-      // If user already authorized, redirect immediately
-      if (response.redirected || data.redirect) {
-        window.location.href = data.redirect;
-        return;
-      }
-
-      setConsentData(data.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Load consent error:', error);
-      setError('Failed to load authorization request');
-      setLoading(false);
-    }
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [searchKey]);
 
   const handleApprove = async () => {
     try {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { auth } from '../../firebase';
 import './ApiKeysManager.css';
 
@@ -9,29 +9,51 @@ const ApiKeysManager = () => {
   const [selectedKey, setSelectedKey] = useState(null);
   const [newKeyData, setNewKeyData] = useState({ name: '', tier: 'free' });
 
-  useEffect(() => {
-    loadApiKeys();
-  }, []);
+  const loadApiKeys = useCallback(async (options = {}) => {
+    const { signal } = options;
 
-  const loadApiKeys = async () => {
     try {
+      if (!signal?.aborted) {
+        setLoading(true);
+      }
       const user = auth.currentUser;
+      if (!user) {
+        if (!signal?.aborted) {
+          setApiKeys([]);
+          setLoading(false);
+        }
+        return;
+      }
+
       const token = await user.getIdToken();
-      
+
       const response = await fetch('/api/developer/api-keys', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();
-      if (data.success) {
+      if (!signal?.aborted && data.success) {
         setApiKeys(data.data);
       }
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     } catch (error) {
       console.error('Load API keys error:', error);
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const context = { aborted: false };
+    setLoading(true);
+    loadApiKeys({ signal: context });
+    return () => {
+      context.aborted = true;
+    };
+  }, [loadApiKeys]);
 
   const createApiKey = async () => {
     try {
@@ -52,7 +74,7 @@ const ApiKeysManager = () => {
         alert(`API Key Created!\n\nKey: ${data.data.key}\n\nSave this key securely - you won't see it again!`);
         setShowCreateModal(false);
         setNewKeyData({ name: '', tier: 'free' });
-        loadApiKeys();
+  loadApiKeys();
       }
     } catch (error) {
       console.error('Create API key error:', error);
@@ -73,7 +95,7 @@ const ApiKeysManager = () => {
       });
 
       if (response.ok) {
-        loadApiKeys();
+  loadApiKeys();
       }
     } catch (error) {
       console.error('Delete API key error:', error);
@@ -96,7 +118,7 @@ const ApiKeysManager = () => {
       const data = await response.json();
       if (data.success) {
         alert(`New API Key: ${data.data.newKey}\n\nSave this securely!`);
-        loadApiKeys();
+  loadApiKeys();
       }
     } catch (error) {
       console.error('Rotate API key error:', error);
@@ -246,29 +268,51 @@ const KeyUsageDetails = ({ keyId }) => {
   const [usage, setUsage] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadUsage();
-  }, [keyId]);
+  const loadUsage = useCallback(async (options = {}) => {
+    const { signal } = options;
 
-  const loadUsage = async () => {
     try {
+      if (!signal?.aborted) {
+        setLoading(true);
+      }
       const user = auth.currentUser;
+      if (!user) {
+        if (!signal?.aborted) {
+          setUsage(null);
+          setLoading(false);
+        }
+        return;
+      }
+
       const token = await user.getIdToken();
-      
+
       const response = await fetch(`/api/developer/api-keys/${keyId}/usage`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();
-      if (data.success) {
+      if (!signal?.aborted && data.success) {
         setUsage(data.data);
       }
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     } catch (error) {
       console.error('Load usage error:', error);
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, [keyId]);
+
+  useEffect(() => {
+    const context = { aborted: false };
+    setLoading(true);
+    loadUsage({ signal: context });
+    return () => {
+      context.aborted = true;
+    };
+  }, [loadUsage]);
 
   if (loading) return <div>Loading usage data...</div>;
   if (!usage) return <div>No usage data available</div>;

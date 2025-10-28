@@ -94,7 +94,7 @@ class AppDataMigration {
   /**
    * Migrate a single collection
    */
-  async migrateCollection(collectionName, data, options = {}) {
+  async migrateCollection(collectionName, data) {
     try {
       console.log(`\n🚀 Migrating ${collectionName}...`);
       

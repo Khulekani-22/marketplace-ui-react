@@ -176,7 +176,6 @@ const TrendingNFTsOne = ({
   const [subs, setSubs] = useState(() => new Set()); // serviceId set
   const [bookings, setBookings] = useState({}); // serviceId -> { date, slot }
   const [unifiedModal, setUnifiedModal] = useState({ open: false, id: null, date: '', slot: '', payment: 'credits', voucherCode: '', sponsoredGroup: '', error: '' });
-  const [bookingBusy, setBookingBusy] = useState(false);
   const navigate = useNavigate();
   const { appData } = useAppSync();
   const { wallet, eligible: walletEligible, redeemCredits, loading: walletLoading, refresh } = useWallet();

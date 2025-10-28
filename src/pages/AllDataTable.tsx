@@ -25,7 +25,7 @@ export default function AllDataTable() {
       loadedRef.current = true;
       load();
     }
-  }, []); // Empty array - load only once on mount
+  }, [load]);
 
   return (
     <div className="container py-4">

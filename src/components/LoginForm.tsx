@@ -51,10 +51,12 @@ function mapFirebaseError(code: string | undefined) {
  * - showTenant: boolean to render tenant selector (default true)
  */
 type AfterLoginPayload = { uid: string; email: string | null; tenantId: string };
+// eslint-disable-next-line no-unused-vars
+type AfterLoginHandler = (payload: AfterLoginPayload) => Promise<void> | void;
 
 type LoginFormProps = {
   redirectTo?: string;
-  afterLogin?: (details: AfterLoginPayload) => Promise<void> | void;
+  afterLogin?: AfterLoginHandler;
   showTenant?: boolean;
 };
 

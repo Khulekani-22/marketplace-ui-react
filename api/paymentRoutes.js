@@ -21,6 +21,7 @@ router.get('/sponsored-groups', async (req, res) => {
     const groups = groupsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json({ groups });
   } catch (err) {
+    console.error('[paymentRoutes] Failed to fetch sponsored groups:', err);
     res.status(500).json({ error: 'Failed to fetch sponsored groups' });
   }
 });
@@ -44,6 +45,7 @@ router.post('/redeem-voucher', async (req, res) => {
     await logAudit(userId, 'redeem-voucher', { code });
     res.json({ message: 'Voucher redeemed! 10 Kumii Credits added.' });
   } catch (err) {
+    console.error('[paymentRoutes] Voucher redemption failed:', err);
     res.status(500).json({ error: 'Voucher redemption failed' });
   }
 });
@@ -63,6 +65,7 @@ router.post('/pay-with-credits', async (req, res) => {
     await logAudit(userId, 'pay-with-credits', {});
     res.json({ message: 'Payment successful! 1 Kumii Credit deducted.' });
   } catch (err) {
+    console.error('[paymentRoutes] Credit payment failed:', err);
     res.status(500).json({ error: 'Credit payment failed' });
   }
 });
@@ -82,6 +85,7 @@ router.post('/apply-sponsorship', async (req, res) => {
     await logAudit(userId, 'apply-sponsorship', { groupId });
     res.json({ message: 'Sponsorship applied! Session booked for free.' });
   } catch (err) {
+    console.error('[paymentRoutes] Sponsorship application failed:', err);
     res.status(500).json({ error: 'Sponsorship application failed' });
   }
 });

@@ -1,12 +1,11 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TrendingNFTsOne from "./child/TrendingNFTsOne";
 
 const DashboardWithServices = () => {
-  const [showAllServices, setShowAllServices] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
-  const [categories, setCategories] = useState<string[]>([]);
+  const [, setCategories] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const handleViewAll = () => {
@@ -64,19 +63,16 @@ const DashboardWithServices = () => {
           <div className="card">
             <div className="card-header d-flex justify-content-between align-items-center">
               <h5 className="mb-0">Featured Services</h5>
-              {!showAllServices && (
-                <button 
-                  className="btn btn-primary btn-sm"
-                  onClick={handleViewAll}
-                >
-                  View All Services
-                </button>
-              )}
+              <button 
+                className="btn btn-primary btn-sm"
+                onClick={handleViewAll}
+              >
+                View All Services
+              </button>
             </div>
             <div className="card-body">
               {/* TrendingNFTsOne with limit of 12 when not showing all */}
               <DashboardServicesWrapper 
-                showAll={showAllServices}
                 query={query}
                 onQueryChange={setQuery}
                 category={category}
@@ -85,19 +81,17 @@ const DashboardWithServices = () => {
               />
               
               {/* View All Button at bottom of services */}
-              {!showAllServices && (
-                <div className="row mt-4">
-                  <div className="col-12 text-center">
-                    <button 
-                      className="btn btn-lg btn-primary"
-                      onClick={handleViewAll}
-                    >
-                      <i className="ph ph-arrow-right me-2"></i>
-                      View All Services in Marketplace
-                    </button>
-                  </div>
+              <div className="row mt-4">
+                <div className="col-12 text-center">
+                  <button 
+                    className="btn btn-lg btn-primary"
+                    onClick={handleViewAll}
+                  >
+                    <i className="ph ph-arrow-right me-2"></i>
+                    View All Services in Marketplace
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -109,22 +103,22 @@ const DashboardWithServices = () => {
   );
 };
 
-// Wrapper component to handle service display logic
-const DashboardServicesWrapper = ({ 
-  showAll, 
-  query, 
-  onQueryChange, 
-  category, 
-  onCategoryChange, 
-  onCategoriesChange 
-}: { 
-  showAll: boolean; 
+type DashboardServicesWrapperProps = {
   query: string;
-  onQueryChange: (q: string) => void;
+  onQueryChange: Dispatch<SetStateAction<string>>;
   category: string;
-  onCategoryChange: (c: string) => void;
-  onCategoriesChange: (cats: string[]) => void;
-}) => {
+  onCategoryChange: Dispatch<SetStateAction<string>>;
+  onCategoriesChange: Dispatch<SetStateAction<string[]>>;
+};
+
+// Wrapper component to handle service display logic
+const DashboardServicesWrapper = ({
+  query,
+  onQueryChange,
+  category,
+  onCategoryChange,
+  onCategoriesChange,
+}: DashboardServicesWrapperProps) => {
   // This component wraps TrendingNFTsOne but limits display to 12 unless showAll is true
   return (
     <div className="dashboard-services-wrapper">

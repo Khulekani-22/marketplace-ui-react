@@ -6,9 +6,10 @@ The remaining lint warnings fall into a few predictable buckets. They are tracke
 
 ## 1. Hook dependency warnings
 
-- Files: `src/components/AdminWalletCreditsLayer.tsx`, `src/components/AdminWalletCreditsLayerNew.tsx`, `src/components/DeveloperPortal/ApiKeysManager.jsx`, `src/components/DeveloperPortal/UsageDashboard.jsx`, `src/components/MarketplaceDetailsLayer.tsx`, `src/components/OAuth/OAuthConsent.jsx`, `src/pages/AllDataTable.tsx`, `src/pages/Market1.tsx`, `src/pages/SloaneAcademyPage.tsx`, `src/pages/VendorDashboardPage.tsx`, `src/pages/VendorMyListings.tsx`
-- Reason: Hooks intentionally omit dependencies to avoid re-fetch storms or rely on memoised callbacks that still need reshaping.
-- Action: Refactor the relevant hooks to expose memoised callbacks (via `useCallback`) and effects that can safely include all dependencies. Each screen needs manual testing, so this is planned as a follow-up refactor.
+- Files: `src/components/AdminWalletCreditsLayer.tsx`, `src/components/AdminWalletCreditsLayerNew.tsx`, `src/pages/Market1.tsx`, `src/pages/SloaneAcademyPage.tsx`, `src/pages/VendorDashboardPage.tsx`, `src/pages/VendorMyListings.tsx`
+- Recently resolved: `src/components/DeveloperPortal/ApiKeysManager.jsx`, `src/components/DeveloperPortal/UsageDashboard.jsx`, `src/components/MarketplaceDetailsLayer.tsx`, `src/components/OAuth/OAuthConsent.jsx`, `src/pages/AllDataTable.tsx`
+- Reason: Remaining hooks intentionally omit dependencies to avoid re-fetch storms or rely on memoised callbacks that still need reshaping.
+- Action: Continue refactoring the remaining screens to expose memoised callbacks (via `useCallback`) and effect-safe dependency arrays, validating each UI with manual testing afterwards.
 
 ## 2. Generated SDK stubs
 
@@ -30,8 +31,8 @@ The remaining lint warnings fall into a few predictable buckets. They are tracke
 
 ## 5. API layer warnings
 
-- Files: `api/paymentRoutes.js`, `api/services/firestoreWalletService.js`, `api/test-firebase-connection.js`, `api/migrations/appDataToFirestore.js`
-- Reason: Express error callbacks still include unused `err` arguments so function signatures match Node expectations; a few helper variables are placeholders for future options.
-- Action: Convert to `_err` naming convention or rework handlers when revisiting the API. Safe to defer.
+- Files: `api/services/firestoreWalletService.js`, `api/test-firebase-connection.js`
+- Reason: Express helpers keep unused placeholders for future expansion (e.g., transaction aggregation, CLI entry points).
+- Action: Convert to `_`-prefixed arguments or flesh out the feature work when these utilities are revisited. Safe to defer for now.
 
 Keeping this list close to the codebase should help the next clean-up pass focus on the highest-value fixes.

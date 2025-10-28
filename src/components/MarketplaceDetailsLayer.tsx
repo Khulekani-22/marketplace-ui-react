@@ -43,14 +43,9 @@ const MarketplaceDetailsLayer = () => {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
-  // Helper to get query param
-  function getQueryParam(name: string): string | null {
-    const params = new URLSearchParams(location.search);
-    return params.get(name);
-  }
-
   useEffect(() => {
-    const serviceId = getQueryParam("id");
+    const params = new URLSearchParams(location.search);
+    const serviceId = params.get("id");
     if (!serviceId) {
       setLoading(false);
       return;
