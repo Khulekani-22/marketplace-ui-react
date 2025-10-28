@@ -191,7 +191,8 @@ export async function fetchMentorshipServices(
   const { signal, search, tenantId, pageSize, refresh, includePast } = options;
   const params: Record<string, any> = {};
   if (search) params.q = search;
-  if (tenantId) params.tenantId = tenantId;
+  const payloadTenant = tenantId === "vendor" ? "public" : tenantId;
+  if (payloadTenant) params.tenantId = payloadTenant;
   if (pageSize) params.limit = pageSize;
   if (refresh) params.refresh = "true";
   if (includePast != null) params.includePast = includePast ? "true" : "false";

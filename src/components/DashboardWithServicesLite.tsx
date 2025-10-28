@@ -239,7 +239,8 @@ const TrendingNFTsOne = ({
           pageSize: 400,
         };
         if (forceRefresh) params.refresh = 'true';
-        if (tenantId) params.tenantId = tenantId;
+        const payloadTenant = tenantId === "vendor" ? "public" : tenantId;
+        if (payloadTenant) params.tenantId = payloadTenant;
         const { data } = await api.get('/api/data/services', {
           params,
           suppressToast: true,

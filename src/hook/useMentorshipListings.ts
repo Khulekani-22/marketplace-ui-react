@@ -15,12 +15,13 @@ export function useMentorshipListings(options: UseMentorshipListingsOptions = {}
   const { query = "", expertise = "", enabled = true, includePast = false } = options;
   const { appData } = useAppSync();
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
+  const normalizedTenantId = tenantId === "vendor" ? "public" : tenantId;
 
   const { data, isLoading, isFetching, refetch, error } = useQuery({
-    queryKey: ["mentorshipListings", tenantId, includePast ? "withPast" : "upcoming"],
+    queryKey: ["mentorshipListings", normalizedTenantId, includePast ? "withPast" : "upcoming"],
     enabled,
     queryFn: async ({ signal }) => {
-      return await loadMentorshipListings({ tenantId, signal, appData, includePast });
+  return await loadMentorshipListings({ tenantId: normalizedTenantId, signal, appData: (appData as any) ?? undefined, includePast });
     },
     staleTime: 1000 * 60, // 1 minute freshness
   });
@@ -28,8 +29,8 @@ export function useMentorshipListings(options: UseMentorshipListingsOptions = {}
   const listings = useMemo(() => {
     const base = data?.listings || [];
     if (!query && !expertise) return base;
-    return filterMentors(base, query, { expertise, tenantId });
-  }, [data?.listings, expertise, query, tenantId]);
+    return filterMentors(base, query, { expertise, tenantId: normalizedTenantId });
+  }, [data?.listings, expertise, query, normalizedTenantId]);
 
   return {
     listings,

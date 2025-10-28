@@ -218,7 +218,8 @@ const TrendingNFTsOne = ({
           pageSize: 12, // Load only first 12 items initially for fast load
         };
         if (forceRefresh) params.refresh = 'true';
-        if (tenantId) params.tenantId = tenantId;
+        const payloadTenant = tenantId === 'vendor' ? 'public' : tenantId;
+        if (payloadTenant) params.tenantId = payloadTenant;
         const { data } = await api.get('/api/data/services', {
           params,
           suppressToast: true,
@@ -253,7 +254,8 @@ const TrendingNFTsOne = ({
         page: nextPage,
         pageSize: 50, // Load 50 more items per click
       };
-      if (tenantId) params.tenantId = tenantId;
+      const payloadTenant = tenantId === 'vendor' ? 'public' : tenantId;
+      if (payloadTenant) params.tenantId = payloadTenant;
       
       const { data } = await api.get('/api/data/services', {
         params,
