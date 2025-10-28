@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { auth } from "../firebase.js";
 import { api } from "../lib/api";
@@ -29,15 +29,12 @@ const AccessToMarketDashboard = () => {
   const [profiles, setProfiles] = useState<{ startup: StartupProfile | null; vendor: VendorProfile | null }>({ startup: null, vendor: null });
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [availableCategories, setAvailableCategories] = useState<string[]>(["All"]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const tenantHeader = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
-
   // Fetch startup and vendor profiles for current user with timeout and retry
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+  let timeoutId: ReturnType<typeof setTimeout>;
     let abortController = new AbortController();
     
     const fetchProfiles = async (retryCount = 0) => {
@@ -131,11 +128,6 @@ const AccessToMarketDashboard = () => {
     setSearchQuery(query);
   };
 
-  // Handle categories list update from TrendingNFTsOne
-  const handleCategoriesChange = (categories: string[]) => {
-    setAvailableCategories(categories);
-  };
-
   return (
     <>
       <div className='row gy-4'>
@@ -206,7 +198,7 @@ const AccessToMarketDashboard = () => {
             onQueryChange={handleQueryChange}
             category={selectedCategory}
             onCategoryChange={handleCategoryChange}
-            onCategoriesChange={handleCategoriesChange}
+            onCategoriesChange={() => {}}
           />
         </div>
 

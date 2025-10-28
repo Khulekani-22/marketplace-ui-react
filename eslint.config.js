@@ -6,7 +6,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tsParser from '@typescript-eslint/parser'
 
 export default [
-  { ignores: ['dist', 'backend/**', 'src/data/**', 'src/**/*.{stories,test}.{js,jsx,ts,tsx}', '.vercel/**'] },
+  { ignores: ['dist', 'backend/**', 'src/data/**', 'src/**/*.{stories,test}.{js,jsx,ts,tsx}', '.vercel/**', 'tools/**', 'sdks/javascript/dist/**'] },
   {
   files: ['**/*.{js,jsx,ts,tsx}'],
     languageOptions: {

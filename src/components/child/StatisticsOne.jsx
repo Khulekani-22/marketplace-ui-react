@@ -21,12 +21,16 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const StatisticsOne = () => {
   const { appData } = useAppSync();
-  
-  // Prepare app data
+  const {
+    dailyIconBarChartSeriesTwo,
+    dailyIconBarChartOptionsTwo,
+    createChartEight,
+  } = useReactApexChart();
+  const [activeTab, setActiveTab] = useState("year");
+
   const leads = appData?.leads || [];
   const services = appData?.services || [];
 
-  // Group by year
   const leadsByYear = leads.reduce((acc, lead) => {
     const year = new Date(lead?.date || "2024-01-01").getFullYear();
     const amount = parseFloat(lead?.finalSale?.amount?.replace(/[^\d.]/g, "") || "0");
@@ -34,22 +38,12 @@ const StatisticsOne = () => {
     return acc;
   }, {});
 
-  // Group by service/vendor
   const leadsByService = leads.reduce((acc, lead) => {
     const owner = lead.owner || "Unknown";
     const amount = parseFloat(lead?.finalSale?.amount?.replace(/[^\d.]/g, "") || "0");
     acc[owner] = (acc[owner] || 0) + amount;
     return acc;
   }, {});
-
-const StatisticsOne = () => {
-  const {
-    dailyIconBarChartSeriesTwo,
-    dailyIconBarChartOptionsTwo,
-    createChartEight,
-  } = useReactApexChart();
-
-  const [activeTab, setActiveTab] = useState("year");
 
   // Chart.js options
   const options = {

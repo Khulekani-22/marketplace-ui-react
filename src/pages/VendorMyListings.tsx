@@ -360,13 +360,13 @@ export default function VendorMyListings() {
 
   function openFeedback(i: Listing) {
     const subj = `Feedback request: ${i.title}`;
-    const body = `Hello Admin\n\nMy listing \"${i.title}\" (ID: ${i.id}) was ${String(i.status || 'rejected')}. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!`;
+    const body = `Hello Admin\n\nMy listing "${i.title}" (ID: ${i.id}) was ${String(i.status || "rejected")}. Could you please share more details on what needs to be corrected so I can resubmit?\n\nThank you!`;
     setFeedback({ open: true, listing: i, subject: subj, content: body, sending: false, err: null, done: false });
   }
   
   function openGeneralFeedback() {
-    const subj = `General inquiry from ${(vendor as Vendor)?.name || (vendor as Vendor)?.companyName || 'vendor'}`;
-    const body = `Hello Admin\n\nI have a question/concern regarding my vendor account or listings.\n\n[Please describe your question or concern here]\n\nThank you for your assistance!`;
+    const subj = `General inquiry from ${(vendor as Vendor)?.name || (vendor as Vendor)?.companyName || "vendor"}`;
+    const body = "Hello Admin\n\nI have a question/concern regarding my vendor account or listings.\n\n[Please describe your question or concern here]\n\nThank you for your assistance!";
     setFeedback({ open: true, listing: null, subject: subj, content: body, sending: false, err: null, done: false });
   }
   

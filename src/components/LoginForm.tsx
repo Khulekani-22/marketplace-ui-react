@@ -14,9 +14,17 @@ import { hasFullAccess } from "../utils/roles";
 import { VendorContext } from "../context/vendorContextBase";
 import { writeAuditLog } from "../lib/audit";
 
+type VendorContextValue = {
+  refresh?: () => Promise<void>;
+} | null;
+
+type FirebaseErrorLike = {
+  code?: string;
+};
+
 const google = new GoogleAuthProvider();
 
-function mapFirebaseError(code) {
+function mapFirebaseError(code: string | undefined) {
   switch (code) {
     case "auth/invalid-email":
       return "Please enter a valid email address.";
@@ -42,29 +50,23 @@ function mapFirebaseError(code) {
  * - afterLogin: optional callback({ uid, email, tenantId })
  * - showTenant: boolean to render tenant selector (default true)
  */
+type AfterLoginPayload = { uid: string; email: string | null; tenantId: string };
+
+type LoginFormProps = {
+  redirectTo?: string;
+  afterLogin?: (details: AfterLoginPayload) => Promise<void> | void;
+  showTenant?: boolean;
+};
+
 export default function LoginForm({
   redirectTo = "/index-7",
   afterLogin,
   showTenant = true,
-}) {
-  const dispatcher = (React as any)?.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED?.ReactCurrentDispatcher?.current;
-  if (!dispatcher || typeof dispatcher.useState !== "function") {
-    console.error("[LoginForm] React dispatcher missing. Possible duplicate React or invalid render context.");
-    return (
-      <div className="container my-4" style={{ maxWidth: 480 }}>
-        <div className="card shadow-sm">
-          <div className="card-body p-4">
-            <h1 className="h4 mb-3">Sign in</h1>
-            <p className="text-muted">Loading sign-in experience…</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+}: LoginFormProps) {
 
   const nav = useNavigate();
   const location = useLocation();
-  const vendorCtx = useContext(VendorContext);
+  const vendorCtx = useContext(VendorContext) as VendorContextValue;
   const refreshVendor = vendorCtx?.refresh;
 
   // return URL support: /login?returnTo=/somewhere or navigate("/login", { state: { from: "/somewhere" }})
@@ -136,7 +138,7 @@ export default function LoginForm({
     return () => unsub();
   }, [afterLogin, nav, returnTo, tenantId, refreshVendor]);
 
-  async function doEmailLogin(e) {
+  async function doEmailLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErr(null);
     setMsg(null);
@@ -149,8 +151,8 @@ export default function LoginForm({
       await signInWithEmailAndPassword(auth, email.trim(), pass);
       try { await writeAuditLog({ action: "LOGIN", userEmail: email.trim() }); } catch {}
       // onIdTokenChanged will handle refresh + redirect
-    } catch (ex) {
-      setErr(mapFirebaseError(ex?.code));
+    } catch (ex: unknown) {
+      setErr(mapFirebaseError((ex as FirebaseErrorLike)?.code));
     } finally {
       setBusy(false);
     }
@@ -160,12 +162,17 @@ export default function LoginForm({
     setErr(null);
     setMsg(null);
     setBusy(true);
-  try {
+    try {
       await signInWithPopup(auth, google);
-      try { await writeAuditLog({ action: "LOGIN_GOOGLE", userEmail: auth.currentUser?.email }); } catch {}
+      try {
+        await writeAuditLog({
+          action: "LOGIN_GOOGLE",
+          userEmail: auth.currentUser?.email ?? undefined,
+        });
+      } catch {}
       // onIdTokenChanged will handle refresh + redirect
-    } catch (ex) {
-      setErr(mapFirebaseError(ex?.code));
+    } catch (ex: unknown) {
+      setErr(mapFirebaseError((ex as FirebaseErrorLike)?.code));
     } finally {
       setBusy(false);
     }
@@ -182,8 +189,8 @@ export default function LoginForm({
     try {
       await sendPasswordResetEmail(auth, email.trim());
       setMsg("Password reset email sent. Please check your inbox.");
-    } catch (ex) {
-      setErr(mapFirebaseError(ex?.code));
+    } catch (ex: unknown) {
+      setErr(mapFirebaseError((ex as FirebaseErrorLike)?.code));
     } finally {
       setBusy(false);
     }

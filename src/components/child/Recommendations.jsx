@@ -283,6 +283,7 @@ export default function Recommendations() {
 
       setSubs((prev) => new Set([...prev, id]));
     } catch (error) {
+      console.error("Subscription update failed", error);
       setErr("Unable to update subscription right now. Please try again.");
     }
   }

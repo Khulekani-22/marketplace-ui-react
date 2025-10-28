@@ -1,4 +1,4 @@
-
+import type { FC } from "react";
 import MessagingSystem from './MessagingSystem';
 
 interface ChatMessageLayerProps {
@@ -6,7 +6,7 @@ interface ChatMessageLayerProps {
   userName?: string;
 }
 
-const ChatMessageLayer: React.FC<ChatMessageLayerProps> = ({ userEmail, userName }) => {
+const ChatMessageLayer: FC<ChatMessageLayerProps> = ({ userEmail, userName }) => {
   return <MessagingSystem userEmail={userEmail} userName={userName} />;
 };
 

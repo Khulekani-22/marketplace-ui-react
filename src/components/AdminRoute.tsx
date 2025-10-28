@@ -1,12 +1,14 @@
 // src/components/AdminRoute.jsx
-import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAppSync } from "../context/useAppSync";
 import { auth } from "../firebase.js";
-import { api } from "../lib/api";
-import { hasFullAccess, normalizeRole } from "../utils/roles";
 
-export default function AdminRoute({ children }) {
+type AdminRouteProps = {
+  children: ReactNode;
+};
+
+export default function AdminRoute({ children }: AdminRouteProps) {
   const location = useLocation();
   const { featurePrivileges = {}, role } = useAppSync();
   // For /audit-logs route, require audit-logs privilege
