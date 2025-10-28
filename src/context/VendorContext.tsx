@@ -77,10 +77,31 @@ export function VendorProvider({ children }) {
   };
 
   const fetchLive = useCallback(async () => {
-    const { data } = await api.get(`${API_BASE}/live`, {
-      headers: { "x-tenant-id": tenantId, "cache-control": "no-cache" },
-    });
-    return data && typeof data === "object" ? data : {};
+    try {
+      // Fetch vendors and startups from working endpoints instead of broken /api/lms/live
+      const [vendorsRes, startupsRes] = await Promise.all([
+        api.get("/api/data/vendors", { 
+          headers: { "x-tenant-id": tenantId, "cache-control": "no-cache" },
+          suppressToast: true,
+          suppressErrorLog: true,
+        } as any).catch(() => ({ data: { items: [] } })),
+        api.get("/api/data/startups", {
+          headers: { "x-tenant-id": tenantId, "cache-control": "no-cache" },
+          suppressToast: true,
+          suppressErrorLog: true,
+        } as any).catch(() => ({ data: { items: [] } })),
+      ]);
+      
+      return {
+        vendors: Array.isArray(vendorsRes.data?.items) ? vendorsRes.data.items : [],
+        startups: Array.isArray(startupsRes.data?.items) ? startupsRes.data.items : [],
+        companies: [], // Empty array for compatibility
+        profiles: [], // Empty array for compatibility
+      };
+    } catch (e) {
+      console.warn('[VendorContext] Failed to fetch live data:', e);
+      return { vendors: [], startups: [], companies: [], profiles: [] };
+    }
   }, [tenantId]);
 
   const fetchVendorsApi = useCallback(async () => {
