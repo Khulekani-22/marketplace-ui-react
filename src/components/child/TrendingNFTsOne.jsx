@@ -287,9 +287,14 @@ const TrendingNFTsOne = ({
     await loadServices({ forceRefresh: true });
   }
 
+  // Load services only once on mount - FIX for infinite loop
+  const loadedRef = useRef(false);
   useEffect(() => {
-    loadServices();
-  }, [tenantId, appData, loadServices]);
+    if (!loadedRef.current) {
+      loadedRef.current = true;
+      loadServices();
+    }
+  }, []); // Empty dependency array - load only once!
 
   // Load my subscriptions (if authed)
   useEffect(() => {
