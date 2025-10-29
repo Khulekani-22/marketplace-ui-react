@@ -64,8 +64,9 @@ class FirestoreDataStore {
     this.db = null;
     this.cache = null;
     this.lastLoaded = 0;
-    this.TTL_MS = 5000; // 5s cache for Firestore (longer than file-based)
+    this.TTL_MS = 15000; // 15s cache to reduce repeated Firestore loads
     this.initialized = false;
+    this.loadingPromise = null;
     
     this.initializeFirestore();
   }
@@ -718,55 +719,64 @@ class FirestoreDataStore {
    */
   async getData(forceReload = false) {
     const now = Date.now();
-    
-    // Return cached data if available and not expired
-    if (!forceReload && this.cache && (now - this.lastLoaded) < this.TTL_MS) {
+
+    if (forceReload) {
+      this.cache = null;
+      this.lastLoaded = 0;
+    } else if (this.cache && (now - this.lastLoaded) < this.TTL_MS) {
+      const ageSeconds = ((now - this.lastLoaded) / 1000).toFixed(1);
+      console.log(`⚡ Returning cached Firestore data (age: ${ageSeconds}s)`);
       return this.cache;
     }
 
-    try {
-      let data;
-
-      if (this.initialized) {
-        // Try Firestore first
-        console.log('📡 Loading data from Firestore...');
-        data = await this.loadFromFirestore();
-      } else {
-        // Fall back to file system
-        console.log('📄 Firestore unavailable, loading from file...');
-        data = this.loadFromFile();
-      }
-
-      // Update cache
-      this.cache = data;
-      this.lastLoaded = now;
-      
-      return data;
-
-    } catch (error) {
-      console.error('❌ getData failed:', error);
-      
-      // Ultimate fallback - try file if Firestore failed
-      if (this.initialized) {
-        console.log('📄 Firestore failed, trying file fallback...');
-        try {
-          const fileData = this.loadFromFile();
-          this.cache = fileData;
-          this.lastLoaded = now;
-          return fileData;
-        } catch (fileError) {
-          console.error('❌ File fallback also failed:', fileError);
-        }
-      }
-      
-      // Return empty data structure as last resort
-      return {
-        bookings: [], cohorts: [], events: [], forumThreads: [], jobs: [],
-        mentorshipSessions: [], messageThreads: [], services: [], leads: [],
-        startups: [], vendors: [], companies: [], profiles: [], users: [],
-        tenants: [], subscriptions: [], wallets: []
-      };
+    if (this.loadingPromise) {
+      return this.loadingPromise;
     }
+
+    const loadOperation = (async () => {
+      try {
+        let data;
+
+        if (this.initialized) {
+          console.log(forceReload ? '📡 Reloading data from Firestore...' : '📡 Loading data from Firestore...');
+          data = await this.loadFromFirestore();
+        } else {
+          console.log('📄 Firestore unavailable, loading from file...');
+          data = this.loadFromFile();
+        }
+
+        this.cache = data;
+        this.lastLoaded = Date.now();
+        return data;
+
+      } catch (error) {
+        console.error('❌ getData failed:', error);
+
+        if (this.initialized) {
+          console.log('📄 Firestore failed, trying file fallback...');
+          try {
+            const fileData = this.loadFromFile();
+            this.cache = fileData;
+            this.lastLoaded = Date.now();
+            return fileData;
+          } catch (fileError) {
+            console.error('❌ File fallback also failed:', fileError);
+          }
+        }
+
+        return {
+          bookings: [], cohorts: [], events: [], forumThreads: [], jobs: [],
+          mentorshipSessions: [], messageThreads: [], services: [], leads: [],
+          startups: [], vendors: [], companies: [], profiles: [], users: [],
+          tenants: [], subscriptions: [], wallets: []
+        };
+      } finally {
+        this.loadingPromise = null;
+      }
+    })();
+
+    this.loadingPromise = loadOperation;
+    return loadOperation;
   }
 
   /**
