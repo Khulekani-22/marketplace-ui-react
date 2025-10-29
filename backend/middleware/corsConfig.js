@@ -10,7 +10,7 @@
  * - Credential support configuration
  */
 
-import { firestore } from '../services/firestore.js';
+import { firestore, FieldValue } from '../services/firestore.js';
 import { originToDocId } from '../utils/originTracking.js';
 
 /**
@@ -114,35 +114,65 @@ async function trackOriginRequest(origin, req) {
     }
 
     const trackingRef = firestore.collection('originTracking').doc(docId);
-    const doc = await trackingRef.get();
+    const now = new Date().toISOString();
+    const userAgent = (req.get('user-agent') || 'unknown').slice(0, 500);
 
-    if (doc.exists) {
-      // Update existing tracking
-      await trackingRef.update({
-        lastSeen: new Date().toISOString(),
-        requestCount: (doc.data().requestCount || 0) + 1,
-        lastEndpoint: req.path,
-        lastMethod: req.method,
-        lastUserAgent: req.get('user-agent') || 'unknown',
+    const updatePayload = {
+      lastSeen: now,
+      requestCount: FieldValue.increment(1),
+      lastEndpoint: req.path,
+      lastMethod: req.method,
+      lastUserAgent: userAgent,
+      originKey: docId,
+    };
+
+    try {
+      await trackingRef.update(updatePayload);
+      return;
+    } catch (updateError) {
+      const errorCode = updateError?.code || updateError?.details || '';
+      const isNotFound = errorCode === 5 || errorCode === '5' ||
+        updateError?.message?.toLowerCase().includes('no document to update');
+
+      if (!isNotFound && errorCode !== 4 && errorCode !== '4') {
+        throw updateError;
+      }
+
+      if (errorCode === 4 || errorCode === '4') {
+        console.warn('[CORS] Firestore deadline hit while updating origin tracking (will retry with set):', {
+          origin,
+          docId,
+        });
+      }
+
+      const createPayload = {
+        origin,
         originKey: docId,
-      });
-    } else {
-      // Create new tracking entry
-      await trackingRef.set({
-  origin,
-  originKey: docId,
-        firstSeen: new Date().toISOString(),
-        lastSeen: new Date().toISOString(),
-        requestCount: 1,
+        lastSeen: now,
+        requestCount: FieldValue.increment(1),
         lastEndpoint: req.path,
         lastMethod: req.method,
-        lastUserAgent: req.get('user-agent') || 'unknown',
-        blocked: false,
-      });
+        lastUserAgent: userAgent,
+      };
+
+      if (isNotFound) {
+        createPayload.firstSeen = now;
+        createPayload.blocked = false;
+      }
+
+      await trackingRef.set(createPayload, { merge: true });
     }
   } catch (error) {
     // Don't throw - tracking is non-critical
-    console.error('[CORS] Error tracking origin:', error);
+    const errorCode = error?.code || error?.details || '';
+    if (errorCode === 4 || errorCode === '4') {
+      console.error('[CORS] Firestore deadline exceeded while tracking origin after retry:', {
+        origin,
+        message: error?.message,
+      });
+    } else {
+      console.error('[CORS] Error tracking origin:', error);
+    }
   }
 }
 

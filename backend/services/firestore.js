@@ -2,7 +2,7 @@
 // Firestore admin SDK setup for server-side (Node.js) use
 
 import { initializeApp, cert, getApps, getApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { loadFirebaseServiceAccount } from '../utils/loadFirebaseServiceAccount.js';
 
 // Robust singleton pattern for serverless
@@ -27,3 +27,4 @@ if (!getApps().length) {
 }
 
 export const firestore = getFirestore(app);
+export { FieldValue, Timestamp };
