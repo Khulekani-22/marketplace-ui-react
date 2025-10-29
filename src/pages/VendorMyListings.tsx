@@ -224,10 +224,12 @@ export default function VendorMyListings() {
     [pendingLocal, persistPending]
   );
 
-  // Redirect vendors who are not yet approved to their profile page
+  // Redirect vendors who have not completed a vendor profile yet
   useEffect(() => {
     if (!vendor) return;
-    if (!(vendor as Vendor).isApproved) {
+    const v = vendor as Vendor;
+    const hasVendorId = Boolean(v.vendorId || v.id);
+    if (!hasVendorId) {
       const next = encodeURIComponent("/listings-vendors-mine");
       navigate(`/profile-vendor?next=${next}`, { replace: true });
     }

@@ -268,7 +268,17 @@ router.get("/mine", firebaseAuthRequired, async (req, res) => {
         emails: [vendorEmail, userEmail].filter(Boolean),
       });
 
-      listings = listings.filter((s) => sameTenant(s?.tenantId, tenantId));
+        listings = listings.filter((s) => {
+          // Vendor-owned listings should be visible regardless of tenant scope
+          // as long as they match the current vendor identifiers
+          const belongsToVendor =
+            (!!vendorId && String(s?.vendorId || s?.id || '') === String(vendorId)) ||
+            (!!uid && String(s?.ownerUid || s?.ownerId || '') === uid) ||
+            (!!vendorEmail && normalizeEmail(s?.contactEmail || s?.email) === vendorEmail) ||
+            (!!vendorNameLc && (s?.vendor || s?.vendorName || '').toString().trim().toLowerCase() === vendorNameLc);
+
+          return belongsToVendor || sameTenant(s?.tenantId, tenantId);
+        });
 
       const serviceIds = listings
         .map((s) => s?.id || s?.serviceId)
@@ -286,25 +296,24 @@ router.get("/mine", firebaseAuthRequired, async (req, res) => {
         const services = Array.isArray(data?.services) ? data.services : [];
         const bookings = Array.isArray(data?.bookings) ? data.bookings : [];
 
-        if (!Array.isArray(listings) || listings.length === 0) {
-          listings = services
-            .filter((s) => {
-              if (!sameTenant(s?.tenantId, tenantId)) return false;
-              const sid = (s?.vendorId || '').toString();
-              const ownerUid = (s?.ownerUid || s?.ownerId || '').toString();
-              const svcEmail = normalizeEmail(s?.contactEmail || s?.email);
-              const svcName = (s?.vendor || '').toString().trim().toLowerCase();
-              return (
-                (!!vendorId && !!sid && sid === vendorId) ||
-                (!!uid && !!ownerUid && ownerUid === uid) ||
-                (!!vendorEmail && !!svcEmail && svcEmail === vendorEmail) ||
-                (!sid && !!vendorNameLc && !!svcName && svcName === vendorNameLc)
-              );
-            })
-            .map((s) => ({ ...s }));
-        }
+          if (!Array.isArray(listings) || listings.length === 0) {
+            listings = services
+              .filter((s) => {
+                const sid = (s?.vendorId || '').toString();
+                const ownerUid = (s?.ownerUid || s?.ownerId || '').toString();
+                const svcEmail = normalizeEmail(s?.contactEmail || s?.email);
+                const svcName = (s?.vendor || '').toString().trim().toLowerCase();
+                return (
+                  (!!vendorId && !!sid && sid === vendorId) ||
+                  (!!uid && !!ownerUid && ownerUid === uid) ||
+                  (!!vendorEmail && !!svcEmail && svcEmail === vendorEmail) ||
+                  (!sid && !!vendorNameLc && !!svcName && svcName === vendorNameLc)
+                );
+              })
+              .map((s) => ({ ...s }));
+          }
 
-        if (!Array.isArray(bookingsForVendor) || bookingsForVendor.length === 0) {
+          if (!Array.isArray(bookingsForVendor) || bookingsForVendor.length === 0) {
           const listingIds = new Set();
           listings.forEach((s) => {
             [s?.id, s?.serviceId, s?.vendorId]
@@ -315,7 +324,6 @@ router.get("/mine", firebaseAuthRequired, async (req, res) => {
 
           bookingsForVendor = bookings
             .filter((b) => {
-              if (!sameTenant(b?.tenantId, tenantId)) return false;
               const sid = (b?.serviceId || '').toString();
               const bid = (b?.vendorId || '').toString();
               const bEmail = normalizeEmail(b?.vendorEmail);
@@ -336,21 +344,20 @@ router.get("/mine", firebaseAuthRequired, async (req, res) => {
       const services = Array.isArray(data?.services) ? data.services : [];
       const bookings = Array.isArray(data?.bookings) ? data.bookings : [];
 
-      listings = services
-        .filter((s) => {
-          if (!sameTenant(s?.tenantId, tenantId)) return false;
-          const sid = (s?.vendorId || '').toString();
-          const ownerUid = (s?.ownerUid || s?.ownerId || '').toString();
-          const svcEmail = normalizeEmail(s?.contactEmail || s?.email);
-          const svcName = (s?.vendor || '').toString().trim().toLowerCase();
-          return (
-            (!!vendorId && !!sid && sid === vendorId) ||
-            (!!uid && !!ownerUid && ownerUid === uid) ||
-            (!!vendorEmail && !!svcEmail && svcEmail === vendorEmail) ||
-            (!sid && !!vendorNameLc && !!svcName && svcName === vendorNameLc)
-          );
-        })
-        .map((s) => ({ ...s }));
+        listings = services
+          .filter((s) => {
+            const sid = (s?.vendorId || '').toString();
+            const ownerUid = (s?.ownerUid || s?.ownerId || '').toString();
+            const svcEmail = normalizeEmail(s?.contactEmail || s?.email);
+            const svcName = (s?.vendor || '').toString().trim().toLowerCase();
+            return (
+              (!!vendorId && !!sid && sid === vendorId) ||
+              (!!uid && !!ownerUid && ownerUid === uid) ||
+              (!!vendorEmail && !!svcEmail && svcEmail === vendorEmail) ||
+              (!sid && !!vendorNameLc && !!svcName && svcName === vendorNameLc)
+            );
+          })
+          .map((s) => ({ ...s }));
 
       const listingIds = new Set();
       listings.forEach((s) => {
@@ -360,21 +367,20 @@ router.get("/mine", firebaseAuthRequired, async (req, res) => {
           .forEach((v) => listingIds.add(v));
       });
 
-      bookingsForVendor = bookings
-        .filter((b) => {
-          if (!sameTenant(b?.tenantId, tenantId)) return false;
-          const sid = (b?.serviceId || '').toString();
-          const bid = (b?.vendorId || '').toString();
-          const bEmail = normalizeEmail(b?.vendorEmail);
-          const bName = (b?.vendorName || '').toString().trim().toLowerCase();
-          return (
-            (!!sid && listingIds.has(sid)) ||
-            (!!vendorId && !!bid && bid === vendorId) ||
-            (!!vendorEmail && !!bEmail && bEmail === vendorEmail) ||
-            (!!vendorNameLc && !!bName && bName === vendorNameLc)
-          );
-        })
-        .map((b) => ({ ...b }));
+        bookingsForVendor = bookings
+          .filter((b) => {
+            const sid = (b?.serviceId || '').toString();
+            const bid = (b?.vendorId || '').toString();
+            const bEmail = normalizeEmail(b?.vendorEmail);
+            const bName = (b?.vendorName || '').toString().trim().toLowerCase();
+            return (
+              (!!sid && listingIds.has(sid)) ||
+              (!!vendorId && !!bid && bid === vendorId) ||
+              (!!vendorEmail && !!bEmail && bEmail === vendorEmail) ||
+              (!!vendorNameLc && !!bName && bName === vendorNameLc)
+            );
+          })
+          .map((b) => ({ ...b }));
     }
 
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
