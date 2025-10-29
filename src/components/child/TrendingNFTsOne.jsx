@@ -149,7 +149,20 @@ const TrendingNFTsOne = ({
   onCategoryChange,
   onCategoriesChange,
 }) => {
-  const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
+  const { appData, tenantId: contextTenantId } = useAppSync();
+
+  const tenantId = useMemo(() => {
+    if (contextTenantId && typeof contextTenantId === "string" && contextTenantId.trim()) {
+      return contextTenantId.trim();
+    }
+    try {
+      const stored = sessionStorage.getItem("tenantId");
+      if (stored && stored.trim()) return stored.trim();
+    } catch {
+      /* storage unavailable */
+    }
+    return "vendor";
+  }, [contextTenantId]);
 
   const [services, setServices] = useState([]);
   const servicesRef = useRef([]);
@@ -176,7 +189,6 @@ const TrendingNFTsOne = ({
   const [bookings, setBookings] = useState({}); // serviceId -> { date, slot }
   const [unifiedModal, setUnifiedModal] = useState({ open: false, id: null, date: '', slot: '', payment: 'credits', voucherCode: '', sponsoredGroup: '', error: '' });
   const navigate = useNavigate();
-  const { appData } = useAppSync();
   const { wallet, eligible: walletEligible, redeemCredits, loading: walletLoading, refresh } = useWallet();
   const bookingSlots = useMemo(() => createHourlySlots(), []);
   const slotLabelMap = useMemo(() => {
@@ -287,14 +299,29 @@ const TrendingNFTsOne = ({
     await loadServices({ forceRefresh: true });
   }
 
-  // Load services only once on mount - guard against duplicate fetches while satisfying deps
+  // Load services on mount and whenever tenant context changes
   const loadedRef = useRef(false);
+  const lastTenantRef = useRef(tenantId);
   useEffect(() => {
-    if (!loadedRef.current) {
-      loadedRef.current = true;
-      loadServices();
+    const lastTenant = lastTenantRef.current;
+    const tenantChanged = lastTenant !== tenantId;
+
+    if (tenantChanged) {
+      lastTenantRef.current = tenantId;
+      servicesRef.current = [];
+      setServices([]);
+      setTotalItems(0);
+      setCurrentPage(1);
+      setIsLoadingMore(false);
+      setSubs(new Set());
+      setBookings({});
     }
-  }, [loadServices]);
+
+    if (!loadedRef.current || tenantChanged) {
+      loadedRef.current = true;
+      loadServices(tenantChanged ? { forceRefresh: true } : {});
+    }
+  }, [tenantId, loadServices]);
 
   // Load my subscriptions (if authed)
   useEffect(() => {
