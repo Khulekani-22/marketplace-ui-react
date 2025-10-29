@@ -6,8 +6,9 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { typeDefs } from './schema.js';
 import { resolvers } from './resolvers.js';
 import { createLoaders } from './loaders.js';
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { initializeApp, cert, getApps, getApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { loadFirebaseServiceAccount } from '../utils/loadFirebaseServiceAccount.js';
 
 // Create executable schema
 const schema = makeExecutableSchema({
@@ -39,12 +40,21 @@ async function getContext({ req, connection }) {
       const token = authHeader.substring(7);
       
       // Initialize Firebase Admin if needed
-      let app;
       if (!getApps().length) {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-        app = initializeApp({
-          credential: cert(serviceAccount),
-        });
+        const serviceAccount = loadFirebaseServiceAccount();
+        if (serviceAccount) {
+          initializeApp({
+            credential: cert({
+              projectId: serviceAccount.projectId,
+              clientEmail: serviceAccount.clientEmail,
+              privateKey: serviceAccount.privateKey,
+            }),
+          });
+        } else {
+          initializeApp();
+        }
+      } else {
+        getApp();
       }
       
       // Verify Firebase ID token
@@ -104,7 +114,7 @@ export function setupWebSocketServer(httpServer) {
 
         if (token) {
           try {
-            const decodedToken = await admin.auth().verifyIdToken(token);
+            const decodedToken = await getAuth().verifyIdToken(token);
             user = decodedToken;
           } catch (error) {
             console.error('WebSocket auth error:', error);
