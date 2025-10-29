@@ -6,9 +6,7 @@
  */
 
 import crypto from 'crypto';
-import admin from 'firebase-admin';
-
-const db = admin.firestore();
+import { firestore as db, FieldValue, Timestamp } from './firestore.js';
 
 const minMaxCache = new Map();
 const MAX_MINMAX_RETRY = 3;
@@ -200,7 +198,7 @@ const BUCKET_TYPES = {
  */
 export async function recordRequest(data) {
   try {
-    const timestamp = admin.firestore.Timestamp.now();
+  const timestamp = Timestamp.now();
     const date = timestamp.toDate();
 
     // Create request log
@@ -252,22 +250,22 @@ async function updateHourlyMetrics(date, requestLog) {
   const statusCode = requestLog.statusCode || 'unknown';
   const successIncrement = requestLog.success ? 1 : 0;
   const failureIncrement = requestLog.success ? 0 : 1;
-  const bucketDate = admin.firestore.Timestamp.fromDate(new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours()));
+  const bucketDate = Timestamp.fromDate(new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours()));
 
   const updateData = {
     period: hourKey,
     hour: date.getHours(),
     date: bucketDate,
-    totalRequests: admin.firestore.FieldValue.increment(1),
-    successfulRequests: admin.firestore.FieldValue.increment(successIncrement),
-    failedRequests: admin.firestore.FieldValue.increment(failureIncrement),
-    totalResponseTime: admin.firestore.FieldValue.increment(requestLog.responseTime),
-    [`statusCodes.${statusCode}`]: admin.firestore.FieldValue.increment(1),
-    [`endpoints.${endpointKey}`]: admin.firestore.FieldValue.increment(1),
+  totalRequests: FieldValue.increment(1),
+  successfulRequests: FieldValue.increment(successIncrement),
+  failedRequests: FieldValue.increment(failureIncrement),
+  totalResponseTime: FieldValue.increment(requestLog.responseTime),
+  [`statusCodes.${statusCode}`]: FieldValue.increment(1),
+  [`endpoints.${endpointKey}`]: FieldValue.increment(1),
     [`endpointLookup.${endpointKey}`]: endpointLabel,
-    [`methods.${method}`]: admin.firestore.FieldValue.increment(1),
-    [`versions.${version}`]: admin.firestore.FieldValue.increment(1),
-    [`tenants.${tenant}`]: admin.firestore.FieldValue.increment(1),
+  [`methods.${method}`]: FieldValue.increment(1),
+  [`versions.${version}`]: FieldValue.increment(1),
+  [`tenants.${tenant}`]: FieldValue.increment(1),
     lastUpdated: requestLog.timestamp,
   };
 
@@ -292,21 +290,21 @@ async function updateDailyMetrics(date, requestLog) {
   const statusCode = requestLog.statusCode || 'unknown';
   const successIncrement = requestLog.success ? 1 : 0;
   const failureIncrement = requestLog.success ? 0 : 1;
-  const bucketDate = admin.firestore.Timestamp.fromDate(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
+  const bucketDate = Timestamp.fromDate(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
 
   const updateData = {
     period: dayKey,
     date: bucketDate,
-    totalRequests: admin.firestore.FieldValue.increment(1),
-    successfulRequests: admin.firestore.FieldValue.increment(successIncrement),
-    failedRequests: admin.firestore.FieldValue.increment(failureIncrement),
-    totalResponseTime: admin.firestore.FieldValue.increment(requestLog.responseTime),
-    [`statusCodes.${statusCode}`]: admin.firestore.FieldValue.increment(1),
-    [`endpoints.${endpointKey}`]: admin.firestore.FieldValue.increment(1),
+  totalRequests: FieldValue.increment(1),
+  successfulRequests: FieldValue.increment(successIncrement),
+  failedRequests: FieldValue.increment(failureIncrement),
+  totalResponseTime: FieldValue.increment(requestLog.responseTime),
+  [`statusCodes.${statusCode}`]: FieldValue.increment(1),
+  [`endpoints.${endpointKey}`]: FieldValue.increment(1),
     [`endpointLookup.${endpointKey}`]: endpointLabel,
-    [`methods.${method}`]: admin.firestore.FieldValue.increment(1),
-    [`versions.${version}`]: admin.firestore.FieldValue.increment(1),
-    [`tenants.${tenant}`]: admin.firestore.FieldValue.increment(1),
+  [`methods.${method}`]: FieldValue.increment(1),
+  [`versions.${version}`]: FieldValue.increment(1),
+  [`tenants.${tenant}`]: FieldValue.increment(1),
     lastUpdated: requestLog.timestamp,
   };
 
@@ -357,11 +355,11 @@ async function updateEndpointMetrics(requestLog) {
     method: requestLog.method,
     endpointKey,
     lastAccessed: requestLog.timestamp,
-    totalRequests: admin.firestore.FieldValue.increment(1),
-    successfulRequests: admin.firestore.FieldValue.increment(successIncrement),
-    failedRequests: admin.firestore.FieldValue.increment(failureIncrement),
-    totalResponseTime: admin.firestore.FieldValue.increment(requestLog.responseTime),
-    [`statusCodes.${statusCode}`]: admin.firestore.FieldValue.increment(1),
+  totalRequests: FieldValue.increment(1),
+  successfulRequests: FieldValue.increment(successIncrement),
+  failedRequests: FieldValue.increment(failureIncrement),
+  totalResponseTime: FieldValue.increment(requestLog.responseTime),
+  [`statusCodes.${statusCode}`]: FieldValue.increment(1),
   };
 
   await docRef.set(updateData, { merge: true });
@@ -417,13 +415,13 @@ async function updateConsumerMetrics(requestLog) {
   const updateData = {
     apiKey: requestLog.apiKey,
     lastRequest: requestLog.timestamp,
-    totalRequests: admin.firestore.FieldValue.increment(1),
-    successfulRequests: admin.firestore.FieldValue.increment(successIncrement),
-    failedRequests: admin.firestore.FieldValue.increment(failureIncrement),
-    totalResponseTime: admin.firestore.FieldValue.increment(requestLog.responseTime),
-    [`endpoints.${endpointKey}`]: admin.firestore.FieldValue.increment(1),
+    totalRequests: FieldValue.increment(1),
+    successfulRequests: FieldValue.increment(successIncrement),
+    failedRequests: FieldValue.increment(failureIncrement),
+    totalResponseTime: FieldValue.increment(requestLog.responseTime),
+    [`endpoints.${endpointKey}`]: FieldValue.increment(1),
     [`endpointLookup.${endpointKey}`]: endpointLabel,
-    [`statusCodes.${statusCode}`]: admin.firestore.FieldValue.increment(1),
+    [`statusCodes.${statusCode}`]: FieldValue.increment(1),
   };
 
   await docRef.set(updateData, { merge: true });
@@ -442,8 +440,8 @@ async function updateConsumerMetrics(requestLog) {
  * Get overview analytics
  */
 export async function getOverview(startDate, endDate) {
-  const start = admin.firestore.Timestamp.fromDate(startDate);
-  const end = admin.firestore.Timestamp.fromDate(endDate);
+  const start = Timestamp.fromDate(startDate);
+  const end = Timestamp.fromDate(endDate);
 
   // Get hourly buckets in range
   const hourlySnapshot = await db.collection('analyticsHourly')
@@ -498,8 +496,8 @@ export async function getOverview(startDate, endDate) {
  * Get time-series data for charts
  */
 export async function getTimeSeries(startDate, endDate, granularity = 'hour') {
-  const start = admin.firestore.Timestamp.fromDate(startDate);
-  const end = admin.firestore.Timestamp.fromDate(endDate);
+  const start = Timestamp.fromDate(startDate);
+  const end = Timestamp.fromDate(endDate);
 
   const collection = granularity === 'day' ? 'analyticsDaily' : 'analyticsHourly';
   
@@ -653,8 +651,8 @@ export async function getGeographicStats(startDate, endDate) {
   // This is a placeholder - implement with actual IP geolocation
   // Could use services like MaxMind GeoIP, ipapi, etc.
   
-  const start = admin.firestore.Timestamp.fromDate(startDate);
-  const end = admin.firestore.Timestamp.fromDate(endDate);
+  const start = Timestamp.fromDate(startDate);
+  const end = Timestamp.fromDate(endDate);
 
   const snapshot = await db.collection('apiRequests')
     .where('timestamp', '>=', start)
@@ -685,8 +683,8 @@ export async function getGeographicStats(startDate, endDate) {
  * Get error details
  */
 export async function getErrorDetails(startDate, endDate, limit = 50) {
-  const start = admin.firestore.Timestamp.fromDate(startDate);
-  const end = admin.firestore.Timestamp.fromDate(endDate);
+  const start = Timestamp.fromDate(startDate);
+  const end = Timestamp.fromDate(endDate);
 
   const snapshot = await db.collection('apiRequests')
     .where('timestamp', '>=', start)
@@ -718,7 +716,7 @@ export async function getErrorDetails(startDate, endDate, limit = 50) {
 export async function cleanupOldData(daysToKeep = 90) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
-  const cutoff = admin.firestore.Timestamp.fromDate(cutoffDate);
+  const cutoff = Timestamp.fromDate(cutoffDate);
 
   // Delete old request logs
   const batch = db.batch();

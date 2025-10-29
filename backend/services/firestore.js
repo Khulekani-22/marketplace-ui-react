@@ -27,4 +27,9 @@ if (!getApps().length) {
 }
 
 export const firestore = getFirestore(app);
+try {
+  firestore.settings({ preferRest: true });
+} catch (error) {
+  console.warn('[firestore] Unable to enable REST mode, continuing with default transport.', error?.message || error);
+}
 export { FieldValue, Timestamp };
