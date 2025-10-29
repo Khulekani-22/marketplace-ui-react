@@ -300,14 +300,6 @@ class FirestoreDataStore {
     const collectionRef = this.db.collection('services');
     let baseQueryRef = collectionRef.where('tenantId', '==', normalizedTenant);
 
-    const applyOrderingAndPaging = (ref) => {
-      let ordered = ref.orderBy(orderField, direction.toLowerCase());
-      if (offset > 0) {
-        ordered = ordered.offset(offset);
-      }
-      return ordered.limit(safePageSize);
-    };
-
     if (category) {
       baseQueryRef = baseQueryRef.where('category', '==', category);
     }
@@ -331,22 +323,68 @@ class FirestoreDataStore {
     }
 
     const usePriceOrder = hasMin || hasMax;
-    const orderField = usePriceOrder ? 'price' : 'createdAt';
-    const direction = usePriceOrder ? 'ASC' : 'DESC';
-
     const safePageSize = Math.max(1, Math.min(Number(pageSize) || 20, 100));
     const safePage = Math.max(1, Number(page) || 1);
     const offset = (safePage - 1) * safePageSize;
 
-  let queryRef = baseQueryRef;
+    let queryRef = baseQueryRef;
 
-    const executeQuery = async (ref) => {
-      const orderedRef = applyOrderingAndPaging(ref);
-      const [resultSnapshot, resultCountSnapshot] = await Promise.all([
-        orderedRef.get(),
-        ref.count().get().catch(() => null),
-      ]);
-      return { snapshot: resultSnapshot, countSnapshot: resultCountSnapshot };
+    const orderCandidates = usePriceOrder
+      ? [
+          { field: 'price', direction: 'asc', label: 'price asc' },
+          { field: '__name__', direction: 'asc', label: 'documentId asc (fallback)' },
+        ]
+      : [
+          { field: 'createdAt', direction: 'desc', label: 'createdAt desc' },
+          { field: '__name__', direction: 'asc', label: 'documentId asc (fallback)' },
+        ];
+
+    const runOrderedQuery = async (ref, predefinedCountSnapshot = null) => {
+      const countSnapshot = predefinedCountSnapshot ?? (await ref.count().get().catch(() => null));
+      const expectedCount = countSnapshot?.data()?.count ?? 0;
+
+      for (let index = 0; index < orderCandidates.length; index += 1) {
+        const candidate = orderCandidates[index];
+        const orderField = candidate.field === '__name__'
+          ? admin.firestore.FieldPath.documentId()
+          : candidate.field;
+
+        try {
+          let orderedRef = ref.orderBy(orderField, candidate.direction);
+          if (offset > 0) {
+            orderedRef = orderedRef.offset(offset);
+          }
+          const snapshot = await orderedRef.limit(safePageSize).get();
+          const hasDocs = !snapshot.empty;
+
+          if (hasDocs) {
+            return { snapshot, countSnapshot };
+          }
+
+          const hasMoreCandidates = index < orderCandidates.length - 1;
+          if (hasMoreCandidates && expectedCount > 0) {
+            console.info(
+              `[FirestoreDataStore] Services query order ${candidate.label} returned no documents despite count=${expectedCount}; trying fallback ordering.`
+            );
+            continue;
+          }
+
+          return { snapshot, countSnapshot };
+        } catch (err) {
+          const hasMoreCandidates = index < orderCandidates.length - 1;
+          console.warn(
+            `[FirestoreDataStore] Services query failed using order ${candidate.label}:`,
+            err?.message || err
+          );
+          if (!hasMoreCandidates) {
+            throw err;
+          }
+        }
+      }
+
+      // Absolute fallback with no ordering (should rarely happen)
+      const fallbackSnapshot = await ref.limit(safePageSize).get();
+      return { snapshot: fallbackSnapshot, countSnapshot };
     };
 
     let featuredFilterApplied = false;
@@ -355,14 +393,11 @@ class FirestoreDataStore {
       featuredFilterApplied = true;
     }
 
-    let { snapshot, countSnapshot } = await executeQuery(queryRef);
+    let { snapshot, countSnapshot } = await runOrderedQuery(queryRef);
 
-    if (
-      featuredFilterApplied &&
-      snapshot.empty
-    ) {
+    if (featuredFilterApplied && snapshot.empty) {
       const fallbackRef = baseQueryRef.where('featured', '==', featured);
-      const fallbackResult = await executeQuery(fallbackRef);
+      const fallbackResult = await runOrderedQuery(fallbackRef);
       if (!fallbackResult.snapshot.empty) {
         snapshot = fallbackResult.snapshot;
         countSnapshot = fallbackResult.countSnapshot;
