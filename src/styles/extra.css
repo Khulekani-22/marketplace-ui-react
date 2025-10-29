@@ -16,17 +16,17 @@ html.theme-smooth, html.theme-smooth body, html.theme-smooth * {
 /* 1) Tokenize the tints (light defaults) */
 :root{
   /* Base primary (Bootstrap) already exists; just in case: */
-  --bs-primary: #e65c1a;
+  --bs-primary: #7a8566;
 
   /* Text tints (good on primary-500/600 buttons & dark surfaces) */
-  --primary-text-50:  color-mix(in oklab, #f1e8e1 92%, var(--bs-primary)); /* very light */
-  --primary-text-200: color-mix(in oklab, #f1e8e1 78%, var(--bs-primary)); /* a touch stronger */
+  --primary-text-50:  color-mix(in oklab, #f5f9ea 90%, var(--bs-primary)); /* very light */
+  --primary-text-200: color-mix(in oklab, #e7f0d4 78%, var(--bs-primary)); /* a touch stronger */
 }
 
 /* 2) Dark theme: slightly brighten the tints so they pop on deep surfaces */
 :root[data-bs-theme="dark"]{
-  --primary-text-50:  color-mix(in oklab, #f1e8e1 94%, var(--bs-primary));
-  --primary-text-200: color-mix(in oklab, #f1e8e1 82%, var(--bs-primary));
+  --primary-text-50:  color-mix(in oklab, #f5f9ea 94%, var(--bs-primary));
+  --primary-text-200: color-mix(in oklab, #e7f0d4 82%, var(--bs-primary));
 }
 
 /* 3) Utilities (drop-in replacements) */
@@ -54,17 +54,23 @@ html.theme-smooth, html.theme-smooth body, html.theme-smooth * {
 }
 
 /* --- Landing hero utilities --- */
-.text-gradient{background:linear-gradient(90deg,#f6be3b,#ed853a);-webkit-background-clip:text;background-clip:text;color:transparent}
-.glass{background:rgba(255,255,255,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:1rem}
+.text-gradient{
+  background: linear-gradient(90deg, #c5df94, #7a8566);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.glass{background:rgba(255,255,255,.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:1rem}
 .blob{
   position:absolute; inset:auto 0 -4rem 0; height:16rem;
-  background:radial-gradient(60% 50% at 30% 50%, rgba(59,130,246,.35), transparent 70%),
-             radial-gradient(60% 50% at 70% 50%, rgba(250,204,21,.35), transparent 70%),
-             radial-gradient(70% 60% at 50% 100%, rgba(16,185,129,.35), transparent 70%);
+  background:
+    radial-gradient(60% 50% at 30% 50%, rgba(197,223,148,.32), transparent 70%),
+    radial-gradient(60% 50% at 70% 50%, rgba(122,133,102,.28), transparent 70%),
+    radial-gradient(70% 60% at 50% 100%, rgba(47,157,109,.32), transparent 70%);
   filter:blur(30px); border-radius:2rem; pointer-events:none;
 }
 .float-badge{
-  position:absolute; padding:.75rem; border-radius:1rem; box-shadow:0 10px 30px rgba(0,0,0,.08);
+  position:absolute; padding:.75rem; border-radius:1rem; box-shadow:0 10px 30px rgba(68,67,69,.12);
   background:#fff;
   animation:float 7s ease-in-out infinite;
 }

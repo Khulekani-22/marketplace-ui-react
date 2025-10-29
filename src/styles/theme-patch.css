@@ -1,21 +1,116 @@
-/* Map common UI pieces to theme tokens set by data-theme and utils/theme.js */
-:root {
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap");
+
+/* Kumii style-guide inspired theme tokens mapped onto existing utility hooks */
+:root,
+[data-theme="light"] {
   color-scheme: light;
-  /* Define sidebar variables for light mode */
-  --sidebar-bg: #ffffff;
-  --sidebar-fg: #374151;
+
+  /* Brand palette */
+  --kumii-sage: #c5df94;
+  --kumii-olive: #7a8566;
+  --kumii-silver: #cdcdce;
+  --kumii-charcoal: #444345;
+  --kumii-white: #ffffff;
+
+  /* Accent gradients */
+  --accent-green-dark: #154a34;
+  --accent-green: #2a9d6d;
+  --accent-green-light: #3fcf8e;
+  --accent-orange: #ff9a3d;
+  --accent-orange-soft: #f4b26d;
+
+  /* Derived tints & shades */
+  --sage-10: rgba(197, 223, 148, 0.1);
+  --sage-16: rgba(197, 223, 148, 0.16);
+  --sage-24: rgba(197, 223, 148, 0.24);
+  --sage-30: rgba(197, 223, 148, 0.3);
+  --sage-45: rgba(197, 223, 148, 0.45);
+  --olive-12: rgba(122, 133, 102, 0.12);
+  --olive-18: rgba(122, 133, 102, 0.18);
+  --olive-26: rgba(122, 133, 102, 0.26);
+  --olive-38: rgba(122, 133, 102, 0.38);
+  --silver-18: rgba(205, 205, 206, 0.18);
+  --silver-28: rgba(205, 205, 206, 0.28);
+  --ink-08: rgba(68, 67, 69, 0.08);
+  --ink-12: rgba(68, 67, 69, 0.12);
+  --ink-18: rgba(68, 67, 69, 0.18);
+
+  /* Text tokens */
+  --text-strong: var(--kumii-charcoal);
+  --text-body: #252525;
+  --text-muted: #66686a;
+  --on-primary: #0c140d;
+
+  /* Surfaces */
+  --surface-0: var(--kumii-white);
+  --surface-1: #fafafa;
+  --surface-2: #f5f6f4;
+
+  /* Generic theme variables consumed elsewhere */
+  --bg: var(--surface-0);
+  --fg: var(--text-body);
+  --muted: var(--text-muted);
+  --border: rgba(68, 67, 69, 0.14);
+  --border-strong: rgba(68, 67, 69, 0.26);
+  --input-bg: var(--surface-0);
+  --input-bd: var(--silver-28);
+  --focus-ring: 0 0 0 0.25rem var(--sage-30);
+  --primary: var(--kumii-sage);
+  --primary-600: var(--kumii-olive);
+  --body-bg: linear-gradient(180deg, var(--surface-2), #f0f2ee);
+  --body-font: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sidebar-bg: var(--surface-0);
+  --Sidebar-inset-shadow: 0 12px 30px var(--ink-12);
+  --sidebar-fg: var(--text-strong);
 }
 
 [data-theme="dark"] {
-  /* Define sidebar variables for dark mode */
-  --sidebar-bg: #0f172a;
-  --sidebar-fg: #e5e7eb;
+  color-scheme: dark;
+
+  --accent-green-dark: #1d5340;
+  --accent-green: #2f8f72;
+  --accent-green-light: #4ab18d;
+  --accent-orange: #f78a3f;
+  --accent-orange-soft: #f4b26d;
+
+  --text-strong: #f5f8fb;
+  --text-body: #d6dee6;
+  --text-muted: #9aa6b5;
+  --on-primary: #0c140d;
+
+  --surface-0: rgba(16, 24, 32, 0.96);
+  --surface-1: rgba(20, 28, 37, 0.92);
+  --surface-2: rgba(23, 32, 42, 0.86);
+
+  --bg: rgba(13, 20, 28, 1);
+  --fg: var(--text-body);
+  --muted: var(--text-muted);
+  --border: rgba(107, 125, 142, 0.35);
+  --border-strong: rgba(107, 125, 142, 0.48);
+  --input-bg: rgba(17, 24, 32, 0.92);
+  --input-bd: rgba(107, 125, 142, 0.35);
+  --focus-ring: 0 0 0 0.25rem rgba(47, 143, 114, 0.35);
+  --primary: var(--accent-green);
+  --primary-600: var(--accent-green-dark);
+  --body-bg: linear-gradient(180deg, #0b1116, #131b24);
+  --sidebar-bg: rgba(20, 28, 37, 0.92);
+  --Sidebar-inset-shadow: 0 18px 40px rgba(4, 8, 12, 0.55);
+  --sidebar-fg: var(--text-strong);
 }
 
-/* Page + text */
-html, body {
+/* Page + typography */
+html {
+  font-family: var(--body-font);
   background-color: var(--bg);
   color: var(--fg);
+}
+
+body {
+  font-family: var(--body-font);
+  background: var(--body-bg);
+  color: var(--fg);
+  min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* Generic helpers used around the app */
@@ -33,18 +128,32 @@ html, body {
   background-color: var(--surface-1) !important;
   border-color: var(--border) !important;
   color: var(--fg);
+  border-radius: 1.75rem;
+  box-shadow: 0 20px 48px var(--ink-08);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
-.card-header {
+.card:hover {
+  box-shadow: 0 28px 60px var(--ink-12);
+}
+.card-header,
+.card-footer {
   background-color: var(--surface-2) !important;
-  border-bottom-color: var(--border) !important;
+  border-color: var(--border) !important;
 }
 
-/* Tables (if any) */
+/* Tables */
 .table,
 .table > :not(caption) > * > * {
   color: var(--fg);
   border-color: var(--border) !important;
   background-color: var(--surface-1);
+}
+.table thead {
+  background: var(--sage-16);
+  color: var(--text-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 /* Form controls */
@@ -55,29 +164,87 @@ html, body {
   background-color: var(--input-bg) !important;
   border-color: var(--input-bd) !important;
   color: var(--fg) !important;
+  border-radius: 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 .form-control::placeholder { color: var(--muted) !important; }
 .form-control:disabled,
 .form-select:disabled {
-  background-color: color-mix(in oklab, var(--input-bg) 80%, var(--surface-2)) !important;
+  background-color: color-mix(in srgb, var(--input-bg) 80%, var(--surface-2)) !important;
+  opacity: 0.75;
 }
 
 /* Focus ring */
 .form-control:focus,
-.form-select:focus {
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 0 .25rem color-mix(in oklab, var(--primary) 25%, transparent);
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--primary-600) !important;
+  box-shadow: var(--focus-ring);
 }
 
-/* Buttons – keep your palette but adapt text-contrast */
-.btn-primary {
-  background-color: var(--primary) !important;
-  border-color: var(--primary-600) !important;
+/* Buttons */
+.btn-primary,
+.btn-primary-500,
+.btn-primary-600,
+.btn.btn-primary {
+  background-image: linear-gradient(135deg, var(--primary), var(--primary-600));
+  background-color: var(--primary);
+  border-color: var(--primary-600);
   color: var(--on-primary) !important;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--primary-600) 28%, transparent);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
 }
-.btn-outline-secondary {
+.btn-primary:hover,
+.btn-primary-500:hover,
+.btn-primary-600:hover {
+  filter: brightness(0.98);
+  transform: translateY(-1px);
+  box-shadow: 0 18px 36px color-mix(in srgb, var(--primary-600) 32%, transparent);
+}
+.btn-primary:active,
+.btn-primary-500:active,
+.btn-primary-600:active {
+  filter: brightness(0.96);
+  transform: translateY(0);
+}
+.btn-primary:focus-visible,
+.btn-primary-500:focus-visible,
+.btn-primary-600:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.btn-outline-secondary,
+.btn-outline-light {
   color: var(--fg) !important;
   border-color: var(--border) !important;
+  background-color: transparent;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+.btn-outline-secondary:hover,
+.btn-outline-light:hover {
+  background-color: var(--sage-16);
+  border-color: var(--olive-18);
+  color: var(--text-strong) !important;
+}
+.btn-outline-secondary:focus-visible,
+.btn-outline-light:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.btn-outline-success {
+  border-color: var(--kumii-olive) !important;
+  color: var(--kumii-olive) !important;
+  background-color: transparent;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+.btn-outline-success:hover {
+  background-color: var(--olive-12) !important;
+  border-color: var(--kumii-olive) !important;
+  color: #1f241b !important;
+}
+.btn-outline-success:focus-visible {
+  box-shadow: var(--focus-ring);
 }
 
 /* Top search bar */
@@ -85,6 +252,9 @@ html, body {
   background: var(--input-bg) !important;
   border-color: var(--input-bd) !important;
   color: var(--fg) !important;
+  border-radius: 999px;
+  padding-inline: 1rem;
+  box-shadow: inset 0 1px 2px var(--ink-08);
 }
 .navbar-search .icon { color: var(--muted); }
 
@@ -93,11 +263,15 @@ html, body {
   background-color: var(--sidebar-bg) !important;
   color: var(--sidebar-fg) !important;
   border-right: 1px solid var(--border);
+  box-shadow: var(--Sidebar-inset-shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 .sidebar .menu-icon,
 .sidebar a { color: var(--sidebar-fg) !important; }
 .sidebar .sidebar-menu a {
   text-decoration: none !important;
+  border-radius: 999px;
+  padding-inline: 0.75rem;
 }
 .sidebar .sidebar-menu a:hover,
 .sidebar .sidebar-menu a:focus,
@@ -105,9 +279,14 @@ html, body {
   text-decoration: none !important;
 }
 .sidebar .active-page {
-  background: color-mix(in oklab, var(--primary) 20%, transparent);
+  background: linear-gradient(135deg, var(--sage-16), var(--olive-12));
+  color: var(--sidebar-fg) !important;
+  box-shadow: 0 12px 30px var(--ink-12);
+}
+[data-theme="dark"] .sidebar .active-page {
+  background: linear-gradient(135deg, var(--accent-green), var(--accent-orange));
   color: var(--on-primary) !important;
-  border-radius: 8px;
+  box-shadow: 0 16px 36px rgba(4, 8, 12, 0.55);
 }
 
 /* Footer strip */
@@ -115,4 +294,10 @@ html, body {
   background: var(--surface-2);
   border-top: 1px solid var(--border);
   color: var(--muted);
+  padding-block: 2.25rem;
+}
+
+[data-theme="dark"] .d-footer {
+  background: rgba(16, 24, 32, 0.85);
+  border-top-color: var(--border);
 }

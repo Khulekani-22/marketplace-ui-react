@@ -10,12 +10,47 @@ import admin from 'firebase-admin';
 
 const db = admin.firestore();
 
+function toBase64Url(value) {
+  return Buffer.from(value, 'utf8')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+
+function fromBase64Url(value) {
+  const padded = value
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+  const padding = padded.length % 4;
+  const normalised = padding ? padded.padEnd(padded.length + (4 - padding), '=') : padded;
+  return Buffer.from(normalised, 'base64').toString('utf8');
+}
+
 function encodeDocId(value, fallbackLabel = 'unknown') {
   const resolved = value || fallbackLabel;
   try {
-    return Buffer.from(resolved).toString('base64url');
+    return toBase64Url(resolved);
   } catch {
-    return crypto.createHash('sha256').update(resolved).digest('base64url');
+    return crypto.createHash('sha256').update(resolved).digest('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  }
+}
+
+function encodeFieldKey(value, fallbackLabel = 'unknown') {
+  const resolved = value || fallbackLabel;
+  try {
+    return toBase64Url(resolved);
+  } catch {
+    return crypto.createHash('sha256').update(resolved).digest('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  }
+}
+
+function decodeFieldKey(encodedKey, fallback = 'unknown') {
+  if (!encodedKey) return fallback;
+  try {
+    return fromBase64Url(encodedKey);
+  } catch {
+    return fallback;
   }
 }
 
@@ -91,6 +126,8 @@ export async function recordRequest(data) {
 async function updateHourlyMetrics(date, requestLog) {
   const hourKey = getHourKey(date);
   const docRef = db.collection('analyticsHourly').doc(hourKey);
+  const endpointLabel = requestLog.endpoint || 'unknown';
+  const endpointKey = encodeFieldKey(endpointLabel, 'unknown');
 
   await db.runTransaction(async (transaction) => {
     const doc = await transaction.get(docRef);
@@ -109,7 +146,8 @@ async function updateHourlyMetrics(date, requestLog) {
         minResponseTime: requestLog.responseTime,
         maxResponseTime: requestLog.responseTime,
         statusCodes: { [requestLog.statusCode]: 1 },
-        endpoints: { [requestLog.endpoint]: 1 },
+        endpoints: { [endpointKey]: 1 },
+        endpointLookup: { [endpointKey]: endpointLabel },
         methods: { [requestLog.method]: 1 },
         versions: { [requestLog.version]: 1 },
         tenants: { [requestLog.tenantId]: 1 }
@@ -129,7 +167,8 @@ async function updateHourlyMetrics(date, requestLog) {
         minResponseTime: Math.min(data.minResponseTime, requestLog.responseTime),
         maxResponseTime: Math.max(data.maxResponseTime, requestLog.responseTime),
         [`statusCodes.${requestLog.statusCode}`]: admin.firestore.FieldValue.increment(1),
-        [`endpoints.${requestLog.endpoint}`]: admin.firestore.FieldValue.increment(1),
+        [`endpoints.${endpointKey}`]: admin.firestore.FieldValue.increment(1),
+        [`endpointLookup.${endpointKey}`]: endpointLabel,
         [`methods.${requestLog.method}`]: admin.firestore.FieldValue.increment(1),
         [`versions.${requestLog.version}`]: admin.firestore.FieldValue.increment(1),
         [`tenants.${requestLog.tenantId}`]: admin.firestore.FieldValue.increment(1)
@@ -144,6 +183,8 @@ async function updateHourlyMetrics(date, requestLog) {
 async function updateDailyMetrics(date, requestLog) {
   const dayKey = getDayKey(date);
   const docRef = db.collection('analyticsDaily').doc(dayKey);
+  const endpointLabel = requestLog.endpoint || 'unknown';
+  const endpointKey = encodeFieldKey(endpointLabel, 'unknown');
 
   await db.runTransaction(async (transaction) => {
     const doc = await transaction.get(docRef);
@@ -160,7 +201,8 @@ async function updateDailyMetrics(date, requestLog) {
         minResponseTime: requestLog.responseTime,
         maxResponseTime: requestLog.responseTime,
         statusCodes: { [requestLog.statusCode]: 1 },
-        endpoints: { [requestLog.endpoint]: 1 },
+        endpoints: { [endpointKey]: 1 },
+        endpointLookup: { [endpointKey]: endpointLabel },
         methods: { [requestLog.method]: 1 },
         versions: { [requestLog.version]: 1 },
         tenants: { [requestLog.tenantId]: 1 }
@@ -179,7 +221,8 @@ async function updateDailyMetrics(date, requestLog) {
         minResponseTime: Math.min(data.minResponseTime, requestLog.responseTime),
         maxResponseTime: Math.max(data.maxResponseTime, requestLog.responseTime),
         [`statusCodes.${requestLog.statusCode}`]: admin.firestore.FieldValue.increment(1),
-        [`endpoints.${requestLog.endpoint}`]: admin.firestore.FieldValue.increment(1),
+        [`endpoints.${endpointKey}`]: admin.firestore.FieldValue.increment(1),
+        [`endpointLookup.${endpointKey}`]: endpointLabel,
         [`methods.${requestLog.method}`]: admin.firestore.FieldValue.increment(1),
         [`versions.${requestLog.version}`]: admin.firestore.FieldValue.increment(1),
         [`tenants.${requestLog.tenantId}`]: admin.firestore.FieldValue.increment(1)
@@ -245,6 +288,8 @@ async function updateConsumerMetrics(requestLog) {
   if (!requestLog.apiKey) return;
 
   const docRef = db.collection('analyticsConsumers').doc(requestLog.apiKey);
+  const endpointLabel = requestLog.endpoint || 'unknown';
+  const endpointKey = encodeFieldKey(endpointLabel, 'unknown');
 
   await db.runTransaction(async (transaction) => {
     const doc = await transaction.get(docRef);
@@ -257,7 +302,8 @@ async function updateConsumerMetrics(requestLog) {
         failedRequests: requestLog.success ? 0 : 1,
         totalResponseTime: requestLog.responseTime,
         avgResponseTime: requestLog.responseTime,
-        endpoints: { [requestLog.endpoint]: 1 },
+        endpoints: { [endpointKey]: 1 },
+        endpointLookup: { [endpointKey]: endpointLabel },
         statusCodes: { [requestLog.statusCode]: 1 },
         lastRequest: requestLog.timestamp,
         firstRequest: requestLog.timestamp
@@ -273,7 +319,8 @@ async function updateConsumerMetrics(requestLog) {
         failedRequests: admin.firestore.FieldValue.increment(requestLog.success ? 0 : 1),
         totalResponseTime,
         avgResponseTime: totalResponseTime / totalRequests,
-        [`endpoints.${requestLog.endpoint}`]: admin.firestore.FieldValue.increment(1),
+        [`endpoints.${endpointKey}`]: admin.firestore.FieldValue.increment(1),
+        [`endpointLookup.${endpointKey}`]: endpointLabel,
         [`statusCodes.${requestLog.statusCode}`]: admin.firestore.FieldValue.increment(1),
         lastRequest: requestLog.timestamp
       });
@@ -419,7 +466,7 @@ export async function getConsumerStats(limit = 20, sortBy = 'totalRequests') {
       failedRequests: data.failedRequests,
       errorRate: ((data.failedRequests / data.totalRequests) * 100).toFixed(2),
       avgResponseTime: Math.round(data.avgResponseTime),
-      topEndpoints: getTopItems(data.endpoints, 5),
+      topEndpoints: getTopItems(data.endpoints, 5, data.endpointLookup),
       lastRequest: data.lastRequest.toDate()
     });
   }
@@ -535,11 +582,14 @@ function getDayKey(date) {
   return `${year}-${month}-${day}`;
 }
 
-function getTopItems(obj, limit) {
+function getTopItems(obj, limit, lookup) {
   return Object.entries(obj || {})
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
-    .map(([key, count]) => ({ key, count }));
+    .map(([key, count]) => {
+      const label = lookup?.[key] ?? decodeFieldKey(key, key);
+      return { key: label, count };
+    })
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
 }
 
 export default {

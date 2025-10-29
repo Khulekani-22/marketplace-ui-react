@@ -1,24 +1,25 @@
 /* src/styles/dark-patch.css */
 
-/* Light defaults (mostly no-ops but keeps the variables explicit) */
+/* Light defaults keep Bootstrap surfaces aligned with Kumii tokens */
 :root,
 [data-bs-theme="light"] {
-  --surface-1: var(--bs-body-bg);           /* cards */
-  --surface-2: var(--bs-tertiary-bg);       /* headers, subtle blocks */
-  --border-weak: var(--bs-border-color);
+  --surface-1: #fafafa;            /* cards */
+  --surface-2: #f5f6f4;            /* headers, subtle panels */
+  --border-weak: rgba(68, 67, 69, 0.14);
 }
 
-/* Dark palette for custom surfaces */
+/* Dark palette for Bootstrap components that rely on data-bs-theme */
 [data-bs-theme="dark"] {
-  --surface-1: #1e2127;     /* card body */
-  --surface-2: #15171c;     /* card header / subtle panels */
-  --border-weak: #2b2f36;   /* neutral borders */
+  --surface-1: rgba(20, 28, 37, 0.92);   /* card body */
+  --surface-2: rgba(23, 32, 42, 0.82);   /* card header / panels */
+  --border-weak: rgba(107, 125, 142, 0.35); /* neutral borders */
 }
 
 /* Cards & headers */
 [data-bs-theme="dark"] .card {
   background-color: var(--surface-1) !important;
   border-color: var(--border-weak) !important;
+  box-shadow: 0 26px 64px rgba(5, 9, 14, 0.45);
 }
 [data-bs-theme="dark"] .card-header,
 [data-bs-theme="dark"] .list-group-item.active {
@@ -38,7 +39,7 @@
 [data-bs-theme="dark"] .form-select,
 [data-bs-theme="dark"] .input-group-text,
 [data-bs-theme="dark"] textarea.form-control {
-  background-color: var(--surface-2) !important;
+  background-color: rgba(17, 24, 32, 0.92) !important;
   color: var(--bs-body-color) !important;
   border-color: var(--border-weak) !important;
 }
@@ -46,7 +47,7 @@
 /* Placeholders */
 [data-bs-theme="dark"] .form-control::placeholder,
 [data-bs-theme="dark"] textarea::placeholder {
-  color: #8b8f98 !important;
+  color: rgba(154, 166, 181, 0.75) !important;
 }
 
 /* Neutral borders in previews and custom boxes */
@@ -62,4 +63,8 @@
 [data-bs-theme="dark"] .btn-outline-dark {
   color: var(--bs-body-color) !important;
   border-color: var(--border-weak) !important;
+}
+[data-bs-theme="dark"] .btn-outline-secondary:hover,
+[data-bs-theme="dark"] .btn-outline-dark:hover {
+  background-color: rgba(47, 74, 98, 0.28) !important;
 }
