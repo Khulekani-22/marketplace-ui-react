@@ -58,7 +58,7 @@ function NotificationBell() {
   );
 }
 // src/MasterLayout/MasterLayout.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
@@ -677,7 +677,19 @@ function MasterLayoutInner({ children }) {
 }
 
 function MessageBell() {
-  const { unreadCount, latestFive } = useMessages();
+  const { unreadCount, latestFive, activate, activated, refresh } = useMessages();
+  const handlePrefetch = useCallback(() => {
+    if (!activated) {
+      activate({ silent: true }).catch(() => void 0);
+    }
+  }, [activate, activated]);
+  const handleOpen = useCallback(() => {
+    if (!activated) {
+      activate({ force: true }).catch(() => void 0);
+    } else {
+      refresh({ silent: true }).catch(() => void 0);
+    }
+  }, [activate, activated, refresh]);
   return (
     <div className="dropdown">
       <button
@@ -686,6 +698,9 @@ function MessageBell() {
         data-bs-toggle="dropdown"
         aria-expanded="false"
         aria-label="Open messages"
+        onMouseEnter={handlePrefetch}
+        onFocus={handlePrefetch}
+        onClick={handleOpen}
       >
         <Icon icon="mage:email" className="text-primary-light text-xl" />
         {unreadCount > 0 && (

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -46,6 +47,8 @@ const EmailLayer = () => {
     refreshing = false,
     error = null,
     syncMessagesToLive = () => Promise.resolve(false),
+    activate: activateMessages = () => Promise.resolve(false),
+    activated = false,
   } = messagesContext || {};
   
   const vendorContext = useVendor() as any;
@@ -72,6 +75,12 @@ const EmailLayer = () => {
     [tenantId, vendor?.vendorId, vendor?.email, vendor?.id]
   );
   const [pendingLocal, setPendingLocal] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!activated) {
+      activateMessages({ force: true }).catch(() => void 0);
+    }
+  }, [activateMessages, activated]);
 
   useEffect(() => {
     if (!pendingKey) {

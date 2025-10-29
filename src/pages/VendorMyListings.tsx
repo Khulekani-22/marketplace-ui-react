@@ -108,7 +108,7 @@ export default function VendorMyListings() {
   const location = useLocation();
   const navListingRef = useRef<any>(null);
   const { vendor } = useVendor();
-  const { refresh: refreshMessages, syncMessagesToLive } = useMessages();
+  const { refresh: refreshMessages, syncMessagesToLive, activate: activateMessages, activated: messagesActivated } = useMessages() as any;
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -129,6 +129,12 @@ export default function VendorMyListings() {
     [tenantId, activeVendor]
   );
   const [pendingLocal, setPendingLocal] = useState<Listing[]>([]);
+
+  useEffect(() => {
+    if (!messagesActivated) {
+      activateMessages({ silent: true, force: true }).catch(() => void 0);
+    }
+  }, [activateMessages, messagesActivated]);
 
   const newListingFromNav = (location.state as any)?.newListing;
 
@@ -411,7 +417,8 @@ export default function VendorMyListings() {
       
       await api.post(`/api/messages`, messageData);
       setFeedback((f) => ({ ...f, sending: false, done: true }));
-      try { 
+      try {
+        await activateMessages({ silent: true, force: true }).catch(() => void 0);
         await (refreshMessages as any)({ force: true }); 
         await (syncMessagesToLive as any)(); 
       } catch {}

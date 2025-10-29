@@ -32,6 +32,7 @@ const AUTO_POLL_INTERVAL_MS = 2 * 60 * 1000; // Poll every 2 minutes
 const MIN_REFRESH_INTERVAL_MS = 30 * 1000; // Require 30s gap between non-forced refreshes
 const TENANT_WATCH_INTERVAL_MS = 1000;
 const VENDOR_PROFILE_KEY = "vendor_profile_v3";
+const ACTIVATION_STORAGE_KEY = "sl_messages_activated";
 
 const normalize = (value?: string | null) =>
   typeof value === "string" ? value.trim().toLowerCase() : "";
@@ -142,7 +143,11 @@ const resolveIdentity = (tenantId: string): Identity => {
 
 export function MessagesProvider({ children }) {
   const [threads, setThreads] = useState(() => readCachedThreads());
-  const [loading, setLoading] = useState(true);  // Start with loading=true until first fetch completes
+  const [activated, setActivated] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem(ACTIVATION_STORAGE_KEY) === "1";
+  });
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const pollRef = useRef(null);
@@ -154,10 +159,16 @@ export function MessagesProvider({ children }) {
   const tenantWatchRef = useRef(resolveTenantId());
   const visibilityRef = useRef(typeof document === "undefined" ? true : !document.hidden);
   const lastRefreshTimeRef = useRef(0);
+  const activatedRef = useRef(activated);
+  const skipInitialActivationEffectRef = useRef(false);
 
   useEffect(() => {
     threadsRef.current = threads;
   }, [threads]);
+
+  useEffect(() => {
+    activatedRef.current = activated;
+  }, [activated]);
 
   const syncMessagesToLive = useCallback(async () => {
     const tenantId = resolveTenantId();
@@ -187,17 +198,25 @@ export function MessagesProvider({ children }) {
     return threadsRef.current.length > 0;
   }, []);
 
-  const refresh = useCallback(
-    async ({ silent, force }: { silent?: boolean; force?: boolean } = {}) => {
+  const refreshImpl = useCallback(
+    async ({
+      silent,
+      force,
+      allowColdStart,
+    }: { silent?: boolean; force?: boolean; allowColdStart?: boolean } = {}) => {
+      if (!allowColdStart && !activatedRef.current) {
+        return false;
+      }
+
       const effectiveForce = !!force;
       const now = Date.now();
 
       if (!effectiveForce) {
         if (!visibilityRef.current) {
-          return;
+          return false;
         }
         if (now - lastRefreshTimeRef.current < MIN_REFRESH_INTERVAL_MS) {
-          return;
+          return false;
         }
       }
 
@@ -216,12 +235,13 @@ export function MessagesProvider({ children }) {
           : { params, timeout: 8000 };
         const { data } = await api.get(`/api/messages`, config);
         const items = Array.isArray(data?.items) ? data.items : [];
-        if (refreshSeq.current !== seq) return;
+        if (refreshSeq.current !== seq) return false;
         setThreads(items);
         persistCachedThreads(items);
         lastRefreshTimeRef.current = Date.now();
+        return true;
       } catch (e) {
-        if (refreshSeq.current !== seq) return;
+        if (refreshSeq.current !== seq) return false;
         const code = (e as any)?.code;
         const restoreFallbackThreads = () => {
           if (threadsRef.current?.length) return true;
@@ -257,6 +277,7 @@ export function MessagesProvider({ children }) {
         if (!effectiveForce) {
           lastRefreshTimeRef.current = 0;
         }
+        return false;
       } finally {
         if (refreshSeq.current === seq) {
           if (silent) setRefreshing(false);
@@ -267,6 +288,31 @@ export function MessagesProvider({ children }) {
     []
   );
 
+  const refresh = useCallback(
+    (options: { silent?: boolean; force?: boolean } = {}) => {
+      if (!activatedRef.current) {
+        return Promise.resolve(false);
+      }
+      return refreshImpl(options);
+    },
+    [refreshImpl]
+  );
+
+  const activate = useCallback(
+    async ({ force = true, silent = false }: { force?: boolean; silent?: boolean } = {}) => {
+      if (!activatedRef.current) {
+        activatedRef.current = true;
+        skipInitialActivationEffectRef.current = true;
+        setActivated(true);
+        try {
+          sessionStorage.setItem(ACTIVATION_STORAGE_KEY, "1");
+        } catch {}
+      }
+      return refreshImpl({ force, silent, allowColdStart: true });
+    },
+    [refreshImpl]
+  );
+
     useEffect(() => {
       if (typeof document === "undefined" || typeof document.addEventListener !== "function") {
         visibilityRef.current = true;
@@ -275,7 +321,7 @@ export function MessagesProvider({ children }) {
       visibilityRef.current = !document.hidden;
       const handleVisibility = () => {
         visibilityRef.current = !document.hidden;
-        if (!document.hidden) {
+        if (!document.hidden && activatedRef.current) {
           refresh({ silent: true, force: true }).catch(() => void 0);
         }
       };
@@ -284,17 +330,19 @@ export function MessagesProvider({ children }) {
     }, [refresh]);
 
   useEffect(() => {
-    refresh().then(() => {
-      setLoading(false);  // Mark initial loading as complete
-    }).catch(() => {
-      setLoading(false);  // Still mark as complete even on error
-    });
-    // Poll every 2 minutes to check for new messages
+    if (!activated) return;
+
+    if (skipInitialActivationEffectRef.current) {
+      skipInitialActivationEffectRef.current = false;
+    } else {
+      refreshImpl().catch(() => void 0);
+    }
+
     pollRef.current = setInterval(() => {
       if (!visibilityRef.current) return;
-      refresh({ silent: true }).catch(() => void 0);
+      refreshImpl({ silent: true }).catch(() => void 0);
     }, AUTO_POLL_INTERVAL_MS);
-    // auto-sync messages to LIVE every 5 minutes
+
     autosyncRef.current = setInterval(async () => {
       if (!visibilityRef.current) return;
       if (syncingRef.current) return;
@@ -308,13 +356,15 @@ export function MessagesProvider({ children }) {
         syncingRef.current = false;
       }
     }, 300000);
+
     return () => {
       clearInterval(pollRef.current);
       clearInterval(autosyncRef.current);
     };
-  }, [refresh, syncMessagesToLive]);
+  }, [activated, refreshImpl, syncMessagesToLive]);
 
   useEffect(() => {
+    if (!activated) return;
     const unsub = onIdTokenChanged(auth, (user) => {
       const uid = user?.uid || null;
       if (authUidRef.current === uid) return;
@@ -323,9 +373,10 @@ export function MessagesProvider({ children }) {
       refresh({ force: true, silent: true }).catch(() => void 0);
     });
     return () => unsub?.();
-  }, [refresh]);
+  }, [activated, refresh]);
 
   useEffect(() => {
+    if (!activated) return;
     const watcher = setInterval(() => {
       if (!visibilityRef.current) return;
       const nextTenant = resolveTenantId();
@@ -334,7 +385,7 @@ export function MessagesProvider({ children }) {
       refresh({ force: true, silent: true }).catch(() => void 0);
     }, TENANT_WATCH_INTERVAL_MS);
     return () => clearInterval(watcher);
-  }, [refresh]);
+  }, [activated, refresh]);
 
   const unreadCount = useMemo(() => threads.filter((t) => !t.read).length, [threads]);
   const latestFive = useMemo(() => threads.slice(0, 5), [threads]);
@@ -358,8 +409,21 @@ export function MessagesProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ threads, unreadCount, latestFive, loading, refreshing, error, refresh, markRead, reply, syncMessagesToLive }),
-    [threads, unreadCount, latestFive, loading, refreshing, error, refresh, markRead, reply, syncMessagesToLive]
+    () => ({
+      threads,
+      unreadCount,
+      latestFive,
+      loading,
+      refreshing,
+      error,
+      refresh,
+      markRead,
+      reply,
+      syncMessagesToLive,
+      activate,
+      activated,
+    }),
+    [threads, unreadCount, latestFive, loading, refreshing, error, refresh, markRead, reply, syncMessagesToLive, activate, activated]
   );
 
   useEffect(() => {

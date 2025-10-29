@@ -81,6 +81,7 @@ export const apolloServer = new ApolloServer({
       path: error.path,
     };
   },
+  persistedQueries: false,
   plugins: [
     // Add custom plugins for logging, monitoring, etc.
     {
