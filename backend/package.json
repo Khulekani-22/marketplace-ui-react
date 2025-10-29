@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "migrate:origin-tracking": "node scripts/migrateOriginTracking.js"
   },
   "dependencies": {
     "@graphql-tools/schema": "^10.0.25",

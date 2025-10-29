@@ -11,6 +11,7 @@
  */
 
 import { firestore } from '../services/firestore.js';
+import { originToDocId } from '../utils/originTracking.js';
 
 /**
  * Default allowed origins for local development
@@ -106,7 +107,8 @@ async function trackOriginRequest(origin, req) {
   try {
     if (!origin) return;
 
-    const trackingRef = firestore.collection('originTracking').doc(origin);
+  const docId = originToDocId(origin);
+  const trackingRef = firestore.collection('originTracking').doc(docId);
     const doc = await trackingRef.get();
 
     if (doc.exists) {
@@ -117,11 +119,13 @@ async function trackOriginRequest(origin, req) {
         lastEndpoint: req.path,
         lastMethod: req.method,
         lastUserAgent: req.get('user-agent') || 'unknown',
+        originKey: docId,
       });
     } else {
       // Create new tracking entry
       await trackingRef.set({
-        origin,
+  origin,
+  originKey: docId,
         firstSeen: new Date().toISOString(),
         lastSeen: new Date().toISOString(),
         requestCount: 1,

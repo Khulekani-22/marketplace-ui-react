@@ -5,9 +5,19 @@
  * Tracks request volume, response times, error rates, and consumer patterns.
  */
 
+import crypto from 'crypto';
 import admin from 'firebase-admin';
 
 const db = admin.firestore();
+
+function encodeDocId(value, fallbackLabel = 'unknown') {
+  const resolved = value || fallbackLabel;
+  try {
+    return Buffer.from(resolved).toString('base64url');
+  } catch {
+    return crypto.createHash('sha256').update(resolved).digest('base64url');
+  }
+}
 
 /**
  * Time bucket granularity
@@ -182,8 +192,9 @@ async function updateDailyMetrics(date, requestLog) {
  * Update per-endpoint metrics
  */
 async function updateEndpointMetrics(requestLog) {
-  const endpointKey = `${requestLog.method}:${requestLog.endpoint}`;
-  const docRef = db.collection('analyticsEndpoints').doc(endpointKey);
+  const endpointKey = `${requestLog.method || 'UNKNOWN'}:${requestLog.endpoint || 'unknown'}`;
+  const docId = encodeDocId(endpointKey, 'UNKNOWN:endpoint');
+  const docRef = db.collection('analyticsEndpoints').doc(docId);
 
   await db.runTransaction(async (transaction) => {
     const doc = await transaction.get(docRef);
@@ -192,6 +203,7 @@ async function updateEndpointMetrics(requestLog) {
       transaction.set(docRef, {
         endpoint: requestLog.endpoint,
         method: requestLog.method,
+        endpointKey,
         totalRequests: 1,
         successfulRequests: requestLog.success ? 1 : 0,
         failedRequests: requestLog.success ? 0 : 1,
@@ -217,7 +229,10 @@ async function updateEndpointMetrics(requestLog) {
         minResponseTime: Math.min(data.minResponseTime, requestLog.responseTime),
         maxResponseTime: Math.max(data.maxResponseTime, requestLog.responseTime),
         [`statusCodes.${requestLog.statusCode}`]: admin.firestore.FieldValue.increment(1),
-        lastAccessed: requestLog.timestamp
+        lastAccessed: requestLog.timestamp,
+        endpoint: requestLog.endpoint,
+        method: requestLog.method,
+        endpointKey
       });
     }
   });

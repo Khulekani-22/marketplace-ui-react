@@ -18,7 +18,7 @@ function parseJsonCandidate(candidate) {
       const decoded = Buffer.from(candidate, "base64").toString("utf8");
       return JSON.parse(decoded);
     } catch {
-      throw new Error("FIREBASE_SERVICE_ACCOUNT is not valid JSON or base64-encoded JSON");
+      return null;
     }
   }
 }
@@ -36,16 +36,17 @@ export function loadFirebaseServiceAccount(options = {}) {
   const envJson = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (envJson) {
     const parsed = parseJsonCandidate(envJson);
-    if (!parsed || typeof parsed !== "object") {
-      throw new Error("FIREBASE_SERVICE_ACCOUNT did not resolve to an object");
+    if (parsed && typeof parsed === "object") {
+      cachedServiceAccount = {
+        projectId: parsed.project_id || parsed.projectId,
+        clientEmail: parsed.client_email || parsed.clientEmail,
+        privateKey: normalizePrivateKey(parsed.private_key || parsed.privateKey || ""),
+        raw: parsed,
+      };
+      return cachedServiceAccount;
     }
-    cachedServiceAccount = {
-      projectId: parsed.project_id || parsed.projectId,
-      clientEmail: parsed.client_email || parsed.clientEmail,
-      privateKey: normalizePrivateKey(parsed.private_key || parsed.privateKey || ""),
-      raw: parsed,
-    };
-    return cachedServiceAccount;
+
+    console.warn("[firestore] FIREBASE_SERVICE_ACCOUNT env var present but not valid JSON/base64. Falling back to alternate secrets.");
   }
 
   const projectId = process.env.FIREBASE_PROJECT_ID;
