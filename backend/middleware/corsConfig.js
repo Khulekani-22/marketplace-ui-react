@@ -107,8 +107,13 @@ async function trackOriginRequest(origin, req) {
   try {
     if (!origin) return;
 
-  const docId = originToDocId(origin);
-  const trackingRef = firestore.collection('originTracking').doc(docId);
+    const docId = originToDocId(origin);
+    if (!docId) {
+      console.warn('[CORS] Skipping origin tracking: unable to derive doc id for origin', origin);
+      return;
+    }
+
+    const trackingRef = firestore.collection('originTracking').doc(docId);
     const doc = await trackingRef.get();
 
     if (doc.exists) {

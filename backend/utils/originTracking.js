@@ -6,10 +6,20 @@ export function originToDocId(origin) {
   }
 
   try {
-    return Buffer.from(origin).toString('base64url');
+    return Buffer.from(origin, 'utf8')
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/g, '');
   } catch (error) {
     // Fallback for very large strings or unusual input
-    return crypto.createHash('sha256').update(origin).digest('base64url');
+    return crypto
+      .createHash('sha256')
+      .update(origin)
+      .digest('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/g, '');
   }
 }
 
@@ -17,7 +27,10 @@ export function decodeOriginFromDocId(docId) {
   if (!docId) return null;
 
   try {
-    const decoded = Buffer.from(docId, 'base64url').toString('utf8');
+    const padded = docId.padEnd(docId.length + ((4 - docId.length % 4) % 4), '=')
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    const decoded = Buffer.from(padded, 'base64').toString('utf8');
     return decoded;
   } catch {
     return null;
