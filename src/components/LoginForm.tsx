@@ -61,7 +61,7 @@ type LoginFormProps = {
 };
 
 export default function LoginForm({
-  redirectTo = "/index-7",
+  redirectTo = "/dashboard",
   afterLogin,
   showTenant = true,
 }: LoginFormProps) {
@@ -74,7 +74,16 @@ export default function LoginForm({
   // return URL support: /login?returnTo=/somewhere or navigate("/login", { state: { from: "/somewhere" }})
   const returnTo = useMemo(() => {
     const q = new URLSearchParams(location.search);
-    return location.state?.from || q.get("returnTo") || redirectTo;
+    const candidate = location.state?.from || q.get("returnTo") || redirectTo;
+    if (!candidate) return "/dashboard";
+
+    // Prevent redirect loops and legacy routes that no longer exist
+    const normalized = candidate.trim();
+    if (normalized === "/login" || normalized === "/index-7") {
+      return "/dashboard";
+    }
+
+    return normalized.startsWith("/") ? normalized : "/" + normalized;
   }, [location, redirectTo]);
 
   const [email, setEmail] = useState("");
