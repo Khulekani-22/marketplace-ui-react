@@ -123,6 +123,55 @@ function createSnippet(value: any): { snippet: string; length: number | null } |
   };
 }
 
+  function normalizeRequestPath(config: ApiRequestConfig) {
+    const base = config.baseURL ?? api.defaults.baseURL ?? currentBase;
+    const url = config.url;
+
+    if (!base || !url || url.startsWith("http")) {
+      if (base) {
+        config.baseURL = base.replace(/\s+/g, "").replace(/([^:]\/\/)?\/+$/, "$1");
+      }
+      return;
+    }
+
+    try {
+      const parsed = new URL(base);
+      const origin = parsed.origin;
+      const basePath = parsed.pathname.replace(/\/+$|\s+$/g, "");
+      if (!basePath || basePath === "/") {
+        config.baseURL = origin;
+        config.url = url.startsWith("/") ? url : `/${url}`;
+        return;
+      }
+
+      const baseSegment = basePath.replace(/^\/+/, "");
+      let urlSegment = url.replace(/^\/+/, "");
+
+      if (urlSegment === baseSegment) {
+        urlSegment = "";
+      } else if (urlSegment.startsWith(`${baseSegment}/`)) {
+        urlSegment = urlSegment.slice(baseSegment.length + 1);
+      }
+
+      config.baseURL = `${origin}${basePath}`;
+      config.url = urlSegment ? `/${urlSegment}` : "/";
+    } catch {
+      const cleanedBase = base.replace(/([^:]\/\/)?\/+$/, "$1");
+      const [, , , ...parts] = cleanedBase.split("/");
+      const baseSegment = parts.join("/");
+      if (baseSegment) {
+        let normalized = url.replace(/^\/+/, "");
+        if (normalized === baseSegment) {
+          normalized = "";
+        } else if (normalized.startsWith(`${baseSegment}/`)) {
+          normalized = normalized.slice(baseSegment.length + 1);
+        }
+        config.url = normalized ? `/${normalized}` : "/";
+      }
+      config.baseURL = cleanedBase;
+    }
+  }
+
 function extractMessage(error: AxiosError, override?: string) {
   const responseData: any = error.response?.data;
   if (responseData) {
@@ -320,6 +369,7 @@ api.interceptors.request.use(async (config) => {
   // Shim common payload shapes that include tenant identifiers
   if (config.data && typeof config.data === "object") config.data = shimTenantInPayload(config.data);
   if (config.params && typeof config.params === "object") config.params = shimTenantInPayload(config.params);
+  normalizeRequestPath(extended);
   return config;
 });
 
