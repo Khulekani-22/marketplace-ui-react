@@ -29,6 +29,8 @@ const persistCachedThreads = (items: any[]) => {
 };
 
 const AUTO_POLL_INTERVAL_MS = 2 * 60 * 1000; // Poll every 2 minutes
+const MIN_REFRESH_INTERVAL_MS = 30 * 1000; // Require 30s gap between non-forced refreshes
+const TENANT_WATCH_INTERVAL_MS = 1000;
 const VENDOR_PROFILE_KEY = "vendor_profile_v3";
 
 const normalize = (value?: string | null) =>
@@ -150,6 +152,8 @@ export function MessagesProvider({ children }) {
   const refreshSeq = useRef(0);
   const authUidRef = useRef<string | null>(auth.currentUser?.uid || null);
   const tenantWatchRef = useRef(resolveTenantId());
+  const visibilityRef = useRef(typeof document === "undefined" ? true : !document.hidden);
+  const lastRefreshTimeRef = useRef(0);
 
   useEffect(() => {
     threadsRef.current = threads;
@@ -185,6 +189,19 @@ export function MessagesProvider({ children }) {
 
   const refresh = useCallback(
     async ({ silent, force }: { silent?: boolean; force?: boolean } = {}) => {
+      const effectiveForce = !!force;
+      const now = Date.now();
+
+      if (!effectiveForce) {
+        if (!visibilityRef.current) {
+          return;
+        }
+        if (now - lastRefreshTimeRef.current < MIN_REFRESH_INTERVAL_MS) {
+          return;
+        }
+      }
+
+      lastRefreshTimeRef.current = now;
       const seq = ++refreshSeq.current;
       setError(null);
       if (silent) setRefreshing(true);
@@ -193,8 +210,8 @@ export function MessagesProvider({ children }) {
       const tenantId = resolveTenantId();
 
       try {
-        const params = { t: Date.now(), ...(force ? { force: "1" } : {}) };
-        const config = force
+        const params = { t: Date.now(), ...(effectiveForce ? { force: "1" } : {}) };
+        const config = effectiveForce
           ? { params, headers: { "x-message-refresh": "manual" }, timeout: 8000 }
           : { params, timeout: 8000 };
         const { data } = await api.get(`/api/messages`, config);
@@ -202,6 +219,7 @@ export function MessagesProvider({ children }) {
         if (refreshSeq.current !== seq) return;
         setThreads(items);
         persistCachedThreads(items);
+        lastRefreshTimeRef.current = Date.now();
       } catch (e) {
         if (refreshSeq.current !== seq) return;
         const code = (e as any)?.code;
@@ -236,6 +254,9 @@ export function MessagesProvider({ children }) {
               : (e as any)?.message || "Failed to load messages"
           );
         }
+        if (!effectiveForce) {
+          lastRefreshTimeRef.current = 0;
+        }
       } finally {
         if (refreshSeq.current === seq) {
           if (silent) setRefreshing(false);
@@ -246,6 +267,22 @@ export function MessagesProvider({ children }) {
     []
   );
 
+    useEffect(() => {
+      if (typeof document === "undefined" || typeof document.addEventListener !== "function") {
+        visibilityRef.current = true;
+        return;
+      }
+      visibilityRef.current = !document.hidden;
+      const handleVisibility = () => {
+        visibilityRef.current = !document.hidden;
+        if (!document.hidden) {
+          refresh({ silent: true, force: true }).catch(() => void 0);
+        }
+      };
+      document.addEventListener("visibilitychange", handleVisibility);
+      return () => document.removeEventListener("visibilitychange", handleVisibility);
+    }, [refresh]);
+
   useEffect(() => {
     refresh().then(() => {
       setLoading(false);  // Mark initial loading as complete
@@ -254,10 +291,12 @@ export function MessagesProvider({ children }) {
     });
     // Poll every 2 minutes to check for new messages
     pollRef.current = setInterval(() => {
+      if (!visibilityRef.current) return;
       refresh({ silent: true }).catch(() => void 0);
     }, AUTO_POLL_INTERVAL_MS);
     // auto-sync messages to LIVE every 5 minutes
     autosyncRef.current = setInterval(async () => {
+      if (!visibilityRef.current) return;
       if (syncingRef.current) return;
       try {
         syncingRef.current = true;
@@ -288,11 +327,12 @@ export function MessagesProvider({ children }) {
 
   useEffect(() => {
     const watcher = setInterval(() => {
+      if (!visibilityRef.current) return;
       const nextTenant = resolveTenantId();
       if (tenantWatchRef.current === nextTenant) return;
       tenantWatchRef.current = nextTenant;
       refresh({ force: true, silent: true }).catch(() => void 0);
-    }, 1000);
+    }, TENANT_WATCH_INTERVAL_MS);
     return () => clearInterval(watcher);
   }, [refresh]);
 
