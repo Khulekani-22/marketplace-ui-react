@@ -49,7 +49,7 @@ export async function initializeFirebase() {
     try {
       // Dynamically import Firebase modules (code splitting)
       const [
-        { initializeApp },
+        { initializeApp, getApp, getApps },
         { getFirestore },
         { getAuth }
       ] = await Promise.all([
@@ -58,15 +58,18 @@ export async function initializeFirebase() {
         import('firebase/auth')
       ]);
 
-      // Initialize Firebase app
-      firebaseApp = initializeApp({
+      // Initialize Firebase app (reuse existing instance if already created elsewhere)
+      const existingApps = getApps();
+      firebaseApp = existingApps.length > 0
+        ? getApp()
+        : initializeApp({
         apiKey: "AIzaSyDFzUfv1enm5_lucOMz4tWh26GJfIG751M",
         authDomain: "sloane-hub.firebaseapp.com",
         projectId: "sloane-hub",
         storageBucket: "sloane-hub.firebasestorage.app",
         messagingSenderId: "664957061898",
         appId: "1:664957061898:web:71a4e19471132ef7ba88f3"
-      });
+        });
 
       // Initialize Firestore
       firestoreDb = getFirestore(firebaseApp);

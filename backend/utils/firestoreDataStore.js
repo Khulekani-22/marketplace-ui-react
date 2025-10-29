@@ -78,61 +78,7 @@ class FirestoreDataStore {
       // Check if already initialized
       if (admin.apps.length > 0) {
         this.db = admin.firestore();
-        // --- Aggregation logic: Merge startups, vendors, and admins into users collection ---
-        try {
-          const users = Array.isArray(data.users) ? data.users : [];
-          const vendors = Array.isArray(data.vendors) ? data.vendors : [];
-          const startups = Array.isArray(data.startups) ? data.startups : [];
-          const seen = new Map();
-          // Add users (admins/members)
-          for (const u of users) {
-            if (!u || typeof u !== 'object') continue;
-            const email = (u.email || '').toLowerCase();
-            if (!email) continue;
-            seen.set(email, {
-              ...u,
-              email,
-              role: u.role || 'member',
-              type: 'user',
-              tenantId: u.tenantId || 'public',
-            });
-          }
-          // Add vendors
-          for (const v of vendors) {
-            const email = (v.contactEmail || v.email || '').toLowerCase();
-            if (!email) continue;
-            if (!seen.has(email)) {
-              seen.set(email, {
-                email,
-                name: v.name || v.companyName || email,
-                role: v.role || 'vendor',
-                type: 'vendor',
-                tenantId: v.tenantId || 'vendor',
-                ...v,
-              });
-            }
-          }
-          // Add startups
-          for (const s of startups) {
-            const email = (s.contactEmail || s.email || '').toLowerCase();
-            if (!email) continue;
-            if (!seen.has(email)) {
-              seen.set(email, {
-                email,
-                name: s.name || s.companyName || email,
-                role: s.role || 'startup',
-                type: 'startup',
-                tenantId: s.tenantId || 'startup',
-                ...s,
-              });
-            }
-          }
-          // Overwrite users collection with merged list
-          data.users = Array.from(seen.values());
-        } catch (aggError) {
-          console.warn('⚠️  Failed to aggregate users, vendors, startups:', aggError);
-        }
-        return data;
+        this.initialized = true;
         return;
       }
 
@@ -350,19 +296,25 @@ class FirestoreDataStore {
     }
 
     const normalizedTenant = this.normalizeTenant(tenantId);
-    let queryRef = this.db.collection('services').where('tenantId', '==', normalizedTenant);
+    const collectionRef = this.db.collection('services');
+    let baseQueryRef = collectionRef.where('tenantId', '==', normalizedTenant);
+
+    const applyOrderingAndPaging = (ref) => {
+      let ordered = ref.orderBy(orderField, direction.toLowerCase());
+      if (offset > 0) {
+        ordered = ordered.offset(offset);
+      }
+      return ordered.limit(safePageSize);
+    };
 
     if (category) {
-      queryRef = queryRef.where('category', '==', category);
+      baseQueryRef = baseQueryRef.where('category', '==', category);
     }
     if (vendor) {
-      queryRef = queryRef.where('vendor', '==', vendor);
-    }
-    if (typeof featured === 'boolean') {
-      queryRef = queryRef.where('featured', '==', featured);
+      baseQueryRef = baseQueryRef.where('vendor', '==', vendor);
     }
     if (listingType) {
-      queryRef = queryRef.where('listingType', '==', String(listingType));
+      baseQueryRef = baseQueryRef.where('listingType', '==', String(listingType));
     }
 
     const numericMin = Number(minPrice);
@@ -371,34 +323,60 @@ class FirestoreDataStore {
     const hasMax = !Number.isNaN(numericMax);
 
     if (hasMin) {
-      queryRef = queryRef.where('price', '>=', numericMin);
+      baseQueryRef = baseQueryRef.where('price', '>=', numericMin);
     }
     if (hasMax) {
-      queryRef = queryRef.where('price', '<=', numericMax);
+      baseQueryRef = baseQueryRef.where('price', '<=', numericMax);
     }
 
     const usePriceOrder = hasMin || hasMax;
     const orderField = usePriceOrder ? 'price' : 'createdAt';
     const direction = usePriceOrder ? 'ASC' : 'DESC';
 
-    let orderedQuery = queryRef.orderBy(orderField, direction.toLowerCase());
-
     const safePageSize = Math.max(1, Math.min(Number(pageSize) || 20, 100));
     const safePage = Math.max(1, Number(page) || 1);
     const offset = (safePage - 1) * safePageSize;
 
-    if (offset > 0) {
-      orderedQuery = orderedQuery.offset(offset);
+  let queryRef = baseQueryRef;
+
+    const executeQuery = async (ref) => {
+      const orderedRef = applyOrderingAndPaging(ref);
+      const [resultSnapshot, resultCountSnapshot] = await Promise.all([
+        orderedRef.get(),
+        ref.count().get().catch(() => null),
+      ]);
+      return { snapshot: resultSnapshot, countSnapshot: resultCountSnapshot };
+    };
+
+    let featuredFilterApplied = false;
+    if (typeof featured === 'boolean') {
+      queryRef = queryRef.where('isFeatured', '==', featured);
+      featuredFilterApplied = true;
     }
 
-    orderedQuery = orderedQuery.limit(safePageSize);
+    let { snapshot, countSnapshot } = await executeQuery(queryRef);
 
-    const [snapshot, countSnapshot] = await Promise.all([
-      orderedQuery.get(),
-      queryRef.count().get().catch(() => null),
-    ]);
+    if (
+      featuredFilterApplied &&
+      snapshot.empty
+    ) {
+      const fallbackRef = baseQueryRef.where('featured', '==', featured);
+      const fallbackResult = await executeQuery(fallbackRef);
+      if (!fallbackResult.snapshot.empty) {
+        snapshot = fallbackResult.snapshot;
+        countSnapshot = fallbackResult.countSnapshot;
+        queryRef = fallbackRef;
+      }
+    }
 
-    const items = snapshot.docs.map((doc) => serializeDocument(doc));
+    let items = snapshot.docs.map((doc) => serializeDocument(doc));
+    if (typeof featured === 'boolean') {
+      items = items.filter((doc) => {
+        const flag = doc.isFeatured ?? doc.featured ?? false;
+        return flag === featured;
+      });
+    }
+
     const total = countSnapshot ? countSnapshot.data().count : items.length + offset;
 
     return {
