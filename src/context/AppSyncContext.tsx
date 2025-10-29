@@ -224,7 +224,8 @@ export function AppSyncProvider({ children }) {
 
       const job = (async () => {
         try {
-          await Promise.all([refreshRole(), refreshAppData()]);
+          await refreshRole();
+          await refreshAppData();
           const stamp = Date.now();
           lastSyncRef.current = stamp;
           setLastSyncAt(stamp);
@@ -240,7 +241,7 @@ export function AppSyncProvider({ children }) {
             })();
             await writeAuditLog({
               action: "PAGE_VIEW",
-              userEmail: auth.currentUser?.email || storedEmail || null,
+              userEmail: auth.currentUser?.email || storedEmail || undefined,
               targetType: "route",
               targetId: targetPath || location.pathname,
               metadata: {
