@@ -678,7 +678,7 @@ export default function WalletLayer() {
             compact={false}
             showUserLookup={true}
             selectedUserEmail={grantCreditsUserEmail}
-            onEmailChange={setGrantCreditsUserEmail}
+            onEmailChange={({ email }) => setGrantCreditsUserEmail(email)}
           />
         </div>
       )}

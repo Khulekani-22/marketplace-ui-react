@@ -264,7 +264,7 @@ const RULES = [
   {
     test: /^\/?wallet$/,
     hero: (ctx) => {
-      const { authed, isAdmin, isVendor, isBasic } = classify(ctx);
+  const { authed, isAdmin, isVendor } = classify(ctx);
       if (!authed) {
         return make(
           "Digital Wallet",

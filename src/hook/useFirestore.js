@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { 
   collection, 
-  getDocs, 
   doc, 
   getDoc, 
   addDoc, 
@@ -11,8 +10,7 @@ import {
   where, 
   orderBy, 
   limit,
-  onSnapshot,
-  writeBatch
+  onSnapshot
 } from 'firebase/firestore';
 import { db } from '../firebase.js';
 

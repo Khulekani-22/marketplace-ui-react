@@ -16,17 +16,6 @@ interface User {
   avatar: string;
 }
 
-interface WalletTransaction {
-  id: string;
-  userId: string;
-  userEmail: string;
-  type: "credit" | "debit" | "adjustment";
-  amount: number;
-  description: string;
-  adminEmail?: string;
-  createdAt: string;
-}
-
 export default function AdminWalletCreditsLayer() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,12 +28,12 @@ export default function AdminWalletCreditsLayer() {
   const [syncing, setSyncing] = useState(false);
   
   // Platform users search (real Firebase users)
-  const [allQuery, setAllQuery] = useState("");
-  const [allUsers, setAllUsers] = useState([]);
+  const [allQuery] = useState("");
+  const [, setAllUsers] = useState([]);
   const [allBusy, setAllBusy] = useState(false);
-  const [allErr, setAllErr] = useState("");
+  const [, setAllErr] = useState("");
   const [allNext, setAllNext] = useState("");
-  const [allPageSize, setAllPageSize] = useState(100);
+  const allPageSize = 100;
   const autoLoadedRef = useRef(false);
 
   // Search real Firebase users (like UserRoleManagement does)
@@ -82,7 +71,7 @@ export default function AdminWalletCreditsLayer() {
         setAllBusy(false);
       }
     },
-    [allQuery, allPageSize, allNext]
+  [allQuery, allNext]
   );
 
   // Auto-load platform users on mount (same as pressing Refresh)

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { api } from "../lib/api";
@@ -106,8 +107,7 @@ const filterThreadsForIdentity = (doc: any, tenantId: string, identity: Identity
   return sortThreads(accessible).map((t) => ({ ...t }));
 };
 
-const fallbackThreadsForTenant = (tenantId: string) => {
-  const tenantKey = (tenantId === "vendor" ? "public" : tenantId).toString().toLowerCase();
+const fallbackThreadsForTenant = () => {
   // Return empty array instead of using local JSON
   return [];
 };

@@ -85,8 +85,13 @@ function resolveVideoUrl(course: Course | undefined): string {
 
 export default function SloaneAcademyPage() {
   const { appData } = useAppSync();
-  const rawData = (appData || { cohorts: [], events: [] }) as AppDataShape;
-  
+  const rawData = useMemo<AppDataShape>(() => {
+    if (appData && typeof appData === "object") {
+      return appData as AppDataShape;
+    }
+    return { cohorts: [], events: [] };
+  }, [appData]);
+
   const cohorts = useMemo(() => (Array.isArray(rawData?.cohorts) ? rawData.cohorts : []), [rawData]);
   const [progress, setProgress] = useState<Set<string>>(readStoredProgress);
   const [cohortId, setCohortId] = useState(() => cohorts[0]?.id ?? "");
@@ -149,8 +154,9 @@ export default function SloaneAcademyPage() {
     });
   }, [courses, progress]);
 
+  const rawEvents = useMemo(() => (Array.isArray(rawData?.events) ? rawData.events : []), [rawData]);
+
   const upcomingEvents = useMemo(() => {
-    const rawEvents = Array.isArray(rawData?.events) ? rawData.events : [];
     const today = new Date();
     return rawEvents
       .filter((event) => {
@@ -159,7 +165,7 @@ export default function SloaneAcademyPage() {
         return !Number.isNaN(date.getTime()) && date >= today;
       })
       .slice(0, 3);
-  }, []);
+  }, [rawEvents]);
 
   function handleModuleSelect(id: string) {
     if (!id) return;

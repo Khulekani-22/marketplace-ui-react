@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Custom error classes for Marketplace SDK
  */

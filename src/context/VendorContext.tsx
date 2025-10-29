@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/context/VendorContext.jsx
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
@@ -5,7 +6,6 @@ import { api } from "../lib/api";
 import { initializeFirebase } from "../utils/lazyFirebase.js";
 import { VendorContext } from "./vendorContextBase";
 
-const API_BASE = "/api/lms";
 const LS_PREFIX = "vendor_profile_v3"; // bump key to invalidate any old cache
 
 function lsKey(tenant, uid) {

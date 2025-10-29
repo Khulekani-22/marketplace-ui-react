@@ -1,5 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { collection, getDocs, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "./AuthContext";
 
@@ -16,7 +17,8 @@ export interface Notification {
 interface NotificationsContextType {
   notifications: Notification[];
   unreadCount: number;
-  markAsRead: (id: string) => void;
+  // eslint-disable-next-line no-unused-vars
+  markAsRead: (input: { id: string }) => void;
   refresh: () => void;
 }
 
@@ -61,7 +63,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Mark a notification as read (client-side only; extend to Firestore if needed)
-  const markAsRead = (id: string) => {
+  const markAsRead = ({ id }: { id: string }) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     // TODO: Optionally update Firestore to mark as read
   };

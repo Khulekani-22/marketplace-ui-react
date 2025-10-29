@@ -47,15 +47,13 @@ export default function Market1() {
     setLoading(false);
   }, [q]);
 
-  // FIX: Use ref flag to prevent infinite loop
-  // Previously: useEffect with [load] dependency caused infinite re-renders
   const loadedRef = useRef(false);
   useEffect(() => {
     if (!loadedRef.current) {
       loadedRef.current = true;
       load();
     }
-  }, []); // Empty array - load only once on mount
+  }, [load]);
 
   useEffect(() => {
     (async () => {
@@ -176,6 +174,7 @@ export default function Market1() {
         success: `Voucher applied! Remaining balance: ${formatCredits(result.wallet?.balance || 0)} credits.`,
       }));
     } catch (error) {
+      console.error("Voucher redemption failed", error);
       setPurchase((prev) => ({ ...prev, working: false, error: "Unable to redeem vouchers." }));
     }
   }

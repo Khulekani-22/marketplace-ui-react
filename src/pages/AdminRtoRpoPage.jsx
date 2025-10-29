@@ -14,7 +14,8 @@ const AdminRtoRpoPage = () => {
         // Assume collection name is 'recoveryObjectives'
         const data = await firestoreService.getCollection('recoveryObjectives');
         setRecoveryData(data);
-      } catch (err) {
+      } catch (error) {
+        console.error('Failed to fetch recovery data', error);
         setError('Failed to fetch recovery data');
       } finally {
         setLoading(false);

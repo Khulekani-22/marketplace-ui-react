@@ -213,7 +213,6 @@ interface MessagingSystemProps {
 }
 
 const MessagingSystem: React.FC<MessagingSystemProps> = ({ userEmail, userName }) => {
-  const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [contacts, setContacts] = useState<ContactSummary[]>([]);
   const [viewBox, setViewBox] = useState<'inbox' | 'sent'>('inbox');
   // If userEmail is provided, auto-select that contact for direct chat
@@ -471,7 +470,6 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ userEmail, userName }
         } else if (Array.isArray(data)) {
           normalized = normalizeLegacyThreads(data);
         }
-        setThreads(normalized);
         const nextContacts = buildContacts(normalized);
         setContacts(nextContacts);
         return nextContacts;
@@ -481,7 +479,6 @@ const MessagingSystem: React.FC<MessagingSystemProps> = ({ userEmail, userName }
           const message = error?.response?.data?.message || 'Failed to load messages';
           toast.error(message);
         }
-        setThreads([]);
         setContacts([]);
         return [];
       } finally {

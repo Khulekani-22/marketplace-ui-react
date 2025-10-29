@@ -21,17 +21,6 @@ interface User {
   avatar: string;
 }
 
-interface WalletTransaction {
-  id: string;
-  userId: string;
-  userEmail: string;
-  type: "credit" | "debit" | "adjustment";
-  amount: number;
-  description: string;
-  adminEmail?: string;
-  createdAt: string;
-}
-
 export default function AdminWalletCreditsLayer() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +33,7 @@ export default function AdminWalletCreditsLayer() {
   const [allBusy, setAllBusy] = useState(false);
   const [allErr, setAllErr] = useState("");
   const [allNext, setAllNext] = useState("");
-  const [allPageSize, setAllPageSize] = useState(100);
+  const allPageSize = 100;
   const [userWallets, setUserWallets] = useState<Record<string, number>>({});
   const autoLoadedRef = useRef(false);
   
@@ -64,6 +53,7 @@ export default function AdminWalletCreditsLayer() {
           const response = await api.get(`/api/wallet/${encodeURIComponent(email)}`);
           return { email, balance: response.data?.balance || 0 };
         } catch (error) {
+          console.warn("[AdminWalletCreditsLayer] Wallet lookup failed", email, error);
           // If wallet doesn't exist or error, default to 0
           return { email, balance: 0 };
         }
@@ -126,8 +116,40 @@ export default function AdminWalletCreditsLayer() {
         setAllBusy(false);
       }
     },
-    [allQuery, allPageSize, allNext]
+  [allQuery, allNext, fetchWalletBalances]
   );
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/api/users");
+      const userData = Array.isArray(response.data) ? response.data : [];
+
+      const usersWithWallets = userData.map((user: any) => {
+        const balance = typeof user.walletBalance === "number"
+          ? user.walletBalance
+          : typeof user.wallet?.balance === "number"
+          ? user.wallet.balance
+          : userWallets[user.email] || 0;
+
+        return {
+          ...user,
+          walletBalance: balance,
+          lastActivity: user.lastActivity || new Date().toISOString(),
+          avatar:
+            user.avatar ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=6366f1&color=fff`,
+        };
+      });
+
+      setUsers(usersWithWallets);
+    } catch (error) {
+      console.error("Error loading users:", error);
+      toast.error("Failed to load user data");
+    } finally {
+      setLoading(false);
+    }
+  }, [userWallets]);
 
   // Auto-load platform users on mount
   useEffect(() => {
@@ -145,37 +167,10 @@ export default function AdminWalletCreditsLayer() {
         console.error("Failed to auto-load users:", error);
       }
     })();
-    return () => { alive = false; };
-  }, [searchAllUsers]);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get("/api/users");
-      const userData = response.data || [];
-      
-      // Transform the data to include wallet balance
-      const usersWithWallets = userData.map((user: any) => ({
-        ...user,
-        walletBalance: getUserWalletBalance(user.uid || user.email),
-        lastActivity: user.lastActivity || new Date().toISOString(),
-        avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=6366f1&color=fff`
-      }));
-      
-      setUsers(usersWithWallets);
-    } catch (error) {
-      console.error("Error loading users:", error);
-      toast.error("Failed to load user data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getUserWalletBalance = (userId: string): number => {
-    // Since users now include walletBalance, we can get it directly
-    const user = users.find((u: any) => u.uid === userId);
-    return user?.walletBalance || 0;
-  };
+    return () => {
+      alive = false;
+    };
+  }, [searchAllUsers, loadData]);
 
   // Handle admin data sync operations
   const handleNormalizeData = async () => {

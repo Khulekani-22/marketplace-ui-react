@@ -5,22 +5,14 @@ import { api } from "../../lib/api";
 import { formatCredits } from "./WalletComponents";
 import type { WalletRecord, WalletContextValue } from "../../context/WalletContext";
 
-interface User {
-  uid: string;
-  email: string;
-  name?: string;
-  role: string;
-  tenantId: string;
-  walletBalance?: number;
-}
-
 interface AdminWalletManagerProps {
   grantCredits?: WalletContextValue["grantCredits"];
   onRefresh?: () => Promise<void>;
   compact?: boolean;
   showUserLookup?: boolean;
   selectedUserEmail?: string;
-  onEmailChange?: (email: string) => void;
+  // eslint-disable-next-line no-unused-vars
+  onEmailChange?: (payload: { email: string }) => void;
 }
 
 function resolveErrorMessage(error: unknown, fallback: string) {
@@ -65,7 +57,7 @@ export default function AdminWalletManager({
   const handleEmailChange = (newEmail: string) => {
     setEmail(newEmail);
     if (onEmailChange) {
-      onEmailChange(newEmail);
+      onEmailChange({ email: newEmail });
     }
   };
 

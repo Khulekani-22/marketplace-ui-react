@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
             firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
             utils: ['axios', 'date-fns']
           },
-          chunkFileNames: (chunkInfo) => {
+          chunkFileNames: () => {
             // Use content hash for cache busting but shorter names for reliability
             return `assets/[name]-[hash:8].js`;
           },

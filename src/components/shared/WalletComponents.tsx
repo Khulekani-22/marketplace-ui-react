@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // src/components/shared/WalletComponents.tsx
 import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
@@ -265,7 +266,8 @@ function TransactionTypeBadge({ type }: TransactionTypeBadgeProps) {
 }
 
 interface QuickActionsProps {
-  onRedeemCredits?: (amount: number, note: string) => Promise<void>;
+  // eslint-disable-next-line no-unused-vars
+  onRedeemCredits?: (input: { amount: number; note: string }) => Promise<void>;
   processing?: boolean;
 }
 
@@ -280,7 +282,7 @@ export function QuickActions({ onRedeemCredits, processing = false }: QuickActio
     const parsedAmount = Number(amount.replace(/[^0-9.]/g, ""));
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) return;
 
-    await onRedeemCredits(parsedAmount, note);
+  await onRedeemCredits({ amount: parsedAmount, note });
     setAmount("");
     setNote("");
   };

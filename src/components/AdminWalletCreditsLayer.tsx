@@ -24,17 +24,6 @@ interface User {
   avatar: string;
 }
 
-interface WalletTransaction {
-  id: string;
-  userId: string;
-  userEmail: string;
-  type: "credit" | "debit" | "adjustment";
-  amount: number;
-  description: string;
-  adminEmail?: string;
-  createdAt: string;
-}
-
 export default function AdminWalletCreditsLayer() {
   // State for admin voucher/sponsorship modals
   const [showVoucherModal, setShowVoucherModal] = useState(false);
@@ -58,7 +47,7 @@ export default function AdminWalletCreditsLayer() {
   const [allBusy, setAllBusy] = useState(false);
   const [allErr, setAllErr] = useState("");
   const [allNext, setAllNext] = useState("");
-  const [allPageSize, setAllPageSize] = useState(100);
+  const allPageSize = 100;
   const autoLoadedRef = useRef(false);
   
   // Wallet context for admin tools
@@ -100,8 +89,39 @@ export default function AdminWalletCreditsLayer() {
         setAllBusy(false);
       }
     },
-    [allQuery, allPageSize, allNext]
+  [allQuery, allNext]
   );
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/api/users");
+      const userData = Array.isArray(response.data) ? response.data : [];
+      const usersWithWallets = userData.map((user: any) => {
+        const balance = typeof user.walletBalance === "number"
+          ? user.walletBalance
+          : typeof user.wallet?.balance === "number"
+          ? user.wallet.balance
+          : 0;
+
+        return {
+          ...user,
+          walletBalance: balance,
+          lastActivity: user.lastActivity || new Date().toISOString(),
+          avatar:
+            user.avatar ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=6366f1&color=fff`,
+        };
+      });
+
+      setUsers(usersWithWallets);
+    } catch (error) {
+      console.error("Error loading users:", error);
+      toast.error("Failed to load user data");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Auto-load platform users on mount
   useEffect(() => {
@@ -119,37 +139,10 @@ export default function AdminWalletCreditsLayer() {
         console.error("Failed to auto-load users:", error);
       }
     })();
-    return () => { alive = false; };
-  }, [searchAllUsers]);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get("/api/users");
-      const userData = response.data || [];
-      
-      // Transform the data to include wallet balance
-      const usersWithWallets = userData.map((user: any) => ({
-        ...user,
-        walletBalance: getUserWalletBalance(user.uid || user.email),
-        lastActivity: user.lastActivity || new Date().toISOString(),
-        avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=6366f1&color=fff`
-      }));
-      
-      setUsers(usersWithWallets);
-    } catch (error) {
-      console.error("Error loading users:", error);
-      toast.error("Failed to load user data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getUserWalletBalance = (userId: string): number => {
-    // Since users now include walletBalance, we can get it directly
-    const user = users.find((u: any) => u.uid === userId);
-    return user?.walletBalance || 0;
-  };
+    return () => {
+      alive = false;
+    };
+  }, [searchAllUsers, loadData]);
 
   // Handle admin data sync operations
   const handleNormalizeData = async () => {
@@ -659,7 +652,7 @@ export default function AdminWalletCreditsLayer() {
             setVoucherLoading(true);
             setVoucherError("");
             try {
-              const res = await api.post("/api/admin/apply-voucher", {
+              await api.post("/api/admin/apply-voucher", {
                 userId: voucherUser?.uid,
                 voucherCode
               });
@@ -706,7 +699,7 @@ export default function AdminWalletCreditsLayer() {
             setSponsorLoading(true);
             setSponsorError("");
             try {
-              const res = await api.post("/api/admin/apply-sponsorship", {
+              await api.post("/api/admin/apply-sponsorship", {
                 userId: sponsorUser?.uid,
                 group: sponsorGroup
               });

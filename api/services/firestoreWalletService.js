@@ -123,8 +123,9 @@ class FirestoreWalletService {
     this.ensureInitialized();
     
     try {
-      const { transactions, ...walletDoc } = walletData;
-      
+      const walletDoc = { ...walletData };
+      delete walletDoc.transactions;
+
       // Save wallet document (without transactions)
       await this.db.collection('wallets').doc(walletData.userId).set({
         ...walletDoc,

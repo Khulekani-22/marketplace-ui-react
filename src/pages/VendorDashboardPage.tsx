@@ -9,9 +9,7 @@ import { useVendor } from "../context/useVendor";
 import { useWallet } from "../hook/useWalletAxios";
 import { api } from "../lib/api";
 import { fetchMyVendorListings } from "../lib/listings";
-import { useAppSync } from "../context/useAppSync";
 import { Link } from "react-router-dom";
-import firestoreService from "../services/firestoreService";
 
 interface Booking {
 	id: string;
@@ -50,53 +48,48 @@ interface Vendor {
 	walletBalance?: number;
 }
 
-interface LoadMineOptions {
-	signal?: AbortSignal;
-	refresh?: boolean;
-	silent?: boolean;
-}
-
 export default function VendorDashboardPage() {
 	// Top-level hooks and state
 	const { vendor } = useVendor?.() || { vendor: null };
 	const typedVendor: Vendor | null = vendor as Vendor | null;
 	const { wallet, loading: walletLoading, eligible: walletEligible, error: walletError } = useWallet();
-	const { appData } = useAppSync();
 	const [chatModal, setChatModal] = useState<{ open: boolean, userEmail?: string, userName?: string }>({ open: false });
 	const [meetingModal, setMeetingModal] = useState<{ open: boolean, booking: Booking | null, link: string, busy: boolean, error: string }>({ open: false, booking: null, link: '', busy: false, error: '' });
 			// React Query: Fetch listings and bookings
+			const listingsTarget = typedVendor?.vendorId || typedVendor?.id || typedVendor?.ownerUid || typedVendor?.email;
+			const listingsQueryKey = useMemo(() => ['vendorListingsBookings', listingsTarget], [listingsTarget]);
+			const listingsQueryFn = useCallback(async () => {
+				if (!typedVendor) return { listings: [], bookings: [] };
+				return await fetchMyVendorListings({});
+			}, [typedVendor]);
+
 			const {
 				data: listingsBookingsData = { listings: [], bookings: [] },
 				error: listingsBookingsError,
 				isLoading: listingsBookingsLoading,
 				refetch: refetchListingsBookings
-			} = useQuery(['vendorListingsBookings', typedVendor?.vendorId], async () => {
-				if (!typedVendor) return { listings: [], bookings: [] };
-				return await fetchMyVendorListings({});
-			}, {
-				enabled: !!typedVendor,
+			} = useQuery(listingsQueryKey, listingsQueryFn, {
+				enabled: !!listingsTarget,
 			});
 
-			const myListings: Listing[] = listingsBookingsData.listings || [];
-			const bookings: Booking[] = listingsBookingsData.bookings || [];
+			const myListings: Listing[] = useMemo(() => {
+				const incoming = listingsBookingsData?.listings;
+				return Array.isArray(incoming) ? incoming : [];
+			}, [listingsBookingsData]);
 
-			// React Query: Fetch stats
-			const statsTarget = typedVendor?.vendorId || typedVendor?.id || typedVendor?.ownerUid || typedVendor?.email;
-			const {
-				data: stats = null,
-				error: statsError,
-				isLoading: statsLoading,
-				refetch: refetchStats
-			} = useQuery(['vendorStats', statsTarget], async () => {
-				if (!statsTarget) return null;
-				const resp = await api.get(`/api/vendors/${encodeURIComponent(statsTarget)}/stats`);
-				return resp.data || null;
-			}, {
-				enabled: !!statsTarget,
-			});
+			const bookings: Booking[] = useMemo(() => {
+				const incoming = listingsBookingsData?.bookings;
+				return Array.isArray(incoming) ? incoming : [];
+			}, [listingsBookingsData]);
 
 			// Error message for display
-			const err = (typeof listingsBookingsError === 'object' && listingsBookingsError !== null && 'message' in listingsBookingsError ? (listingsBookingsError as any).message : listingsBookingsError?.toString?.()) || (typeof statsError === 'object' && statsError !== null && 'message' in statsError ? (statsError as any).message : statsError?.toString?.()) || "";
+			const err = useMemo(() => {
+				if (!listingsBookingsError) return "";
+				if (typeof listingsBookingsError === 'object' && 'message' in listingsBookingsError) {
+					return String((listingsBookingsError as any).message || "");
+				}
+				return listingsBookingsError?.toString?.() || "";
+			}, [listingsBookingsError]);
 
 			// Calendar helpers
 			const bookingDates = useMemo(() =>
@@ -153,6 +146,9 @@ export default function VendorDashboardPage() {
 			<div className="container py-4">
 				<h2 className="mb-4">Vendor Dashboard</h2>
 				{err && <div className="alert alert-danger">{err}</div>}
+				{listingsBookingsLoading && !err && (
+					<div className="alert alert-info">Loading your latest listings and bookings…</div>
+				)}
 
 
 						{/* Wallet eligibility and error display */}
@@ -172,7 +168,7 @@ export default function VendorDashboardPage() {
 						)}
 						{/* Metrics Row */}
 						<div className="row g-3 mb-4">
-									{metrics.map((m, idx: number) => (
+									{metrics.map((m) => (
 										<div className="col-6 col-md-3" key={m.label}>
 											<div className="card shadow-sm h-100 text-center p-3">
 												<div className="mb-2"><i className={`${m.icon} fs-2 text-primary`}></i></div>
@@ -240,15 +236,14 @@ export default function VendorDashboardPage() {
 										</tr>
 									</thead>
 									<tbody>
-															{bookings.map((b: Booking, idx: number) => (
-																<tr key={b.id || idx}>
+															{bookings.map((b: Booking) => (
+																<tr key={b.id || `${b.serviceId || 'svc'}-${b.scheduledDate || 'date'}-${b.scheduledSlot || 'slot'}` }>
 																	<td>{b.serviceTitle || "—"}</td>
 																	<td>{b.userName || b.userEmail || "—"}</td>
 																	<td>{b.scheduledDate || "—"}</td>
 																	<td>{b.scheduledSlot || "—"}</td>
 																	<td style={{ minWidth: 200, maxWidth: 280 }}>
 																		{(() => {
-																			const bookingId = b.id ? String(b.id) : "";
 																			// Booking notes removed: now handled by React Query or not shown
 																			return <span className="text-muted">—</span>;
 																		})()}
@@ -320,10 +315,11 @@ export default function VendorDashboardPage() {
 										</tr>
 									</thead>
 									<tbody>
-										{myListings.map((i: Listing, idx: number) => {
+										{myListings.map((i: Listing) => {
 											const serviceKey = String(i.id || i.vendorId || "");
+											const listingRowKey = serviceKey || `listing-${i.title || 'untitled'}-${i.category || 'category'}`;
 											return (
-												<tr key={serviceKey || idx}>
+												<tr key={listingRowKey}>
 													<td>
 														<img
 															src={i.imageUrl || "/assets/images/placeholder-4x3.png"}

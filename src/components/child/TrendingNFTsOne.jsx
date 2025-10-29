@@ -6,7 +6,6 @@ import { api } from "../../lib/api";
 import { useAppSync } from "../../context/useAppSync";
 import { useWallet } from "../../hook/useWalletAxios";
 import { fetchMySubscriptions, subscribeToService, unsubscribeFromService } from "../../lib/subscriptions";
-import PaymentModal from "../PaymentModal";
 
 // Normalize any legacy keys so the card always has the fields your UI expects
 const MENTORSHIP_KEYWORDS = [
@@ -288,14 +287,14 @@ const TrendingNFTsOne = ({
     await loadServices({ forceRefresh: true });
   }
 
-  // Load services only once on mount - FIX for infinite loop
+  // Load services only once on mount - guard against duplicate fetches while satisfying deps
   const loadedRef = useRef(false);
   useEffect(() => {
     if (!loadedRef.current) {
       loadedRef.current = true;
       loadServices();
     }
-  }, []); // Empty dependency array - load only once!
+  }, [loadServices]);
 
   // Load my subscriptions (if authed)
   useEffect(() => {

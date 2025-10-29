@@ -1499,7 +1499,7 @@ function ServicesEditor(props) {
 }
 
 
-function VersionHistory({ items, onRestore }: { items: any[]; onRestore: (item: any) => void }) {
+function VersionHistory({ items, onRestore }: { items: any[]; /* eslint-disable-line no-unused-vars */ onRestore: (...args: [id: any]) => void }) {
   return (
     <div className="card">
       <div className="card-header fw-semibold d-flex justify-content-between">

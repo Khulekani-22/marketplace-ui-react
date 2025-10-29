@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import MasterLayout from "../masterLayout/MasterLayout";
 import Breadcrumb from "../components/Breadcrumb";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { auth } from "../firebase.js";
 import { useAppSync } from "../context/useAppSync";
 import { fetchMySubscriptions, unsubscribeFromService } from "../lib/subscriptions";
@@ -21,7 +21,7 @@ interface Service {
   listingType?: string;
 }
 
-interface Booking {
+interface BookingItem {
   id: string;
   serviceId: string;
   serviceTitle: string;
@@ -34,7 +34,7 @@ interface Booking {
   imageUrl?: string;
 }
 
-interface Subscription {
+interface SubscriptionItem {
   id: string;
   serviceId: string;
   type?: string;
@@ -42,11 +42,6 @@ interface Subscription {
   canceledAt?: string | null;
   scheduledDate?: string;
   scheduledSlot?: string;
-}
-
-interface LoadOptions {
-  silent?: boolean;
-  signal?: AbortSignal;
 }
 
 interface BusyMap {
@@ -110,7 +105,7 @@ export default function MySubscriptionsPage() {
   const { appData } = useAppSync();
 
   // React Query: fetch subscriptions
-  const { data: subscriptions = [], isLoading: loading, refetch, isFetching: refreshing } = useQuery({
+  const { data: rawSubscriptions = [], isLoading: loading, refetch, isFetching: refreshing } = useQuery({
     queryKey: ["mySubscriptions", auth.currentUser?.uid || auth.currentUser?.email || "anon"],
     queryFn: async () => {
       if (!auth.currentUser) return [];
@@ -121,7 +116,7 @@ export default function MySubscriptionsPage() {
   });
 
   // React Query: fetch bookings
-  const { data: bookings = [] } = useQuery({
+  const { data: rawBookings = [] } = useQuery({
     queryKey: ["myBookings", auth.currentUser?.uid || auth.currentUser?.email || "anon"],
     queryFn: async () => {
       if (!auth.currentUser) return [];
@@ -154,6 +149,16 @@ export default function MySubscriptionsPage() {
   });
 
   // React Query: fetch service details for subscriptions
+  const subscriptions = useMemo<SubscriptionItem[]>(
+    () => (Array.isArray(rawSubscriptions) ? (rawSubscriptions as SubscriptionItem[]) : []),
+    [rawSubscriptions]
+  );
+
+  const bookings = useMemo<BookingItem[]>(
+    () => (Array.isArray(rawBookings) ? (rawBookings as BookingItem[]) : []),
+    [rawBookings]
+  );
+
   const serviceIds = useMemo(
     () =>
       new Set(

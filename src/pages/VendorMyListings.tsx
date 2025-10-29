@@ -59,6 +59,8 @@ interface FeedbackState {
   done: boolean;
 }
 
+type VendorListingsResult = { listings: Listing[]; bookings: Booking[] };
+
 function normalizeTenant(id?: string | null) {
   if (!id) return "public";
   const v = id.toString().toLowerCase();
@@ -105,7 +107,7 @@ export default function VendorMyListings() {
   const navigate = useNavigate();
   const location = useLocation();
   const navListingRef = useRef<any>(null);
-  const { vendor, ensureVendorId, loading: vendorLoading } = useVendor();
+  const { vendor } = useVendor();
   const { refresh: refreshMessages, syncMessagesToLive } = useMessages();
   const tenantId = useMemo(() => sessionStorage.getItem("tenantId") || "vendor", []);
 
@@ -231,12 +233,7 @@ export default function VendorMyListings() {
     return activeVendor.vendorId || activeVendor.email || activeVendor.id || "";
   }, [activeVendor]);
 
-  const {
-    data,
-    isLoading,
-    error: queryError,
-    refetch,
-  } = useQuery<{ listings: Listing[]; bookings: Booking[] }>({
+  const vendorListingsQuery = useQuery<VendorListingsResult, Error>({
     queryKey: ["vendorListings", vendorKey, tenantId],
     queryFn: async ({ signal }) => {
       if (!activeVendor) {
@@ -253,11 +250,35 @@ export default function VendorMyListings() {
     },
     enabled: !!activeVendor,
     staleTime: 1000 * 60 * 2, // 2 minutes
-    onError: (e: any) => setErr(e?.message || "Failed to load listings"),
   });
 
-  const items: Listing[] = data?.listings || [];
-  const bookings: Booking[] = data?.bookings || [];
+  const { data: rawData, error: queryError, isLoading, refetch } = vendorListingsQuery;
+
+  useEffect(() => {
+    if (!queryError) return;
+    setErr(queryError.message || "Failed to load listings");
+  }, [queryError]);
+
+  useEffect(() => {
+    if (queryError) return;
+    if (isLoading) return;
+    if (rawData) {
+      setErr("");
+    }
+  }, [queryError, isLoading, rawData]);
+
+  const data = rawData as VendorListingsResult | undefined;
+  const listingsData = data?.listings;
+  const bookingsData = data?.bookings;
+
+  const items: Listing[] = useMemo(
+    () => (Array.isArray(listingsData) ? listingsData : []),
+    [listingsData]
+  );
+  const bookings: Booking[] = useMemo(
+    () => (Array.isArray(bookingsData) ? bookingsData : []),
+    [bookingsData]
+  );
   const loading = isLoading;
 
   const handleRefresh = useCallback(async () => {

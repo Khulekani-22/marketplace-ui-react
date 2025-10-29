@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Webhook signature verification for Marketplace SDK
  */

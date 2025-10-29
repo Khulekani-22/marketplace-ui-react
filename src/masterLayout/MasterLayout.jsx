@@ -35,7 +35,7 @@ function NotificationBell() {
               key={n.id}
               className={`list-group-item list-group-item-action d-flex align-items-start gap-2 ${n.read ? '' : 'bg-primary-50'}`}
               style={{ cursor: 'pointer' }}
-              onClick={() => markAsRead(n.id)}
+              onClick={() => markAsRead({ id: n.id })}
             >
               <div className={`badge ${n.read ? 'text-bg-light' : 'text-bg-primary'}`} style={{ alignSelf: 'center' }}>
                 {n.read ? 'read' : 'new'}
@@ -62,10 +62,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
-import { auth } from "../firebase.js";
-import { signOut } from "firebase/auth";
 import { api } from "../lib/api";
 import { writeAuditLog } from "../lib/audit";
+import { initializeFirebase } from "../utils/lazyFirebase.js";
 import HeroBanner from "../components/HeroBanner";
 import { getHeroForPath } from "../utils/heroConfig";
 import AIAssistant from "../components/assistant/AIAssistant";
@@ -184,20 +183,40 @@ function MasterLayoutInner({ children }) {
   async function handleLogout(e) {
     e?.preventDefault?.();
     try { sessionStorage.setItem("sl_manual_logout", "1"); } catch {}
-    const userEmail = auth.currentUser?.email || sessionStorage.getItem("userEmail") || null;
-    const userId = auth.currentUser?.uid || sessionStorage.getItem("userId") || null;
+
+    let storedEmail = null;
+    let storedId = null;
+    try {
+      storedEmail = sessionStorage.getItem("userEmail");
+      storedId = sessionStorage.getItem("userId");
+    } catch {
+      /* storage unavailable */
+    }
+
+    const userEmail = user?.email || storedEmail || null;
+    const userId = user?.uid || storedId || null;
+
     try {
       await writeAuditLog({ action: "LOGOUT", userEmail, userId });
     } catch {}
+
     try {
+      const { auth } = await initializeFirebase();
+      const { signOut } = await import("firebase/auth");
       await signOut(auth);
     } catch (err) {
-      console.error('Logout error:', err);
+      console.error("Logout error:", err);
     }
-    sessionStorage.removeItem("tenantId");
-    sessionStorage.removeItem("role");
-    sessionStorage.removeItem("userEmail");
-    sessionStorage.removeItem("userId");
+
+    try {
+      sessionStorage.removeItem("tenantId");
+      sessionStorage.removeItem("role");
+      sessionStorage.removeItem("userEmail");
+      sessionStorage.removeItem("userId");
+    } catch {
+      /* storage unavailable */
+    }
+
     navigate("/login", { replace: true });
   }
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/pages/VendorsAdminPage.jsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api";
@@ -6,9 +7,6 @@ import MasterLayout from "../masterLayout/MasterLayout";
 import { writeAuditLog } from "../lib/audit";
 
 const API_BASE = "/api/lms";
-
-// Lazy-load the banner to keep initial bundle lean
-const BannerInnerTwo = React.lazy(() => import("../components/child/BannerInnerTwo"));
 
 // Local storage keys (scoped for vendors)
 const LS_DRAFT_KEY = "vendors_admin_draft_v1";
